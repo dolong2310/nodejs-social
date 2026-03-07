@@ -78,7 +78,6 @@ class UserController {
     }
 
     if (user.verificationStatus === UserVerificationStatus.VERIFIED) {
-      console.log('VERIFIED');
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED,
         status: HTTP_STATUS.BAD_REQUEST
@@ -86,7 +85,6 @@ class UserController {
     }
 
     if (user.emailVerificationToken !== emailVerificationToken) {
-      console.log('EMAIL_VERIFICATION_TOKEN_IS_INVALID: ', user.emailVerificationToken, emailVerificationToken);
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID,
         status: HTTP_STATUS.BAD_REQUEST
