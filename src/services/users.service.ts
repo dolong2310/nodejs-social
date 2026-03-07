@@ -31,7 +31,7 @@ class UsersService {
     return databaseService.users.findOne<IUser>({ username });
   }
 
-  async register(body: Omit<IRegisterRequestBody, 'confirmPassword'>): Promise<IUser | null> {
+  async register(body: Omit<IRegisterRequestBody, 'confirmPassword'>): Promise<IUser> {
     const { name, email, password, dateOfBirth } = body;
 
     const userId = new ObjectId();
