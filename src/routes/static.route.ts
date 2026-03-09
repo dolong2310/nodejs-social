@@ -3,6 +3,8 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/:filename', mediaController.getStaticImage.bind(mediaController));
+router.get('/images/:filename', mediaController.getStaticImage.bind(mediaController));
+// router.get('/videos/:filename', mediaController.getStaticVideo.bind(mediaController));
+router.get('/videos-stream/:filename', mediaController.getStaticVideoStream.bind(mediaController));
 
 export default router;

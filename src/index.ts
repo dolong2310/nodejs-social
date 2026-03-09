@@ -1,3 +1,4 @@
+import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
@@ -5,6 +6,7 @@ import staticRouter from '@/routes/static.route';
 import usersRouter from '@/routes/users.route';
 import databaseService from '@/services/database.service';
 import { initUploadsFolder } from '@/utils/file.util';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 
@@ -15,6 +17,13 @@ const port = process.env.PORT || 8080;
 
 initUploadsFolder();
 
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true
+  })
+);
+
 app.use(express.json());
 
 app.use('/users', usersRouter);
@@ -22,7 +31,7 @@ app.use('/oauth', oauthRouter);
 app.use('/media', mediaRouter);
 app.use('/static', staticRouter);
 
-// app.use('/static/uploads', express.static(UPLOAD_DIR));
+app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 
 app.use(errorHandler);
 
