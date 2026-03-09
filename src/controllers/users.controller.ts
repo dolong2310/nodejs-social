@@ -1,7 +1,7 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { UserVerificationStatus } from '@/enums/users.enum';
-import { ErrorWithStatus } from '@/models/error.models';
+import { ErrorWithStatus } from '@/models/error.model';
 import {
   IChangePasswordRequestBody,
   IFollowUserRequestBody,

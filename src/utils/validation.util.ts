@@ -1,6 +1,6 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorEntity, ErrorWithStatus } from '@/models/error.models';
+import { ErrorEntity, ErrorWithStatus } from '@/models/error.model';
 import express from 'express';
 import { ValidationChain, validationResult } from 'express-validator';
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';

@@ -3,7 +3,7 @@ import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { USERNAME_REGEX } from '@/constants/regex.constant';
 import { TokenType } from '@/enums/token.enum';
 import { UserVerificationStatus } from '@/enums/users.enum';
-import { ErrorWithStatus } from '@/models/error.models';
+import { ErrorWithStatus } from '@/models/error.model';
 import tokenService from '@/services/token.service';
 import usersService from '@/services/users.service';
 import { AccessTokenPayload } from '@/types/token.type';

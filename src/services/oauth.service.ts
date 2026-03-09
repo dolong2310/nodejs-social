@@ -1,5 +1,5 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
-import { ErrorWithStatus } from '@/models/error.models';
+import { ErrorWithStatus } from '@/models/error.model';
 import axios from 'axios';
 import usersService from '@/services/users.service';
 import { v4 as uuidv4 } from 'uuid';

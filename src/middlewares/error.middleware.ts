@@ -1,6 +1,6 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorEntity, ErrorWithStatus } from '@/models/error.models';
+import { ErrorEntity, ErrorWithStatus } from '@/models/error.model';
 import { NextFunction, Request, Response } from 'express';
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
