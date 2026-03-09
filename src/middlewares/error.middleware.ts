@@ -10,7 +10,9 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
   if (err instanceof ErrorWithStatus) {
     return res.status(err.status).json({ message: err.message, errors: {} });
   }
-  return res
-    .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-    .json({ message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR, errors: {} });
+
+  const statusCode = err.httpCode || err.status || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  const message = err.message || ERROR_MESSAGE.INTERNAL_SERVER_ERROR;
+
+  return res.status(statusCode).json({ message, errors: {} });
 };
