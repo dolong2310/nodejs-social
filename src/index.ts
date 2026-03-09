@@ -4,10 +4,13 @@ import oauthRouter from '@/routes/oauth.route';
 import usersRouter from '@/routes/users.route';
 import databaseService from '@/services/database.service';
 import { initUploadsFolder } from '@/utils/file.util';
+import dotenv from 'dotenv';
 import express from 'express';
 
+dotenv.config();
+
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 
 initUploadsFolder();
 

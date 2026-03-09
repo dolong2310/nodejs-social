@@ -6,10 +6,10 @@ class mediaController {
   constructor() {}
 
   async uploadImage(req: Request, res: Response, next: NextFunction) {
-    const data = await mediaService.uploadImage(req);
+    const imageUrl = await mediaService.uploadImage(req);
 
     return res.status(HTTP_STATUS.OK).json({
-      message: 'Upload image successfully'
+      data: imageUrl
     });
   }
 }

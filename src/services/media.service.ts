@@ -1,3 +1,4 @@
+import { isDevelopment } from '@/constants/config.constant';
 import { UPLOAD_DIR } from '@/constants/file.constant';
 import { getNameFromFullname, handleUploadImage } from '@/utils/file.util';
 import { Request } from 'express';
@@ -14,7 +15,8 @@ class MediaService {
     const newPath = path.resolve(UPLOAD_DIR, `${newName}.jpg`);
     await sharp(file.filepath).resize(100, 100).jpeg().toFile(newPath);
     fs.unlinkSync(file.filepath);
-    return `http://localhost:8080/uploads/${newName}.jpg`;
+    const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
+    return `${url}/uploads/${newName}.jpg`;
   }
 }
 
