@@ -1,5 +1,7 @@
 import { isDevelopment } from '@/constants/config.constant';
 import { UPLOAD_DIR } from '@/constants/file.constant';
+import { MediaType } from '@/enums/media.enum';
+import { IMedia } from '@/types/media.type';
 import { getNameFromFullname, handleUploadImage } from '@/utils/file.util';
 import { Request } from 'express';
 import fs from 'fs';
@@ -10,13 +12,17 @@ class MediaService {
   constructor() {}
 
   async uploadImage(req: Request) {
-    const file = await handleUploadImage(req);
-    const newName = getNameFromFullname(file.newFilename);
-    const newPath = path.resolve(UPLOAD_DIR, `${newName}.jpg`);
-    await sharp(file.filepath).resize(100, 100).jpeg().toFile(newPath);
-    fs.unlinkSync(file.filepath);
-    const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
-    return `${url}/uploads/${newName}.jpg`;
+    const files = await handleUploadImage(req);
+    return Promise.all<IMedia>(
+      files.map(async (file) => {
+        const newName = getNameFromFullname(file.newFilename);
+        const newPath = path.resolve(UPLOAD_DIR, `${newName}.jpg`);
+        await sharp(file.filepath).resize(100, 100).jpeg().toFile(newPath);
+        fs.unlinkSync(file.filepath);
+        const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
+        return { url: `${url}/uploads/${newName}.jpg`, type: MediaType.IMAGE };
+      })
+    );
   }
 }
 
