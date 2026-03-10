@@ -10,24 +10,26 @@ import mime from 'mime';
 class mediaController {
   constructor() {}
 
-  getStaticImage(req: Request, res: Response, next: NextFunction) {
-    const imagePath = path.resolve(UPLOAD_DIR_IMAGE, req.params.filename as string);
+  getStaticImage(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
+    const { filename } = req.params;
+    const imagePath = path.resolve(UPLOAD_DIR_IMAGE, filename);
     if (!fs.existsSync(imagePath)) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
     }
     return res.sendFile(imagePath);
   }
 
-  getStaticVideo(req: Request, res: Response, next: NextFunction) {
-    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, req.params.filename as string);
+  getStaticVideo(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
+    const { filename } = req.params;
+    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     if (!fs.existsSync(videoPath)) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
     }
     return res.sendFile(videoPath);
   }
 
-  getStaticVideoStream(req: Request, res: Response, next: NextFunction) {
-    const filename = req.params.filename as string;
+  getStaticVideoStream(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
+    const { filename } = req.params;
     const range = req.headers.range;
     if (!range) {
       return res
@@ -68,6 +70,28 @@ class mediaController {
     return videoStream; // trả về stream cho client
   }
 
+  getStaticVideoHLSMaster(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, 'master.m3u8');
+    if (!fs.existsSync(videoPath)) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+    }
+    return res.sendFile(videoPath);
+  }
+
+  getStaticVideoHLSSegment(
+    req: Request<{ id: string; version: string; segment: string }>,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id, version, segment } = req.params;
+    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, version, segment);
+    if (!fs.existsSync(videoPath)) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+    }
+    return res.sendFile(videoPath);
+  }
+
   async uploadImage(req: Request, res: Response, next: NextFunction) {
     const results = await mediaService.uploadImage(req);
 
@@ -83,6 +107,25 @@ class mediaController {
     return res.status(HTTP_STATUS.OK).json({
       data: results,
       message: 'Upload successfully'
+    });
+  }
+
+  async uploadVideoHLS(req: Request, res: Response, next: NextFunction) {
+    const results = await mediaService.uploadVideoHLS(req);
+
+    return res.status(HTTP_STATUS.OK).json({
+      data: results,
+      message: 'Upload successfully'
+    });
+  }
+
+  async getVideoStatus(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params as { id: string };
+    const videoStatus = await mediaService.getVideoStatusById(id);
+
+    return res.status(HTTP_STATUS.OK).json({
+      data: videoStatus,
+      message: 'Get video status successfully'
     });
   }
 }

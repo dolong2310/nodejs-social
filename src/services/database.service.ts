@@ -1,6 +1,7 @@
 import { IFollower } from '@/models/schemas/follower.schema';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
+import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
 import dotenv from 'dotenv';
 import { Collection, Db, MongoClient, ServerApiVersion } from 'mongodb';
 
@@ -44,6 +45,10 @@ class DatabaseService {
 
   get followers(): Collection<IFollower> {
     return this.db.collection<IFollower>('followers');
+  }
+
+  get videoStatuses(): Collection<IVideoStatus> {
+    return this.db.collection<IVideoStatus>('videoStatuses');
   }
 
   // get posts(): Collection<IPost> {

@@ -11,6 +11,8 @@ import {
 import { Request } from 'express';
 import formidable, { File } from 'formidable';
 import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 export const initUploadsFolder = () => {
   [UPLOAD_DIR_IMAGE_TEMP, UPLOAD_DIR_VIDEO_TEMP].forEach((dir) => {
@@ -95,6 +97,56 @@ export const handleUploadVideo = async (req: Request) => {
         const extension = getExtensionFromFullname(file.originalFilename as string);
         fs.renameSync(file.filepath, `${file.filepath}.${extension}`);
         file.newFilename = `${file.newFilename}.${extension}`;
+        file.filepath = `${file.filepath}.${extension}`;
+      });
+
+      resolve(videoFiles);
+    });
+  });
+};
+
+export const handleUploadVideoHLS = async (req: Request) => {
+  const uuid = uuidv4();
+  const uploadDir = path.resolve(UPLOAD_DIR_VIDEO, uuid);
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  const form = formidable({
+    uploadDir: uploadDir,
+    maxFiles: MAX_FILES_VIDEO,
+    maxFileSize: MAX_FILE_SIZE_VIDEO,
+    // maxTotalFileSize: MAX_TOTAL_FILE_SIZE_VIDEO,
+    // keepExtensions: true,
+    filter: ({ name, mimetype }) => {
+      const isValidType = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm'].includes(mimetype || '');
+      const isValidName = name === 'video';
+      if (!isValidType || !isValidName) {
+        form.emit('error', new Error('Invalid file type or name'));
+      }
+      return isValidType && isValidName;
+    },
+    filename: () => {
+      return uuid;
+    }
+  });
+
+  return new Promise<File[]>((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        return reject(err);
+      }
+
+      if (!('video' in files)) {
+        return reject(new Error('Video file is required'));
+      }
+
+      const videoFiles = files.video as File[];
+
+      videoFiles.forEach((file) => {
+        const extension = getExtensionFromFullname(file.originalFilename as string);
+        fs.renameSync(file.filepath, `${file.filepath}.${extension}`);
+        file.newFilename = `${file.newFilename}.${extension}`;
+        file.filepath = `${file.filepath}.${extension}`;
       });
 
       resolve(videoFiles);
