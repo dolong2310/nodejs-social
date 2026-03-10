@@ -29,7 +29,14 @@ class TokenService {
     );
   }
 
-  signRefreshToken({ userId, type }: RefreshTokenPayloadCreate): Promise<string> {
+  signRefreshToken({ userId, type, exp }: RefreshTokenPayloadCreate & { exp?: number }): Promise<string> {
+    if (exp && typeof exp === 'number') {
+      return Promise.resolve(
+        jwt.sign({ uuid: uuidv4(), userId, type, exp }, process.env.REFRESH_TOKEN_SECRET as Secret, {
+          algorithm: 'HS256'
+        })
+      );
+    }
     // thêm uuid để tránh trường hợp 2 request cùng payload được gọi cùng 1 thời điểm thì sẽ bị trùng jwt token
     // thêm uuid để tạo khác biệt giữa 2 jwt token
     return Promise.resolve(

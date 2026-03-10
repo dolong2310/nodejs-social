@@ -123,6 +123,45 @@ class UsersService {
     });
   }
 
+  async refreshToken({
+    userId,
+    refreshTokenBody,
+    exp
+  }: {
+    userId: string;
+    refreshTokenBody: string;
+    exp: number;
+  }): Promise<{ accessToken: string; refreshToken: string }> {
+    const [newAccessToken, newRefreshToken] = await Promise.all([
+      tokenService.signAccessToken({
+        userId,
+        type: TokenType.ACCESS_TOKEN
+      }),
+      tokenService.signRefreshToken({
+        userId,
+        type: TokenType.REFRESH_TOKEN,
+        exp
+      })
+    ]);
+
+    await Promise.all([
+      databaseService.refreshTokens.deleteOne({
+        token: refreshTokenBody
+      }),
+      databaseService.refreshTokens.insertOne(
+        new RefreshTokenSchema({
+          token: newRefreshToken,
+          userId: new ObjectId(userId)
+        })
+      )
+    ]);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken
+    };
+  }
+
   async verifyEmail(userId: string): Promise<void> {
     // cập nhật user
     await databaseService.users.updateOne(

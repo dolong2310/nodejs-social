@@ -9,6 +9,7 @@ import {
   IGetUserProfileRequestParams,
   ILoginRequestBody,
   ILogoutRequestBody,
+  IRefreshTokenRequestBody,
   IRegisterRequestBody,
   IResetPasswordRequestBody,
   IUnfollowUserRequestParams,
@@ -17,7 +18,7 @@ import {
 } from '@/models/requests/user.request';
 import { IUser } from '@/models/schemas/user.schema';
 import usersService from '@/services/users.service';
-import { AccessTokenPayload, ForgotPasswordTokenPayload } from '@/types/token.type';
+import { AccessTokenPayload, ForgotPasswordTokenPayload, RefreshTokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
 class UserController {
@@ -54,6 +55,18 @@ class UserController {
 
     return res.status(HTTP_STATUS.OK).json({
       message: 'Logout successfully'
+    });
+  }
+
+  async refreshToken(req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response) {
+    const { refreshToken: refreshTokenBody } = req.body;
+    const { userId, exp } = req.refreshTokenPayload as RefreshTokenPayload;
+
+    const { accessToken, refreshToken } = await usersService.refreshToken({ userId, refreshTokenBody, exp });
+
+    return res.status(HTTP_STATUS.OK).json({
+      accessToken,
+      refreshToken
     });
   }
 

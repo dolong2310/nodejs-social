@@ -27,6 +27,7 @@ router.post(
   validateRefreshToken,
   asyncHandler(userController.logout.bind(userController))
 );
+router.post('/refresh-token', validateRefreshToken, asyncHandler(userController.refreshToken.bind(userController)));
 router.post(
   '/verify-email',
   validateEmailVerificationToken,
