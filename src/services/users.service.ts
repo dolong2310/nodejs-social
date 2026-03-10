@@ -8,9 +8,10 @@ import FollowerSchema from '@/models/schemas/follower.schema';
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import UserSchema, { IUser } from '@/models/schemas/user.schema';
 import databaseService from '@/services/database.service';
+import tokenService from '@/services/token.service';
 import { comparePassword, hashPassword } from '@/utils/helper.util';
 import { ObjectId, WithId } from 'mongodb';
-import tokenService from './token.service';
+import { v4 as uuidv4 } from 'uuid';
 
 class UsersService {
   constructor() {}
@@ -62,6 +63,7 @@ class UsersService {
       email,
       password: hashedPassword,
       dateOfBirth: new Date(dateOfBirth),
+      username: `user-${uuidv4()}`,
       emailVerificationToken,
       verificationStatus: UserVerificationStatus.UNVERIFIED
     });
