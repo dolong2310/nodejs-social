@@ -400,7 +400,25 @@ export const VALIDATION_ERROR_MESSAGE = {
   USERNAME_MUST_BE_4_TO_15_CHARACTERS_LONG_AND_CONTAIN_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES:
     'Username must be 4 to 15 characters long and contain only letters, numbers and underscores',
   USERNAME_ALREADY_EXISTS: 'Username already exists',
-  YOU_CANNOT_FOLLOW_YOURSELF: 'You cannot follow yourself'
+  YOU_CANNOT_FOLLOW_YOURSELF: 'You cannot follow yourself',
+
+  // Post errors
+  INVALID_POST_TYPE: 'Invalid post type',
+  INVALID_POST_AUDIENCE: 'Invalid post audience',
+  CONTENT_IS_REQUIRED: 'Content is required',
+  CONTENT_MUST_BE_A_STRING: 'Content must be a string',
+  CONTENT_MUST_BE_EMPTY_STRING: 'Content must be empty string',
+  CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'Content must be a non-empty string',
+  CONTENT_LENGTH_MUST_BE_FROM_1_TO_1000: 'Content length must be from 1 to 1000 characters',
+  PARENT_ID_IS_REQUIRED: 'Parent ID is required',
+  PARENT_ID_MUST_BE_A_VALID_POST_ID: 'Parent ID must be a valid post ID',
+  PARENT_ID_MUST_BE_NULL: 'Parent ID must be null',
+  HASHTAGS_MUST_BE_AN_ARRAY: 'Hashtags must be an array',
+  HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS: 'Hashtags must be an array of strings',
+  MENTIONS_MUST_BE_AN_ARRAY: 'Mentions must be an array',
+  MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS: 'Mentions must be an array of valid user IDs',
+  MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',
+  MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items'
 } as const;
 
 export type VALIDATION_ERROR_MESSAGE_TYPE = (typeof VALIDATION_ERROR_MESSAGE)[keyof typeof VALIDATION_ERROR_MESSAGE];

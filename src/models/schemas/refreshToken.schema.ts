@@ -22,3 +22,31 @@ class RefreshTokenSchema {
 }
 
 export default RefreshTokenSchema;
+
+// validate refresh token schema
+// {
+//   $jsonSchema: {
+//     title: "RefreshToken object validation",
+//     bsonType: "object",
+//     required: ["_id", "token", "userId", "createdAt"],
+//     properties: {
+//       _id: {
+//         bsonType: "objectId",
+//         description: "'_id' must be an objectId and is required",
+//       },
+//       token: {
+//         bsonType: "string",
+//         description: "'token' must be a string and is required",
+//       },
+//       userId: {
+//         bsonType: "objectId",
+//         description: "'userId' must be an objectId and is required",
+//       },
+//       createdAt: {
+//         bsonType: "date",
+//         description: "'createdAt' must be a date and is required",
+//       },
+//     },
+//     additionalProperties: false
+//   }
+// }

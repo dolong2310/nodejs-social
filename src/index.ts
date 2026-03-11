@@ -2,6 +2,7 @@ import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
+import postsRouter from '@/routes/posts.route';
 import staticRouter from '@/routes/static.route';
 import usersRouter from '@/routes/users.route';
 import databaseService from '@/services/database.service';
@@ -30,6 +31,7 @@ app.use('/users', usersRouter);
 app.use('/oauth', oauthRouter);
 app.use('/media', mediaRouter);
 app.use('/static', staticRouter);
+app.use('/posts', postsRouter);
 
 app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 
