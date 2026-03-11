@@ -418,7 +418,13 @@ export const VALIDATION_ERROR_MESSAGE = {
   MENTIONS_MUST_BE_AN_ARRAY: 'Mentions must be an array',
   MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS: 'Mentions must be an array of valid user IDs',
   MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',
-  MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items'
+  MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items',
+
+  // Bookmark errors
+  POST_ID_IS_REQUIRED: 'Post ID is required',
+  POST_ID_MUST_BE_A_STRING: 'Post ID must be a string',
+  INVALID_POST_ID: 'Invalid post ID',
+  POST_NOT_FOUND: 'Post not found'
 } as const;
 
 export type VALIDATION_ERROR_MESSAGE_TYPE = (typeof VALIDATION_ERROR_MESSAGE)[keyof typeof VALIDATION_ERROR_MESSAGE];

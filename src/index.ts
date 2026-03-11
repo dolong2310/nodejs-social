@@ -1,5 +1,6 @@
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
+import bookmarksRouter from '@/routes/bookmarks.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
 import postsRouter from '@/routes/posts.route';
@@ -32,6 +33,7 @@ app.use('/oauth', oauthRouter);
 app.use('/media', mediaRouter);
 app.use('/static', staticRouter);
 app.use('/posts', postsRouter);
+app.use('/bookmarks', bookmarksRouter);
 
 app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 

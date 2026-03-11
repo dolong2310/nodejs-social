@@ -1,3 +1,4 @@
+import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IFollower } from '@/models/schemas/follower.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
@@ -90,6 +91,10 @@ class DatabaseService {
 
   get hashtags(): Collection<IHashtag> {
     return this.db.collection<IHashtag>('hashtags');
+  }
+
+  get bookmarks(): Collection<IBookmark> {
+    return this.db.collection<IBookmark>('bookmarks');
   }
 }
 

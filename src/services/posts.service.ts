@@ -7,6 +7,10 @@ import { ObjectId, WithId } from 'mongodb';
 class PostsService {
   constructor() {}
 
+  findPostById(postId: string) {
+    return databaseService.posts.findOne({ _id: new ObjectId(postId) });
+  }
+
   findAndUpsertHashtags(hashtags: string[]): Promise<(WithId<IHashtag> | null)[]> {
     return Promise.all(
       hashtags.map((hashtag) => {
