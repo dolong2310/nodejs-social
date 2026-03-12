@@ -6,7 +6,7 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/', asyncHandler(followersController.getFollowers.bind(followersController)));
+// router.get('/', asyncHandler(followersController.getFollowers.bind(followersController)));
 
 router.post(
   '/follow',

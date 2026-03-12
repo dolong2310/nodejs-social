@@ -4,12 +4,13 @@ import { USERNAME_REGEX } from '@/constants/regex.constant';
 import { TokenType } from '@/enums/token.enum';
 import { UserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
+import { IUser } from '@/models/schemas/user.schema';
 import tokenService from '@/services/token.service';
 import usersService from '@/services/users.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, Response } from 'express';
-import { checkSchema, ParamSchema } from 'express-validator';
+import { checkSchema, Meta, ParamSchema } from 'express-validator';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 
@@ -139,7 +140,7 @@ export const userIdSchema: ParamSchema = {
   },
   trim: true,
   custom: {
-    options: async (userId: string) => {
+    options: async (userId: string, { req }: Meta) => {
       if (!ObjectId.isValid(userId)) {
         throw new ErrorWithStatus({
           message: VALIDATION_ERROR_MESSAGE.INVALID_USER_ID,
@@ -147,13 +148,19 @@ export const userIdSchema: ParamSchema = {
         });
       }
 
-      const user = await usersService.findUserById(userId);
+      const user = req.user as IUser | null;
+
       if (!user) {
-        throw new ErrorWithStatus({
-          message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-          status: HTTP_STATUS.NOT_FOUND
-        });
+        const findUser = await usersService.findUserById(userId);
+        if (!findUser) {
+          throw new ErrorWithStatus({
+            message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
+            status: HTTP_STATUS.NOT_FOUND
+          });
+        }
+        req.user = findUser;
       }
+
       return true;
     }
   }
@@ -445,6 +452,7 @@ export const checkUserVerified = async (req: Request, res: Response, next: NextF
       status: HTTP_STATUS.FORBIDDEN
     });
   }
+  req.user = user;
   next();
 };
 

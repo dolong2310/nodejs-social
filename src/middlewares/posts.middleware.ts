@@ -5,13 +5,14 @@ import { PostAudience, PostType } from '@/enums/posts.enum';
 import { UserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import { ICreatePostRequestBody, IGetPostDetailRequestParams } from '@/models/requests/post.request';
+import { IPostDetailResponse } from '@/models/responses/post.response';
 import followersService from '@/services/followers.service';
 import postsService from '@/services/posts.service';
 import usersService from '@/services/users.service';
 import { IMedia } from '@/types/media.type';
 import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, Response } from 'express';
-import { checkSchema, ParamSchema } from 'express-validator';
+import { checkSchema, Meta, ParamSchema } from 'express-validator';
 import { isEmpty } from 'lodash-es';
 import { ObjectId } from 'mongodb';
 
@@ -24,7 +25,7 @@ export const postIdSchema: ParamSchema = {
   },
   trim: true,
   custom: {
-    options: async (postId: string) => {
+    options: async (postId: string, { req }: Meta) => {
       if (!ObjectId.isValid(postId)) {
         throw new ErrorWithStatus({
           message: VALIDATION_ERROR_MESSAGE.INVALID_POST_ID,
@@ -32,14 +33,15 @@ export const postIdSchema: ParamSchema = {
         });
       }
 
-      const post = await postsService.findPostById(postId);
-      if (!post) {
+      const postDetail = await postsService.findPostDetail(postId);
+      if (!postDetail) {
         throw new ErrorWithStatus({
           message: VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND,
           status: HTTP_STATUS.NOT_FOUND
         });
       }
 
+      req.postDetail = postDetail;
       return true;
     }
   }
@@ -217,16 +219,8 @@ export const validateAudience = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { postId } = req.params;
   const userId = req.accessTokenPayload?.userId;
-
-  const post = await postsService.findPostDetail(postId);
-  if (!post) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND,
-      status: HTTP_STATUS.NOT_FOUND
-    });
-  }
+  const post = req.postDetail as IPostDetailResponse;
 
   // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"
   const isGuestUser = !userId;

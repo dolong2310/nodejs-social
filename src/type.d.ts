@@ -1,15 +1,19 @@
+import { IPostDetailResponse } from '@/models/responses/post.response';
+import { IPost } from '@/models/schemas/post.schema';
+import { IUser } from '@/models/schemas/user.schema';
 import {
   AccessTokenPayload,
-  RefreshTokenPayload,
   EmailVerificationTokenPayload,
-  ForgotPasswordTokenPayload
+  ForgotPasswordTokenPayload,
+  RefreshTokenPayload
 } from '@/types/token.type';
-import { IUser } from '@/models/schemas/user.schema';
-import { Request } from 'express';
+import 'express';
 
 declare module 'express' {
   interface Request {
     user?: IUser;
+    post?: IPost;
+    postDetail?: IPostDetailResponse;
     accessTokenPayload?: AccessTokenPayload;
     refreshTokenPayload?: RefreshTokenPayload;
     emailVerificationTokenPayload?: EmailVerificationTokenPayload;

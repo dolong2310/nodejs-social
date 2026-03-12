@@ -7,7 +7,7 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/', validateAccessToken, checkUserVerified, asyncHandler(postsController.getPosts.bind(postsController)));
+// router.get('/', validateAccessToken, checkUserVerified, asyncHandler(postsController.getPosts.bind(postsController)));
 router.get(
   '/:postId',
   checkAuthWrapper(validateAccessToken),
