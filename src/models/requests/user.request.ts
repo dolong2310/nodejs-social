@@ -54,11 +54,3 @@ export interface IUpdateMeRequestBody {
 export interface IGetUserProfileRequestParams extends ParamsDictionary {
   username: string;
 }
-
-export interface IFollowUserRequestBody {
-  followedUserId: string;
-}
-
-export interface IUnfollowUserRequestParams extends ParamsDictionary {
-  userId: string;
-}

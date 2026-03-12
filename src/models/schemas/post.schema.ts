@@ -104,8 +104,8 @@ export default PostSchema;
 //       },
 //       "audience": {
 //         "bsonType": "string",
-//         "enum": ["public", "friends", "only_me"],
-//         "description": "'audience' must be one of the following values: 'public', 'friends', 'only_me'"
+//         "enum": ["public", "followers", "only_me"],
+//         "description": "'audience' must be one of the following values: 'public', 'followers', 'only_me'"
 //       },
 //       "content": {
 //         "bsonType": "string",

@@ -8,7 +8,7 @@ import tokenService from '@/services/token.service';
 import usersService from '@/services/users.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { validate } from '@/utils/validation.util';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { checkSchema, ParamSchema } from 'express-validator';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
@@ -130,7 +130,7 @@ const imageSchema: ParamSchema = {
   trim: true
 };
 
-const userIdSchema: ParamSchema = {
+export const userIdSchema: ParamSchema = {
   notEmpty: {
     errorMessage: VALIDATION_ERROR_MESSAGE.USER_ID_IS_REQUIRED
   },
@@ -433,9 +433,15 @@ export const checkUserVerified = async (req: Request, res: Response, next: NextF
       status: HTTP_STATUS.NOT_FOUND
     });
   }
-  if (user.verificationStatus !== UserVerificationStatus.VERIFIED) {
+  if (user.verificationStatus === UserVerificationStatus.UNVERIFIED) {
     throw new ErrorWithStatus({
       message: VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET,
+      status: HTTP_STATUS.FORBIDDEN
+    });
+  }
+  if (user.verificationStatus === UserVerificationStatus.BANNED) {
+    throw new ErrorWithStatus({
+      message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
       status: HTTP_STATUS.FORBIDDEN
     });
   }
@@ -537,24 +543,6 @@ export const validateUpdateMe = validate(
       coverPhoto: imageSchema
     },
     ['body']
-  )
-);
-
-export const validateFollowUser = validate(
-  checkSchema(
-    {
-      followedUserId: userIdSchema
-    },
-    ['body']
-  )
-);
-
-export const validateUnfollowUser = validate(
-  checkSchema(
-    {
-      userId: userIdSchema
-    },
-    ['params']
   )
 );
 

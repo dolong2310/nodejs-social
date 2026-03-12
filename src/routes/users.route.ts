@@ -5,13 +5,11 @@ import {
   validateAccessToken,
   validateChangePassword,
   validateEmailVerificationToken,
-  validateFollowUser,
   validateForgotPassword,
   validateForgotPasswordToken,
   validateLogin,
   validateRefreshToken,
-  validateRegister,
-  validateUnfollowUser
+  validateRegister
 } from '@/middlewares/users.middleware';
 import { IUpdateMeRequestBody } from '@/models/requests/user.request';
 import { asyncHandler } from '@/utils/handler.util';
@@ -73,19 +71,5 @@ router.patch(
   asyncHandler(userController.updateMe.bind(userController))
 );
 router.get('/:username', asyncHandler(userController.getUserProfile.bind(userController)));
-router.post(
-  '/follow',
-  validateAccessToken,
-  checkUserVerified,
-  validateFollowUser,
-  asyncHandler(userController.followUser.bind(userController))
-);
-router.delete(
-  '/follow/:userId',
-  validateAccessToken,
-  checkUserVerified,
-  validateUnfollowUser,
-  asyncHandler(userController.unfollowUser.bind(userController))
-);
 
 export default router;

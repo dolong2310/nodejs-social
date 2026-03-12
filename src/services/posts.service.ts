@@ -1,13 +1,131 @@
 import { ICreatePostRequestBody } from '@/models/requests/post.request';
+import { IPostDetailResponse } from '@/models/responses/post.response';
 import HashtagSchema, { IHashtag } from '@/models/schemas/hashtag.schema';
-import PostSchema from '@/models/schemas/post.schema';
+import PostSchema, { IPost } from '@/models/schemas/post.schema';
 import databaseService from '@/services/database.service';
 import { ObjectId, WithId } from 'mongodb';
 
 class PostsService {
   constructor() {}
 
-  findPostById(postId: string) {
+  async findPostDetail(postId: string): Promise<WithId<IPostDetailResponse> | null> {
+    const pipelineGetDetailPost = [
+      {
+        $match: {
+          _id: new ObjectId(postId)
+        }
+      },
+      {
+        $lookup: {
+          from: 'hashtags',
+          localField: 'hashtags',
+          foreignField: '_id',
+          as: 'hashtags'
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'mentions',
+          foreignField: '_id',
+          as: 'mentions'
+        }
+      },
+      {
+        $addFields: {
+          mentions: {
+            $map: {
+              input: '$mentions',
+              as: 'mention',
+              in: {
+                _id: '$$mention._id',
+                name: '$$mention.name',
+                email: '$$mention.email',
+                username: '$$mention.username',
+                verificationStatus: '$$mention.verificationStatus'
+              }
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'bookmarks',
+          localField: '_id',
+          foreignField: 'postId',
+          pipeline: [
+            {
+              $project: {
+                _id: 1
+              }
+            }
+          ],
+          as: 'bookmarks'
+        }
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: '_id',
+          foreignField: 'parentId',
+          as: 'post_child'
+        }
+      },
+      {
+        $addFields: {
+          bookmarkCount: {
+            $size: '$bookmarks'
+          },
+          repostCount: {
+            $size: {
+              $filter: {
+                input: '$post_child',
+                as: 'item',
+                cond: {
+                  $eq: ['$$item.type', 'repost']
+                }
+              }
+            }
+          },
+          commentCount: {
+            $size: {
+              $filter: {
+                input: '$post_child',
+                as: 'item',
+                cond: {
+                  $eq: ['$$item.type', 'comment']
+                }
+              }
+            }
+          },
+          quoteCount: {
+            $size: {
+              $filter: {
+                input: '$post_child',
+                as: 'item',
+                cond: {
+                  $eq: ['$$item.type', 'quote']
+                }
+              }
+            }
+          },
+          // totalViews: {
+          //   $add: ['$userViews', '$guestViews']
+          // }
+        }
+      },
+      {
+        $project: {
+          bookmarks: 0,
+          post_child: 0
+        }
+      }
+    ];
+    const [post] = await databaseService.posts.aggregate<WithId<IPostDetailResponse>>(pipelineGetDetailPost).toArray();
+    return post;
+  }
+
+  findPostById(postId: string): Promise<WithId<IPost> | null> {
     return databaseService.posts.findOne({ _id: new ObjectId(postId) });
   }
 
@@ -20,6 +138,20 @@ class PostsService {
           { upsert: true, returnDocument: 'after' }
         );
       })
+    );
+  }
+
+  increaseViews({
+    postId,
+    userId
+  }: {
+    postId: string;
+    userId?: string;
+  }): Promise<WithId<Pick<IPost, 'userViews' | 'guestViews'>> | null> {
+    return databaseService.posts.findOneAndUpdate(
+      { _id: new ObjectId(postId) },
+      { $inc: userId ? { userViews: 1 } : { guestViews: 1 }, $currentDate: { updatedAt: true } },
+      { returnDocument: 'after', projection: { userViews: 1, guestViews: 1 } }
     );
   }
 

@@ -381,6 +381,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   EMAIL_VERIFICATION_TOKEN_IS_INVALID: 'Email verification token is invalid',
   USER_ALREADY_VERIFIED: 'User already verified',
   USER_NOT_VERIFIED_YET: 'User not verified yet',
+  USER_IS_BANNED: 'User is banned',
   FORGOT_PASSWORD_TOKEN_IS_REQUIRED: 'Forgot password token is required',
   FORGOT_PASSWORD_TOKEN_MUST_BE_A_STRING: 'Forgot password token must be a string',
   FORGOT_PASSWORD_TOKEN_IS_INVALID: 'Forgot password token is invalid',
@@ -419,6 +420,8 @@ export const VALIDATION_ERROR_MESSAGE = {
   MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS: 'Mentions must be an array of valid user IDs',
   MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',
   MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items',
+  ONLY_OWNER_CAN_VIEW_POSTS: 'Only owner can view posts',
+  ONLY_FOLLOWERS_CAN_VIEW_POSTS: 'Only followers can view posts',
 
   // Bookmark errors
   POST_ID_IS_REQUIRED: 'Post ID is required',

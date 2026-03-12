@@ -7,6 +7,6 @@ export enum PostType {
 
 export enum PostAudience {
   PUBLIC = 'public',
-  FRIENDS = 'friends',
+  FOLLOWERS = 'followers',
   ONLY_ME = 'only_me'
 }

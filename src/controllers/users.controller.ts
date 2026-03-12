@@ -4,7 +4,6 @@ import { UserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import {
   IChangePasswordRequestBody,
-  IFollowUserRequestBody,
   IForgotPasswordRequestBody,
   IGetUserProfileRequestParams,
   ILoginRequestBody,
@@ -12,7 +11,6 @@ import {
   IRefreshTokenRequestBody,
   IRegisterRequestBody,
   IResetPasswordRequestBody,
-  IUnfollowUserRequestParams,
   IUpdateMeRequestBody,
   IVerifyEmailRequestBody
 } from '@/models/requests/user.request';
@@ -246,54 +244,6 @@ class UserController {
     return res.status(HTTP_STATUS.OK).json({
       data: user,
       message: 'Get user profile successfully'
-    });
-  }
-
-  async followUser(req: Request<{}, {}, IFollowUserRequestBody>, res: Response) {
-    const { userId: myUserId } = req.accessTokenPayload as AccessTokenPayload;
-
-    const { followedUserId } = req.body;
-
-    // cannot follow yourself
-    if (myUserId === followedUserId) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.YOU_CANNOT_FOLLOW_YOURSELF,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
-    }
-
-    const isFollowing = await usersService.findFollower({ myUserId, followedUserId });
-
-    if (isFollowing) {
-      return res.status(HTTP_STATUS.OK).json({
-        message: 'Already following user'
-      });
-    }
-
-    await usersService.followUser({ myUserId, followedUserId });
-
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Follow user successfully'
-    });
-  }
-
-  async unfollowUser(req: Request<IUnfollowUserRequestParams>, res: Response) {
-    const { userId: myUserId } = req.accessTokenPayload as AccessTokenPayload;
-
-    const { userId } = req.params;
-
-    const isFollowing = await usersService.findFollower({ myUserId, followedUserId: userId });
-
-    if (isFollowing) {
-      await usersService.unfollowUser({ myUserId, unfollowedUserId: userId });
-
-      return res.status(HTTP_STATUS.OK).json({
-        message: 'Unfollow user successfully'
-      });
-    }
-
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Not following user'
     });
   }
 }

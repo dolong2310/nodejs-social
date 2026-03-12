@@ -4,7 +4,6 @@ import { TokenType } from '@/enums/token.enum';
 import { UserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import { ILoginRequestBody, IRegisterRequestBody, IUpdateMeRequestBody } from '@/models/requests/user.request';
-import FollowerSchema from '@/models/schemas/follower.schema';
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import UserSchema, { IUser } from '@/models/schemas/user.schema';
 import databaseService from '@/services/database.service';
@@ -288,29 +287,6 @@ class UsersService {
         }
       }
     );
-  }
-
-  findFollower({ myUserId, followedUserId }: { myUserId: string; followedUserId: string }) {
-    return databaseService.followers.findOne({
-      userId: new ObjectId(myUserId),
-      followedUserId: new ObjectId(followedUserId)
-    });
-  }
-
-  followUser({ myUserId, followedUserId }: { myUserId: string; followedUserId: string }) {
-    return databaseService.followers.insertOne(
-      new FollowerSchema({
-        userId: new ObjectId(myUserId),
-        followedUserId: new ObjectId(followedUserId)
-      })
-    );
-  }
-
-  unfollowUser({ myUserId, unfollowedUserId }: { myUserId: string; unfollowedUserId: string }) {
-    return databaseService.followers.deleteOne({
-      userId: new ObjectId(myUserId),
-      followedUserId: new ObjectId(unfollowedUserId)
-    });
   }
 }
 

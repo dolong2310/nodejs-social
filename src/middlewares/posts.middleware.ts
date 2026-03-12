@@ -2,13 +2,48 @@ import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { MediaType } from '@/enums/media.enum';
 import { PostAudience, PostType } from '@/enums/posts.enum';
+import { UserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
-import { ICreatePostRequestBody } from '@/models/requests/post.request';
+import { ICreatePostRequestBody, IGetPostDetailRequestParams } from '@/models/requests/post.request';
+import followersService from '@/services/followers.service';
+import postsService from '@/services/posts.service';
+import usersService from '@/services/users.service';
 import { IMedia } from '@/types/media.type';
 import { validate } from '@/utils/validation.util';
-import { checkSchema } from 'express-validator';
+import { NextFunction, Request, Response } from 'express';
+import { checkSchema, ParamSchema } from 'express-validator';
 import { isEmpty } from 'lodash-es';
 import { ObjectId } from 'mongodb';
+
+export const postIdSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: VALIDATION_ERROR_MESSAGE.POST_ID_IS_REQUIRED
+  },
+  isString: {
+    errorMessage: VALIDATION_ERROR_MESSAGE.POST_ID_MUST_BE_A_STRING
+  },
+  trim: true,
+  custom: {
+    options: async (postId: string) => {
+      if (!ObjectId.isValid(postId)) {
+        throw new ErrorWithStatus({
+          message: VALIDATION_ERROR_MESSAGE.INVALID_POST_ID,
+          status: HTTP_STATUS.BAD_REQUEST
+        });
+      }
+
+      const post = await postsService.findPostById(postId);
+      if (!post) {
+        throw new ErrorWithStatus({
+          message: VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND,
+          status: HTTP_STATUS.NOT_FOUND
+        });
+      }
+
+      return true;
+    }
+  }
+};
 
 export const validateCreatePost = validate(
   checkSchema(
@@ -21,10 +56,10 @@ export const validateCreatePost = validate(
         },
         trim: true
       },
-      // audience phải là 1 trong 3 giá trị: public, friends, only_me
+      // audience phải là 1 trong 3 giá trị: public, followers, only_me
       audience: {
         isIn: {
-          options: [[PostAudience.PUBLIC, PostAudience.FRIENDS, PostAudience.ONLY_ME]],
+          options: [[PostAudience.PUBLIC, PostAudience.FOLLOWERS, PostAudience.ONLY_ME]],
           errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
         },
         trim: true
@@ -167,3 +202,84 @@ export const validateCreatePost = validate(
     ['body']
   )
 );
+
+export const validatePostId = validate(
+  checkSchema(
+    {
+      postId: postIdSchema
+    },
+    ['params']
+  )
+);
+
+export const validateAudience = async (
+  req: Request<IGetPostDetailRequestParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { postId } = req.params;
+  const userId = req.accessTokenPayload?.userId;
+
+  const post = await postsService.findPostDetail(postId);
+  if (!post) {
+    throw new ErrorWithStatus({
+      message: VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    });
+  }
+
+  // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"
+  const isGuestUser = !userId;
+  if (isGuestUser) {
+    if (post.audience !== PostAudience.PUBLIC) {
+      throw new ErrorWithStatus({
+        message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
+        status: HTTP_STATUS.UNAUTHORIZED
+      });
+    }
+  }
+
+  const ownerId = post.userId.toString();
+
+  const isOwner = isGuestUser ? false : post.userId.equals(userId);
+  const isFollower = isGuestUser ? false : await followersService.findFollower({ myUserId: userId, followedUserId: ownerId }, { projection: { _id: 1 } });
+  const isMention = isGuestUser ? false : post.mentions.map((mention) => mention.toString()).includes(userId);
+
+  // kiểm tra user owner của bài post có bị banned không
+  const userOwner = await usersService.findUserById(ownerId);
+  if (!userOwner) {
+    throw new ErrorWithStatus({
+      message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    });
+  }
+  if (isOwner && userOwner.verificationStatus === UserVerificationStatus.BANNED) {
+    throw new ErrorWithStatus({
+      message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
+      status: HTTP_STATUS.FORBIDDEN
+    });
+  }
+
+  // kiểm tra bài post có chế độ "only me" thì chỉ user owner mới được xem bài post
+  if (post.audience === PostAudience.ONLY_ME) {
+    if (!isOwner) {
+      throw new ErrorWithStatus({
+        message: VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_VIEW_POSTS,
+        status: HTTP_STATUS.FORBIDDEN
+      });
+    }
+  }
+
+  // kiểm tra bài post có chế độ "followers" thì chỉ user followers hoặc owner hoặc mentions mới được xem bài post
+  if (post.audience === PostAudience.FOLLOWERS) {
+    if (!isFollower && !isOwner && !isMention) {
+      throw new ErrorWithStatus({
+        message: VALIDATION_ERROR_MESSAGE.ONLY_FOLLOWERS_CAN_VIEW_POSTS,
+        status: HTTP_STATUS.FORBIDDEN
+      });
+    }
+  }
+
+  // bài post có chế độ "public" thì mọi người đều được xem bài post => không cần kiểm tra
+  next();
+};

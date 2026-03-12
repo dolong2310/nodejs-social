@@ -1,5 +1,6 @@
 import { PostAudience, PostType } from '@/enums/posts.enum';
 import { IMedia } from '@/types/media.type';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ICreatePostRequestBody {
   type: PostType;
@@ -9,4 +10,8 @@ export interface ICreatePostRequestBody {
   hashtags: string[]; // tên hashtags dạng ['javascript', 'nodejs']
   mentions: string[]; // userId[]
   media: IMedia[];
+}
+
+export interface IGetPostDetailRequestParams extends ParamsDictionary {
+  postId: string;
 }
