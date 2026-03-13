@@ -1,13 +1,25 @@
 import postsController from '@/controllers/posts.controller';
 import { checkAuthWrapper } from '@/middlewares/auth.middleware';
-import { validateAudience, validateCreatePost, validatePostId } from '@/middlewares/posts.middleware';
+import {
+  validateAudience,
+  validateCreatePost,
+  validatePagination,
+  validatePostId,
+  validatePostType
+} from '@/middlewares/posts.middleware';
 import { checkUserVerified, validateAccessToken } from '@/middlewares/users.middleware';
 import { asyncHandler } from '@/utils/handler.util';
 import express from 'express';
 
 const router = express.Router();
 
-// router.get('/', validateAccessToken, checkUserVerified, asyncHandler(postsController.getPosts.bind(postsController)));
+router.get(
+  '/',
+  checkAuthWrapper(validateAccessToken),
+  checkAuthWrapper(checkUserVerified),
+  validatePagination,
+  asyncHandler(postsController.getNewFeeds.bind(postsController))
+);
 router.get(
   '/:postId',
   checkAuthWrapper(validateAccessToken),
@@ -15,6 +27,16 @@ router.get(
   validatePostId,
   validateAudience,
   asyncHandler(postsController.getPostDetail.bind(postsController))
+);
+router.get(
+  '/:type/:postId',
+  checkAuthWrapper(validateAccessToken),
+  checkAuthWrapper(checkUserVerified),
+  validatePostId,
+  validateAudience,
+  validatePostType,
+  validatePagination,
+  asyncHandler(postsController.getPostsType.bind(postsController))
 );
 router.post(
   '/',

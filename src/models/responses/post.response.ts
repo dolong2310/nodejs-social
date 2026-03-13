@@ -11,3 +11,7 @@ export interface IPostDetailResponse extends Omit<IPost, 'hashtags' | 'mentions'
   quoteCount: number;
   // totalViews: number;
 }
+
+export interface IPostNewFeedResponse extends IPostDetailResponse {
+  author: Pick<IUser, '_id' | 'name' | 'email' | 'username' | 'avatar'>;
+}

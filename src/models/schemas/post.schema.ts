@@ -12,8 +12,8 @@ export interface IPost {
   hashtags: ObjectId[];
   mentions: ObjectId[];
   media: IMedia[];
-  guestViews?: number;
-  userViews?: number;
+  guestViews: number;
+  userViews: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

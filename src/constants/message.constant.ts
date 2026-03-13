@@ -427,7 +427,10 @@ export const VALIDATION_ERROR_MESSAGE = {
   POST_ID_IS_REQUIRED: 'Post ID is required',
   POST_ID_MUST_BE_A_STRING: 'Post ID must be a string',
   INVALID_POST_ID: 'Invalid post ID',
-  POST_NOT_FOUND: 'Post not found'
+  POST_NOT_FOUND: 'Post not found',
+
+  LIMIT_MUST_BE_BETWEEN_1_TO_100: 'Limit must be between 1 and 100',
+  PAGE_MUST_BE_GREATER_THAN_0: 'Page must be greater than 0',
 } as const;
 
 export type VALIDATION_ERROR_MESSAGE_TYPE = (typeof VALIDATION_ERROR_MESSAGE)[keyof typeof VALIDATION_ERROR_MESSAGE];

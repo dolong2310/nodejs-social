@@ -1,8 +1,12 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
-import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorWithStatus } from '@/models/error.model';
-import { ICreatePostRequestBody, IGetPostDetailRequestParams } from '@/models/requests/post.request';
-import { IPostDetailResponse } from '@/models/responses/post.response';
+import {
+  ICreatePostRequestBody,
+  IGetPostDetailRequestParams,
+  IGetPostsRequestParams,
+  IGetPostsRequestQuery
+} from '@/models/requests/post.request';
+import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
+import followersService from '@/services/followers.service';
 import postsService from '@/services/posts.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
@@ -10,7 +14,48 @@ import { Request, Response } from 'express';
 class PostsController {
   constructor() {}
 
-  // getPosts(req: Request, res: Response) {}
+  async getNewFeeds(req: Request<{}, {}, {}, IGetPostsRequestQuery>, res: Response) {
+    const { page, limit } = req.query;
+    const userId = req.accessTokenPayload?.userId;
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    let posts: IPostNewFeedResponse[] = [];
+    let totalPosts = 0;
+
+    if (userId) {
+      const followedUserIds = await followersService.findFollowedUserIds(userId);
+
+      const results = await postsService.getNewFeeds({
+        userId,
+        followedUserIds,
+        page: pageNumber,
+        limit: limitNumber
+      });
+
+      posts = results.posts;
+      totalPosts = results.totalPosts;
+    } else {
+      const guestResults = await postsService.getGuestNewFeeds({
+        page: pageNumber,
+        limit: limitNumber
+      });
+
+      posts = guestResults.posts;
+      totalPosts = guestResults.totalPosts;
+    }
+
+    return res.status(HTTP_STATUS.OK).json({
+      data: {
+        posts,
+        page: pageNumber,
+        limit: limitNumber,
+        totalItems: totalPosts,
+        totalPages: Math.ceil(totalPosts / limitNumber)
+      }
+    });
+  }
 
   async getPostDetail(req: Request<IGetPostDetailRequestParams>, res: Response) {
     const { postId } = req.params;
@@ -21,11 +66,38 @@ class PostsController {
     if (updatedViews) {
       post.userViews = updatedViews.userViews;
       post.guestViews = updatedViews.guestViews;
+      post.updatedAt = updatedViews.updatedAt;
     }
 
     return res.status(HTTP_STATUS.OK).json({
-      data: post,
-      message: 'Post detail fetched successfully'
+      data: post
+    });
+  }
+
+  async getPostsType(req: Request<IGetPostsRequestParams, {}, {}, IGetPostsRequestQuery>, res: Response) {
+    const { postId, type } = req.params;
+    const { page, limit } = req.query;
+    const userId = req.accessTokenPayload?.userId;
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    const { posts, totalPosts } = await postsService.getPostsType({
+      userId,
+      postId,
+      type,
+      page: pageNumber,
+      limit: limitNumber
+    });
+
+    return res.status(HTTP_STATUS.OK).json({
+      data: {
+        posts,
+        page: pageNumber,
+        limit: limitNumber,
+        totalItems: totalPosts,
+        totalPages: Math.ceil(totalPosts / limitNumber)
+      }
     });
   }
 
@@ -39,8 +111,7 @@ class PostsController {
     });
 
     return res.status(HTTP_STATUS.CREATED).json({
-      data: post,
-      message: 'Post created successfully'
+      data: post
     });
   }
 }

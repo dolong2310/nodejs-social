@@ -277,3 +277,61 @@ export const validateAudience = async (
   // bài post có chế độ "public" thì mọi người đều được xem bài post => không cần kiểm tra
   next();
 };
+
+export const validatePostType = validate(
+  checkSchema(
+    {
+      type: {
+        isIn: {
+          options: [[PostType.POST, PostType.REPOST, PostType.COMMENT, PostType.QUOTE]],
+          errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
+        },
+        trim: true
+      },
+      postId: postIdSchema
+    },
+    ['params']
+  )
+);
+
+export const validatePagination = validate(
+  checkSchema(
+    {
+      page: {
+        isNumeric: true,
+        custom: {
+          options: async (value: string) => {
+            const page = Number(value);
+
+            if (page < 1) {
+              throw new ErrorWithStatus({
+                message: VALIDATION_ERROR_MESSAGE.PAGE_MUST_BE_GREATER_THAN_0,
+                status: HTTP_STATUS.BAD_REQUEST
+              });
+            }
+
+            return true;
+          }
+        }
+      },
+      limit: {
+        isNumeric: true,
+        custom: {
+          options: async (value: string) => {
+            const limit = Number(value);
+
+            if (limit < 1 || limit > 100) {
+              throw new ErrorWithStatus({
+                message: VALIDATION_ERROR_MESSAGE.LIMIT_MUST_BE_BETWEEN_1_TO_100,
+                status: HTTP_STATUS.BAD_REQUEST
+              });
+            }
+
+            return true;
+          }
+        }
+      }
+    },
+    ['query']
+  )
+);

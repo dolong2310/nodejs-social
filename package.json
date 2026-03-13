@@ -17,6 +17,7 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
+    "@faker-js/faker": "^10.3.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",

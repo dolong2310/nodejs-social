@@ -5,6 +5,15 @@ import { FindOptions, ObjectId } from 'mongodb';
 class FollowersService {
   constructor() {}
 
+  async findFollowedUserIds(userId: string) {
+    const objectFollowedUserIds = await databaseService.followers
+      .find({ userId: new ObjectId(userId) })
+      .project({ _id: 0, followedUserId: 1 })
+      .toArray();
+    const followedUserIds: ObjectId[] = objectFollowedUserIds.map((item) => item.followedUserId);
+    return followedUserIds;
+  }
+
   findFollower({ myUserId, followedUserId }: { myUserId: string; followedUserId: string }, options?: FindOptions) {
     return databaseService.followers.findOne(
       {

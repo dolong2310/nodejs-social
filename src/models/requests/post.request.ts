@@ -1,6 +1,6 @@
 import { PostAudience, PostType } from '@/enums/posts.enum';
 import { IMedia } from '@/types/media.type';
-import { ParamsDictionary } from 'express-serve-static-core';
+import { ParamsDictionary, Query } from 'express-serve-static-core';
 
 export interface ICreatePostRequestBody {
   type: PostType;
@@ -14,4 +14,14 @@ export interface ICreatePostRequestBody {
 
 export interface IGetPostDetailRequestParams extends ParamsDictionary {
   postId: string;
+}
+
+export interface IGetPostsRequestParams extends ParamsDictionary {
+  postId: string;
+  type: PostType;
+}
+
+export interface IGetPostsRequestQuery extends Query {
+  page: string;
+  limit: string;
 }
