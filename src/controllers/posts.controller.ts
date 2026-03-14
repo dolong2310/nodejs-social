@@ -1,9 +1,9 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
+import { IPaginationRequestQuery } from '@/models/requests/common.request';
 import {
   ICreatePostRequestBody,
   IGetPostDetailRequestParams,
   IGetPostsRequestParams,
-  IGetPostsRequestQuery
 } from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
 import followersService from '@/services/followers.service';
@@ -14,12 +14,12 @@ import { Request, Response } from 'express';
 class PostsController {
   constructor() {}
 
-  async getNewFeeds(req: Request<{}, {}, {}, IGetPostsRequestQuery>, res: Response) {
+  async getNewFeeds(req: Request<{}, {}, {}, IPaginationRequestQuery>, res: Response) {
     const { page, limit } = req.query;
     const userId = req.accessTokenPayload?.userId;
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
 
     let posts: IPostNewFeedResponse[] = [];
     let totalPosts = 0;
@@ -74,13 +74,13 @@ class PostsController {
     });
   }
 
-  async getPostsType(req: Request<IGetPostsRequestParams, {}, {}, IGetPostsRequestQuery>, res: Response) {
+  async getPostsType(req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response) {
     const { postId, type } = req.params;
     const { page, limit } = req.query;
     const userId = req.accessTokenPayload?.userId;
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
 
     const { posts, totalPosts } = await postsService.getPostsType({
       userId,

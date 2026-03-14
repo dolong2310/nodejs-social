@@ -1,6 +1,6 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { UserVerificationStatus } from '@/enums/users.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import {
   IChangePasswordRequestBody,
@@ -88,7 +88,7 @@ class UserController {
       });
     }
 
-    if (user.verificationStatus === UserVerificationStatus.VERIFIED) {
+    if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED,
         status: HTTP_STATUS.BAD_REQUEST
@@ -128,7 +128,7 @@ class UserController {
       });
     }
 
-    if (user.verificationStatus === UserVerificationStatus.VERIFIED) {
+    if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED,
         status: HTTP_STATUS.BAD_REQUEST

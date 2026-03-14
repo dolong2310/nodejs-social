@@ -1,6 +1,6 @@
-import { MediaType } from '@/enums/media.enum';
+import { EMediaType } from '@/enums/media.enum';
 
 export interface IMedia {
   url: string;
-  type: MediaType;
+  type: EMediaType;
 }

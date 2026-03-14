@@ -1,9 +1,9 @@
-import { TokenType } from '@/enums/token.enum';
+import { ETokenType } from '@/enums/token.enum';
 
 // Access Token
 export interface AccessTokenPayloadCreate {
   userId: string;
-  type: TokenType;
+  type: ETokenType;
 }
 
 export interface AccessTokenPayload extends AccessTokenPayloadCreate {
@@ -14,7 +14,7 @@ export interface AccessTokenPayload extends AccessTokenPayloadCreate {
 // Refresh Token
 export interface RefreshTokenPayloadCreate {
   userId: string;
-  type: TokenType;
+  type: ETokenType;
 }
 
 export interface RefreshTokenPayload extends RefreshTokenPayloadCreate {
@@ -25,7 +25,7 @@ export interface RefreshTokenPayload extends RefreshTokenPayloadCreate {
 // Email Verification Token
 export interface EmailVerificationTokenPayloadCreate {
   userId: string;
-  type: TokenType;
+  type: ETokenType;
 }
 
 export interface EmailVerificationTokenPayload extends EmailVerificationTokenPayloadCreate {
@@ -36,7 +36,7 @@ export interface EmailVerificationTokenPayload extends EmailVerificationTokenPay
 // Forgot Password Token
 export interface ForgotPasswordTokenPayloadCreate {
   userId: string;
-  type: TokenType;
+  type: ETokenType;
 }
 
 export interface ForgotPasswordTokenPayload extends ForgotPasswordTokenPayloadCreate {

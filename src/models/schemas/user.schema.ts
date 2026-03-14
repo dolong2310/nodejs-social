@@ -1,4 +1,4 @@
-import { UserVerificationStatus } from '@/enums/users.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
 import { ObjectId } from 'mongodb';
 
 export interface IUser {
@@ -8,7 +8,7 @@ export interface IUser {
   password: string;
   dateOfBirth: Date;
 
-  verificationStatus?: UserVerificationStatus;
+  verificationStatus?: EUserVerificationStatus;
   emailVerificationToken?: string;
   forgotPasswordToken?: string;
   createdAt?: Date;
@@ -29,7 +29,7 @@ class UserSchema {
   public password: string;
   public dateOfBirth: Date;
 
-  public verificationStatus: UserVerificationStatus;
+  public verificationStatus: EUserVerificationStatus;
   public emailVerificationToken: string;
   public forgotPasswordToken: string;
   public createdAt: Date;
@@ -52,7 +52,7 @@ class UserSchema {
     this.password = user.password;
     this.dateOfBirth = user.dateOfBirth;
 
-    this.verificationStatus = user.verificationStatus ?? UserVerificationStatus.UNVERIFIED;
+    this.verificationStatus = user.verificationStatus ?? EUserVerificationStatus.UNVERIFIED;
     this.emailVerificationToken = user.emailVerificationToken ?? '';
     this.forgotPasswordToken = user.forgotPasswordToken ?? '';
     this.createdAt = user.createdAt ?? date;

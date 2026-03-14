@@ -1,10 +1,10 @@
-import { EncodingVideoStatus } from '@/enums/media.enum';
+import { EEncodingVideoStatus } from '@/enums/media.enum';
 import { ObjectId } from 'mongodb';
 
 export interface IVideoStatus {
   _id?: ObjectId;
   name: string;
-  status: EncodingVideoStatus;
+  status: EEncodingVideoStatus;
   message?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -13,7 +13,7 @@ export interface IVideoStatus {
 class VideoStatusSchema {
   public _id?: ObjectId;
   public name: string;
-  public status: EncodingVideoStatus;
+  public status: EEncodingVideoStatus;
   public message: string;
   public createdAt: Date;
   public updatedAt: Date;

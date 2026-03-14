@@ -3,7 +3,7 @@ import { checkAuthWrapper } from '@/middlewares/auth.middleware';
 import {
   validateAudience,
   validateCreatePost,
-  validatePagination,
+  validatePaginationQuery,
   validatePostId,
   validatePostType
 } from '@/middlewares/posts.middleware';
@@ -17,7 +17,7 @@ router.get(
   '/',
   checkAuthWrapper(validateAccessToken),
   checkAuthWrapper(checkUserVerified),
-  validatePagination,
+  validatePaginationQuery,
   asyncHandler(postsController.getNewFeeds.bind(postsController))
 );
 router.get(
@@ -35,7 +35,7 @@ router.get(
   validatePostId,
   validateAudience,
   validatePostType,
-  validatePagination,
+  validatePaginationQuery,
   asyncHandler(postsController.getPostsType.bind(postsController))
 );
 router.post(

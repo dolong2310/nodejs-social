@@ -431,6 +431,12 @@ export const VALIDATION_ERROR_MESSAGE = {
 
   LIMIT_MUST_BE_BETWEEN_1_TO_100: 'Limit must be between 1 and 100',
   PAGE_MUST_BE_GREATER_THAN_0: 'Page must be greater than 0',
+
+  // Search errors
+  SEARCH_QUERY_MUST_BE_A_STRING: 'Search query must be a string',
+  MEDIA_TYPE_MUST_BE_ONE_OF_THE_FOLLOWING: 'Media type must be one of the following: image, video, video_hls',
+  PEOPLE_FOLLOW_MUST_BE_ONE_OF_THE_FOLLOWING:
+    'People follow must be one of the following: following, not_following, only_me'
 } as const;
 
 export type VALIDATION_ERROR_MESSAGE_TYPE = (typeof VALIDATION_ERROR_MESSAGE)[keyof typeof VALIDATION_ERROR_MESSAGE];

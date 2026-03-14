@@ -1,10 +1,11 @@
-import { PostAudience, PostType } from '@/enums/posts.enum';
+import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { ICreatePostRequestBody } from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
 import HashtagSchema, { IHashtag } from '@/models/schemas/hashtag.schema';
 import PostSchema, { IPost } from '@/models/schemas/post.schema';
 import databaseService from '@/services/database.service';
-import { Document, ObjectId, WithId } from 'mongodb';
+import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
+import { ObjectId, WithId } from 'mongodb';
 
 class PostsService {
   constructor() {}
@@ -83,7 +84,7 @@ class PostsService {
                 input: '$post_child',
                 as: 'item',
                 cond: {
-                  $eq: ['$$item.type', PostType.REPOST]
+                  $eq: ['$$item.type', EPostType.REPOST]
                 }
               }
             }
@@ -94,7 +95,7 @@ class PostsService {
                 input: '$post_child',
                 as: 'item',
                 cond: {
-                  $eq: ['$$item.type', PostType.COMMENT]
+                  $eq: ['$$item.type', EPostType.COMMENT]
                 }
               }
             }
@@ -105,7 +106,7 @@ class PostsService {
                 input: '$post_child',
                 as: 'item',
                 cond: {
-                  $eq: ['$$item.type', PostType.QUOTE]
+                  $eq: ['$$item.type', EPostType.QUOTE]
                 }
               }
             }
@@ -143,11 +144,11 @@ class PostsService {
         $in: followedUserIds
       },
       $or: [
-        { audience: PostAudience.PUBLIC },
-        { audience: PostAudience.FOLLOWERS },
+        { audience: EPostAudience.PUBLIC },
+        { audience: EPostAudience.FOLLOWERS },
         {
           $and: [
-            { audience: PostAudience.ONLY_ME },
+            { audience: EPostAudience.ONLY_ME },
             {
               userId: {
                 $eq: new ObjectId(userId)
@@ -158,7 +159,7 @@ class PostsService {
       ]
     };
 
-    const pipelineGetNewFeeds = this._buildBasePostPipeline({
+    const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
       skip: limit * (page - 1),
       limit,
@@ -166,23 +167,7 @@ class PostsService {
     });
 
     const postsPromise = databaseService.posts.aggregate<IPostNewFeedResponse>(pipelineGetNewFeeds).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments({
-      userId: { $in: followedUserIds },
-      $or: [
-        { audience: PostAudience.PUBLIC },
-        { audience: PostAudience.FOLLOWERS },
-        {
-          $and: [
-            { audience: PostAudience.ONLY_ME },
-            {
-              userId: {
-                $eq: new ObjectId(userId)
-              }
-            }
-          ]
-        }
-      ]
-    });
+    const totalPostsPromise = databaseService.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this._updatePostsViews<IPostNewFeedResponse>({ posts, userId });
@@ -192,10 +177,10 @@ class PostsService {
 
   async getGuestNewFeeds({ page, limit }: { page: number; limit: number }) {
     const match = {
-      audience: PostAudience.PUBLIC
+      audience: EPostAudience.PUBLIC
     };
 
-    const pipelineGetGuestNewFeeds = this._buildBasePostPipeline({
+    const pipelineGetGuestNewFeeds = buildBasePostPipeline({
       match,
       skip: limit * (page - 1),
       limit,
@@ -203,9 +188,7 @@ class PostsService {
     });
 
     const postsPromise = databaseService.posts.aggregate<IPostNewFeedResponse>(pipelineGetGuestNewFeeds).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments({
-      audience: PostAudience.PUBLIC
-    });
+    const totalPostsPromise = databaseService.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this._updatePostsViews<IPostNewFeedResponse>({ posts });
@@ -224,14 +207,14 @@ class PostsService {
     page: number;
     limit: number;
     postId: string;
-    type: PostType;
+    type: EPostType;
   }) {
     const match = {
       parentId: new ObjectId(postId),
       type
     };
 
-    const pipelineGetPostsType = this._buildBasePostPipeline({
+    const pipelineGetPostsType = buildBasePostPipeline({
       match,
       skip: limit * (page - 1),
       limit,
@@ -239,10 +222,7 @@ class PostsService {
     });
 
     const postsPromise = databaseService.posts.aggregate<IPostDetailResponse>(pipelineGetPostsType).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments({
-      parentId: new ObjectId(postId),
-      type: type
-    });
+    const totalPostsPromise = databaseService.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this._updatePostsViews<IPostDetailResponse>({ posts, userId });
@@ -280,7 +260,7 @@ class PostsService {
     );
   }
 
-  async createPost({ userId, body }: { userId: string; body: ICreatePostRequestBody }) {
+  async createPost({ userId, body }: { userId: string; body: ICreatePostRequestBody }): Promise<IPost> {
     const { type, audience, content, parentId, hashtags: hashtagsBody, mentions, media } = body;
 
     const hashtags = await this.findAndUpsertHashtags(hashtagsBody);
@@ -303,170 +283,7 @@ class PostsService {
     return newPost;
   }
 
-  private _buildBasePostPipeline({
-    match,
-    skip,
-    limit,
-    includeAuthor = false
-  }: {
-    match?: Record<string, any>;
-    skip?: number;
-    limit?: number;
-    includeAuthor?: boolean;
-  }) {
-    const pipeline: Document[] = [];
-
-    if (match) {
-      pipeline.push({ $match: match });
-    }
-
-    if (typeof skip === 'number') {
-      pipeline.push({ $skip: skip });
-    }
-
-    if (typeof limit === 'number') {
-      pipeline.push({ $limit: limit });
-    }
-
-    if (includeAuthor) {
-      pipeline.push(
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'userId',
-            foreignField: '_id',
-            pipeline: [
-              {
-                $project: {
-                  _id: 1,
-                  name: 1,
-                  email: 1,
-                  username: 1,
-                  avatar: 1
-                }
-              }
-            ],
-            as: 'author'
-          }
-        },
-        {
-          $unwind: {
-            path: '$author',
-            preserveNullAndEmptyArrays: true
-          }
-        }
-      );
-    }
-
-    pipeline.push(
-      {
-        $lookup: {
-          from: 'hashtags',
-          localField: 'hashtags',
-          foreignField: '_id',
-          as: 'hashtags'
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'mentions',
-          foreignField: '_id',
-          as: 'mentions'
-        }
-      },
-      {
-        $addFields: {
-          mentions: {
-            $map: {
-              input: '$mentions',
-              as: 'mention',
-              in: {
-                _id: '$$mention._id',
-                name: '$$mention.name',
-                email: '$$mention.email',
-                username: '$$mention.username',
-                verificationStatus: '$$mention.verificationStatus'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'bookmarks',
-          localField: '_id',
-          foreignField: 'postId',
-          pipeline: [
-            {
-              $project: {
-                _id: 1
-              }
-            }
-          ],
-          as: 'bookmarks'
-        }
-      },
-      {
-        $lookup: {
-          from: 'posts',
-          localField: '_id',
-          foreignField: 'parentId',
-          as: 'post_child'
-        }
-      },
-      {
-        $addFields: {
-          bookmarkCount: {
-            $size: '$bookmarks'
-          },
-          repostCount: {
-            $size: {
-              $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', PostType.REPOST]
-                }
-              }
-            }
-          },
-          commentCount: {
-            $size: {
-              $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', PostType.COMMENT]
-                }
-              }
-            }
-          },
-          quoteCount: {
-            $size: {
-              $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', PostType.QUOTE]
-                }
-              }
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          bookmarks: 0,
-          post_child: 0
-        }
-      }
-    );
-
-    return pipeline;
-  }
-
-  private async _updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
+  async _updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
     posts,
     userId
   }: {

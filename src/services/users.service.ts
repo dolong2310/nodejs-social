@@ -1,7 +1,7 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { TokenType } from '@/enums/token.enum';
-import { UserVerificationStatus } from '@/enums/users.enum';
+import { ETokenType } from '@/enums/token.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import { ILoginRequestBody, IRegisterRequestBody, IUpdateMeRequestBody } from '@/models/requests/user.request';
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
@@ -39,7 +39,7 @@ class UsersService {
     // tạo email verification token
     const emailVerificationToken = await tokenService.signEmailVerificationToken({
       userId: userId.toString(),
-      type: TokenType.EMAIL_VERIFICATION_TOKEN
+      type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
     // TODO: Gửi email xác thực trước khi tạo user
@@ -64,7 +64,7 @@ class UsersService {
       dateOfBirth: new Date(dateOfBirth),
       username: `user-${uuidv4()}`,
       emailVerificationToken,
-      verificationStatus: UserVerificationStatus.UNVERIFIED
+      verificationStatus: EUserVerificationStatus.UNVERIFIED
     });
     await databaseService.users.insertOne(newUser);
 
@@ -93,11 +93,11 @@ class UsersService {
     const [accessToken, refreshToken] = await Promise.all([
       tokenService.signAccessToken({
         userId: user._id!.toString(),
-        type: TokenType.ACCESS_TOKEN
+        type: ETokenType.ACCESS_TOKEN
       }),
       tokenService.signRefreshToken({
         userId: user._id!.toString(),
-        type: TokenType.REFRESH_TOKEN
+        type: ETokenType.REFRESH_TOKEN
       })
     ]);
 
@@ -134,11 +134,11 @@ class UsersService {
     const [newAccessToken, newRefreshToken] = await Promise.all([
       tokenService.signAccessToken({
         userId,
-        type: TokenType.ACCESS_TOKEN
+        type: ETokenType.ACCESS_TOKEN
       }),
       tokenService.signRefreshToken({
         userId,
-        type: TokenType.REFRESH_TOKEN,
+        type: ETokenType.REFRESH_TOKEN,
         exp
       })
     ]);
@@ -168,7 +168,7 @@ class UsersService {
       {
         $set: {
           emailVerificationToken: '',
-          verificationStatus: UserVerificationStatus.VERIFIED
+          verificationStatus: EUserVerificationStatus.VERIFIED
           // updatedAt: new Date() // giá trị được cập nhật tại thời điểm update trong service
         },
         $currentDate: { updatedAt: true } // giá trị được cập nhật tại thời điểm mongodb update document (chênh lệch với service vì nó chạy sau)
@@ -179,7 +179,7 @@ class UsersService {
   async resendVerifyEmail(userId: string) {
     const emailVerificationToken = await tokenService.signEmailVerificationToken({
       userId: userId.toString(),
-      type: TokenType.EMAIL_VERIFICATION_TOKEN
+      type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
     // gửi email xác thực
@@ -195,7 +195,7 @@ class UsersService {
   async forgotPassword(userId: string) {
     const forgotPasswordToken = await tokenService.signForgotPasswordToken({
       userId,
-      type: TokenType.FORGOT_PASSWORD_TOKEN
+      type: ETokenType.FORGOT_PASSWORD_TOKEN
     });
 
     // gửi email xác thực

@@ -6,7 +6,7 @@ import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
 import dotenv from 'dotenv';
-import { Collection, Db, MongoClient, ServerApiVersion } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
 
 dotenv.config();
 
@@ -17,13 +17,7 @@ class DatabaseService {
   private db: Db;
 
   constructor() {
-    this.client = new MongoClient(uri, {
-      serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true
-      }
-    });
+    this.client = new MongoClient(uri);
     this.db = this.client.db(process.env.DATABASE_NAME!);
   }
 
@@ -60,13 +54,25 @@ class DatabaseService {
   async createVideoStatusesIndex() {
     const isIndexExists = await this.videoStatuses.indexExists(['name_1']);
     if (isIndexExists) return;
-    await Promise.all([this.videoStatuses.createIndex({ name: 1 })]);
+    await this.videoStatuses.createIndex({ name: 1 });
   }
 
   async createFollowersIndex() {
     const isIndexExists = await this.followers.indexExists(['userId_1_followedUserId_1']);
     if (isIndexExists) return;
-    await Promise.all([this.followers.createIndex({ userId: 1, followedUserId: 1 })]);
+    await this.followers.createIndex({ userId: 1, followedUserId: 1 });
+  }
+
+  async createPostsIndex() {
+    const isIndexExists = await this.posts.indexExists(['content_text']);
+    if (isIndexExists) return;
+    await this.posts.createIndex({ content: 'text' }, { default_language: 'none' });
+  }
+
+  async createUsersSearchIndex() {
+    const isIndexExists = await this.users.indexExists(['name_1_username_1_email_1']);
+    if (isIndexExists) return;
+    await this.users.createIndex({ name: 'text', username: 'text', email: 'text' }, { default_language: 'none' });
   }
 
   get users(): Collection<IUser> {

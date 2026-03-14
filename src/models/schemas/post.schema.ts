@@ -1,12 +1,12 @@
-import { PostAudience, PostType } from '@/enums/posts.enum';
+import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { IMedia } from '@/types/media.type';
 import { ObjectId } from 'mongodb';
 
 export interface IPost {
   _id?: ObjectId;
   userId: ObjectId;
-  type: PostType;
-  audience: PostAudience;
+  type: EPostType;
+  audience: EPostAudience;
   content: string;
   parentId: ObjectId | null;
   hashtags: ObjectId[];
@@ -21,8 +21,8 @@ export interface IPost {
 class PostSchema {
   public _id?: ObjectId;
   public userId: ObjectId;
-  public type: PostType;
-  public audience: PostAudience;
+  public type: EPostType;
+  public audience: EPostAudience;
   public content: string;
   public parentId: ObjectId | null;
   public hashtags: ObjectId[];

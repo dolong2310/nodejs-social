@@ -1,4 +1,4 @@
-export enum TokenType {
+export enum ETokenType {
   ACCESS_TOKEN,
   REFRESH_TOKEN,
   FORGOT_PASSWORD_TOKEN,

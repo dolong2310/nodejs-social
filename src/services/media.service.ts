@@ -1,6 +1,6 @@
 import { isDevelopment } from '@/constants/config.constant';
 import { UPLOAD_DIR_IMAGE } from '@/constants/file.constant';
-import { EncodingVideoStatus, MediaType } from '@/enums/media.enum';
+import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
 import VideoStatusSchema from '@/models/schemas/videoStatus.schema';
 import databaseService from '@/services/database.service';
 import QueueService from '@/services/queue.service';
@@ -27,7 +27,7 @@ class MediaService {
         await sharp(file.filepath).resize(100, 100).jpeg().toFile(newPath);
         await fs.unlink(file.filepath);
         const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
-        return { url: `${url}/static/images/${newName}.jpg`, type: MediaType.IMAGE };
+        return { url: `${url}/static/images/${newName}.jpg`, type: EMediaType.IMAGE };
       })
     );
   }
@@ -38,7 +38,7 @@ class MediaService {
       files.map(async (file) => {
         const newName = getNameFromFullname(file.newFilename);
         const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
-        return { url: `${url}/static/videos/${newName}.mp4`, type: MediaType.VIDEO };
+        return { url: `${url}/static/videos/${newName}.mp4`, type: EMediaType.VIDEO };
       })
     );
   }
@@ -53,7 +53,7 @@ class MediaService {
 
         this.queueService.enqueue(file.filepath, async () => {
           await databaseService.videoStatuses.insertOne(
-            new VideoStatusSchema({ name: idName, status: EncodingVideoStatus.PENDING })
+            new VideoStatusSchema({ name: idName, status: EEncodingVideoStatus.PENDING })
           );
         });
         this.queueService.startProcessing(
@@ -67,13 +67,13 @@ class MediaService {
             const currentIdName = getNameFromFullname(path.basename(filepath));
             await databaseService.videoStatuses.updateOne(
               { name: currentIdName },
-              { $set: { status: EncodingVideoStatus.PROCESSING }, $currentDate: { updatedAt: true } }
+              { $set: { status: EEncodingVideoStatus.PROCESSING }, $currentDate: { updatedAt: true } }
             );
           },
           async (currentIdName) => {
             await databaseService.videoStatuses.updateOne(
               { name: currentIdName },
-              { $set: { status: EncodingVideoStatus.SUCCESS }, $currentDate: { updatedAt: true } }
+              { $set: { status: EEncodingVideoStatus.SUCCESS }, $currentDate: { updatedAt: true } }
             );
           },
           async (error, item) => {
@@ -81,14 +81,14 @@ class MediaService {
             await databaseService.videoStatuses.updateOne(
               { name: currentIdName },
               {
-                $set: { status: EncodingVideoStatus.FAILED, message: error.message },
+                $set: { status: EEncodingVideoStatus.FAILED, message: error.message },
                 $currentDate: { updatedAt: true }
               }
             );
           }
         );
 
-        return { url: `${url}/static/videos-hls/${newName}/master.m3u8`, type: MediaType.VIDEO_HLS };
+        return { url: `${url}/static/videos-hls/${newName}/master.m3u8`, type: EMediaType.VIDEO_HLS };
       })
     );
   }

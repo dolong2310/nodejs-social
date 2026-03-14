@@ -1,10 +1,10 @@
-import { PostAudience, PostType } from '@/enums/posts.enum';
+import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { IMedia } from '@/types/media.type';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ICreatePostRequestBody {
-  type: PostType;
-  audience: PostAudience;
+  type: EPostType;
+  audience: EPostAudience;
   content: string;
   parentId: string | null; // chỉ null khi post là bài viết gốc, nếu parentId là string thì post đó là bài viết con
   hashtags: string[]; // tên hashtags dạng ['javascript', 'nodejs']
@@ -18,10 +18,5 @@ export interface IGetPostDetailRequestParams extends ParamsDictionary {
 
 export interface IGetPostsRequestParams extends ParamsDictionary {
   postId: string;
-  type: PostType;
-}
-
-export interface IGetPostsRequestQuery extends Query {
-  page: string;
-  limit: string;
+  type: EPostType;
 }

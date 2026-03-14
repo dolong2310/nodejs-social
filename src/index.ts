@@ -4,6 +4,7 @@ import bookmarksRouter from '@/routes/bookmarks.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
 import postsRouter from '@/routes/posts.route';
+import searchRouter from '@/routes/search.route';
 import staticRouter from '@/routes/static.route';
 import usersRouter from '@/routes/users.route';
 import databaseService from '@/services/database.service';
@@ -37,6 +38,7 @@ app.use('/media', mediaRouter);
 app.use('/static', staticRouter);
 app.use('/posts', postsRouter);
 app.use('/bookmarks', bookmarksRouter);
+app.use('/search', searchRouter);
 
 app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 
@@ -44,5 +46,5 @@ app.use(errorHandler);
 
 app.listen(port, () => {
   databaseService.connect();
-  console.log(`Server is running on port ${port}`);
+  console.log(`\x1b[32mServer is running on port ${port}\x1b[0m`);
 });

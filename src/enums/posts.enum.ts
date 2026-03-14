@@ -1,11 +1,11 @@
-export enum PostType {
+export enum EPostType {
   POST = 'post',
   REPOST = 'repost',
   COMMENT = 'comment',
   QUOTE = 'quote'
 }
 
-export enum PostAudience {
+export enum EPostAudience {
   PUBLIC = 'public',
   FOLLOWERS = 'followers',
   ONLY_ME = 'only_me'

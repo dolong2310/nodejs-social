@@ -1,8 +1,8 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { USERNAME_REGEX } from '@/constants/regex.constant';
-import { TokenType } from '@/enums/token.enum';
-import { UserVerificationStatus } from '@/enums/users.enum';
+import { ETokenType } from '@/enums/token.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import { IUser } from '@/models/schemas/user.schema';
 import tokenService from '@/services/token.service';
@@ -242,7 +242,7 @@ export const validateAccessToken = validate(
 
             // decode token
             const decoded = await tokenService.verifyAccessToken(token);
-            if (decoded.type !== TokenType.ACCESS_TOKEN) {
+            if (decoded.type !== ETokenType.ACCESS_TOKEN) {
               throw new ErrorWithStatus({
                 message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_INVALID,
                 status: HTTP_STATUS.UNAUTHORIZED
@@ -283,7 +283,7 @@ export const validateRefreshToken = validate(
                 tokenService.verifyRefreshToken(value),
                 usersService.findRefreshTokenByToken(value)
               ]);
-              if (decoded.type !== TokenType.REFRESH_TOKEN || !findRefreshToken) {
+              if (decoded.type !== ETokenType.REFRESH_TOKEN || !findRefreshToken) {
                 throw new ErrorWithStatus({
                   message: VALIDATION_ERROR_MESSAGE.REFRESH_TOKEN_IS_INVALID,
                   status: HTTP_STATUS.UNAUTHORIZED
@@ -327,7 +327,7 @@ export const validateEmailVerificationToken = validate(
 
             try {
               const decoded = await tokenService.verifyEmailVerificationToken(value);
-              if (decoded.type !== TokenType.EMAIL_VERIFICATION_TOKEN) {
+              if (decoded.type !== ETokenType.EMAIL_VERIFICATION_TOKEN) {
                 throw new ErrorWithStatus({
                   message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID,
                   status: HTTP_STATUS.UNAUTHORIZED
@@ -397,7 +397,7 @@ export const validateForgotPasswordToken = validate(
 
             try {
               const decoded = await tokenService.verifyForgotPasswordToken(value);
-              if (decoded.type !== TokenType.FORGOT_PASSWORD_TOKEN) {
+              if (decoded.type !== ETokenType.FORGOT_PASSWORD_TOKEN) {
                 throw new ErrorWithStatus({
                   message: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID,
                   status: HTTP_STATUS.UNAUTHORIZED
@@ -440,13 +440,13 @@ export const checkUserVerified = async (req: Request, res: Response, next: NextF
       status: HTTP_STATUS.NOT_FOUND
     });
   }
-  if (user.verificationStatus === UserVerificationStatus.UNVERIFIED) {
+  if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
     throw new ErrorWithStatus({
       message: VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET,
       status: HTTP_STATUS.FORBIDDEN
     });
   }
-  if (user.verificationStatus === UserVerificationStatus.BANNED) {
+  if (user.verificationStatus === EUserVerificationStatus.BANNED) {
     throw new ErrorWithStatus({
       message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
       status: HTTP_STATUS.FORBIDDEN

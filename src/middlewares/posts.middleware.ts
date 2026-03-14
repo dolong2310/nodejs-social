@@ -1,8 +1,8 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { MediaType } from '@/enums/media.enum';
-import { PostAudience, PostType } from '@/enums/posts.enum';
-import { UserVerificationStatus } from '@/enums/users.enum';
+import { EMediaType } from '@/enums/media.enum';
+import { EPostAudience, EPostType } from '@/enums/posts.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
 import { ErrorWithStatus } from '@/models/error.model';
 import { ICreatePostRequestBody, IGetPostDetailRequestParams } from '@/models/requests/post.request';
 import { IPostDetailResponse } from '@/models/responses/post.response';
@@ -53,7 +53,7 @@ export const validateCreatePost = validate(
       // type phải là 1 trong 4 giá trị: post, repost, comment, quote
       type: {
         isIn: {
-          options: [[PostType.POST, PostType.REPOST, PostType.COMMENT, PostType.QUOTE]],
+          options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
           errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
         },
         trim: true
@@ -61,7 +61,7 @@ export const validateCreatePost = validate(
       // audience phải là 1 trong 3 giá trị: public, followers, only_me
       audience: {
         isIn: {
-          options: [[PostAudience.PUBLIC, PostAudience.FOLLOWERS, PostAudience.ONLY_ME]],
+          options: [[EPostAudience.PUBLIC, EPostAudience.FOLLOWERS, EPostAudience.ONLY_ME]],
           errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
         },
         trim: true
@@ -77,7 +77,7 @@ export const validateCreatePost = validate(
           options: async (content: string, { req }) => {
             const { type, mentions, hashtags } = req.body as ICreatePostRequestBody;
 
-            if (type === PostType.REPOST && content !== '') {
+            if (type === EPostType.REPOST && content !== '') {
               throw new ErrorWithStatus({
                 message: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_EMPTY_STRING,
                 status: HTTP_STATUS.BAD_REQUEST
@@ -99,7 +99,7 @@ export const validateCreatePost = validate(
             // }
 
             if (
-              [PostType.POST, PostType.COMMENT, PostType.QUOTE].includes(type) &&
+              [EPostType.POST, EPostType.COMMENT, EPostType.QUOTE].includes(type) &&
               isEmpty(mentions) &&
               isEmpty(hashtags) &&
               content === ''
@@ -121,7 +121,7 @@ export const validateCreatePost = validate(
           options: async (parentId: string | null, { req }) => {
             const { type } = req.body as ICreatePostRequestBody;
 
-            if ([PostType.REPOST, PostType.COMMENT, PostType.QUOTE].includes(type)) {
+            if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
               // parentId không được null, phải là string hợp lệ (ObjectId)
               if (parentId === null || typeof parentId !== 'string' || !ObjectId.isValid(parentId)) {
                 throw new ErrorWithStatus({
@@ -131,7 +131,7 @@ export const validateCreatePost = validate(
               }
             }
 
-            if (type === PostType.POST && parentId !== null) {
+            if (type === EPostType.POST && parentId !== null) {
               throw new ErrorWithStatus({
                 message: VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_NULL,
                 status: HTTP_STATUS.BAD_REQUEST
@@ -185,7 +185,7 @@ export const validateCreatePost = validate(
         },
         custom: {
           options: async (mediaItems: IMedia[]) => {
-            const validMediaTypes = Object.values(MediaType); // ['image', 'video', 'video-hls']
+            const validMediaTypes = Object.values(EMediaType); // ['image', 'video', 'video-hls']
             if (
               mediaItems.length > 0 &&
               mediaItems.some((item) => typeof item.url !== 'string' || !validMediaTypes.includes(item.type))
@@ -225,7 +225,7 @@ export const validateAudience = async (
   // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"
   const isGuestUser = !userId;
   if (isGuestUser) {
-    if (post.audience !== PostAudience.PUBLIC) {
+    if (post.audience !== EPostAudience.PUBLIC) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
         status: HTTP_STATUS.UNAUTHORIZED
@@ -247,7 +247,7 @@ export const validateAudience = async (
       status: HTTP_STATUS.NOT_FOUND
     });
   }
-  if (isOwner && userOwner.verificationStatus === UserVerificationStatus.BANNED) {
+  if (isOwner && userOwner.verificationStatus === EUserVerificationStatus.BANNED) {
     throw new ErrorWithStatus({
       message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
       status: HTTP_STATUS.FORBIDDEN
@@ -255,7 +255,7 @@ export const validateAudience = async (
   }
 
   // kiểm tra bài post có chế độ "only me" thì chỉ user owner mới được xem bài post
-  if (post.audience === PostAudience.ONLY_ME) {
+  if (post.audience === EPostAudience.ONLY_ME) {
     if (!isOwner) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_VIEW_POSTS,
@@ -265,7 +265,7 @@ export const validateAudience = async (
   }
 
   // kiểm tra bài post có chế độ "followers" thì chỉ user followers hoặc owner hoặc mentions mới được xem bài post
-  if (post.audience === PostAudience.FOLLOWERS) {
+  if (post.audience === EPostAudience.FOLLOWERS) {
     if (!isFollower && !isOwner && !isMention) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.ONLY_FOLLOWERS_CAN_VIEW_POSTS,
@@ -283,7 +283,7 @@ export const validatePostType = validate(
     {
       type: {
         isIn: {
-          options: [[PostType.POST, PostType.REPOST, PostType.COMMENT, PostType.QUOTE]],
+          options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
           errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
         },
         trim: true
@@ -294,7 +294,7 @@ export const validatePostType = validate(
   )
 );
 
-export const validatePagination = validate(
+export const validatePaginationQuery = validate(
   checkSchema(
     {
       page: {
