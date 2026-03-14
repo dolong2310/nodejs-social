@@ -7,6 +7,7 @@ import { ILoginRequestBody, IRegisterRequestBody, IUpdateMeRequestBody } from '@
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import UserSchema, { IUser } from '@/models/schemas/user.schema';
 import databaseService from '@/services/database.service';
+import emailService, { EEmailTemplate } from '@/services/email.service';
 import tokenService from '@/services/token.service';
 import { comparePassword, hashPassword } from '@/utils/helper.util';
 import { ObjectId, WithId } from 'mongodb';
@@ -42,10 +43,20 @@ class UsersService {
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
-    // TODO: Gửi email xác thực trước khi tạo user
     // gửi email xác thực
-    // await emailService.sendEmailVerificationEmail(email, emailVerificationToken);
-    console.log('emailVerificationToken: ', emailVerificationToken);
+    // TIPS: khi gửi email mà không muốn tạo email mới thì chỉ cần thêm +1 vào cuối của email đó (ví dụ: test123@gmail.com -> test123+1@gmail.com)
+    await emailService.sendEmail({
+      toAddress: email,
+      subject: 'Email Verification',
+      body: {
+        name,
+        url: `${process.env.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
+        expiresIn: '1 hour',
+        appName: 'Social Media App',
+        supportUrl: 'https://www.google.com'
+      },
+      template: EEmailTemplate.VERIFY_EMAIL
+    });
 
     const user = await this.findUserByEmail(email);
     if (user) {
@@ -176,15 +187,25 @@ class UsersService {
     );
   }
 
-  async resendVerifyEmail(userId: string) {
+  async resendVerifyEmail({ userId, name, email }: { userId: string; name: string; email: string }) {
     const emailVerificationToken = await tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
     // gửi email xác thực
-    // await emailService.sendEmailVerificationEmail(email, emailVerificationToken);
-    console.log('resendVerifyEmail token: ', emailVerificationToken);
+    await emailService.sendEmail({
+      toAddress: email,
+      subject: 'Email Verification',
+      body: {
+        name,
+        url: `${process.env.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
+        expiresIn: '1 hour',
+        appName: 'Social Media App',
+        supportUrl: 'https://www.google.com'
+      },
+      template: EEmailTemplate.VERIFY_EMAIL
+    });
 
     await databaseService.users.updateOne(
       { _id: new ObjectId(userId) },
@@ -192,15 +213,25 @@ class UsersService {
     );
   }
 
-  async forgotPassword(userId: string) {
+  async forgotPassword({ userId, name, email }: { userId: string; name: string; email: string }) {
     const forgotPasswordToken = await tokenService.signForgotPasswordToken({
       userId,
       type: ETokenType.FORGOT_PASSWORD_TOKEN
     });
 
     // gửi email xác thực
-    // await emailService.sendEmailVerificationEmail(email, forgotPasswordToken);
-    console.log('forgotPassword token: ', forgotPasswordToken);
+    await emailService.sendEmail({
+      toAddress: email,
+      subject: 'Forgot Password',
+      body: {
+        name,
+        url: `${process.env.FRONTEND_URL}/forgot-password?token=${forgotPasswordToken}`,
+        expiresIn: '1 hour',
+        appName: 'Social Media App',
+        supportUrl: 'https://www.google.com'
+      },
+      template: EEmailTemplate.FORGOT_PASSWORD
+    });
 
     await databaseService.users.updateOne(
       { _id: new ObjectId(userId) },

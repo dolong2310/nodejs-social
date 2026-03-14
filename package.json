@@ -17,6 +17,7 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1009.0",
     "@faker-js/faker": "^10.3.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",

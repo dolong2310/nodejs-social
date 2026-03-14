@@ -135,7 +135,7 @@ class UserController {
       });
     }
 
-    await usersService.resendVerifyEmail(userId);
+    await usersService.resendVerifyEmail({ userId, name: user.name, email: user.email });
 
     return res.status(HTTP_STATUS.OK).json({
       message: 'Email verification sent successfully'
@@ -145,7 +145,7 @@ class UserController {
   async forgotPassword(req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response) {
     const user = req.user as IUser;
 
-    await usersService.forgotPassword(user._id!.toString());
+    await usersService.forgotPassword({ userId: user._id!.toString(), name: user.name, email: user.email });
 
     return res.status(HTTP_STATUS.OK).json({
       message: 'Password reset email sent successfully'
