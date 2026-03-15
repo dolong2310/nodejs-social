@@ -22,7 +22,7 @@ export interface IRefreshTokenRequestBody {
 }
 
 export interface IVerifyEmailRequestBody {
-  emailVerificationToken: string;
+  token: string;
 }
 
 export interface IForgotPasswordRequestBody {
@@ -30,9 +30,9 @@ export interface IForgotPasswordRequestBody {
 }
 
 export interface IResetPasswordRequestBody {
-  forgotPasswordToken: string;
-  newPassword: string;
-  confirmNewPassword: string;
+  token: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface IChangePasswordRequestBody {

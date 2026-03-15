@@ -69,7 +69,7 @@ class UserController {
   }
 
   async verifyEmail(req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response) {
-    const { emailVerificationToken } = req.body;
+    const { token } = req.body;
     const userId = req.emailVerificationTokenPayload?.userId;
 
     if (!userId) {
@@ -95,7 +95,7 @@ class UserController {
       });
     }
 
-    if (user.emailVerificationToken !== emailVerificationToken) {
+    if (user.emailVerificationToken !== token) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID,
         status: HTTP_STATUS.BAD_REQUEST
@@ -153,7 +153,7 @@ class UserController {
   }
 
   async resetPassword(req: Request<{}, {}, IResetPasswordRequestBody>, res: Response) {
-    const { forgotPasswordToken, newPassword } = req.body;
+    const { token, password } = req.body;
     const { userId } = req.forgotPasswordTokenPayload as ForgotPasswordTokenPayload;
 
     if (!userId) {
@@ -172,14 +172,14 @@ class UserController {
       });
     }
 
-    if (user.forgotPasswordToken !== forgotPasswordToken) {
+    if (user.forgotPasswordToken !== token) {
       throw new ErrorWithStatus({
         message: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID,
         status: HTTP_STATUS.BAD_REQUEST
       });
     }
 
-    await usersService.resetPassword({ userId, newPassword });
+    await usersService.resetPassword({ userId, password });
 
     return res.status(HTTP_STATUS.OK).json({
       message: 'Password reset successfully'

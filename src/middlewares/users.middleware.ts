@@ -311,7 +311,7 @@ export const validateRefreshToken = validate(
 export const validateEmailVerificationToken = validate(
   checkSchema(
     {
-      emailVerificationToken: {
+      token: {
         isString: {
           errorMessage: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_MUST_BE_A_STRING
         },
@@ -381,7 +381,7 @@ export const validateForgotPassword = validate(
 export const validateForgotPasswordToken = validate(
   checkSchema(
     {
-      forgotPasswordToken: {
+      token: {
         isString: {
           errorMessage: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_MUST_BE_A_STRING
         },

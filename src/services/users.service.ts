@@ -225,7 +225,7 @@ class UsersService {
       subject: 'Forgot Password',
       body: {
         name,
-        url: `${process.env.FRONTEND_URL}/forgot-password?token=${forgotPasswordToken}`,
+        url: `${process.env.FRONTEND_URL}/reset-password?token=${forgotPasswordToken}`,
         expiresIn: '1 hour',
         appName: 'Social Media App',
         supportUrl: 'https://www.google.com'
@@ -239,8 +239,8 @@ class UsersService {
     );
   }
 
-  async resetPassword({ userId, newPassword }: { userId: string; newPassword: string }) {
-    const hashedPassword = await hashPassword(newPassword);
+  async resetPassword({ userId, password }: { userId: string; password: string }) {
+    const hashedPassword = await hashPassword(password);
 
     await databaseService.users.updateOne(
       { _id: new ObjectId(userId) },
