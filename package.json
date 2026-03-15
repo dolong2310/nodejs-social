@@ -17,7 +17,10 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1009.0",
     "@aws-sdk/client-ses": "^3.1009.0",
+    "@aws-sdk/lib-storage": "^3.1009.0",
+    "@aws-sdk/s3-request-presigner": "^3.1009.0",
     "@faker-js/faker": "^10.3.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
@@ -29,6 +32,7 @@
     "jsonwebtoken": "^9.0.3",
     "lodash-es": "^4.17.23",
     "mime": "^4.1.0",
+    "mime-types": "^3.0.2",
     "minimist": "^1.2.8",
     "mongodb": "^7.1.0",
     "sharp": "^0.34.5",
@@ -44,6 +48,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash-es": "^4.17.12",
     "@types/mime": "^3.0.4",
+    "@types/mime-types": "^3.0.1",
     "@types/minimist": "^1.2.5",
     "@types/node": "^25.3.3",
     "eslint": "^10.0.2",

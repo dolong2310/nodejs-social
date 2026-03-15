@@ -2,10 +2,11 @@ import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { ERROR_MESSAGE } from '@/constants/message.constant';
 import mediaService from '@/services/media.service';
+import s3Service from '@/services/s3.service';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
-import path from 'path';
 import mime from 'mime';
+import path from 'path';
 
 class mediaController {
   constructor() {}
@@ -72,11 +73,12 @@ class mediaController {
 
   getStaticVideoHLSMaster(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, 'master.m3u8');
-    if (!fs.existsSync(videoPath)) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
-    }
-    return res.sendFile(videoPath);
+    return s3Service.sendFileFromS3(res, `videos-hls/${id}/master.m3u8`);
+    // const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, 'master.m3u8');
+    // if (!fs.existsSync(videoPath)) {
+    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+    // }
+    // return res.sendFile(videoPath);
   }
 
   getStaticVideoHLSSegment(
@@ -85,11 +87,12 @@ class mediaController {
     next: NextFunction
   ) {
     const { id, version, segment } = req.params;
-    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, version, segment);
-    if (!fs.existsSync(videoPath)) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
-    }
-    return res.sendFile(videoPath);
+    return s3Service.sendFileFromS3(res, `videos-hls/${id}/${version}/${segment}`);
+    // const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, version, segment);
+    // if (!fs.existsSync(videoPath)) {
+    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+    // }
+    // return res.sendFile(videoPath);
   }
 
   async uploadImage(req: Request, res: Response, next: NextFunction) {

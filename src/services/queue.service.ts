@@ -12,7 +12,7 @@ class QueueService {
     this.onStartWhenEnqueue = options?.onStartWhenEnqueue ?? false;
   }
 
-  enqueue(item: string, onStart?: () => Promise<void>): void | Promise<void> {
+  enqueue({ item, onStart }: { item: string; onStart?: () => Promise<void> }): void | Promise<void> {
     this.items.push({ item, onStart });
     if (this.onStartWhenEnqueue && onStart) {
       return onStart();
@@ -31,12 +31,17 @@ class QueueService {
     return this.processing;
   }
 
-  async startProcessing<T>(
-    task: (item: string) => Promise<T>,
-    onProcess: (item: string) => Promise<void>,
-    onSuccess: (item: T) => Promise<void>,
-    onError: (error: Error, item: string) => Promise<void>
-  ): Promise<void> {
+  async startProcessing<T>({
+    task,
+    onProcess,
+    onSuccess,
+    onError
+  }: {
+    task: (item: string) => Promise<T>;
+    onProcess: (item: string) => Promise<void>;
+    onSuccess: (item: T) => Promise<void>;
+    onError: (error: Error, item: string) => Promise<void>;
+  }): Promise<void> {
     if (this.isProcessing()) {
       return;
     }
