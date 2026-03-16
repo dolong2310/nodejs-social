@@ -1,6 +1,7 @@
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
 import bookmarksRouter from '@/routes/bookmarks.route';
+import conversationsRouter from '@/routes/conversations.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
 import postsRouter from '@/routes/posts.route';
@@ -8,18 +9,21 @@ import searchRouter from '@/routes/search.route';
 import staticRouter from '@/routes/static.route';
 import usersRouter from '@/routes/users.route';
 import databaseService from '@/services/database.service';
+import SocketService from '@/services/socket.service';
 import { initUploadsFolder } from '@/utils/file.util';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import { createServer } from 'http';
 
 // import fakeData from '@/utils/fake-data';
 // fakeData();
 
 dotenv.config();
+const port = process.env.PORT || 8080;
 
 const app = express();
-const port = process.env.PORT || 8080;
+const httpServer = createServer(app);
 
 initUploadsFolder();
 
@@ -39,12 +43,16 @@ app.use('/static', staticRouter);
 app.use('/posts', postsRouter);
 app.use('/bookmarks', bookmarksRouter);
 app.use('/search', searchRouter);
+app.use('/conversations', conversationsRouter);
 
 app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 
 app.use(errorHandler);
 
-app.listen(port, () => {
+const socket = new SocketService(httpServer);
+socket.run();
+
+httpServer.listen(port, () => {
   databaseService.connect();
   console.log(`\x1b[32mServer is running on port ${port}\x1b[0m`);
 });

@@ -2,7 +2,7 @@ import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { USERNAME_REGEX } from '@/constants/regex.constant';
 import { ETokenType } from '@/enums/token.enum';
-import { EUserVerificationStatus } from '@/enums/users.enum';
+import { verifyAuthorizationMiddleware, verifyUserMiddleware } from '@/middlewares/common.middleware';
 import { ErrorWithStatus } from '@/models/error.model';
 import { IUser } from '@/models/schemas/user.schema';
 import tokenService from '@/services/token.service';
@@ -231,23 +231,24 @@ export const validateAccessToken = validate(
         },
         trim: true,
         custom: {
-          options: async (value: string | null | undefined, { req }) => {
+          options: async (value: string, { req }) => {
             const token = value?.split(' ')[1];
-            if (!token) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              });
-            }
+            // if (!token) {
+            //   throw new ErrorWithStatus({
+            //     message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
+            //     status: HTTP_STATUS.UNAUTHORIZED
+            //   });
+            // }
 
-            // decode token
-            const decoded = await tokenService.verifyAccessToken(token);
-            if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_INVALID,
-                status: HTTP_STATUS.UNAUTHORIZED
-              });
-            }
+            // // decode token
+            // const decoded = await tokenService.verifyAccessToken(token);
+            // if (decoded.type !== ETokenType.ACCESS_TOKEN) {
+            //   throw new ErrorWithStatus({
+            //     message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_INVALID,
+            //     status: HTTP_STATUS.UNAUTHORIZED
+            //   });
+            // }
+            const decoded = await verifyAuthorizationMiddleware(token);
             req.accessTokenPayload = decoded;
             return true;
           }
@@ -433,25 +434,7 @@ export const checkUserVerified = async (req: Request, res: Response, next: NextF
       status: HTTP_STATUS.UNAUTHORIZED
     });
   }
-  const user = await usersService.findUserById(userId); // TODO: cache by redis
-  if (!user) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-      status: HTTP_STATUS.NOT_FOUND
-    });
-  }
-  if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET,
-      status: HTTP_STATUS.FORBIDDEN
-    });
-  }
-  if (user.verificationStatus === EUserVerificationStatus.BANNED) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
-      status: HTTP_STATUS.FORBIDDEN
-    });
-  }
+  const user = await verifyUserMiddleware(userId);
   req.user = user;
   next();
 };

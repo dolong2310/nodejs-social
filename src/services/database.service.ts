@@ -1,4 +1,5 @@
 import { IBookmark } from '@/models/schemas/bookmark.schema';
+import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFollower } from '@/models/schemas/follower.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
@@ -101,6 +102,10 @@ class DatabaseService {
 
   get bookmarks(): Collection<IBookmark> {
     return this.db.collection<IBookmark>('bookmarks');
+  }
+
+  get conversations(): Collection<IConversation> {
+    return this.db.collection<IConversation>('conversations');
   }
 }
 
