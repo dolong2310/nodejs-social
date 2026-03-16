@@ -309,7 +309,7 @@ class UsersService {
     username: string
   ): Promise<WithId<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>> | null> {
     return databaseService.users.findOne(
-      { name: username },
+      { username },
       {
         projection: {
           password: 0,
