@@ -1,9 +1,9 @@
 import { envConfig } from '@/constants/config.constant';
 import { verifyAuthorizationMiddleware, verifyUserMiddleware } from '@/middlewares/common.middleware';
+import conversationsService from '@/services/conversations.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Server as HttpServer } from 'http';
 import { ExtendedError, Server, Socket } from 'socket.io';
-import conversationsService from './conversations.service';
 
 class SocketService {
   private io: Server;
