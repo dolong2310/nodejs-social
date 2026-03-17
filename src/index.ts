@@ -2,6 +2,7 @@ import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
 import bookmarksRouter from '@/routes/bookmarks.route';
 import conversationsRouter from '@/routes/conversations.route';
+import followersRouter from '@/routes/followers.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
 import postsRouter from '@/routes/posts.route';
@@ -15,6 +16,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 // import fakeData from '@/utils/fake-data';
 // fakeData();
@@ -42,6 +45,7 @@ app.use('/media', mediaRouter);
 app.use('/static', staticRouter);
 app.use('/posts', postsRouter);
 app.use('/bookmarks', bookmarksRouter);
+app.use('/followers', followersRouter);
 app.use('/search', searchRouter);
 app.use('/conversations', conversationsRouter);
 
@@ -51,6 +55,28 @@ app.use(errorHandler);
 
 const socket = new SocketService(httpServer);
 socket.run();
+
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(
+    swaggerJsdoc({
+      definition: {
+        openapi: '3.1.0',
+        info: {
+          title: 'NodeJS Social API',
+          description:
+            'API documentation cho ứng dụng mạng xã hội NodeJS Social. Sử dụng Bearer token (Access Token) trong header Authorization cho các endpoint yêu cầu xác thực.',
+          version: '1.0.0',
+          contact: {
+            email: 'support@nodejs-social.com'
+          }
+        }
+      },
+      apis: ['./swagger/*.yaml']
+    })
+  )
+);
 
 httpServer.listen(port, () => {
   databaseService.connect();

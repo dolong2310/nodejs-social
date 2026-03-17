@@ -1,0 +1,1279 @@
+# openapi: 3.1.0
+# info:
+#   title: NodeJS Social API
+#   description: |
+#     API documentation cho ứng dụng mạng xã hội NodeJS Social.
+#     Sử dụng Bearer token (Access Token) trong header Authorization cho các endpoint yêu cầu xác thực.
+#   version: 1.0.0
+#   contact:
+#     email: support@nodejs-social.com
+# servers:
+#   - url: http://localhost:8080
+#     description: Development server
+#   - url: https://api.nodejs-social.com
+#     description: Production server
+# tags:
+#   - name: users
+#     description: Quản lý người dùng - đăng ký, đăng nhập, xác thực
+#   - name: oauth
+#     description: Đăng nhập OAuth (Google)
+#   - name: media
+#     description: Upload và quản lý media (ảnh, video)
+#   - name: posts
+#     description: Quản lý bài viết, feed, comments
+#   - name: bookmarks
+#     description: Quản lý bookmark bài viết
+#   - name: search
+#     description: Tìm kiếm bài viết, người dùng
+#   - name: conversations
+#     description: Tin nhắn và hội thoại
+#   - name: static
+#     description: Phục vụ file tĩnh (ảnh, video)
+# paths:
+#   # ==================== USERS ====================
+#   /users/register:
+#     post:
+#       tags: [users]
+#       summary: Đăng ký tài khoản
+#       operationId: register
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/RegisterRequest'
+#       responses:
+#         '201':
+#           description: Đăng ký thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/UserResponse'
+#         '400':
+#           description: Dữ liệu không hợp lệ
+#   /users/login:
+#     post:
+#       tags: [users]
+#       summary: Đăng nhập
+#       operationId: login
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/LoginRequest'
+#       responses:
+#         '200':
+#           description: Đăng nhập thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/LoginResponse'
+#         '401':
+#           description: Email hoặc mật khẩu không đúng
+#   /users/logout:
+#     post:
+#       tags: [users]
+#       summary: Đăng xuất
+#       operationId: logout
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/LogoutRequest'
+#       responses:
+#         '200':
+#           description: Đăng xuất thành công
+#         '401':
+#           description: Chưa xác thực
+#   /users/refresh-token:
+#     post:
+#       tags: [users]
+#       summary: Làm mới access token
+#       operationId: refreshToken
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/RefreshTokenRequest'
+#       responses:
+#         '200':
+#           description: Làm mới token thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/LoginResponse'
+#   /users/verify-email:
+#     post:
+#       tags: [users]
+#       summary: Xác thực email
+#       operationId: verifyEmail
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/VerifyEmailRequest'
+#       responses:
+#         '200':
+#           description: Xác thực email thành công
+#   /users/resend-verify-email:
+#     post:
+#       tags: [users]
+#       summary: Gửi lại email xác thực
+#       operationId: resendVerifyEmail
+#       security: [{ bearerAuth: [] }]
+#       responses:
+#         '200':
+#           description: Đã gửi email xác thực
+#         '401':
+#           description: Chưa xác thực
+#   /users/forgot-password:
+#     post:
+#       tags: [users]
+#       summary: Quên mật khẩu
+#       operationId: forgotPassword
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/ForgotPasswordRequest'
+#       responses:
+#         '200':
+#           description: Đã gửi email đặt lại mật khẩu
+#   /users/reset-password:
+#     post:
+#       tags: [users]
+#       summary: Đặt lại mật khẩu
+#       operationId: resetPassword
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/ResetPasswordRequest'
+#       responses:
+#         '200':
+#           description: Đặt lại mật khẩu thành công
+#   /users/change-password:
+#     put:
+#       tags: [users]
+#       summary: Đổi mật khẩu
+#       operationId: changePassword
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/ChangePasswordRequest'
+#       responses:
+#         '200':
+#           description: Đổi mật khẩu thành công
+#         '401':
+#           description: Chưa xác thực
+#   /users/me:
+#     get:
+#       tags: [users]
+#       summary: Lấy thông tin user hiện tại
+#       operationId: getMe
+#       security: [{ bearerAuth: [] }]
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/UserResponse'
+#         '401':
+#           description: Chưa xác thực
+#     patch:
+#       tags: [users]
+#       summary: Cập nhật thông tin user
+#       operationId: updateMe
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/UpdateMeRequest'
+#       responses:
+#         '200':
+#           description: Cập nhật thành công
+#         '401':
+#           description: Chưa xác thực
+#   /users/{username}:
+#     get:
+#       tags: [users]
+#       summary: Lấy thông tin user theo username
+#       operationId: getUserProfile
+#       parameters:
+#         - name: username
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/UserResponse'
+#         '404':
+#           description: Không tìm thấy user
+
+#   # ==================== OAUTH ====================
+#   /oauth/google:
+#     get:
+#       tags: [oauth]
+#       summary: Đăng nhập bằng Google
+#       operationId: googleLogin
+#       description: Chuyển hướng đến trang đăng nhập Google OAuth
+#       responses:
+#         '302':
+#           description: Redirect đến Google OAuth
+
+#   # ==================== MEDIA ====================
+#   /media/upload-image:
+#     post:
+#       tags: [media]
+#       summary: Upload ảnh
+#       operationId: uploadImage
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         content:
+#           multipart/form-data:
+#             schema:
+#               type: object
+#               properties:
+#                 image:
+#                   type: string
+#                   format: binary
+#       responses:
+#         '200':
+#           description: Upload thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/MediaUploadResponse'
+#         '401':
+#           description: Chưa xác thực
+#   /media/upload-video:
+#     post:
+#       tags: [media]
+#       summary: Upload video
+#       operationId: uploadVideo
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         content:
+#           multipart/form-data:
+#             schema:
+#               type: object
+#               properties:
+#                 video:
+#                   type: string
+#                   format: binary
+#       responses:
+#         '200':
+#           description: Upload thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/MediaUploadResponse'
+#         '401':
+#           description: Chưa xác thực
+#   /media/upload-video-hls:
+#     post:
+#       tags: [media]
+#       summary: Upload video HLS
+#       operationId: uploadVideoHLS
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         content:
+#           multipart/form-data:
+#             schema:
+#               type: object
+#               properties:
+#                 video:
+#                   type: string
+#                   format: binary
+#       responses:
+#         '200':
+#           description: Upload thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/MediaUploadResponse'
+#         '401':
+#           description: Chưa xác thực
+#   /media/video-status/{id}:
+#     get:
+#       tags: [media]
+#       summary: Lấy trạng thái upload/encode video
+#       operationId: getVideoStatus
+#       security: [{ bearerAuth: [] }]
+#       parameters:
+#         - name: id
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/VideoStatusResponse'
+#         '401':
+#           description: Chưa xác thực
+
+#   # ==================== POSTS ====================
+#   /posts:
+#     get:
+#       tags: [posts]
+#       summary: Lấy new feed
+#       operationId: getNewFeeds
+#       parameters:
+#         - name: page
+#           in: query
+#           schema:
+#             type: integer
+#             default: 1
+#         - name: limit
+#           in: query
+#           schema:
+#             type: integer
+#             default: 10
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/PostsPaginatedResponse'
+#     post:
+#       tags: [posts]
+#       summary: Tạo bài viết mới
+#       operationId: createPost
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/CreatePostRequest'
+#       responses:
+#         '201':
+#           description: Tạo bài viết thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/PostResponse'
+#         '401':
+#           description: Chưa xác thực
+#   /posts/{postId}:
+#     get:
+#       tags: [posts]
+#       summary: Lấy chi tiết bài viết
+#       operationId: getPostDetail
+#       parameters:
+#         - name: postId
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/PostDetailResponse'
+#         '404':
+#           description: Không tìm thấy bài viết
+#   /posts/{type}/{postId}:
+#     get:
+#       tags: [posts]
+#       summary: Lấy danh sách bài viết theo loại (comments, quotes, reposts)
+#       operationId: getPostsType
+#       parameters:
+#         - name: type
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#             enum: [post, repost, comment, quote]
+#         - name: postId
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#         - name: page
+#           in: query
+#           schema:
+#             type: integer
+#             default: 1
+#         - name: limit
+#           in: query
+#           schema:
+#             type: integer
+#             default: 10
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/PostsPaginatedResponse'
+#         '404':
+#           description: Không tìm thấy
+
+#   # ==================== BOOKMARKS ====================
+#   /bookmarks:
+#     post:
+#       tags: [bookmarks]
+#       summary: Thêm bookmark bài viết
+#       operationId: createBookmark
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/CreateBookmarkRequest'
+#       responses:
+#         '201':
+#           description: Thêm bookmark thành công
+#         '401':
+#           description: Chưa xác thực
+#   /bookmarks/posts/{postId}:
+#     delete:
+#       tags: [bookmarks]
+#       summary: Xóa bookmark bài viết
+#       operationId: deleteBookmark
+#       security: [{ bearerAuth: [] }]
+#       parameters:
+#         - name: postId
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: Xóa bookmark thành công
+#         '401':
+#           description: Chưa xác thực
+
+#   # ==================== SEARCH ====================
+#   /search:
+#     get:
+#       tags: [search]
+#       summary: Tìm kiếm
+#       operationId: search
+#       parameters:
+#         - name: query
+#           in: query
+#           required: true
+#           schema:
+#             type: string
+#         - name: type
+#           in: query
+#           schema:
+#             type: string
+#             enum: [post, user, image, video, video-hls]
+#         - name: people_follow
+#           in: query
+#           schema:
+#             type: string
+#             enum: [following, not_following, only_me]
+#         - name: page
+#           in: query
+#           schema:
+#             type: integer
+#             default: 1
+#         - name: limit
+#           in: query
+#           schema:
+#             type: integer
+#             default: 10
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/SearchPaginatedResponse'
+
+#   # ==================== CONVERSATIONS ====================
+#   /conversations:
+#     post:
+#       tags: [conversations]
+#       summary: Tạo tin nhắn mới
+#       operationId: createConversation
+#       security: [{ bearerAuth: [] }]
+#       requestBody:
+#         required: true
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/CreateConversationRequest'
+#       responses:
+#         '201':
+#           description: Gửi tin nhắn thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/ConversationResponse'
+#         '401':
+#           description: Chưa xác thực
+#   /conversations/receivers/{receiverId}:
+#     get:
+#       tags: [conversations]
+#       summary: Lấy danh sách tin nhắn với người nhận
+#       operationId: getConversations
+#       security: [{ bearerAuth: [] }]
+#       parameters:
+#         - name: receiverId
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#         - name: page
+#           in: query
+#           schema:
+#             type: integer
+#             default: 1
+#         - name: limit
+#           in: query
+#           schema:
+#             type: integer
+#             default: 10
+#       responses:
+#         '200':
+#           description: Thành công
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/ConversationsPaginatedResponse'
+#         '401':
+#           description: Chưa xác thực
+
+#   # ==================== STATIC ====================
+#   /static/images/{filename}:
+#     get:
+#       tags: [static]
+#       summary: Lấy ảnh tĩnh
+#       operationId: getStaticImage
+#       parameters:
+#         - name: filename
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: File ảnh
+#           content:
+#             image/*:
+#               schema:
+#                 type: string
+#                 format: binary
+#         '404':
+#           description: Không tìm thấy file
+#   /static/videos-stream/{filename}:
+#     get:
+#       tags: [static]
+#       summary: Stream video (hỗ trợ Range)
+#       operationId: getStaticVideoStream
+#       parameters:
+#         - name: filename
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#         - name: Range
+#           in: header
+#           description: bytes=start-
+#           schema:
+#             type: string
+#       responses:
+#         '206':
+#           description: Partial content
+#         '404':
+#           description: Không tìm thấy file
+#   /static/videos-hls/{id}/master.m3u8:
+#     get:
+#       tags: [static]
+#       summary: Lấy HLS master playlist
+#       operationId: getStaticVideoHLSMaster
+#       parameters:
+#         - name: id
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: HLS master playlist
+#         '404':
+#           description: Không tìm thấy
+#   /static/videos-hls/{id}/{version}/{segment}:
+#     get:
+#       tags: [static]
+#       summary: Lấy HLS segment
+#       operationId: getStaticVideoHLSSegment
+#       parameters:
+#         - name: id
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#         - name: version
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#         - name: segment
+#           in: path
+#           required: true
+#           schema:
+#             type: string
+#       responses:
+#         '200':
+#           description: HLS segment
+#         '404':
+#           description: Không tìm thấy
+
+# components:
+#   securitySchemes:
+#     bearerAuth:
+#       type: http
+#       scheme: bearer
+#       bearerFormat: JWT
+#       description: Access Token (JWT)
+#   schemas:
+#     MongoId:
+#       type: string
+#       pattern: "^[a-fA-F0-9]{24}$"
+#       description: MongoDB ObjectId (24 ký tự hex)
+#       example: "507f1f77bcf86cd799439011"
+#     # User schemas
+#     RegisterRequest:
+#       type: object
+#       required: [name, email, password, confirmPassword, dateOfBirth]
+#       properties:
+#         name:
+#           type: string
+#           example: "Nguyễn Văn A"
+#         email:
+#           type: string
+#           format: email
+#           example: "nguyenvana@example.com"
+#         password:
+#           type: string
+#           format: password
+#           example: "Password123!"
+#         confirmPassword:
+#           type: string
+#           format: password
+#           example: "Password123!"
+#         dateOfBirth:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+#           example: "2000-01-15T00:00:00.000Z"
+#       example:
+#         name: "Nguyễn Văn A"
+#         email: "nguyenvana@example.com"
+#         password: "Password123!"
+#         confirmPassword: "Password123!"
+#         dateOfBirth: "2000-01-15T00:00:00.000Z"
+#     LoginRequest:
+#       type: object
+#       required: [email, password]
+#       properties:
+#         email:
+#           type: string
+#           format: email
+#           example: "nguyenvana@example.com"
+#         password:
+#           type: string
+#           format: password
+#           example: "Password123!"
+#       example:
+#         email: "nguyenvana@example.com"
+#         password: "Password123!"
+#     LoginResponse:
+#       type: object
+#       properties:
+#         accessToken:
+#           type: string
+#           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#         refreshToken:
+#           type: string
+#           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#       example:
+#         accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.xxx"
+#         refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
+#     LogoutRequest:
+#       type: object
+#       required: [refreshToken]
+#       properties:
+#         refreshToken:
+#           type: string
+#           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#       example:
+#         refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
+#     RefreshTokenRequest:
+#       type: object
+#       required: [refreshToken]
+#       properties:
+#         refreshToken:
+#           type: string
+#           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#       example:
+#         refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
+#     VerifyEmailRequest:
+#       type: object
+#       required: [token]
+#       properties:
+#         token:
+#           type: string
+#           example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+#       example:
+#         token: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+#     ForgotPasswordRequest:
+#       type: object
+#       required: [email]
+#       properties:
+#         email:
+#           type: string
+#           format: email
+#           example: "nguyenvana@example.com"
+#       example:
+#         email: "nguyenvana@example.com"
+#     ResetPasswordRequest:
+#       type: object
+#       required: [token, password, confirmPassword]
+#       properties:
+#         token:
+#           type: string
+#           example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+#         password:
+#           type: string
+#           format: password
+#           example: "NewPassword123!"
+#         confirmPassword:
+#           type: string
+#           format: password
+#           example: "NewPassword123!"
+#       example:
+#         token: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+#         password: "NewPassword123!"
+#         confirmPassword: "NewPassword123!"
+#     ChangePasswordRequest:
+#       type: object
+#       required: [password, confirmPassword]
+#       properties:
+#         password:
+#           type: string
+#           format: password
+#           example: "NewPassword123!"
+#         confirmPassword:
+#           type: string
+#           format: password
+#           example: "NewPassword123!"
+#       example:
+#         password: "NewPassword123!"
+#         confirmPassword: "NewPassword123!"
+#     UpdateMeRequest:
+#       type: object
+#       properties:
+#         name:
+#           type: string
+#           example: "Nguyễn Văn A Updated"
+#         dateOfBirth:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2000-01-15T00:00:00.000Z"
+#         bio:
+#           type: string
+#           example: "Full-stack developer | NodeJS enthusiast"
+#         location:
+#           type: string
+#           example: "Hà Nội, Việt Nam"
+#         website:
+#           type: string
+#           example: "https://mywebsite.com"
+#         username:
+#           type: string
+#           example: "nguyenvana"
+#         avatar:
+#           type: string
+#           example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+#         coverPhoto:
+#           type: string
+#           example: "https://cdn.example.com/covers/507f1f77bcf86cd799439011.jpg"
+#       example:
+#         name: "Nguyễn Văn A Updated"
+#         bio: "Full-stack developer | NodeJS enthusiast"
+#         location: "Hà Nội, Việt Nam"
+#         username: "nguyenvana"
+#     UserResponse:
+#       type: object
+#       properties:
+#         _id:
+#           $ref: '#/components/schemas/MongoId'
+#         name:
+#           type: string
+#           example: "Nguyễn Văn A"
+#         email:
+#           type: string
+#           format: email
+#           example: "nguyenvana@example.com"
+#         dateOfBirth:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2000-01-15T00:00:00.000Z"
+#         username:
+#           type: string
+#           example: "nguyenvana"
+#         avatar:
+#           type: string
+#           example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+#         coverPhoto:
+#           type: string
+#           example: "https://cdn.example.com/covers/507f1f77bcf86cd799439011.jpg"
+#         bio:
+#           type: string
+#           example: "Full-stack developer"
+#         location:
+#           type: string
+#           example: "Hà Nội"
+#         website:
+#           type: string
+#           example: "https://mywebsite.com"
+#         verificationStatus:
+#           type: string
+#           enum: [verified, unverified, banned]
+#           example: "verified"
+#         createdAt:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2024-03-15T08:30:00.000Z"
+#         updatedAt:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2024-03-17T10:45:00.000Z"
+#       example:
+#         _id: "507f1f77bcf86cd799439011"
+#         name: "Nguyễn Văn A"
+#         email: "nguyenvana@example.com"
+#         dateOfBirth: "2000-01-15T00:00:00.000Z"
+#         username: "nguyenvana"
+#         avatar: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+#         verificationStatus: "verified"
+#         createdAt: "2024-03-15T08:30:00.000Z"
+#         updatedAt: "2024-03-17T10:45:00.000Z"
+
+#     # Post schemas
+#     CreatePostRequest:
+#       type: object
+#       required: [type, audience, content, parentId, hashtags, mentions, media]
+#       properties:
+#         type:
+#           type: string
+#           enum: [post, repost, comment, quote]
+#           example: "post"
+#         audience:
+#           type: string
+#           enum: [public, followers, only_me]
+#           example: "public"
+#         content:
+#           type: string
+#           example: "Hello world! Đây là bài viết đầu tiên của tôi #nodejs #javascript"
+#         parentId:
+#           type: [string, "null"]
+#           description: null khi là bài viết gốc
+#           example: null
+#         hashtags:
+#           type: array
+#           items:
+#             type: string
+#           description: Tên hashtags ['javascript', 'nodejs']
+#           example: ["nodejs", "javascript"]
+#         mentions:
+#           type: array
+#           items:
+#             $ref: '#/components/schemas/MongoId'
+#           description: userId[]
+#           example: ["507f1f77bcf86cd799439012"]
+#         media:
+#           type: array
+#           items:
+#             $ref: '#/components/schemas/MediaItem'
+#           example:
+#             - url: "https://cdn.example.com/images/abc123.jpg"
+#               type: "image"
+#       example:
+#         type: "post"
+#         audience: "public"
+#         content: "Hello world! Đây là bài viết đầu tiên #nodejs #javascript"
+#         parentId: null
+#         hashtags: ["nodejs", "javascript"]
+#         mentions: ["507f1f77bcf86cd799439012"]
+#         media:
+#           - url: "https://cdn.example.com/images/abc123.jpg"
+#             type: "image"
+#     MediaItem:
+#       type: object
+#       properties:
+#         url:
+#           type: string
+#           format: uri
+#           example: "https://cdn.example.com/images/abc123.jpg"
+#         type:
+#           type: string
+#           enum: [image, video, video-hls]
+#           example: "image"
+#       example:
+#         url: "https://cdn.example.com/images/abc123.jpg"
+#         type: "image"
+#     PostResponse:
+#       type: object
+#       properties:
+#         _id:
+#           $ref: '#/components/schemas/MongoId'
+#         userId:
+#           $ref: '#/components/schemas/MongoId'
+#         type:
+#           type: string
+#           enum: [post, repost, comment, quote]
+#         audience:
+#           type: string
+#           enum: [public, followers, only_me]
+#         content:
+#           type: string
+#         parentId:
+#           type: [string, "null"]
+#         hashtags:
+#           type: array
+#           items:
+#             type: object
+#         mentions:
+#           type: array
+#           items:
+#             type: object
+#         media:
+#           type: array
+#           items:
+#             $ref: '#/components/schemas/MediaItem'
+#         createdAt:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2024-03-17T10:30:00.000Z"
+#         updatedAt:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2024-03-17T10:30:00.000Z"
+#       example:
+#         _id: "507f1f77bcf86cd799439013"
+#         userId: "507f1f77bcf86cd799439011"
+#         type: "post"
+#         audience: "public"
+#         content: "Hello world! Đây là bài viết đầu tiên #nodejs"
+#         parentId: null
+#         hashtags: []
+#         mentions: []
+#         media:
+#           - url: "https://cdn.example.com/images/abc123.jpg"
+#             type: "image"
+#         createdAt: "2024-03-17T10:30:00.000Z"
+#         updatedAt: "2024-03-17T10:30:00.000Z"
+#     PostDetailResponse:
+#       allOf:
+#         - $ref: '#/components/schemas/PostResponse'
+#         - type: object
+#           properties:
+#             bookmarkCount:
+#               type: integer
+#               example: 5
+#             repostCount:
+#               type: integer
+#               example: 3
+#             commentCount:
+#               type: integer
+#               example: 12
+#             quoteCount:
+#               type: integer
+#               example: 1
+#             author:
+#               type: object
+#               properties:
+#                 _id:
+#                   $ref: '#/components/schemas/MongoId'
+#                 name:
+#                   type: string
+#                   example: "Nguyễn Văn A"
+#                 username:
+#                   type: string
+#                   example: "nguyenvana"
+#                 avatar:
+#                   type: string
+#                   example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+#     PostsPaginatedResponse:
+#       type: object
+#       properties:
+#         data:
+#           type: object
+#           properties:
+#             posts:
+#               type: array
+#               items:
+#                 $ref: '#/components/schemas/PostDetailResponse'
+#             page:
+#               type: integer
+#               example: 1
+#             limit:
+#               type: integer
+#               example: 10
+#             totalItems:
+#               type: integer
+#               example: 25
+#             totalPages:
+#               type: integer
+#               example: 3
+#       example:
+#         data:
+#           posts:
+#             - _id: "507f1f77bcf86cd799439013"
+#               userId: "507f1f77bcf86cd799439011"
+#               type: "post"
+#               audience: "public"
+#               content: "Hello world!"
+#               author:
+#                 _id: "507f1f77bcf86cd799439011"
+#                 name: "Nguyễn Văn A"
+#                 username: "nguyenvana"
+#                 avatar: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+#               bookmarkCount: 5
+#               repostCount: 3
+#               commentCount: 12
+#               quoteCount: 1
+#               createdAt: "2024-03-17T10:30:00.000Z"
+#               updatedAt: "2024-03-17T10:30:00.000Z"
+#           page: 1
+#           limit: 10
+#           totalItems: 25
+#           totalPages: 3
+
+#     # Bookmark schemas
+#     CreateBookmarkRequest:
+#       type: object
+#       required: [postId]
+#       properties:
+#         postId:
+#           $ref: '#/components/schemas/MongoId'
+#           description: ID bài viết cần bookmark
+#       example:
+#         postId: "507f1f77bcf86cd799439013"
+
+#     # Conversation schemas
+#     CreateConversationRequest:
+#       type: object
+#       required: [receiverId, content]
+#       properties:
+#         receiverId:
+#           $ref: '#/components/schemas/MongoId'
+#         content:
+#           type: string
+#           example: "Xin chào! Bạn có rảnh không?"
+#       example:
+#         receiverId: "507f1f77bcf86cd799439012"
+#         content: "Xin chào! Bạn có rảnh không?"
+#     ConversationResponse:
+#       type: object
+#       properties:
+#         _id:
+#           $ref: '#/components/schemas/MongoId'
+#         senderId:
+#           $ref: '#/components/schemas/MongoId'
+#         receiverId:
+#           $ref: '#/components/schemas/MongoId'
+#         content:
+#           type: string
+#         lastMessage:
+#           type: string
+#         lastMessageAt:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2024-03-17T11:00:00.000Z"
+#         createdAt:
+#           type: string
+#           format: date-time
+#           description: ISO 8601 format
+#           example: "2024-03-17T11:00:00.000Z"
+#       example:
+#         _id: "507f1f77bcf86cd799439014"
+#         senderId: "507f1f77bcf86cd799439011"
+#         receiverId: "507f1f77bcf86cd799439012"
+#         content: "Xin chào! Bạn có rảnh không?"
+#         lastMessage: "Xin chào! Bạn có rảnh không?"
+#         lastMessageAt: "2024-03-17T11:00:00.000Z"
+#         createdAt: "2024-03-17T11:00:00.000Z"
+#     ConversationsPaginatedResponse:
+#       type: object
+#       properties:
+#         data:
+#           type: object
+#           properties:
+#             conversations:
+#               type: array
+#               items:
+#                 $ref: '#/components/schemas/ConversationResponse'
+#             page:
+#               type: integer
+#               example: 1
+#             limit:
+#               type: integer
+#               example: 10
+#             totalItems:
+#               type: integer
+#               example: 50
+#             totalPages:
+#               type: integer
+#               example: 5
+#       example:
+#         data:
+#           conversations:
+#             - _id: "507f1f77bcf86cd799439014"
+#               senderId: "507f1f77bcf86cd799439011"
+#               receiverId: "507f1f77bcf86cd799439012"
+#               content: "Xin chào! Bạn có rảnh không?"
+#               lastMessage: "Xin chào! Bạn có rảnh không?"
+#               lastMessageAt: "2024-03-17T11:00:00.000Z"
+#               createdAt: "2024-03-17T11:00:00.000Z"
+#           page: 1
+#           limit: 10
+#           totalItems: 50
+#           totalPages: 5
+
+#     # Media schemas
+#     MediaUploadResponse:
+#       type: object
+#       properties:
+#         data:
+#           type: array
+#           items:
+#             type: object
+#             properties:
+#               url:
+#                 type: string
+#                 example: "https://cdn.example.com/images/abc123.jpg"
+#               type:
+#                 type: string
+#                 enum: [image, video, video-hls]
+#         message:
+#           type: string
+#           example: "Upload successfully"
+#       example:
+#         data:
+#           - url: "https://cdn.example.com/images/abc123.jpg"
+#             type: "image"
+#         message: "Upload successfully"
+#     VideoStatusResponse:
+#       type: object
+#       properties:
+#         data:
+#           type: object
+#           properties:
+#             _id:
+#               $ref: '#/components/schemas/MongoId'
+#             name:
+#               type: string
+#               example: "video-abc123.mp4"
+#             status:
+#               type: string
+#               enum: [pending, processing, success, failed]
+#               example: "success"
+#             message:
+#               type: string
+#               example: ""
+#             createdAt:
+#               type: string
+#               format: date-time
+#               description: ISO 8601 format
+#               example: "2024-03-17T10:00:00.000Z"
+#         message:
+#           type: string
+#           example: "Get video status successfully"
+#       example:
+#         data:
+#           _id: "507f1f77bcf86cd799439015"
+#           name: "video-abc123.mp4"
+#           status: "success"
+#           message: ""
+#           createdAt: "2024-03-17T10:00:00.000Z"
+#         message: "Get video status successfully"
+
+#     # Search schemas
+#     SearchPaginatedResponse:
+#       type: object
+#       properties:
+#         data:
+#           type: object
+#           properties:
+#             data:
+#               type: array
+#             page:
+#               type: integer
+#               example: 1
+#             limit:
+#               type: integer
+#               example: 10
+#             totalItems:
+#               type: integer
+#               example: 15
+#             totalPages:
+#               type: integer
+#               example: 2
+#       example:
+#         data:
+#           data:
+#             - _id: "507f1f77bcf86cd799439013"
+#               content: "Bài viết về NodeJS"
+#               author:
+#                 _id: "507f1f77bcf86cd799439011"
+#                 name: "Nguyễn Văn A"
+#                 username: "nguyenvana"
+#           page: 1
+#           limit: 10
+#           totalItems: 15
+#           totalPages: 2
+
+#     # Error schema
+#     Error:
+#       type: object
+#       properties:
+#         message:
+#           type: string
+#           example: "Validation error"
+#         status:
+#           type: integer
+#           example: 400
+#       example:
+#         message: "Dữ liệu không hợp lệ"
+#         status: 400

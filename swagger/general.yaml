@@ -1,0 +1,9 @@
+openapi: 3.1.0
+info:
+  title: NodeJS Social API
+  description: |
+    API documentation cho ứng dụng mạng xã hội NodeJS Social.
+    Sử dụng Bearer token (Access Token) trong header Authorization cho các endpoint yêu cầu xác thực.
+  version: 1.0.0
+  contact:
+    email: support@nodejs-social.com

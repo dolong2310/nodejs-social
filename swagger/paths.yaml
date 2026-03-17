@@ -1,0 +1,666 @@
+paths:
+  # ==================== USERS ====================
+  /users/register:
+    post:
+      tags: [users]
+      summary: Đăng ký tài khoản
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+  /users/login:
+    post:
+      tags: [users]
+      summary: Đăng nhập
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Email hoặc mật khẩu không đúng
+  /users/logout:
+    post:
+      tags: [users]
+      summary: Đăng xuất
+      operationId: logout
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Đăng xuất thành công
+        '401':
+          description: Chưa xác thực
+  /users/refresh-token:
+    post:
+      tags: [users]
+      summary: Làm mới access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Làm mới token thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /users/verify-email:
+    post:
+      tags: [users]
+      summary: Xác thực email
+      operationId: verifyEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '200':
+          description: Xác thực email thành công
+  /users/resend-verify-email:
+    post:
+      tags: [users]
+      summary: Gửi lại email xác thực
+      operationId: resendVerifyEmail
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Đã gửi email xác thực
+        '401':
+          description: Chưa xác thực
+  /users/forgot-password:
+    post:
+      tags: [users]
+      summary: Quên mật khẩu
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Đã gửi email đặt lại mật khẩu
+  /users/reset-password:
+    post:
+      tags: [users]
+      summary: Đặt lại mật khẩu
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Đặt lại mật khẩu thành công
+  /users/change-password:
+    put:
+      tags: [users]
+      summary: Đổi mật khẩu
+      operationId: changePassword
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Đổi mật khẩu thành công
+        '401':
+          description: Chưa xác thực
+  /users/me:
+    get:
+      tags: [users]
+      summary: Lấy thông tin user hiện tại
+      operationId: getMe
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Chưa xác thực
+    patch:
+      tags: [users]
+      summary: Cập nhật thông tin user
+      operationId: updateMe
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeRequest'
+      responses:
+        '200':
+          description: Cập nhật thành công
+        '401':
+          description: Chưa xác thực
+  /users/{username}:
+    get:
+      tags: [users]
+      summary: Lấy thông tin user theo username
+      operationId: getUserProfile
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Không tìm thấy user
+
+  # ==================== OAUTH ====================
+  /oauth/google:
+    get:
+      tags: [oauth]
+      summary: Đăng nhập bằng Google
+      operationId: googleLogin
+      description: Chuyển hướng đến trang đăng nhập Google OAuth
+      responses:
+        '302':
+          description: Redirect đến Google OAuth
+
+  # ==================== MEDIA ====================
+  /media/upload-image:
+    post:
+      tags: [media]
+      summary: Upload ảnh
+      operationId: uploadImage
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUploadResponse'
+        '401':
+          description: Chưa xác thực
+  /media/upload-video:
+    post:
+      tags: [media]
+      summary: Upload video
+      operationId: uploadVideo
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUploadResponse'
+        '401':
+          description: Chưa xác thực
+  /media/upload-video-hls:
+    post:
+      tags: [media]
+      summary: Upload video HLS
+      operationId: uploadVideoHLS
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUploadResponse'
+        '401':
+          description: Chưa xác thực
+  /media/video-status/{id}:
+    get:
+      tags: [media]
+      summary: Lấy trạng thái upload/encode video
+      operationId: getVideoStatus
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoStatusResponse'
+        '401':
+          description: Chưa xác thực
+
+  # ==================== POSTS ====================
+  /posts:
+    get:
+      tags: [posts]
+      summary: Lấy new feed
+      operationId: getNewFeeds
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostsPaginatedResponse'
+    post:
+      tags: [posts]
+      summary: Tạo bài viết mới
+      operationId: createPost
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Tạo bài viết thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostResponse'
+        '401':
+          description: Chưa xác thực
+  /posts/{postId}:
+    get:
+      tags: [posts]
+      summary: Lấy chi tiết bài viết
+      operationId: getPostDetail
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostDetailResponse'
+        '404':
+          description: Không tìm thấy bài viết
+  /posts/{type}/{postId}:
+    get:
+      tags: [posts]
+      summary: Lấy danh sách bài viết theo loại (comments, quotes, reposts)
+      operationId: getPostsType
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [post, repost, comment, quote]
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostsPaginatedResponse'
+        '404':
+          description: Không tìm thấy
+
+  # ==================== BOOKMARKS ====================
+  /bookmarks:
+    post:
+      tags: [bookmarks]
+      summary: Thêm bookmark bài viết
+      operationId: createBookmark
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookmarkRequest'
+      responses:
+        '201':
+          description: Thêm bookmark thành công
+        '401':
+          description: Chưa xác thực
+  /bookmarks/posts/{postId}:
+    delete:
+      tags: [bookmarks]
+      summary: Xóa bookmark bài viết
+      operationId: deleteBookmark
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Xóa bookmark thành công
+        '401':
+          description: Chưa xác thực
+
+  # ==================== FOLLOWERS ====================
+  /followers/follow:
+    post:
+      tags: [followers]
+      summary: Follow người dùng
+      operationId: followUser
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowUserRequest'
+      responses:
+        '200':
+          description: Follow thành công hoặc đã follow từ trước
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowResponse'
+        '400':
+          description: Không thể follow chính mình
+        '401':
+          description: Chưa xác thực
+  /followers/follow/{userId}:
+    delete:
+      tags: [followers]
+      summary: Unfollow người dùng
+      operationId: unfollowUser
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Unfollow thành công hoặc chưa follow
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowResponse'
+        '401':
+          description: Chưa xác thực
+
+  # ==================== SEARCH ====================
+  /search:
+    get:
+      tags: [search]
+      summary: Tìm kiếm
+      operationId: search
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [post, user, image, video, video-hls]
+        - name: people_follow
+          in: query
+          schema:
+            type: string
+            enum: [following, not_following, only_me]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPaginatedResponse'
+
+  # ==================== CONVERSATIONS ====================
+  /conversations:
+    post:
+      tags: [conversations]
+      summary: Tạo tin nhắn mới
+      operationId: createConversation
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        '201':
+          description: Gửi tin nhắn thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+        '401':
+          description: Chưa xác thực
+  /conversations/receivers/{receiverId}:
+    get:
+      tags: [conversations]
+      summary: Lấy danh sách tin nhắn với người nhận
+      operationId: getConversations
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: receiverId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsPaginatedResponse'
+        '401':
+          description: Chưa xác thực
+
+  # ==================== STATIC ====================
+  /static/images/{filename}:
+    get:
+      tags: [static]
+      summary: Lấy ảnh tĩnh
+      operationId: getStaticImage
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File ảnh
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Không tìm thấy file
+  /static/videos-stream/{filename}:
+    get:
+      tags: [static]
+      summary: Stream video (hỗ trợ Range)
+      operationId: getStaticVideoStream
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Range
+          in: header
+          description: bytes=start-
+          schema:
+            type: string
+      responses:
+        '206':
+          description: Partial content
+        '404':
+          description: Không tìm thấy file
+  /static/videos-hls/{id}/master.m3u8:
+    get:
+      tags: [static]
+      summary: Lấy HLS master playlist
+      operationId: getStaticVideoHLSMaster
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HLS master playlist
+        '404':
+          description: Không tìm thấy
+  /static/videos-hls/{id}/{version}/{segment}:
+    get:
+      tags: [static]
+      summary: Lấy HLS segment
+      operationId: getStaticVideoHLSSegment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: segment
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HLS segment
+        '404':
+          description: Không tìm thấy

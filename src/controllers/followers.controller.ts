@@ -9,10 +9,6 @@ import { Request, Response } from 'express';
 class FollowersController {
   constructor() {}
 
-  // getFollowers(req: Request, res: Response) {}
-
-  // getFollowing(req: Request, res: Response) {}
-
   async followUser(req: Request<{}, {}, IFollowUserRequestBody>, res: Response) {
     const { userId: myUserId } = req.accessTokenPayload as AccessTokenPayload;
 

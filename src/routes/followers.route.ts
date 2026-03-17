@@ -6,17 +6,15 @@ import express from 'express';
 
 const router = express.Router();
 
-// router.get('/', asyncHandler(followersController.getFollowers.bind(followersController)));
-
 router.post(
-  '/follow',
+  '/',
   validateAccessToken,
   checkUserVerified,
   validateFollowUser,
   asyncHandler(followersController.followUser.bind(followersController))
 );
 router.delete(
-  '/follow/:userId',
+  '/:userId',
   validateAccessToken,
   checkUserVerified,
   validateUnfollowUser,
