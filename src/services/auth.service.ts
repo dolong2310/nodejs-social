@@ -1,3 +1,4 @@
+import { envConfig } from '@/constants/config.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
@@ -59,7 +60,7 @@ class AuthService {
       subject: 'Email Verification',
       body: {
         name,
-        url: `${process.env.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
+        url: `${envConfig.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
         expiresIn: '1 hour',
         appName: 'Social Media App',
         supportUrl: 'https://www.google.com'
@@ -203,7 +204,7 @@ class AuthService {
       subject: 'Email Verification',
       body: {
         name,
-        url: `${process.env.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
+        url: `${envConfig.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
         expiresIn: '1 hour',
         appName: 'Social Media App',
         supportUrl: 'https://www.google.com'
@@ -229,7 +230,7 @@ class AuthService {
       subject: 'Forgot Password',
       body: {
         name,
-        url: `${process.env.FRONTEND_URL}/reset-password?token=${forgotPasswordToken}`,
+        url: `${envConfig.FRONTEND_URL}/reset-password?token=${forgotPasswordToken}`,
         expiresIn: '1 hour',
         appName: 'Social Media App',
         supportUrl: 'https://www.google.com'

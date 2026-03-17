@@ -1,9 +1,7 @@
+import { envConfig } from '@/constants/config.constant';
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
-import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-
-dotenv.config();
 
 export enum EEmailTemplate {
   VERIFY_EMAIL = 'verify-email',
@@ -16,10 +14,10 @@ class EmailService {
   constructor() {
     // Create SES service object.
     this.sesClient = new SESClient({
-      region: process.env.AWS_REGION!,
+      region: envConfig.AWS_REGION,
       credentials: {
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!
+        secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: envConfig.AWS_ACCESS_KEY_ID
       }
     });
   }
@@ -87,7 +85,7 @@ class EmailService {
     template: EEmailTemplate;
   }) {
     const sendEmailCommand = this.createSendEmailCommand({
-      fromAddress: process.env.SES_FROM_ADDRESS!,
+      fromAddress: envConfig.SES_FROM_ADDRESS,
       toAddresses: toAddress,
       subject,
       body: this.getTemplate(template)

@@ -1,3 +1,4 @@
+import { envConfig } from '@/constants/config.constant';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFollower } from '@/models/schemas/follower.schema';
@@ -6,20 +7,15 @@ import { IPost } from '@/models/schemas/post.schema';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
-import dotenv from 'dotenv';
 import { Collection, Db, MongoClient } from 'mongodb';
-
-dotenv.config();
-
-const uri = process.env.MONGODB_URI!;
 
 class DatabaseService {
   private client: MongoClient;
   private db: Db;
 
   constructor() {
-    this.client = new MongoClient(uri);
-    this.db = this.client.db(process.env.DATABASE_NAME!);
+    this.client = new MongoClient(envConfig.MONGODB_URI);
+    this.db = this.client.db(envConfig.DATABASE_NAME);
   }
 
   async connect() {

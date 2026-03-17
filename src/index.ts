@@ -1,3 +1,4 @@
+import { envConfig } from '@/constants/config.constant';
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
 import authRouter from '@/routes/auth.route';
@@ -14,7 +15,6 @@ import databaseService from '@/services/database.service';
 import SocketService from '@/services/socket.service';
 import { getSwaggerDefinition, initUploadsFolder } from '@/utils/file.util';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -23,8 +23,7 @@ import swaggerUi from 'swagger-ui-express';
 // import fakeData from '@/utils/fake-data';
 // fakeData();
 
-dotenv.config();
-const port = process.env.PORT || 8080;
+const port = envConfig.PORT;
 
 const app = express();
 const httpServer = createServer(app);
@@ -33,7 +32,7 @@ initUploadsFolder();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: envConfig.FRONTEND_URL,
     credentials: true
   })
 );

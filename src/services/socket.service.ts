@@ -1,3 +1,4 @@
+import { envConfig } from '@/constants/config.constant';
 import { verifyAuthorizationMiddleware, verifyUserMiddleware } from '@/middlewares/common.middleware';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Server as HttpServer } from 'http';
@@ -11,7 +12,7 @@ class SocketService {
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        origin: envConfig.FRONTEND_URL,
         credentials: true
       }
     });

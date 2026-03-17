@@ -1,4 +1,4 @@
-import { isDevelopment } from '@/constants/config.constant';
+import { envConfig, isDevelopment } from '@/constants/config.constant';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
 import VideoStatusSchema from '@/models/schemas/videoStatus.schema';
@@ -46,7 +46,7 @@ class MediaService {
           url: result.Location ?? '',
           type: EMediaType.IMAGE
         };
-        // const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
+        // const url = isDevelopment ? envConfig.DEVELOPMENT_URL : envConfig.PRODUCTION_URL;
         // return { url: `${url}/static/images/${newName}.jpg`, type: EMediaType.IMAGE };
       })
     );
@@ -71,7 +71,7 @@ class MediaService {
           type: EMediaType.VIDEO
         };
 
-        // const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
+        // const url = isDevelopment ? envConfig.DEVELOPMENT_URL : envConfig.PRODUCTION_URL;
         // return { url: `${url}/static/videos/${newName}.mp4`, type: EMediaType.VIDEO };
       })
     );
@@ -83,7 +83,7 @@ class MediaService {
       files.map(async (file) => {
         const newName = getNameFromFullname(file.newFilename);
         const idName = getNameFromFullname(file.newFilename.split('/').pop() as string);
-        const url = isDevelopment ? process.env.DEVELOPMENT_URL : process.env.PRODUCTION_URL;
+        const url = isDevelopment ? envConfig.DEVELOPMENT_URL : envConfig.PRODUCTION_URL;
 
         this.queueService.enqueue({
           item: file.filepath,

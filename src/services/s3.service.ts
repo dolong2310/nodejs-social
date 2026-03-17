@@ -1,3 +1,4 @@
+import { envConfig } from '@/constants/config.constant';
 import { NotFoundError } from '@/models/error.response';
 import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -11,10 +12,10 @@ class S3Service {
 
   constructor() {
     this.s3 = new S3({
-      region: process.env.AWS_REGION!,
+      region: envConfig.AWS_REGION,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+        accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
+        secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY
       }
     });
 
@@ -29,7 +30,7 @@ class S3Service {
         client: this.s3,
 
         params: {
-          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Bucket: envConfig.AWS_S3_BUCKET_NAME,
           Key: filename,
           Body: readFileSync(filepath),
           ContentType: contentType // nếu không có contentType thì sẽ tự động download file khi upload
@@ -58,7 +59,7 @@ class S3Service {
   createPresignedUrlWithClient(filename: string) {
     const contentType = mime.lookup(filename) || 'application/octet-stream';
     const command = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Bucket: envConfig.AWS_S3_BUCKET_NAME,
       Key: filename,
       ContentType: contentType
     });
@@ -68,7 +69,7 @@ class S3Service {
   async sendFileFromS3(res: Response, filepath: string) {
     try {
       const s3Object = await this.s3.getObject({
-        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Bucket: envConfig.AWS_S3_BUCKET_NAME,
         Key: filepath
       });
 
