@@ -1,8 +1,8 @@
 paths:
-  # ==================== USERS ====================
-  /users/register:
+  # ==================== AUTH ====================
+  /auth/register:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Đăng ký tài khoản
       operationId: register
       requestBody:
@@ -20,9 +20,9 @@ paths:
                 $ref: '#/components/schemas/UserResponse'
         '400':
           description: Dữ liệu không hợp lệ
-  /users/login:
+  /auth/login:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Đăng nhập
       operationId: login
       requestBody:
@@ -40,9 +40,9 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Email hoặc mật khẩu không đúng
-  /users/logout:
+  /auth/logout:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Đăng xuất
       operationId: logout
       security: [{ bearerAuth: [] }]
@@ -57,9 +57,9 @@ paths:
           description: Đăng xuất thành công
         '401':
           description: Chưa xác thực
-  /users/refresh-token:
+  /auth/refresh-token:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Làm mới access token
       operationId: refreshToken
       requestBody:
@@ -75,9 +75,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
-  /users/verify-email:
+  /auth/verify-email:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Xác thực email
       operationId: verifyEmail
       requestBody:
@@ -89,9 +89,9 @@ paths:
       responses:
         '200':
           description: Xác thực email thành công
-  /users/resend-verify-email:
+  /auth/resend-verify-email:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Gửi lại email xác thực
       operationId: resendVerifyEmail
       security: [{ bearerAuth: [] }]
@@ -100,9 +100,9 @@ paths:
           description: Đã gửi email xác thực
         '401':
           description: Chưa xác thực
-  /users/forgot-password:
+  /auth/forgot-password:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Quên mật khẩu
       operationId: forgotPassword
       requestBody:
@@ -114,9 +114,9 @@ paths:
       responses:
         '200':
           description: Đã gửi email đặt lại mật khẩu
-  /users/reset-password:
+  /auth/reset-password:
     post:
-      tags: [users]
+      tags: [auth]
       summary: Đặt lại mật khẩu
       operationId: resetPassword
       requestBody:
@@ -128,9 +128,9 @@ paths:
       responses:
         '200':
           description: Đặt lại mật khẩu thành công
-  /users/change-password:
+  /auth/change-password:
     put:
-      tags: [users]
+      tags: [auth]
       summary: Đổi mật khẩu
       operationId: changePassword
       security: [{ bearerAuth: [] }]
@@ -145,6 +145,8 @@ paths:
           description: Đổi mật khẩu thành công
         '401':
           description: Chưa xác thực
+
+  # ==================== USERS ====================
   /users/me:
     get:
       tags: [users]

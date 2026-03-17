@@ -1,6 +1,7 @@
 import bookmarksController from '@/controllers/bookmarks.controller';
+import { validateAccessToken } from '@/middlewares/auth.middleware';
 import { validateCreateBookmark, validateDeleteBookmark } from '@/middlewares/bookmark.middleware';
-import { checkUserVerified, validateAccessToken } from '@/middlewares/users.middleware';
+import { checkUserVerified } from '@/middlewares/users.middleware';
 import { asyncHandler } from '@/utils/handler.util';
 import express from 'express';
 

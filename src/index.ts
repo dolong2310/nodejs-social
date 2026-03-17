@@ -1,5 +1,6 @@
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { errorHandler } from '@/middlewares/error.middleware';
+import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
 import conversationsRouter from '@/routes/conversations.route';
 import followersRouter from '@/routes/followers.route';
@@ -39,6 +40,7 @@ app.use(
 
 app.use(express.json());
 
+app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/oauth', oauthRouter);
 app.use('/media', mediaRouter);

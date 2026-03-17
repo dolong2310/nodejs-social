@@ -1,5 +1,5 @@
 import postsController from '@/controllers/posts.controller';
-import { checkAuthWrapper } from '@/middlewares/auth.middleware';
+import { checkAuthWrapper, validateAccessToken } from '@/middlewares/auth.middleware';
 import {
   validateAudience,
   validateCreatePost,
@@ -7,7 +7,7 @@ import {
   validatePostId,
   validatePostType
 } from '@/middlewares/posts.middleware';
-import { checkUserVerified, validateAccessToken } from '@/middlewares/users.middleware';
+import { checkUserVerified } from '@/middlewares/users.middleware';
 import { asyncHandler } from '@/utils/handler.util';
 import express from 'express';
 

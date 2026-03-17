@@ -1,7 +1,7 @@
 # Danh sách operationId tham chiếu
 # Các operationId được định nghĩa trong paths.yaml
-# register | login | logout | refreshToken | verifyEmail | resendVerifyEmail
-# forgotPassword | resetPassword | changePassword | getMe | updateMe | getUserProfile
+# Auth: register | login | logout | refreshToken | verifyEmail | resendVerifyEmail | forgotPassword | resetPassword | changePassword
+# Users: getMe | updateMe | getUserProfile
 # googleLogin | uploadImage | uploadVideo | uploadVideoHLS | getVideoStatus
 # getNewFeeds | createPost | getPostDetail | getPostsType
 # createBookmark | deleteBookmark | followUser | unfollowUser | search

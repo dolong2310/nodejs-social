@@ -1,7 +1,8 @@
 import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { ErrorWithStatus } from '@/models/error.model';
-import axios from 'axios';
+import authService from '@/services/auth.service';
 import usersService from '@/services/users.service';
+import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 class OAuthService {
@@ -65,7 +66,7 @@ class OAuthService {
 
     // if user exists, login
     if (user) {
-      const { accessToken, refreshToken } = await usersService.login(
+      const { accessToken, refreshToken } = await authService.login(
         { email: userInfo.email, password: user.password },
         user
       );
@@ -73,14 +74,14 @@ class OAuthService {
     }
     // else, register
     const randomPassword = uuidv4();
-    const newUser = await usersService.register({
+    const newUser = await authService.register({
       name: userInfo.name,
       email: userInfo.email,
       password: randomPassword,
       dateOfBirth: new Date().toISOString()
     });
 
-    const { accessToken, refreshToken } = await usersService.login(
+    const { accessToken, refreshToken } = await authService.login(
       { email: userInfo.email, password: newUser.password },
       newUser
     );

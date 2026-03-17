@@ -1,6 +1,8 @@
 tags:
+  - name: auth
+    description: Xác thực - đăng ký, đăng nhập, logout, refresh token, verify email, quên mật khẩu
   - name: users
-    description: Quản lý người dùng - đăng ký, đăng nhập, xác thực
+    description: Quản lý thông tin người dùng - me, cập nhật profile, xem profile
   - name: oauth
     description: Đăng nhập OAuth (Google)
   - name: media

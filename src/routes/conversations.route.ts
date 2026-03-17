@@ -1,7 +1,8 @@
 import conversationsController from '@/controllers/conversations.controller';
+import { validateAccessToken } from '@/middlewares/auth.middleware';
 import { validateReceiverId } from '@/middlewares/conversations.middleware';
 import { validatePaginationQuery } from '@/middlewares/posts.middleware';
-import { checkUserVerified, validateAccessToken } from '@/middlewares/users.middleware';
+import { checkUserVerified } from '@/middlewares/users.middleware';
 import { asyncHandler } from '@/utils/handler.util';
 import express from 'express';
 
