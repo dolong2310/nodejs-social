@@ -3,7 +3,7 @@ import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import { ICreatePostRequestBody } from '@/models/requests/post.request';
-import { IRegisterRequestBody } from '@/models/requests/user.request';
+import { IRegisterRequestBody } from '@/models/requests/auth.request';
 import FollowerSchema from '@/models/schemas/follower.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import UserSchema from '@/models/schemas/user.schema';

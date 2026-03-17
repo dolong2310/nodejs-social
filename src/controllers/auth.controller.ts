@@ -1,7 +1,6 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ErrorWithStatus } from '@/models/error.model';
+import { AuthFailureError, BadRequestError, NotFoundError } from '@/models/error.response';
 import {
   IChangePasswordRequestBody,
   IForgotPasswordRequestBody,
@@ -13,6 +12,7 @@ import {
   IVerifyEmailRequestBody
 } from '@/models/requests/auth.request';
 import { IUser } from '@/models/schemas/user.schema';
+import { Created, OK } from '@/models/success.response';
 import authService from '@/services/auth.service';
 import usersService from '@/services/users.service';
 import { AccessTokenPayload, ForgotPasswordTokenPayload, RefreshTokenPayload } from '@/types/token.type';
@@ -26,10 +26,10 @@ class AuthController {
 
     const user = await authService.register({ name, email, password, dateOfBirth });
 
-    return res.status(HTTP_STATUS.CREATED).json({
+    return new Created({
       data: user,
       message: 'User registered successfully'
-    });
+    }).send(res);
   }
 
   async login(req: Request<{}, {}, ILoginRequestBody>, res: Response) {
@@ -39,10 +39,10 @@ class AuthController {
     const { accessToken, refreshToken } = await authService.login({ email, password }, user);
 
     // Trả về token
-    return res.status(HTTP_STATUS.OK).json({
-      accessToken,
-      refreshToken
-    });
+    return new OK({
+      data: { accessToken, refreshToken },
+      message: 'Login successfully'
+    }).send(res);
   }
 
   async logout(req: Request<{}, {}, ILogoutRequestBody>, res: Response) {
@@ -50,9 +50,9 @@ class AuthController {
 
     await authService.logout(refreshToken);
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Logout successfully'
-    });
+    }).send(res);
   }
 
   async refreshToken(req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response) {
@@ -61,10 +61,10 @@ class AuthController {
 
     const { accessToken, refreshToken } = await authService.refreshToken({ userId, refreshTokenBody, exp });
 
-    return res.status(HTTP_STATUS.OK).json({
-      accessToken,
-      refreshToken
-    });
+    return new OK({
+      data: { accessToken, refreshToken },
+      message: 'Refresh token successfully'
+    }).send(res);
   }
 
   async verifyEmail(req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response) {
@@ -72,73 +72,52 @@ class AuthController {
     const userId = req.emailVerificationTokenPayload?.userId;
 
     if (!userId) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     const user = await usersService.findUserById(userId);
 
     if (!user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
     }
 
     if (user.emailVerificationToken !== token) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID);
     }
 
     await authService.verifyEmail(userId);
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Email verified successfully'
-    });
+    }).send(res);
   }
 
   async resendVerifyEmail(req: Request, res: Response) {
     const userId = req.accessTokenPayload?.userId;
 
     if (!userId) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-        status: HTTP_STATUS.UNAUTHORIZED
-      });
+      throw new AuthFailureError();
     }
 
     const user = await usersService.findUserById(userId);
 
     if (!user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
     }
 
     await authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Email verification sent successfully'
-    });
+    }).send(res);
   }
 
   async forgotPassword(req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response) {
@@ -146,9 +125,9 @@ class AuthController {
 
     await authService.forgotPassword({ userId: user._id!.toString(), name: user.name, email: user.email });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Password reset email sent successfully'
-    });
+    }).send(res);
   }
 
   async resetPassword(req: Request<{}, {}, IResetPasswordRequestBody>, res: Response) {
@@ -156,33 +135,24 @@ class AuthController {
     const { userId } = req.forgotPasswordTokenPayload as ForgotPasswordTokenPayload;
 
     if (!userId) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     const user = await usersService.findUserById(userId);
 
     if (!user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     if (user.forgotPasswordToken !== token) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID);
     }
 
     await authService.resetPassword({ userId, password });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Password reset successfully'
-    });
+    }).send(res);
   }
 
   async changePassword(req: Request<{}, {}, IChangePasswordRequestBody>, res: Response) {
@@ -191,9 +161,9 @@ class AuthController {
 
     await authService.changePassword({ userId, newPassword });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Password changed successfully'
-    });
+    }).send(res);
   }
 }
 

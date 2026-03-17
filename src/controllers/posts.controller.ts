@@ -1,11 +1,11 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { IPaginationRequestQuery } from '@/models/requests/common.request';
 import {
   ICreatePostRequestBody,
   IGetPostDetailRequestParams,
-  IGetPostsRequestParams,
+  IGetPostsRequestParams
 } from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
+import { Created, OK } from '@/models/success.response';
 import followersService from '@/services/followers.service';
 import postsService from '@/services/posts.service';
 import { AccessTokenPayload } from '@/types/token.type';
@@ -46,15 +46,16 @@ class PostsController {
       totalPosts = guestResults.totalPosts;
     }
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: {
         posts,
         page: pageNumber,
         limit: limitNumber,
         totalItems: totalPosts,
         totalPages: Math.ceil(totalPosts / limitNumber)
-      }
-    });
+      },
+      message: 'Get new feeds successfully'
+    }).send(res);
   }
 
   async getPostDetail(req: Request<IGetPostDetailRequestParams>, res: Response) {
@@ -69,9 +70,10 @@ class PostsController {
       post.updatedAt = updatedViews.updatedAt;
     }
 
-    return res.status(HTTP_STATUS.OK).json({
-      data: post
-    });
+    return new OK({
+      data: post,
+      message: 'Get post detail successfully'
+    }).send(res);
   }
 
   async getPostsType(req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response) {
@@ -90,15 +92,16 @@ class PostsController {
       limit: limitNumber
     });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: {
         posts,
         page: pageNumber,
         limit: limitNumber,
         totalItems: totalPosts,
         totalPages: Math.ceil(totalPosts / limitNumber)
-      }
-    });
+      },
+      message: 'Get posts type successfully'
+    }).send(res);
   }
 
   async createPost(req: Request<{}, {}, ICreatePostRequestBody>, res: Response) {
@@ -110,9 +113,10 @@ class PostsController {
       body: { type, audience, content, parentId, hashtags, mentions, media }
     });
 
-    return res.status(HTTP_STATUS.CREATED).json({
-      data: post
-    });
+    return new Created({
+      data: post,
+      message: 'Create post successfully'
+    }).send(res);
   }
 }
 

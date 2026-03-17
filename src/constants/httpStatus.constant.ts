@@ -344,5 +344,3 @@ export const HTTP_STATUS = {
 } as const;
 
 export type HTTP_STATUS_TYPE = (typeof HTTP_STATUS)[keyof typeof HTTP_STATUS];
-
-export default HTTP_STATUS;

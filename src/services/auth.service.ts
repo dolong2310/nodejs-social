@@ -1,8 +1,7 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ErrorWithStatus } from '@/models/error.model';
+import { BadRequestError, NotFoundError } from '@/models/error.response';
 import { ILoginRequestBody, IRegisterRequestBody } from '@/models/requests/auth.request';
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import UserSchema, { IUser } from '@/models/schemas/user.schema';
@@ -22,10 +21,28 @@ class AuthService {
     return databaseService.refreshTokens.findOne<IRefreshToken>({ token });
   }
 
+  // Nếu autoLogin là true, trả về accessToken và refreshToken.
   async register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>
-  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>> {
+    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
+    options: { autoLogin: true }
+  ): Promise<{ accessToken: string; refreshToken: string }>;
+  // Nếu autoLogin là false hoặc không truyền options, trả về thông tin user
+  async register(
+    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
+    options?: { autoLogin?: false }
+  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>>;
+  // Overload Functions
+  async register(
+    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
+    options?: {
+      autoLogin?: boolean;
+    }
+  ): Promise<
+    | Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>
+    | { accessToken: string; refreshToken: string }
+  > {
     const { name, email, password, dateOfBirth } = body;
+    const { autoLogin = false } = options ?? {};
 
     const userId = new ObjectId();
 
@@ -52,10 +69,7 @@ class AuthService {
 
     const user = await usersService.findUserByEmail(email);
     if (user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
     }
 
     const hashedPassword = await hashPassword(password);
@@ -71,6 +85,10 @@ class AuthService {
     });
     await databaseService.users.insertOne(newUser);
 
+    if (autoLogin) {
+      return this.login({ email, password }, newUser);
+    }
+
     return omit(newUser, ['password', 'emailVerificationToken', 'forgotPasswordToken']);
   }
 
@@ -78,18 +96,12 @@ class AuthService {
     const { password } = body;
 
     if (!user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.UNAUTHORIZED
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD,
-        status: HTTP_STATUS.UNAUTHORIZED
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
     // Tạo cặp token JWT

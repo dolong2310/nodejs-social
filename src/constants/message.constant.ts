@@ -1,4 +1,4 @@
-export const ERROR_MESSAGE = {
+export const HTTP_ERROR_MESSAGE = {
   /**
    * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.3.3
    *
@@ -343,7 +343,7 @@ export const ERROR_MESSAGE = {
   MISDIRECTED_REQUEST: 'Misdirected Request'
 } as const;
 
-export type ERROR_MESSAGE_TYPE = (typeof ERROR_MESSAGE)[keyof typeof ERROR_MESSAGE];
+export type ERROR_MESSAGE_TYPE = (typeof HTTP_ERROR_MESSAGE)[keyof typeof HTTP_ERROR_MESSAGE];
 
 export const VALIDATION_ERROR_MESSAGE = {
   NAME_IS_REQUIRED: 'Name is required',
@@ -370,11 +370,10 @@ export const VALIDATION_ERROR_MESSAGE = {
   // Service errors
   INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password',
   USER_NOT_FOUND: 'User not found',
-  AUTHORIZATION_IS_REQUIRED: 'Authorization is required',
   AUTHORIZATION_MUST_BE_A_STRING: 'Authorization must be a string',
-  AUTHORIZATION_IS_INVALID: 'Authorization is invalid',
   REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
   REFRESH_TOKEN_MUST_BE_A_STRING: 'Refresh token must be a string',
+  ACCESS_TOKEN_IS_INVALID: 'Access token is invalid',
   REFRESH_TOKEN_IS_INVALID: 'Refresh token is invalid',
   EMAIL_VERIFICATION_TOKEN_IS_REQUIRED: 'Email verification token is required',
   EMAIL_VERIFICATION_TOKEN_MUST_BE_A_STRING: 'Email verification token must be a string',

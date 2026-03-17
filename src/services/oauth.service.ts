@@ -1,5 +1,4 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
-import { ErrorWithStatus } from '@/models/error.model';
+import { BadRequestError } from '@/models/error.response';
 import authService from '@/services/auth.service';
 import usersService from '@/services/users.service';
 import axios from 'axios';
@@ -55,10 +54,7 @@ class OAuthService {
     const userInfo = await this.getOAuthGoogleUser(token.access_token, token.id_token);
 
     if (!userInfo.verified_email) {
-      throw new ErrorWithStatus({
-        message: 'Google account is not verified',
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError('Google account is not verified');
     }
 
     // check user exists
@@ -74,18 +70,23 @@ class OAuthService {
     }
     // else, register
     const randomPassword = uuidv4();
-    const newUser = await authService.register({
-      name: userInfo.name,
-      email: userInfo.email,
-      password: randomPassword,
-      dateOfBirth: new Date().toISOString()
-    });
-
-    const { accessToken, refreshToken } = await authService.login(
-      { email: userInfo.email, password: newUser.password },
-      newUser
+    return await authService.register(
+      {
+        name: userInfo.name,
+        email: userInfo.email,
+        password: randomPassword,
+        dateOfBirth: new Date().toISOString()
+      },
+      {
+        autoLogin: true
+      }
     );
-    return { accessToken, refreshToken };
+
+    // const { accessToken, refreshToken } = await authService.login(
+    //   { email: userInfo.email, password: newUser.password },
+    //   newUser
+    // );
+    // return { accessToken, refreshToken };
   }
 }
 

@@ -1,7 +1,7 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorWithStatus } from '@/models/error.model';
+import { BadRequestError } from '@/models/error.response';
 import { IFollowUserRequestBody, IUnfollowUserRequestParams } from '@/models/requests/follower.request';
+import { OK } from '@/models/success.response';
 import followersService from '@/services/followers.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
@@ -16,25 +16,22 @@ class FollowersController {
 
     // cannot follow yourself
     if (myUserId === followedUserId) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.YOU_CANNOT_FOLLOW_YOURSELF,
-        status: HTTP_STATUS.BAD_REQUEST
-      });
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.YOU_CANNOT_FOLLOW_YOURSELF);
     }
 
     const isFollowing = await followersService.findFollower({ myUserId, followedUserId });
 
     if (isFollowing) {
-      return res.status(HTTP_STATUS.OK).json({
+      return new OK({
         message: 'Already following user'
-      });
+      }).send(res);
     }
 
     await followersService.followUser({ myUserId, followedUserId });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Follow user successfully'
-    });
+    }).send(res);
   }
 
   async unfollowUser(req: Request<IUnfollowUserRequestParams>, res: Response) {
@@ -47,14 +44,14 @@ class FollowersController {
     if (isFollowing) {
       await followersService.unfollowUser({ myUserId, unfollowedUserId: userId });
 
-      return res.status(HTTP_STATUS.OK).json({
+      return new OK({
         message: 'Unfollow user successfully'
-      });
+      }).send(res);
     }
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       message: 'Not following user'
-    });
+    }).send(res);
   }
 }
 

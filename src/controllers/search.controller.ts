@@ -1,6 +1,6 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { ESearchType } from '@/enums/search.enum';
 import { ISearchRequestParams, ISearchRequestQuery } from '@/models/requests/search.request';
+import { OK } from '@/models/success.response';
 import searchService from '@/services/search.service';
 import { Request, Response } from 'express';
 
@@ -32,15 +32,16 @@ export class SearchController {
       })
     ][Number(type === ESearchType.USER)];
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: {
         data: results,
         page: pageNumber,
         limit: limitNumber,
         totalItems: totalItems,
         totalPages: Math.ceil(totalItems / limitNumber)
-      }
-    });
+      },
+      message: 'Search successfully'
+    }).send(res);
   }
 }
 

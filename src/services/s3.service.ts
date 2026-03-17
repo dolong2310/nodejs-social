@@ -1,5 +1,4 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
-import { ERROR_MESSAGE } from '@/constants/message.constant';
+import { NotFoundError } from '@/models/error.response';
 import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -77,8 +76,7 @@ class S3Service {
 
       return s3Object;
     } catch (error) {
-      res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
-      throw error;
+      throw new NotFoundError();
     }
   }
 }

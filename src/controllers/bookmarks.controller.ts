@@ -1,5 +1,5 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { ICreateBookmarkRequestBody, IDeleteBookmarkRequestParams } from '@/models/requests/bookmark.request';
+import { Created, OK } from '@/models/success.response';
 import bookmarksService from '@/services/bookmarks.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
@@ -16,7 +16,10 @@ class BookmarksController {
       postId
     });
 
-    return res.status(HTTP_STATUS.CREATED).json({ data: bookmark, message: 'Bookmark post successfully' });
+    return new Created({
+      data: bookmark,
+      message: 'Bookmark post successfully'
+    }).send(res);
   }
 
   async deleteBookmark(req: Request<IDeleteBookmarkRequestParams>, res: Response) {
@@ -28,7 +31,9 @@ class BookmarksController {
       postId
     });
 
-    return res.status(HTTP_STATUS.OK).json({ message: 'Unbookmark post successfully' });
+    return new OK({
+      message: 'Unbookmark post successfully'
+    }).send(res);
   }
 }
 

@@ -1,5 +1,5 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
+import { OK } from '@/models/success.response';
 import conversationsService from '@/services/conversations.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
@@ -25,15 +25,16 @@ class ConversationsController {
       limit: limitNumber
     });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: {
         conversations,
         page: pageNumber,
         limit: limitNumber,
         totalItems: totalConversations,
         totalPages: Math.ceil(totalConversations / limitNumber)
-      }
-    });
+      },
+      message: 'Get conversations successfully'
+    }).send(res);
   }
 }
 

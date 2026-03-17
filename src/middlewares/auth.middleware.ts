@@ -1,9 +1,8 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { verifyAuthorizationMiddleware } from '@/middlewares/common.middleware';
 import { dateOfBirthSchema, nameSchema } from '@/middlewares/users.middleware';
-import { ErrorWithStatus } from '@/models/error.model';
+import { AuthFailureError, BadRequestError } from '@/models/error.response';
 import authService from '@/services/auth.service';
 import tokenService from '@/services/token.service';
 import usersService from '@/services/users.service';
@@ -75,10 +74,7 @@ export const confirmPasswordSchema: ParamSchema = {
   custom: {
     options: (value, { req }) => {
       if (value !== req.body.password) {
-        throw new ErrorWithStatus({
-          message: VALIDATION_ERROR_MESSAGE.CONFIRM_PASSWORD_MUST_MATCH_PASSWORD,
-          status: HTTP_STATUS.BAD_REQUEST
-        });
+        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONFIRM_PASSWORD_MUST_MATCH_PASSWORD);
       }
       return true;
     }
@@ -95,10 +91,7 @@ export const validateRegister = validate(
           options: async (value) => {
             const user = await usersService.findUserByEmail(value as string);
             if (user) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
             }
             return true;
           }
@@ -123,10 +116,7 @@ export const validateLogin = validate(
             if (user) {
               req.user = user;
             } else {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
             }
             return true;
           }
@@ -142,9 +132,6 @@ export const validateAccessToken = validate(
   checkSchema(
     {
       Authorization: {
-        // notEmpty: {
-        //   errorMessage: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED
-        // },
         isString: {
           errorMessage: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_MUST_BE_A_STRING
         },
@@ -153,19 +140,13 @@ export const validateAccessToken = validate(
           options: async (value: string, { req }) => {
             const token = value?.split(' ')[1];
             // if (!token) {
-            //   throw new ErrorWithStatus({
-            //     message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-            //     status: HTTP_STATUS.UNAUTHORIZED
-            //   });
+            //   throw new AuthFailureError();
             // }
 
             // // decode token
             // const decoded = await tokenService.verifyAccessToken(token);
             // if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-            //   throw new ErrorWithStatus({
-            //     message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_INVALID,
-            //     status: HTTP_STATUS.UNAUTHORIZED
-            //   });
+            //   throw new AuthFailureError();
             // }
             const decoded = await verifyAuthorizationMiddleware(token);
             req.accessTokenPayload = decoded;
@@ -192,10 +173,7 @@ export const validateRefreshToken = validate(
         custom: {
           options: async (value: string, { req }) => {
             if (!value) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              });
+              throw new AuthFailureError();
             }
 
             try {
@@ -204,19 +182,13 @@ export const validateRefreshToken = validate(
                 authService.findRefreshTokenByToken(value)
               ]);
               if (decoded.type !== ETokenType.REFRESH_TOKEN || !findRefreshToken) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.REFRESH_TOKEN_IS_INVALID,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                });
+                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.REFRESH_TOKEN_IS_INVALID);
               }
               req.refreshTokenPayload = decoded;
               return true;
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_INVALID,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                });
+                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.REFRESH_TOKEN_IS_INVALID);
               }
               throw error;
             }
@@ -239,29 +211,20 @@ export const validateEmailVerificationToken = validate(
         custom: {
           options: async (value: string, { req }) => {
             if (!value) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              });
+              throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_REQUIRED);
             }
 
             try {
               const decoded = await tokenService.verifyEmailVerificationToken(value);
               if (decoded.type !== ETokenType.EMAIL_VERIFICATION_TOKEN) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                });
+                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID);
               }
 
               req.emailVerificationTokenPayload = decoded;
               return true;
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID,
-                  status: HTTP_STATUS.BAD_REQUEST
-                });
+                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID);
               }
               throw error;
             }
@@ -284,10 +247,7 @@ export const validateForgotPassword = validate(
             if (user) {
               req.user = user;
             } else {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
             }
             return true;
           }
@@ -309,29 +269,20 @@ export const validateForgotPasswordToken = validate(
         custom: {
           options: async (value: string, { req }) => {
             if (!value) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              });
+              throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_REQUIRED);
             }
 
             try {
               const decoded = await tokenService.verifyForgotPasswordToken(value);
               if (decoded.type !== ETokenType.FORGOT_PASSWORD_TOKEN) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                });
+                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID);
               }
 
               req.forgotPasswordTokenPayload = decoded;
               return true;
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID,
-                  status: HTTP_STATUS.BAD_REQUEST
-                });
+                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID);
               }
               throw error;
             }
@@ -366,10 +317,7 @@ export const checkAuthWrapper = (handler: (req: Request, res: Response, next: Ne
 
 export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-      status: HTTP_STATUS.UNAUTHORIZED
-    });
+    throw new AuthFailureError();
   }
   next();
 };

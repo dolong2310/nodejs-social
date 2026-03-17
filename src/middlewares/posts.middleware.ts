@@ -1,9 +1,8 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ErrorWithStatus } from '@/models/error.model';
+import { AuthFailureError, BadRequestError, ForbiddenError, NotFoundError } from '@/models/error.response';
 import { ICreatePostRequestBody, IGetPostDetailRequestParams } from '@/models/requests/post.request';
 import { IPostDetailResponse } from '@/models/responses/post.response';
 import followersService from '@/services/followers.service';
@@ -27,18 +26,12 @@ export const postIdSchema: ParamSchema = {
   custom: {
     options: async (postId: string, { req }: Meta) => {
       if (!ObjectId.isValid(postId)) {
-        throw new ErrorWithStatus({
-          message: VALIDATION_ERROR_MESSAGE.INVALID_POST_ID,
-          status: HTTP_STATUS.BAD_REQUEST
-        });
+        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_POST_ID);
       }
 
       const postDetail = await postsService.findPostDetail(postId);
       if (!postDetail) {
-        throw new ErrorWithStatus({
-          message: VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND,
-          status: HTTP_STATUS.NOT_FOUND
-        });
+        throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
       }
 
       req.postDetail = postDetail;
@@ -78,24 +71,15 @@ export const validateCreatePost = validate(
             const { type, mentions, hashtags } = req.body as ICreatePostRequestBody;
 
             if (type === EPostType.REPOST && content !== '') {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_EMPTY_STRING,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_EMPTY_STRING);
             }
 
             // if (!content) {
-            //   throw new ErrorWithStatus({
-            //     message: VALIDATION_ERROR_MESSAGE.CONTENT_IS_REQUIRED,
-            //     status: HTTP_STATUS.BAD_REQUEST
-            //   });
+            //   throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_IS_REQUIRED);
             // }
 
             // if (content.length < 1 || content.length > 1000) {
-            //   throw new ErrorWithStatus({
-            //     message: VALIDATION_ERROR_MESSAGE.CONTENT_LENGTH_MUST_BE_FROM_1_TO_1000,
-            //     status: HTTP_STATUS.BAD_REQUEST
-            //   });
+            //   throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_LENGTH_MUST_BE_FROM_1_TO_1000);
             // }
 
             if (
@@ -104,10 +88,7 @@ export const validateCreatePost = validate(
               isEmpty(hashtags) &&
               content === ''
             ) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_NON_EMPTY_STRING,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_NON_EMPTY_STRING);
             }
 
             return true;
@@ -124,18 +105,12 @@ export const validateCreatePost = validate(
             if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
               // parentId không được null, phải là string hợp lệ (ObjectId)
               if (parentId === null || typeof parentId !== 'string' || !ObjectId.isValid(parentId)) {
-                throw new ErrorWithStatus({
-                  message: VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_A_VALID_POST_ID,
-                  status: HTTP_STATUS.BAD_REQUEST
-                });
+                throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_A_VALID_POST_ID);
               }
             }
 
             if (type === EPostType.POST && parentId !== null) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_NULL,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_NULL);
             }
 
             return true;
@@ -150,10 +125,7 @@ export const validateCreatePost = validate(
         custom: {
           options: async (hashtags: string[]) => {
             if (hashtags.length > 0 && !hashtags.every((hashtag) => typeof hashtag === 'string')) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS);
             }
 
             return true;
@@ -168,10 +140,7 @@ export const validateCreatePost = validate(
         custom: {
           options: async (userIds: string[]) => {
             if (userIds.length > 0 && !userIds.every((userId) => ObjectId.isValid(userId))) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS);
             }
 
             return true;
@@ -190,10 +159,7 @@ export const validateCreatePost = validate(
               mediaItems.length > 0 &&
               mediaItems.some((item) => typeof item.url !== 'string' || !validMediaTypes.includes(item.type))
             ) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS);
             }
 
             return true;
@@ -226,51 +192,38 @@ export const validateAudience = async (
   const isGuestUser = !userId;
   if (isGuestUser) {
     if (post.audience !== EPostAudience.PUBLIC) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-        status: HTTP_STATUS.UNAUTHORIZED
-      });
+      throw new AuthFailureError();
     }
   }
 
   const ownerId = post.userId.toString();
 
   const isOwner = isGuestUser ? false : post.userId.equals(userId);
-  const isFollower = isGuestUser ? false : await followersService.findFollower({ myUserId: userId, followedUserId: ownerId }, { projection: { _id: 1 } });
+  const isFollower = isGuestUser
+    ? false
+    : await followersService.findFollower({ myUserId: userId, followedUserId: ownerId }, { projection: { _id: 1 } });
   const isMention = isGuestUser ? false : post.mentions.map((mention) => mention.toString()).includes(userId);
 
   // kiểm tra user owner của bài post có bị banned không
   const userOwner = await usersService.findUserById(ownerId);
   if (!userOwner) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-      status: HTTP_STATUS.NOT_FOUND
-    });
+    throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
   }
   if (isOwner && userOwner.verificationStatus === EUserVerificationStatus.BANNED) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
-      status: HTTP_STATUS.FORBIDDEN
-    });
+    throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
   }
 
   // kiểm tra bài post có chế độ "only me" thì chỉ user owner mới được xem bài post
   if (post.audience === EPostAudience.ONLY_ME) {
     if (!isOwner) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_VIEW_POSTS,
-        status: HTTP_STATUS.FORBIDDEN
-      });
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_VIEW_POSTS);
     }
   }
 
   // kiểm tra bài post có chế độ "followers" thì chỉ user followers hoặc owner hoặc mentions mới được xem bài post
   if (post.audience === EPostAudience.FOLLOWERS) {
     if (!isFollower && !isOwner && !isMention) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.ONLY_FOLLOWERS_CAN_VIEW_POSTS,
-        status: HTTP_STATUS.FORBIDDEN
-      });
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_FOLLOWERS_CAN_VIEW_POSTS);
     }
   }
 
@@ -304,10 +257,7 @@ export const validatePaginationQuery = validate(
             const page = Number(value);
 
             if (page < 1) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.PAGE_MUST_BE_GREATER_THAN_0,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PAGE_MUST_BE_GREATER_THAN_0);
             }
 
             return true;
@@ -321,10 +271,7 @@ export const validatePaginationQuery = validate(
             const limit = Number(value);
 
             if (limit < 1 || limit > 100) {
-              throw new ErrorWithStatus({
-                message: VALIDATION_ERROR_MESSAGE.LIMIT_MUST_BE_BETWEEN_1_TO_100,
-                status: HTTP_STATUS.BAD_REQUEST
-              });
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.LIMIT_MUST_BE_BETWEEN_1_TO_100);
             }
 
             return true;

@@ -1,6 +1,8 @@
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
-import HTTP_STATUS from '@/constants/httpStatus.constant';
-import { ERROR_MESSAGE } from '@/constants/message.constant';
+import { HTTP_STATUS } from '@/constants/httpStatus.constant';
+import { HTTP_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BadRequestError, InternalServerError, NotFoundError } from '@/models/error.response';
+import { OK } from '@/models/success.response';
 import mediaService from '@/services/media.service';
 import s3Service from '@/services/s3.service';
 import { NextFunction, Request, Response } from 'express';
@@ -15,7 +17,8 @@ class mediaController {
     const { filename } = req.params;
     const imagePath = path.resolve(UPLOAD_DIR_IMAGE, filename);
     if (!fs.existsSync(imagePath)) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+      throw new NotFoundError();
+      // return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
     }
     return res.sendFile(imagePath);
   }
@@ -24,7 +27,8 @@ class mediaController {
     const { filename } = req.params;
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     if (!fs.existsSync(videoPath)) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+      throw new NotFoundError();
+      // return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
     }
     return res.sendFile(videoPath);
   }
@@ -33,9 +37,13 @@ class mediaController {
     const { filename } = req.params;
     const range = req.headers.range;
     if (!range) {
-      return res
-        .status(HTTP_STATUS.REQUESTED_RANGE_NOT_SATISFIABLE)
-        .json({ message: ERROR_MESSAGE.REQUESTED_RANGE_NOT_SATISFIABLE });
+      throw new BadRequestError(
+        HTTP_ERROR_MESSAGE.REQUESTED_RANGE_NOT_SATISFIABLE,
+        HTTP_STATUS.REQUESTED_RANGE_NOT_SATISFIABLE
+      );
+      // return res
+      //   .status(HTTP_STATUS.REQUESTED_RANGE_NOT_SATISFIABLE)
+      //   .json({ message: HTTP_ERROR_MESSAGE.REQUESTED_RANGE_NOT_SATISFIABLE });
     }
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     // 1MB = 10^6 bytes => tính theo hệ 10, đây là cách tính của JavaScript, chúng ta hay thấy trên UI
@@ -66,7 +74,8 @@ class mediaController {
       res.end(); // kết thúc stream
     });
     videoStream.on('error', (err) => {
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR }); // xử lý lỗi nếu có
+      throw new InternalServerError();
+      // res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: HTTP_ERROR_MESSAGE.INTERNAL_SERVER_ERROR }); // xử lý lỗi nếu có
     });
     return videoStream; // trả về stream cho client
   }
@@ -76,7 +85,7 @@ class mediaController {
     return s3Service.sendFileFromS3(res, `videos-hls/${id}/master.m3u8`);
     // const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, 'master.m3u8');
     // if (!fs.existsSync(videoPath)) {
-    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
     // }
     // return res.sendFile(videoPath);
   }
@@ -90,7 +99,7 @@ class mediaController {
     return s3Service.sendFileFromS3(res, `videos-hls/${id}/${version}/${segment}`);
     // const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, version, segment);
     // if (!fs.existsSync(videoPath)) {
-    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: ERROR_MESSAGE.NOT_FOUND });
+    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
     // }
     // return res.sendFile(videoPath);
   }
@@ -98,38 +107,38 @@ class mediaController {
   async uploadImage(req: Request, res: Response, next: NextFunction) {
     const results = await mediaService.uploadImage(req);
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: results,
       message: 'Upload successfully'
-    });
+    }).send(res);
   }
 
   async uploadVideo(req: Request, res: Response, next: NextFunction) {
     const results = await mediaService.uploadVideo(req);
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: results,
       message: 'Upload successfully'
-    });
+    }).send(res);
   }
 
   async uploadVideoHLS(req: Request, res: Response, next: NextFunction) {
     const results = await mediaService.uploadVideoHLS(req);
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: results,
       message: 'Upload successfully'
-    });
+    }).send(res);
   }
 
   async getVideoStatus(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params as { id: string };
     const videoStatus = await mediaService.getVideoStatusById(id);
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: videoStatus,
       message: 'Get video status successfully'
-    });
+    }).send(res);
   }
 }
 

@@ -1,8 +1,8 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
-import { ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorEntity, ErrorWithStatus } from '@/models/error.model';
+import { HTTP_STATUS } from '@/constants/httpStatus.constant';
+import { HTTP_ERROR_MESSAGE } from '@/constants/message.constant';
+import { UnprocessableEntityError } from '@/models/error.response';
 import express from 'express';
-import { ValidationChain, validationResult } from 'express-validator';
+import { ValidationChain, ValidationError, validationResult } from 'express-validator';
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';
 
 export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
@@ -12,26 +12,19 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
     const errors = validationResult(req);
     const errorMapped = errors.mapped();
 
-    const errorEntity = new ErrorEntity({
-      message: ERROR_MESSAGE.UNPROCESSABLE_ENTITY,
+    const errorObject: { message: string; status: number; errors: Record<string, ValidationError> } = {
+      message: HTTP_ERROR_MESSAGE.UNPROCESSABLE_ENTITY,
       status: HTTP_STATUS.UNPROCESSABLE_ENTITY,
       errors: {}
-    });
+    };
 
     for (const key in errorMapped) {
-      const { msg } = errorMapped[key];
-
-      // If error is not a validation error, throw it
-      if (msg instanceof ErrorWithStatus && msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY) {
-        return next(msg);
-      }
-
-      // Map error to ErrorEntity
-      errorEntity.errors[key] = errorMapped[key];
+      const error: ValidationError = errorMapped[key];
+      errorObject.errors[key] = error;
     }
 
     if (!errors.isEmpty()) {
-      return next(new ErrorEntity(errorEntity));
+      return next(new UnprocessableEntityError(errorObject.message, errorObject.status, errorObject.errors));
     }
 
     // If no errors, continue

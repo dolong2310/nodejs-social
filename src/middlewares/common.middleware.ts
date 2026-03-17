@@ -1,8 +1,7 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ErrorWithStatus } from '@/models/error.model';
+import { AuthFailureError, ForbiddenError, NotFoundError } from '@/models/error.response';
 import { IUser } from '@/models/schemas/user.schema';
 import tokenService from '@/services/token.service';
 import usersService from '@/services/users.service';
@@ -19,19 +18,13 @@ export const filterBodyMiddleware =
 
 export const verifyAuthorizationMiddleware = async (token?: string): Promise<AccessTokenPayload> => {
   if (!token) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_REQUIRED,
-      status: HTTP_STATUS.UNAUTHORIZED
-    });
+    throw new AuthFailureError();
   }
 
   // decode token
   const decoded = await tokenService.verifyAccessToken(token);
   if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.AUTHORIZATION_IS_INVALID,
-      status: HTTP_STATUS.UNAUTHORIZED
-    });
+    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.ACCESS_TOKEN_IS_INVALID);
   }
 
   return decoded;
@@ -40,22 +33,13 @@ export const verifyAuthorizationMiddleware = async (token?: string): Promise<Acc
 export const verifyUserMiddleware = async (userId: string): Promise<IUser> => {
   const user = await usersService.findUserById(userId); // TODO: cache by redis
   if (!user) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-      status: HTTP_STATUS.NOT_FOUND
-    });
+    throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
   }
   if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET,
-      status: HTTP_STATUS.FORBIDDEN
-    });
+    throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET);
   }
   if (user.verificationStatus === EUserVerificationStatus.BANNED) {
-    throw new ErrorWithStatus({
-      message: VALIDATION_ERROR_MESSAGE.USER_IS_BANNED,
-      status: HTTP_STATUS.FORBIDDEN
-    });
+    throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
   }
   return user;
 };

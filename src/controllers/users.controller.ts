@@ -1,7 +1,7 @@
-import HTTP_STATUS from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorWithStatus } from '@/models/error.model';
+import { NotFoundError } from '@/models/error.response';
 import { IGetUserProfileRequestParams, IUpdateMeRequestBody } from '@/models/requests/user.request';
+import { OK } from '@/models/success.response';
 import usersService from '@/services/users.service';
 import { AccessTokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
@@ -15,16 +15,13 @@ class UserController {
     const user = await usersService.getMe(userId);
 
     if (!user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: user,
       message: 'Get me successfully'
-    });
+    }).send(res);
   }
 
   async updateMe(req: Request<{}, {}, IUpdateMeRequestBody>, res: Response) {
@@ -35,10 +32,10 @@ class UserController {
 
     const updatedUser = await usersService.updateMe(userId, _body as IUpdateMeRequestBody & { dateOfBirth?: Date });
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: updatedUser,
       message: 'Update me successfully'
-    });
+    }).send(res);
   }
 
   async getUserProfile(req: Request<IGetUserProfileRequestParams>, res: Response) {
@@ -47,16 +44,13 @@ class UserController {
     const user = await usersService.getUserProfile(username);
 
     if (!user) {
-      throw new ErrorWithStatus({
-        message: VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      });
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    return res.status(HTTP_STATUS.OK).json({
+    return new OK({
       data: user,
       message: 'Get user profile successfully'
-    });
+    }).send(res);
   }
 }
 
