@@ -17,9 +17,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/RegisterResponse'
         '400':
           description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/login:
     post:
       tags: [auth]
@@ -40,6 +44,10 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Email hoặc mật khẩu không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/logout:
     post:
       tags: [auth]
@@ -55,8 +63,16 @@ paths:
       responses:
         '200':
           description: Đăng xuất thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/refresh-token:
     post:
       tags: [auth]
@@ -89,6 +105,22 @@ paths:
       responses:
         '200':
           description: Xác thực email thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Token không hợp lệ hoặc đã xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/resend-verify-email:
     post:
       tags: [auth]
@@ -98,8 +130,22 @@ paths:
       responses:
         '200':
           description: Đã gửi email xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Email đã được xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/forgot-password:
     post:
       tags: [auth]
@@ -114,6 +160,16 @@ paths:
       responses:
         '200':
           description: Đã gửi email đặt lại mật khẩu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Email không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/reset-password:
     post:
       tags: [auth]
@@ -128,6 +184,16 @@ paths:
       responses:
         '200':
           description: Đặt lại mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Token không hợp lệ hoặc mật khẩu không khớp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/change-password:
     put:
       tags: [auth]
@@ -143,8 +209,16 @@ paths:
       responses:
         '200':
           description: Đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== USERS ====================
   /users/me:
@@ -159,9 +233,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UserSuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       tags: [users]
       summary: Cập nhật thông tin user
@@ -175,8 +259,16 @@ paths:
       responses:
         '200':
           description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /users/{username}:
     get:
       tags: [users]
@@ -194,9 +286,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UserSuccessResponse'
         '404':
           description: Không tìm thấy user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== OAUTH ====================
   /oauth/google:
@@ -234,6 +330,10 @@ paths:
                 $ref: '#/components/schemas/MediaUploadResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /media/upload-video:
     post:
       tags: [media]
@@ -258,6 +358,10 @@ paths:
                 $ref: '#/components/schemas/MediaUploadResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /media/upload-video-hls:
     post:
       tags: [media]
@@ -282,6 +386,10 @@ paths:
                 $ref: '#/components/schemas/MediaUploadResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /media/video-status/{id}:
     get:
       tags: [media]
@@ -303,6 +411,10 @@ paths:
                 $ref: '#/components/schemas/VideoStatusResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== POSTS ====================
   /posts:
@@ -345,9 +457,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostResponse'
+                $ref: '#/components/schemas/PostSuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /posts/{postId}:
     get:
       tags: [posts]
@@ -365,9 +481,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostDetailResponse'
+                $ref: '#/components/schemas/PostDetailSuccessResponse'
         '404':
           description: Không tìm thấy bài viết
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /posts/{type}/{postId}:
     get:
       tags: [posts]
@@ -404,6 +524,10 @@ paths:
                 $ref: '#/components/schemas/PostsPaginatedResponse'
         '404':
           description: Không tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== BOOKMARKS ====================
   /bookmarks:
@@ -421,8 +545,16 @@ paths:
       responses:
         '201':
           description: Thêm bookmark thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkSuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /bookmarks/posts/{postId}:
     delete:
       tags: [bookmarks]
@@ -438,8 +570,16 @@ paths:
       responses:
         '200':
           description: Xóa bookmark thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== FOLLOWERS ====================
   /followers/follow:
@@ -463,8 +603,16 @@ paths:
                 $ref: '#/components/schemas/FollowResponse'
         '400':
           description: Không thể follow chính mình
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /followers/follow/{userId}:
     delete:
       tags: [followers]
@@ -486,6 +634,10 @@ paths:
                 $ref: '#/components/schemas/FollowResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== SEARCH ====================
   /search:
@@ -546,9 +698,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversationResponse'
+                $ref: '#/components/schemas/ConversationSuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /conversations/receivers/{receiverId}:
     get:
       tags: [conversations]
@@ -580,6 +736,10 @@ paths:
                 $ref: '#/components/schemas/ConversationsPaginatedResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== STATIC ====================
   /static/images/{filename}:

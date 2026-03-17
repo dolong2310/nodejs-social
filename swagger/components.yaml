@@ -1,5 +1,39 @@
 components:
   schemas:
+    # Response wrappers (SuccessResponse, ErrorResponse)
+    SuccessResponse:
+      type: object
+      required: [message, statusCode]
+      description: Chuẩn response thành công - tất cả API success đều trả về format này
+      properties:
+        message:
+          type: string
+          description: Thông báo
+          example: "Success"
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          description: Dữ liệu trả về (optional)
+    ErrorResponse:
+      type: object
+      required: [message, errors]
+      description: Chuẩn response lỗi - tất cả API error đều trả về format này
+      properties:
+        message:
+          type: string
+          description: Thông báo lỗi
+          example: "Validation error"
+        errors:
+          type: object
+          additionalProperties: true
+          description: Chi tiết lỗi theo field (validation errors)
+          example: {}
+      example:
+        message: "Dữ liệu không hợp lệ"
+        errors: {}
+
     MongoId:
       type: string
       pattern: "^[a-fA-F0-9]{24}$"
@@ -52,17 +86,39 @@ components:
         email: "nguyenvana@example.com"
         password: "Password123!"
     LoginResponse:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        refreshToken:
-          type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                accessToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       example:
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.xxx"
-        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
+        message: "Login successfully"
+        statusCode: 200
+        data:
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.xxx"
+          refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
+    RegisterResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserResponse'
+      example:
+        message: "User registered successfully"
+        statusCode: 201
+        data:
+          _id: "507f1f77bcf86cd799439011"
+          name: "Nguyễn Văn A"
+          email: "nguyenvana@example.com"
     LogoutRequest:
       type: object
       required: [refreshToken]
@@ -227,6 +283,20 @@ components:
         verificationStatus: "verified"
         createdAt: "2024-03-15T08:30:00.000Z"
         updatedAt: "2024-03-17T10:45:00.000Z"
+    UserSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserResponse'
+      example:
+        message: "Get me successfully"
+        statusCode: 200
+        data:
+          _id: "507f1f77bcf86cd799439011"
+          name: "Nguyễn Văn A"
+          username: "nguyenvana"
 
     # Post schemas
     CreatePostRequest:
@@ -344,6 +414,20 @@ components:
             type: "image"
         createdAt: "2024-03-17T10:30:00.000Z"
         updatedAt: "2024-03-17T10:30:00.000Z"
+    PostSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PostResponse'
+    PostDetailSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PostDetailResponse'
     PostDetailResponse:
       allOf:
         - $ref: '#/components/schemas/PostResponse'
@@ -376,28 +460,32 @@ components:
                   type: string
                   example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
     PostsPaginatedResponse:
-      type: object
-      properties:
-        data:
-          type: object
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
           properties:
-            posts:
-              type: array
-              items:
-                $ref: '#/components/schemas/PostDetailResponse'
-            page:
-              type: integer
-              example: 1
-            limit:
-              type: integer
-              example: 10
-            totalItems:
-              type: integer
-              example: 25
-            totalPages:
-              type: integer
-              example: 3
+            data:
+              type: object
+              properties:
+                posts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PostDetailResponse'
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                totalItems:
+                  type: integer
+                  example: 25
+                totalPages:
+                  type: integer
+                  example: 3
       example:
+        message: "Get new feeds successfully"
+        statusCode: 200
         data:
           posts:
             - _id: "507f1f77bcf86cd799439013"
@@ -432,15 +520,20 @@ components:
       example:
         followedUserId: "507f1f77bcf86cd799439012"
     FollowResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: "Follow user successfully"
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
       example:
         message: "Follow user successfully"
+        statusCode: 200
+        data: {}
 
     # Bookmark schemas
+    BookmarkSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data: {}
     CreateBookmarkRequest:
       type: object
       required: [postId]
@@ -495,29 +588,40 @@ components:
         lastMessage: "Xin chào! Bạn có rảnh không?"
         lastMessageAt: "2024-03-17T11:00:00.000Z"
         createdAt: "2024-03-17T11:00:00.000Z"
-    ConversationsPaginatedResponse:
-      type: object
-      properties:
-        data:
-          type: object
+    ConversationSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
           properties:
-            conversations:
-              type: array
-              items:
-                $ref: '#/components/schemas/ConversationResponse'
-            page:
-              type: integer
-              example: 1
-            limit:
-              type: integer
-              example: 10
-            totalItems:
-              type: integer
-              example: 50
-            totalPages:
-              type: integer
-              example: 5
+            data:
+              $ref: '#/components/schemas/ConversationResponse'
+    ConversationsPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                conversations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ConversationResponse'
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                totalItems:
+                  type: integer
+                  example: 50
+                totalPages:
+                  type: integer
+                  example: 5
       example:
+        message: "Get conversations successfully"
+        statusCode: 200
         data:
           conversations:
             - _id: "507f1f77bcf86cd799439014"
@@ -534,84 +638,88 @@ components:
 
     # Media schemas
     MediaUploadResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            type: object
-            properties:
-              url:
-                type: string
-                example: "https://cdn.example.com/images/abc123.jpg"
-              type:
-                type: string
-                enum: [image, video, video-hls]
-        message:
-          type: string
-          example: "Upload successfully"
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    example: "https://cdn.example.com/images/abc123.jpg"
+                  type:
+                    type: string
+                    enum: [image, video, video-hls]
       example:
+        message: "Upload successfully"
+        statusCode: 200
         data:
           - url: "https://cdn.example.com/images/abc123.jpg"
             type: "image"
-        message: "Upload successfully"
     VideoStatusResponse:
-      type: object
-      properties:
-        data:
-          type: object
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
           properties:
-            _id:
-              $ref: '#/components/schemas/MongoId'
-            name:
-              type: string
-              example: "video-abc123.mp4"
-            status:
-              type: string
-              enum: [pending, processing, success, failed]
-              example: "success"
-            message:
-              type: string
-              example: ""
-            createdAt:
-              type: string
-              format: date-time
-              description: ISO 8601 format
-              example: "2024-03-17T10:00:00.000Z"
-        message:
-          type: string
-          example: "Get video status successfully"
+            data:
+              type: object
+              properties:
+                _id:
+                  $ref: '#/components/schemas/MongoId'
+                name:
+                  type: string
+                  example: "video-abc123.mp4"
+                status:
+                  type: string
+                  enum: [pending, processing, success, failed]
+                  example: "success"
+                message:
+                  type: string
+                  example: ""
+                createdAt:
+                  type: string
+                  format: date-time
+                  description: ISO 8601 format
+                  example: "2024-03-17T10:00:00.000Z"
       example:
+        message: "Get video status successfully"
+        statusCode: 200
         data:
           _id: "507f1f77bcf86cd799439015"
           name: "video-abc123.mp4"
           status: "success"
           message: ""
           createdAt: "2024-03-17T10:00:00.000Z"
-        message: "Get video status successfully"
 
     # Search schemas
     SearchPaginatedResponse:
-      type: object
-      properties:
-        data:
-          type: object
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
           properties:
             data:
-              type: array
-            page:
-              type: integer
-              example: 1
-            limit:
-              type: integer
-              example: 10
-            totalItems:
-              type: integer
-              example: 15
-            totalPages:
-              type: integer
-              example: 2
+              type: object
+              properties:
+                data:
+                  type: array
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                totalItems:
+                  type: integer
+                  example: 15
+                totalPages:
+                  type: integer
+                  example: 2
       example:
+        message: "Search successfully"
+        statusCode: 200
         data:
           data:
             - _id: "507f1f77bcf86cd799439013"
@@ -625,16 +733,6 @@ components:
           totalItems: 15
           totalPages: 2
 
-    # Error schema
+    # Error schema (deprecated - use ErrorResponse)
     Error:
-      type: object
-      properties:
-        message:
-          type: string
-          example: "Validation error"
-        status:
-          type: integer
-          example: 400
-      example:
-        message: "Dữ liệu không hợp lệ"
-        status: 400
+      $ref: '#/components/schemas/ErrorResponse'

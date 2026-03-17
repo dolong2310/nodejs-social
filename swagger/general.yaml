@@ -4,6 +4,10 @@ info:
   description: |
     API documentation cho ứng dụng mạng xã hội NodeJS Social.
     Sử dụng Bearer token (Access Token) trong header Authorization cho các endpoint yêu cầu xác thực.
+
+    **Chuẩn Response:**
+    - Success: `{ message, statusCode, data? }` - SuccessResponse
+    - Error: `{ message, errors }` - ErrorResponse (errors chứa chi tiết validation theo field)
   version: 1.0.0
   contact:
     email: support@nodejs-social.com
