@@ -12,7 +12,7 @@ import staticRouter from '@/routes/static.route';
 import usersRouter from '@/routes/users.route';
 import databaseService from '@/services/database.service';
 import SocketService from '@/services/socket.service';
-import { initUploadsFolder } from '@/utils/file.util';
+import { getSwaggerDefinition, initUploadsFolder } from '@/utils/file.util';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -63,18 +63,7 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(
     swaggerJsdoc({
-      definition: {
-        openapi: '3.1.0',
-        info: {
-          title: 'NodeJS Social API',
-          description:
-            'API documentation cho ứng dụng mạng xã hội NodeJS Social. Sử dụng Bearer token (Access Token) trong header Authorization cho các endpoint yêu cầu xác thực.',
-          version: '1.0.0',
-          contact: {
-            email: 'support@nodejs-social.com'
-          }
-        }
-      },
+      definition: getSwaggerDefinition(),
       apis: ['./swagger/*.yaml']
     })
   )

@@ -12,7 +12,9 @@ import { Request } from 'express';
 import formidable, { File } from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import swaggerJSDoc from 'swagger-jsdoc';
 import { v4 as uuidv4 } from 'uuid';
+import YAML from 'yaml';
 
 export const initUploadsFolder = () => {
   [UPLOAD_DIR_IMAGE_TEMP, UPLOAD_DIR_VIDEO_TEMP].forEach((dir) => {
@@ -165,4 +167,10 @@ export const getFiles = (dir: string, files: string[] = []): string[] => {
     }
   }
   return files;
+};
+
+export const getSwaggerDefinition = (): swaggerJSDoc.Options['definition'] => {
+  const generalPath = path.resolve(__dirname, '../../swagger/general.yaml');
+  const content = fs.readFileSync(generalPath, 'utf8');
+  return YAML.parse(content);
 };
