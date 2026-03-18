@@ -3,12 +3,16 @@ import { ICreatePostRequestBody } from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
 import HashtagSchema, { IHashtag } from '@/models/schemas/hashtag.schema';
 import PostSchema, { IPost } from '@/models/schemas/post.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { ObjectId, WithId } from 'mongodb';
 
 class PostsService {
   constructor() {}
+
+  private get db() {
+    return DatabaseSingleton.get();
+  }
 
   async findPostDetail(postId: string) {
     const pipelineGetDetailPost = [
@@ -123,7 +127,7 @@ class PostsService {
         }
       }
     ];
-    const [post] = await databaseService.posts.aggregate<IPostDetailResponse>(pipelineGetDetailPost).toArray();
+    const [post] = await this.db.posts.aggregate<IPostDetailResponse>(pipelineGetDetailPost).toArray();
 
     return post;
   }
@@ -166,8 +170,8 @@ class PostsService {
       includeAuthor: true
     });
 
-    const postsPromise = databaseService.posts.aggregate<IPostNewFeedResponse>(pipelineGetNewFeeds).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments(match);
+    const postsPromise = this.db.posts.aggregate<IPostNewFeedResponse>(pipelineGetNewFeeds).toArray();
+    const totalPostsPromise = this.db.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this._updatePostsViews<IPostNewFeedResponse>({ posts, userId });
@@ -187,8 +191,8 @@ class PostsService {
       includeAuthor: true
     });
 
-    const postsPromise = databaseService.posts.aggregate<IPostNewFeedResponse>(pipelineGetGuestNewFeeds).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments(match);
+    const postsPromise = this.db.posts.aggregate<IPostNewFeedResponse>(pipelineGetGuestNewFeeds).toArray();
+    const totalPostsPromise = this.db.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this._updatePostsViews<IPostNewFeedResponse>({ posts });
@@ -221,8 +225,8 @@ class PostsService {
       includeAuthor: false
     });
 
-    const postsPromise = databaseService.posts.aggregate<IPostDetailResponse>(pipelineGetPostsType).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments(match);
+    const postsPromise = this.db.posts.aggregate<IPostDetailResponse>(pipelineGetPostsType).toArray();
+    const totalPostsPromise = this.db.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this._updatePostsViews<IPostDetailResponse>({ posts, userId });
@@ -231,13 +235,13 @@ class PostsService {
   }
 
   findPostById(postId: string): Promise<IPost | null> {
-    return databaseService.posts.findOne({ _id: new ObjectId(postId) });
+    return this.db.posts.findOne({ _id: new ObjectId(postId) });
   }
 
   findAndUpsertHashtags(hashtags: string[]): Promise<(WithId<IHashtag> | null)[]> {
     return Promise.all(
       hashtags.map((hashtag) => {
-        return databaseService.hashtags.findOneAndUpdate(
+        return this.db.hashtags.findOneAndUpdate(
           { name: hashtag },
           { $setOnInsert: new HashtagSchema({ name: hashtag }) },
           { upsert: true, returnDocument: 'after' }
@@ -253,7 +257,7 @@ class PostsService {
     postId: string;
     userId?: string;
   }): Promise<WithId<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'>> | null> {
-    return databaseService.posts.findOneAndUpdate(
+    return this.db.posts.findOneAndUpdate(
       { _id: new ObjectId(postId) },
       { $inc: userId ? { userViews: 1 } : { guestViews: 1 }, $currentDate: { updatedAt: true } },
       { returnDocument: 'after', projection: { userViews: 1, guestViews: 1, updatedAt: 1 } }
@@ -278,7 +282,7 @@ class PostsService {
       guestViews: 0,
       userViews: 0
     });
-    await databaseService.posts.insertOne(newPost);
+    await this.db.posts.insertOne(newPost);
 
     return newPost;
   }
@@ -293,7 +297,7 @@ class PostsService {
     const date = new Date();
 
     // increase views for each post
-    await databaseService.posts.updateMany(
+    await this.db.posts.updateMany(
       { _id: { $in: posts.map((post) => post._id!) } },
       {
         $inc: userId ? { userViews: 1 } : { guestViews: 1 },

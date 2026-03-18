@@ -1,4 +1,4 @@
-import { envConfig } from '@/constants/config.constant';
+// import { envConfig } from '@/constants/config.constant';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFollower } from '@/models/schemas/follower.schema';
@@ -12,10 +12,11 @@ import { Collection, Db, MongoClient } from 'mongodb';
 class DatabaseService {
   private client: MongoClient;
   private db: Db;
+  private isClosed = false;
 
-  constructor() {
-    this.client = new MongoClient(envConfig.MONGODB_URI);
-    this.db = this.client.db(envConfig.DATABASE_NAME);
+  constructor(config: { uri: string; databaseName: string }) {
+    this.client = new MongoClient(config.uri);
+    this.db = this.client.db(config.databaseName);
   }
 
   async connect() {
@@ -24,9 +25,15 @@ class DatabaseService {
       console.log('Successfully connected to database');
     } catch (error) {
       console.error('Error connecting to database:', error);
-      await this.client.close(); // Ensures that the client will close when you error
+      await this.close(); // Ensures that the client will close when you error
       throw error;
     }
+  }
+
+  async close() {
+    if (this.isClosed) return;
+    this.isClosed = true;
+    await this.client.close();
   }
 
   async createUsersIndex() {
@@ -105,4 +112,4 @@ class DatabaseService {
   }
 }
 
-export default new DatabaseService();
+export default DatabaseService;

@@ -9,7 +9,7 @@ import usersService from '@/services/users.service';
 import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, Response } from 'express';
 import { checkSchema, ParamSchema } from 'express-validator';
-import { JsonWebTokenError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 export const emailSchema: ParamSchema = {
   notEmpty: {
@@ -187,7 +187,7 @@ export const validateRefreshToken = validate(
               req.refreshTokenPayload = decoded;
               return true;
             } catch (error) {
-              if (error instanceof JsonWebTokenError) {
+              if (error instanceof jwt.JsonWebTokenError) {
                 throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.REFRESH_TOKEN_IS_INVALID);
               }
               throw error;
@@ -223,7 +223,7 @@ export const validateEmailVerificationToken = validate(
               req.emailVerificationTokenPayload = decoded;
               return true;
             } catch (error) {
-              if (error instanceof JsonWebTokenError) {
+              if (error instanceof jwt.JsonWebTokenError) {
                 throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID);
               }
               throw error;
@@ -281,7 +281,7 @@ export const validateForgotPasswordToken = validate(
               req.forgotPasswordTokenPayload = decoded;
               return true;
             } catch (error) {
-              if (error instanceof JsonWebTokenError) {
+              if (error instanceof jwt.JsonWebTokenError) {
                 throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID);
               }
               throw error;

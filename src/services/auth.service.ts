@@ -6,7 +6,7 @@ import { BadRequestError, NotFoundError } from '@/models/error.response';
 import { ILoginRequestBody, IRegisterRequestBody } from '@/models/requests/auth.request';
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import UserSchema, { IUser } from '@/models/schemas/user.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import emailService, { EEmailTemplate } from '@/services/email.service';
 import tokenService from '@/services/token.service';
 import usersService from '@/services/users.service';
@@ -18,8 +18,12 @@ import { v4 as uuidv4 } from 'uuid';
 class AuthService {
   constructor() {}
 
+  private get db() {
+    return DatabaseSingleton.get();
+  }
+
   findRefreshTokenByToken(token: string): Promise<IRefreshToken | null> {
-    return databaseService.refreshTokens.findOne<IRefreshToken>({ token });
+    return this.db.refreshTokens.findOne<IRefreshToken>({ token });
   }
 
   // Nếu autoLogin là true, trả về accessToken và refreshToken.
@@ -84,7 +88,7 @@ class AuthService {
       emailVerificationToken,
       verificationStatus: EUserVerificationStatus.UNVERIFIED
     });
-    await databaseService.users.insertOne(newUser);
+    await this.db.users.insertOne(newUser);
 
     if (autoLogin) {
       return this.login({ email, password }, newUser);
@@ -118,7 +122,7 @@ class AuthService {
     ]);
 
     // Lưu token vào database
-    await databaseService.refreshTokens.insertOne(
+    await this.db.refreshTokens.insertOne(
       new RefreshTokenSchema({
         token: refreshToken,
         userId: new ObjectId(user._id)
@@ -133,7 +137,7 @@ class AuthService {
 
   async logout(refreshToken: string): Promise<void> {
     // delete refresh token from database
-    await databaseService.refreshTokens.deleteOne({
+    await this.db.refreshTokens.deleteOne({
       token: refreshToken
     });
   }
@@ -160,10 +164,10 @@ class AuthService {
     ]);
 
     await Promise.all([
-      databaseService.refreshTokens.deleteOne({
+      this.db.refreshTokens.deleteOne({
         token: refreshTokenBody
       }),
-      databaseService.refreshTokens.insertOne(
+      this.db.refreshTokens.insertOne(
         new RefreshTokenSchema({
           token: newRefreshToken,
           userId: new ObjectId(userId)
@@ -179,7 +183,7 @@ class AuthService {
 
   async verifyEmail(userId: string): Promise<void> {
     // cập nhật user
-    await databaseService.users.updateOne(
+    await this.db.users.updateOne(
       { _id: new ObjectId(userId) },
       {
         $set: {
@@ -212,7 +216,7 @@ class AuthService {
       template: EEmailTemplate.VERIFY_EMAIL
     });
 
-    await databaseService.users.updateOne(
+    await this.db.users.updateOne(
       { _id: new ObjectId(userId) },
       { $set: { emailVerificationToken }, $currentDate: { updatedAt: true } }
     );
@@ -238,7 +242,7 @@ class AuthService {
       template: EEmailTemplate.FORGOT_PASSWORD
     });
 
-    await databaseService.users.updateOne(
+    await this.db.users.updateOne(
       { _id: new ObjectId(userId) },
       { $set: { forgotPasswordToken }, $currentDate: { updatedAt: true } }
     );
@@ -247,7 +251,7 @@ class AuthService {
   async resetPassword({ userId, password }: { userId: string; password: string }) {
     const hashedPassword = await hashPassword(password);
 
-    await databaseService.users.updateOne(
+    await this.db.users.updateOne(
       { _id: new ObjectId(userId) },
       { $set: { forgotPasswordToken: '', password: hashedPassword }, $currentDate: { updatedAt: true } }
     );
@@ -256,7 +260,7 @@ class AuthService {
   async changePassword({ userId, newPassword }: { userId: string; newPassword: string }) {
     const hashedPassword = await hashPassword(newPassword);
 
-    return databaseService.users.findOneAndUpdate(
+    return this.db.users.findOneAndUpdate(
       { _id: new ObjectId(userId) },
       {
         $set: {

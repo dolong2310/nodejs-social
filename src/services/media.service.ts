@@ -2,7 +2,7 @@ import { envConfig, isDevelopment } from '@/constants/config.constant';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
 import VideoStatusSchema from '@/models/schemas/videoStatus.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import QueueService from '@/services/queue.service';
 import s3Service from '@/services/s3.service';
 import { IMedia } from '@/types/media.type';
@@ -24,6 +24,10 @@ class MediaService {
   private queueService: QueueService;
   constructor() {
     this.queueService = new QueueService({ onStartWhenEnqueue: true });
+  }
+
+  private get db() {
+    return DatabaseSingleton.get();
   }
 
   async uploadImage(req: Request) {
@@ -88,7 +92,7 @@ class MediaService {
         this.queueService.enqueue({
           item: file.filepath,
           onStart: async () => {
-            await databaseService.videoStatuses.insertOne(
+            await this.db.videoStatuses.insertOne(
               new VideoStatusSchema({ name: idName, status: EEncodingVideoStatus.PENDING })
             );
           }
@@ -120,20 +124,20 @@ class MediaService {
           },
           onProcess: async (filepath) => {
             const currentIdName = getNameFromFullname(path.basename(filepath));
-            await databaseService.videoStatuses.updateOne(
+            await this.db.videoStatuses.updateOne(
               { name: currentIdName },
               { $set: { status: EEncodingVideoStatus.PROCESSING }, $currentDate: { updatedAt: true } }
             );
           },
           onSuccess: async (currentIdName) => {
-            await databaseService.videoStatuses.updateOne(
+            await this.db.videoStatuses.updateOne(
               { name: currentIdName },
               { $set: { status: EEncodingVideoStatus.SUCCESS }, $currentDate: { updatedAt: true } }
             );
           },
           onError: async (error, item) => {
             const currentIdName = getNameFromFullname(path.basename(item));
-            await databaseService.videoStatuses.updateOne(
+            await this.db.videoStatuses.updateOne(
               { name: currentIdName },
               {
                 $set: { status: EEncodingVideoStatus.FAILED, message: error.message },
@@ -149,7 +153,7 @@ class MediaService {
   }
 
   async getVideoStatusById(id: string) {
-    const videoStatus = await databaseService.videoStatuses.findOne({ name: id });
+    const videoStatus = await this.db.videoStatuses.findOne({ name: id });
     return videoStatus;
   }
 }

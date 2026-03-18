@@ -170,7 +170,7 @@ export const getFiles = (dir: string, files: string[] = []): string[] => {
 };
 
 export const getSwaggerDefinition = (): swaggerJSDoc.Options['definition'] => {
-  const generalPath = path.resolve(__dirname, '../../swagger/general.yaml');
+  const generalPath = path.resolve(process.cwd(), 'swagger/general.yaml');
   const content = fs.readFileSync(generalPath, 'utf8');
   return YAML.parse(content);
 };

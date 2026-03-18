@@ -3,7 +3,7 @@ import { EPostAudience } from '@/enums/posts.enum';
 import { ESearchPeopleFollow, ESearchType } from '@/enums/search.enum';
 import { IPostDetailResponse } from '@/models/responses/post.response';
 import { IUser } from '@/models/schemas/user.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import followersService from '@/services/followers.service';
 import postsService from '@/services/posts.service';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
@@ -11,6 +11,10 @@ import { Document, ObjectId } from 'mongodb';
 
 class SearchService {
   constructor() {}
+
+  private get db() {
+    return DatabaseSingleton.get();
+  }
 
   async searchPosts({
     userId,
@@ -87,8 +91,8 @@ class SearchService {
       includeAuthor: true
     });
 
-    const postsPromise = databaseService.posts.aggregate<IPostDetailResponse>(pipelineGetNewFeeds).toArray();
-    const totalPostsPromise = databaseService.posts.countDocuments(match);
+    const postsPromise = this.db.posts.aggregate<IPostDetailResponse>(pipelineGetNewFeeds).toArray();
+    const totalPostsPromise = this.db.posts.countDocuments(match);
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await postsService._updatePostsViews<IPostDetailResponse>({ posts, userId });
@@ -147,8 +151,8 @@ class SearchService {
       { $limit: limit }
     ];
 
-    const usersPromise = databaseService.users.aggregate<IUser>(pipeline).toArray();
-    const totalUsersPromise = databaseService.users.countDocuments(match);
+    const usersPromise = this.db.users.aggregate<IUser>(pipeline).toArray();
+    const totalUsersPromise = this.db.users.countDocuments(match);
     const [users, totalUsers] = await Promise.all([usersPromise, totalUsersPromise]);
 
     return [users, totalUsers];

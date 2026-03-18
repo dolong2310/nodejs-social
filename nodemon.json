@@ -1,6 +1,6 @@
 {
-  "watch": ["src", ".env", "swagger"],
+  "watch": ["src", ".env", "swagger", "main.ts"],
   "ext": ".ts,.js,.yaml,.json",
   "ignore": [],
-  "exec": "tsx ./src/index.ts"
+  "exec": "tsx ./main.ts"
 }

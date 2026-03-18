@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "NodeNext", // Quy định output module được sử dụng
-    "moduleResolution": "NodeNext",
+    "module": "ESNext", // Emit ESM hiện đại (Node sẽ chạy theo package.json "type": "module")
+    "moduleResolution": "Bundler", // Cho phép alias kiểu "@/..." + tsc-alias rewrite sau build
     "target": "ES2023", // Target output cho code
     "outDir": "dist", // Đường dẫn output cho thư mục build
     "esModuleInterop": true,
@@ -9,9 +9,10 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "baseUrl": ".", // Đường dẫn base cho các import
     "paths": {
-      "@/*": ["src/*"] // Đường dẫn tương đối cho các import (alias)
-    }
+      "@/*": ["./src/*"] // Đường dẫn tương đối cho các import (alias)
+    },
+    "rootDirs": ["./src", "."] // Giúp TS hiểu cấu trúc thư mục khi dùng alias + entry ở root (main.ts)
   },
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*"] // Đường dẫn include cho các file cần build
+  "include": ["src/**/*", "main.ts"] // Đường dẫn include cho các file cần build
 }

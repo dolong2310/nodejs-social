@@ -1,12 +1,16 @@
 import BookmarkSchema from '@/models/schemas/bookmark.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import { ObjectId } from 'mongodb';
 
 class BookmarksService {
   constructor() {}
 
+  private get db() {
+    return DatabaseSingleton.get();
+  }
+
   bookmarkPost({ userId, postId }: { userId: string; postId: string }) {
-    return databaseService.bookmarks.findOneAndUpdate(
+    return this.db.bookmarks.findOneAndUpdate(
       { userId: new ObjectId(userId), postId: new ObjectId(postId) },
       { $setOnInsert: new BookmarkSchema({ userId: new ObjectId(userId), postId: new ObjectId(postId) }) },
       { upsert: true, returnDocument: 'after' }
@@ -14,7 +18,7 @@ class BookmarksService {
   }
 
   unbookmarkPost({ userId, postId }: { userId: string; postId: string }) {
-    return databaseService.bookmarks.findOneAndDelete({ userId: new ObjectId(userId), postId: new ObjectId(postId) });
+    return this.db.bookmarks.findOneAndDelete({ userId: new ObjectId(userId), postId: new ObjectId(postId) });
   }
 }
 

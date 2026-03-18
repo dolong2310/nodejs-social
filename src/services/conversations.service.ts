@@ -1,9 +1,13 @@
 import ConversationSchema, { IConversation } from '@/models/schemas/conversation.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import { ObjectId } from 'mongodb';
 
 class ConversationService {
   constructor() {}
+
+  private get db() {
+    return DatabaseSingleton.get();
+  }
 
   async getConversations({
     senderId,
@@ -23,13 +27,13 @@ class ConversationService {
       ]
     };
 
-    const conversationsPromise = databaseService.conversations
+    const conversationsPromise = this.db.conversations
       .find<IConversation>(match)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 })
       .toArray();
-    const totalPromise = databaseService.conversations.countDocuments(match);
+    const totalPromise = this.db.conversations.countDocuments(match);
     const [conversations, totalConversations] = await Promise.all([conversationsPromise, totalPromise]);
 
     return { conversations, totalConversations };
@@ -53,7 +57,7 @@ class ConversationService {
       lastMessage,
       lastMessageAt: new Date()
     });
-    await databaseService.conversations.insertOne(conversation);
+    await this.db.conversations.insertOne(conversation);
     return conversation;
   }
 }

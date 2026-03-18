@@ -7,7 +7,7 @@ import { IRegisterRequestBody } from '@/models/requests/auth.request';
 import FollowerSchema from '@/models/schemas/follower.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import UserSchema from '@/models/schemas/user.schema';
-import databaseService from '@/services/database.service';
+import { DatabaseSingleton } from '@/services/database.singleton';
 import postsService from '@/services/posts.service';
 import tokenService from '@/services/token.service';
 import { hashPassword } from '@/utils/helper.util';
@@ -21,6 +21,8 @@ const POST_PER_USER = 10;
 const HASHTAG_PER_POST = 10;
 const MENTION_PER_POST = 10;
 const MEDIA_PER_POST = 10;
+
+const db = () => DatabaseSingleton.get();
 
 const createRandomUserBody = (): IRegisterRequestBody => {
   const user: IRegisterRequestBody = {
@@ -124,7 +126,7 @@ const insertMultipleUsers = async (userBodies: IRegisterRequestBody[]): Promise<
         EUserVerificationStatus.BANNED
       ]);
 
-      const user = await databaseService.users.insertOne(
+      const user = await db().users.insertOne(
         new UserSchema({
           ...userBody,
           username: `user-${new ObjectId().toString()}`,
@@ -141,7 +143,7 @@ const insertMultipleUsers = async (userBodies: IRegisterRequestBody[]): Promise<
           type: ETokenType.EMAIL_VERIFICATION_TOKEN
         });
 
-        await databaseService.users.updateOne({ _id: user.insertedId }, { $set: { emailVerificationToken } });
+        await db().users.updateOne({ _id: user.insertedId }, { $set: { emailVerificationToken } });
       }
 
       console.log(`Created user ${user.insertedId}`);
@@ -157,7 +159,7 @@ const followMultipleUsers = async (userId: ObjectId, followedUserIds: ObjectId[]
   const followedUsers = await Promise.all(
     followedUserIds.map((followedUserId) => {
       console.log(`Following user ${followedUserId}`);
-      return databaseService.followers.insertOne(
+      return db().followers.insertOne(
         new FollowerSchema({
           userId,
           followedUserId
