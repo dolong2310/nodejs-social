@@ -1,7 +1,7 @@
 'use strict';
 
+import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
-import { HTTP_ERROR_MESSAGE } from '@/constants/message.constant';
 
 /**
  * Class lỗi cơ sở cho tất cả các lỗi tùy chỉnh trong API

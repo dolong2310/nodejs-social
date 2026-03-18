@@ -1,15 +1,16 @@
+import { DatabaseInstance } from '@/database';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ICreatePostRequestBody } from '@/models/requests/post.request';
 import { IRegisterRequestBody } from '@/models/requests/auth.request';
+import { ICreatePostRequestBody } from '@/models/requests/post.request';
 import FollowerSchema from '@/models/schemas/follower.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import UserSchema from '@/models/schemas/user.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import postsService from '@/services/posts.service';
-import tokenService from '@/services/token.service';
+import { PostRepository } from '@/repositories/post.repository';
+import PostsService from '@/services/posts.service';
+import TokenService from '@/services/token.service';
 import { hashPassword } from '@/utils/helper.util';
 import { faker } from '@faker-js/faker';
 import { ObjectId } from 'mongodb';
@@ -22,7 +23,7 @@ const HASHTAG_PER_POST = 10;
 const MENTION_PER_POST = 10;
 const MEDIA_PER_POST = 10;
 
-const db = () => DatabaseSingleton.get();
+const db = () => DatabaseInstance.get();
 
 const createRandomUserBody = (): IRegisterRequestBody => {
   const user: IRegisterRequestBody = {
@@ -138,6 +139,7 @@ const insertMultipleUsers = async (userBodies: IRegisterRequestBody[]): Promise<
 
       // update emailVerificationToken if user is unverified
       if (randomVerificationStatus === EUserVerificationStatus.UNVERIFIED) {
+        const tokenService = new TokenService();
         const emailVerificationToken = await tokenService.signEmailVerificationToken({
           userId: user.insertedId.toString(),
           type: ETokenType.EMAIL_VERIFICATION_TOKEN
@@ -184,6 +186,7 @@ const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
       for (let i = 0; i < POST_PER_USER; i++) {
         const body = createRandomPostBody(userIds, parentPostIds);
 
+        const postsService = new PostsService(new PostRepository(DatabaseInstance.get()));
         const newPost = await postsService.createPost({ userId, body });
 
         // Nếu là post gốc thì lưu lại _id để làm parent cho các post con sau này

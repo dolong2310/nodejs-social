@@ -1,11 +1,20 @@
-import { envConfig } from '@/constants/config.constant';
-import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
+import { envConfig } from '@/config';
+import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import fs from 'fs';
 import path from 'path';
 
 export enum EEmailTemplate {
   VERIFY_EMAIL = 'verify-email',
   FORGOT_PASSWORD = 'forgot-password'
+}
+
+export interface IEmailService {
+  sendEmail(payload: {
+    toAddress: string;
+    subject: string;
+    body: { name: string; url: string; expiresIn: string; appName: string; supportUrl: string };
+    template: EEmailTemplate;
+  }): Promise<SendEmailCommandOutput>;
 }
 
 class EmailService {
@@ -83,7 +92,7 @@ class EmailService {
     subject: string;
     body: { name: string; url: string; expiresIn: string; appName: string; supportUrl: string };
     template: EEmailTemplate;
-  }) {
+  }): Promise<SendEmailCommandOutput> {
     const sendEmailCommand = this.createSendEmailCommand({
       fromAddress: envConfig.SES_FROM_ADDRESS,
       toAddresses: toAddress,
@@ -98,13 +107,12 @@ class EmailService {
 
     try {
       const sendEmailCommandOutput = await this.sesClient.send(sendEmailCommand);
-      // console.log('Email command output: ', sendEmailCommandOutput);
       return sendEmailCommandOutput;
     } catch (error) {
       console.error('Failed to send email: ', error);
-      return error;
+      throw error;
     }
   }
 }
 
-export default new EmailService();
+export default EmailService;

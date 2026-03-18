@@ -1,135 +1,51 @@
-import { EPostAudience, EPostType } from '@/enums/posts.enum';
+import { EPostType } from '@/enums/posts.enum';
 import { ICreatePostRequestBody } from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
-import HashtagSchema, { IHashtag } from '@/models/schemas/hashtag.schema';
-import PostSchema, { IPost } from '@/models/schemas/post.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
-import { ObjectId, WithId } from 'mongodb';
+import { IHashtag } from '@/models/schemas/hashtag.schema';
+import { IPost } from '@/models/schemas/post.schema';
+import { IPostRepository } from '@/repositories/post.repository';
+import { ObjectId } from 'mongodb';
 
-class PostsService {
-  constructor() {}
+export interface IPostsService {
+  findPostDetail(postId: string): Promise<IPostDetailResponse | null>;
+  getNewFeeds(payload: {
+    userId: string;
+    followedUserIds: ObjectId[];
+    page: number;
+    limit: number;
+  }): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
+  getGuestNewFeeds(payload: {
+    page: number;
+    limit: number;
+  }): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
+  getPostsType(payload: {
+    userId?: string;
+    page: number;
+    limit: number;
+    postId: string;
+    type: EPostType;
+  }): Promise<{ posts: IPostDetailResponse[]; totalPosts: number }>;
+  findPostById(postId: string): Promise<IPost | null>;
+  findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]>;
+  increaseViews(payload: {
+    postId: string;
+    userId?: string;
+  }): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null>;
+  createPost(payload: { userId: string; body: ICreatePostRequestBody }): Promise<IPost>;
+  updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
+    posts,
+    userId
+  }: {
+    posts: T[];
+    userId?: string;
+  }): Promise<T[]>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
-  }
+class PostsService implements IPostsService {
+  constructor(private readonly postRepository: IPostRepository) {}
 
-  async findPostDetail(postId: string) {
-    const pipelineGetDetailPost = [
-      {
-        $match: {
-          _id: new ObjectId(postId)
-        }
-      },
-      {
-        $lookup: {
-          from: 'hashtags',
-          localField: 'hashtags',
-          foreignField: '_id',
-          as: 'hashtags'
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'mentions',
-          foreignField: '_id',
-          as: 'mentions'
-        }
-      },
-      {
-        $addFields: {
-          mentions: {
-            $map: {
-              input: '$mentions',
-              as: 'mention',
-              in: {
-                _id: '$$mention._id',
-                name: '$$mention.name',
-                email: '$$mention.email',
-                username: '$$mention.username',
-                verificationStatus: '$$mention.verificationStatus'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'bookmarks',
-          localField: '_id',
-          foreignField: 'postId',
-          pipeline: [
-            {
-              $project: {
-                _id: 1
-              }
-            }
-          ],
-          as: 'bookmarks'
-        }
-      },
-      {
-        $lookup: {
-          from: 'posts',
-          localField: '_id',
-          foreignField: 'parentId',
-          as: 'post_child'
-        }
-      },
-      {
-        $addFields: {
-          bookmarkCount: {
-            $size: '$bookmarks'
-          },
-          repostCount: {
-            $size: {
-              $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', EPostType.REPOST]
-                }
-              }
-            }
-          },
-          commentCount: {
-            $size: {
-              $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', EPostType.COMMENT]
-                }
-              }
-            }
-          },
-          quoteCount: {
-            $size: {
-              $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', EPostType.QUOTE]
-                }
-              }
-            }
-          }
-          // totalViews: {
-          //   $add: ['$userViews', '$guestViews']
-          // }
-        }
-      },
-      {
-        $project: {
-          bookmarks: 0,
-          post_child: 0
-        }
-      }
-    ];
-    const [post] = await this.db.posts.aggregate<IPostDetailResponse>(pipelineGetDetailPost).toArray();
-
-    return post;
+  findPostDetail(postId: string) {
+    return this.postRepository.findById(postId);
   }
 
   async getNewFeeds({
@@ -143,59 +59,26 @@ class PostsService {
     page: number;
     limit: number;
   }) {
-    const match = {
-      userId: {
-        $in: followedUserIds
-      },
-      $or: [
-        { audience: EPostAudience.PUBLIC },
-        { audience: EPostAudience.FOLLOWERS },
-        {
-          $and: [
-            { audience: EPostAudience.ONLY_ME },
-            {
-              userId: {
-                $eq: new ObjectId(userId)
-              }
-            }
-          ]
-        }
-      ]
-    };
-
-    const pipelineGetNewFeeds = buildBasePostPipeline({
-      match,
-      skip: limit * (page - 1),
-      limit,
-      includeAuthor: true
+    const postsPromise = this.postRepository.findPosts({
+      userId,
+      followedUserIds,
+      page,
+      limit
     });
-
-    const postsPromise = this.db.posts.aggregate<IPostNewFeedResponse>(pipelineGetNewFeeds).toArray();
-    const totalPostsPromise = this.db.posts.countDocuments(match);
+    const totalPostsPromise = this.postRepository.countPosts({ userId, followedUserIds });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this._updatePostsViews<IPostNewFeedResponse>({ posts, userId });
+    const updatedPosts = await this.updatePostsViews<IPostNewFeedResponse>({ posts });
 
     return { posts: updatedPosts, totalPosts };
   }
 
   async getGuestNewFeeds({ page, limit }: { page: number; limit: number }) {
-    const match = {
-      audience: EPostAudience.PUBLIC
-    };
-
-    const pipelineGetGuestNewFeeds = buildBasePostPipeline({
-      match,
-      skip: limit * (page - 1),
-      limit,
-      includeAuthor: true
-    });
-
-    const postsPromise = this.db.posts.aggregate<IPostNewFeedResponse>(pipelineGetGuestNewFeeds).toArray();
-    const totalPostsPromise = this.db.posts.countDocuments(match);
+    const postsPromise = this.postRepository.findGuestPosts({ page, limit });
+    const totalPostsPromise = this.postRepository.countGuestPosts();
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this._updatePostsViews<IPostNewFeedResponse>({ posts });
+    const updatedPosts = await this.updatePostsViews<IPostNewFeedResponse>({ posts });
 
     return { posts: updatedPosts, totalPosts };
   }
@@ -213,41 +96,21 @@ class PostsService {
     postId: string;
     type: EPostType;
   }) {
-    const match = {
-      parentId: new ObjectId(postId),
-      type
-    };
-
-    const pipelineGetPostsType = buildBasePostPipeline({
-      match,
-      skip: limit * (page - 1),
-      limit,
-      includeAuthor: false
-    });
-
-    const postsPromise = this.db.posts.aggregate<IPostDetailResponse>(pipelineGetPostsType).toArray();
-    const totalPostsPromise = this.db.posts.countDocuments(match);
+    const postsPromise = this.postRepository.findPostsType({ page, limit, postId, type });
+    const totalPostsPromise = this.postRepository.countPostsType({ postId, type });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this._updatePostsViews<IPostDetailResponse>({ posts, userId });
+    const updatedPosts = await this.updatePostsViews<IPostDetailResponse>({ posts, userId });
 
     return { posts: updatedPosts, totalPosts };
   }
 
   findPostById(postId: string): Promise<IPost | null> {
-    return this.db.posts.findOne({ _id: new ObjectId(postId) });
+    return this.postRepository.findPostById(postId);
   }
 
-  findAndUpsertHashtags(hashtags: string[]): Promise<(WithId<IHashtag> | null)[]> {
-    return Promise.all(
-      hashtags.map((hashtag) => {
-        return this.db.hashtags.findOneAndUpdate(
-          { name: hashtag },
-          { $setOnInsert: new HashtagSchema({ name: hashtag }) },
-          { upsert: true, returnDocument: 'after' }
-        );
-      })
-    );
+  findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]> {
+    return this.postRepository.findAndUpsertHashtags(hashtags);
   }
 
   increaseViews({
@@ -256,38 +119,23 @@ class PostsService {
   }: {
     postId: string;
     userId?: string;
-  }): Promise<WithId<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'>> | null> {
-    return this.db.posts.findOneAndUpdate(
-      { _id: new ObjectId(postId) },
-      { $inc: userId ? { userViews: 1 } : { guestViews: 1 }, $currentDate: { updatedAt: true } },
+  }): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null> {
+    return this.postRepository.findOneAndUpdate(
+      { postId, userId },
       { returnDocument: 'after', projection: { userViews: 1, guestViews: 1, updatedAt: 1 } }
     );
   }
 
   async createPost({ userId, body }: { userId: string; body: ICreatePostRequestBody }): Promise<IPost> {
-    const { type, audience, content, parentId, hashtags: hashtagsBody, mentions, media } = body;
+    const { hashtags: hashtagsBody } = body;
 
     const hashtags = await this.findAndUpsertHashtags(hashtagsBody);
-    const hashtagIds = hashtags.filter(Boolean).map((hashtag) => hashtag!._id);
-
-    const newPost = new PostSchema({
-      userId: new ObjectId(userId),
-      type,
-      audience,
-      content,
-      parentId: parentId ? new ObjectId(parentId) : null,
-      hashtags: hashtagIds,
-      mentions: mentions.map((mention) => new ObjectId(mention)),
-      media,
-      guestViews: 0,
-      userViews: 0
-    });
-    await this.db.posts.insertOne(newPost);
-
+    const hashtagIds = hashtags.filter(Boolean).map((hashtag) => hashtag!._id) as ObjectId[];
+    const newPost = await this.postRepository.createPost({ userId, body: { ...body, hashtags: hashtagIds } });
     return newPost;
   }
 
-  async _updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
+  async updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
     posts,
     userId
   }: {
@@ -297,14 +145,7 @@ class PostsService {
     const date = new Date();
 
     // increase views for each post
-    await this.db.posts.updateMany(
-      { _id: { $in: posts.map((post) => post._id!) } },
-      {
-        $inc: userId ? { userViews: 1 } : { guestViews: 1 },
-        $set: { updatedAt: date }
-        // $currentDate: { updatedAt: true },
-      }
-    );
+    await this.postRepository.updatePosts({ posts, userId, date });
 
     // update post with new views
     return posts.map((post) => ({
@@ -316,4 +157,4 @@ class PostsService {
   }
 }
 
-export default new PostsService();
+export default PostsService;

@@ -1,6 +1,7 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BaseController } from '@/controllers/base.controller';
+import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { AuthFailureError, BadRequestError, NotFoundError } from '@/models/error.response';
 import {
   IChangePasswordRequestBody,
   IForgotPasswordRequestBody,
@@ -12,21 +13,45 @@ import {
   IVerifyEmailRequestBody
 } from '@/models/requests/auth.request';
 import { IUser } from '@/models/schemas/user.schema';
-import { Created, OK } from '@/models/success.response';
-import authService from '@/services/auth.service';
-import usersService from '@/services/users.service';
-import { AccessTokenPayload, ForgotPasswordTokenPayload, RefreshTokenPayload } from '@/types/token.type';
+import { AuthFailureError, BadRequestError, NotFoundError } from '@/responses/error.response';
+import { Created, OK } from '@/responses/success.response';
+import { IAuthService } from '@/services/auth.service';
+import { IUsersService } from '@/services/users.service';
+import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
-class AuthController {
-  constructor() {}
+export interface IAuthController {
+  register(req: Request<{}, {}, IRegisterRequestBody>, res: Response): Promise<void>;
+  login(req: Request<{}, {}, ILoginRequestBody>, res: Response): Promise<void>;
+  logout(req: Request<{}, {}, ILogoutRequestBody>, res: Response): Promise<void>;
+  refreshToken(req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response): Promise<void>;
+  verifyEmail(req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response): Promise<void>;
+  resendVerifyEmail(req: Request, res: Response): Promise<void>;
+  forgotPassword(req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response): Promise<void>;
+  resetPassword(req: Request<{}, {}, IResetPasswordRequestBody>, res: Response): Promise<void>;
+  changePassword(req: Request<{}, {}, IChangePasswordRequestBody>, res: Response): Promise<void>;
+}
+
+class AuthController extends BaseController implements IAuthController {
+  constructor(
+    private readonly authService: IAuthService,
+    private readonly usersService: IUsersService
+  ) {
+    super();
+  }
 
   async register(req: Request<{}, {}, IRegisterRequestBody>, res: Response) {
     const { name, email, password, dateOfBirth } = req.body;
 
-    const user = await authService.register({ name, email, password, dateOfBirth });
+    const existingUser = await this.usersService.findUserByEmail(email);
 
-    return new Created({
+    if (existingUser) {
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
+    }
+
+    const user = await this.authService.register({ name, email, password, dateOfBirth });
+
+    new Created({
       data: user,
       message: 'User registered successfully'
     }).send(res);
@@ -34,12 +59,17 @@ class AuthController {
 
   async login(req: Request<{}, {}, ILoginRequestBody>, res: Response) {
     const { email, password } = req.body;
-    const user = req.user;
 
-    const { accessToken, refreshToken } = await authService.login({ email, password }, user);
+    const existingUser = await this.usersService.findUserByEmail(email);
+
+    if (!existingUser) {
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+    }
+
+    const { accessToken, refreshToken } = await this.authService.login({ email, password }, existingUser);
 
     // Trả về token
-    return new OK({
+    new OK({
       data: { accessToken, refreshToken },
       message: 'Login successfully'
     }).send(res);
@@ -47,21 +77,34 @@ class AuthController {
 
   async logout(req: Request<{}, {}, ILogoutRequestBody>, res: Response) {
     const { refreshToken } = req.body;
+    const { type } = req.tokenPayload as TokenPayload;
 
-    await authService.logout(refreshToken);
+    const findRefreshToken = await this.authService.findRefreshTokenByToken(refreshToken);
 
-    return new OK({
+    if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
+      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+    }
+
+    await this.authService.logout(refreshToken);
+
+    new OK({
       message: 'Logout successfully'
     }).send(res);
   }
 
   async refreshToken(req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response) {
     const { refreshToken: refreshTokenBody } = req.body;
-    const { userId, exp } = req.refreshTokenPayload as RefreshTokenPayload;
+    const { userId, exp, type } = req.tokenPayload as TokenPayload;
 
-    const { accessToken, refreshToken } = await authService.refreshToken({ userId, refreshTokenBody, exp });
+    const findRefreshToken = await this.authService.findRefreshTokenByToken(refreshTokenBody);
 
-    return new OK({
+    if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
+      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+    }
+
+    const { accessToken, refreshToken } = await this.authService.refreshToken({ userId, refreshTokenBody, exp });
+
+    new OK({
       data: { accessToken, refreshToken },
       message: 'Refresh token successfully'
     }).send(res);
@@ -69,13 +112,13 @@ class AuthController {
 
   async verifyEmail(req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response) {
     const { token } = req.body;
-    const userId = req.emailVerificationTokenPayload?.userId;
+    const userId = req.tokenPayload?.userId;
 
     if (!userId) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    const user = await usersService.findUserById(userId);
+    const user = await this.usersService.findUserById(userId);
 
     if (!user) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
@@ -86,24 +129,24 @@ class AuthController {
     }
 
     if (user.emailVerificationToken !== token) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_VERIFICATION_TOKEN_IS_INVALID);
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    await authService.verifyEmail(userId);
+    await this.authService.verifyEmail(userId);
 
-    return new OK({
+    new OK({
       message: 'Email verified successfully'
     }).send(res);
   }
 
   async resendVerifyEmail(req: Request, res: Response) {
-    const userId = req.accessTokenPayload?.userId;
+    const userId = req.tokenPayload?.userId;
 
     if (!userId) {
       throw new AuthFailureError();
     }
 
-    const user = await usersService.findUserById(userId);
+    const user = await this.usersService.findUserById(userId);
 
     if (!user) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
@@ -113,58 +156,68 @@ class AuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
     }
 
-    await authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
+    await this.authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
 
-    return new OK({
+    new OK({
       message: 'Email verification sent successfully'
     }).send(res);
   }
 
   async forgotPassword(req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response) {
-    const user = req.user as IUser;
+    const { email } = req.body;
 
-    await authService.forgotPassword({ userId: user._id!.toString(), name: user.name, email: user.email });
+    const existingUser = await this.usersService.findUserByEmail(email);
 
-    return new OK({
+    if (!existingUser) {
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+    }
+
+    await this.authService.forgotPassword({
+      userId: existingUser._id!.toString(),
+      name: existingUser.name,
+      email: existingUser.email
+    });
+
+    new OK({
       message: 'Password reset email sent successfully'
     }).send(res);
   }
 
   async resetPassword(req: Request<{}, {}, IResetPasswordRequestBody>, res: Response) {
     const { token, password } = req.body;
-    const { userId } = req.forgotPasswordTokenPayload as ForgotPasswordTokenPayload;
+    const { userId } = req.tokenPayload as TokenPayload;
 
     if (!userId) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    const user = await usersService.findUserById(userId);
+    const user = await this.usersService.findUserById(userId);
 
     if (!user) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
     if (user.forgotPasswordToken !== token) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_INVALID);
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    await authService.resetPassword({ userId, password });
+    await this.authService.resetPassword({ userId, password });
 
-    return new OK({
+    new OK({
       message: 'Password reset successfully'
     }).send(res);
   }
 
   async changePassword(req: Request<{}, {}, IChangePasswordRequestBody>, res: Response) {
-    const { userId } = req.accessTokenPayload as AccessTokenPayload;
+    const { userId } = req.tokenPayload as TokenPayload;
     const { password: newPassword } = req.body;
 
-    await authService.changePassword({ userId, newPassword });
+    await this.authService.changePassword({ userId, newPassword });
 
-    return new OK({
+    new OK({
       message: 'Password changed successfully'
     }).send(res);
   }
 }
 
-export default new AuthController();
+export default AuthController;

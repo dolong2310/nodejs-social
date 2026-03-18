@@ -1,16 +1,24 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { BadRequestError } from '@/models/error.response';
+import { BaseController } from '@/controllers/base.controller';
+import { BadRequestError } from '@/responses/error.response';
 import { IFollowUserRequestBody, IUnfollowUserRequestParams } from '@/models/requests/follower.request';
-import { OK } from '@/models/success.response';
-import followersService from '@/services/followers.service';
-import { AccessTokenPayload } from '@/types/token.type';
+import { OK } from '@/responses/success.response';
+import { IFollowersService } from '@/services/followers.service';
+import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
-class FollowersController {
-  constructor() {}
+export interface IFollowersController {
+  followUser(req: Request<{}, {}, IFollowUserRequestBody>, res: Response): Promise<void>;
+  unfollowUser(req: Request<IUnfollowUserRequestParams>, res: Response): Promise<void>;
+}
+
+class FollowersController extends BaseController implements IFollowersController {
+  constructor(private readonly followersService: IFollowersService) {
+    super();
+  }
 
   async followUser(req: Request<{}, {}, IFollowUserRequestBody>, res: Response) {
-    const { userId: myUserId } = req.accessTokenPayload as AccessTokenPayload;
+    const { userId: myUserId } = req.tokenPayload as TokenPayload;
 
     const { followedUserId } = req.body;
 
@@ -19,40 +27,42 @@ class FollowersController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.YOU_CANNOT_FOLLOW_YOURSELF);
     }
 
-    const isFollowing = await followersService.findFollower({ myUserId, followedUserId });
+    const isFollowing = await this.followersService.findFollowerId({ myUserId, followedUserId });
 
     if (isFollowing) {
-      return new OK({
+      new OK({
         message: 'Already following user'
       }).send(res);
+      return;
     }
 
-    await followersService.followUser({ myUserId, followedUserId });
+    await this.followersService.followUser({ myUserId, followedUserId });
 
-    return new OK({
+    new OK({
       message: 'Follow user successfully'
     }).send(res);
   }
 
   async unfollowUser(req: Request<IUnfollowUserRequestParams>, res: Response) {
-    const { userId: myUserId } = req.accessTokenPayload as AccessTokenPayload;
+    const { userId: myUserId } = req.tokenPayload as TokenPayload;
 
     const { userId } = req.params;
 
-    const isFollowing = await followersService.findFollower({ myUserId, followedUserId: userId });
+    const isFollowing = await this.followersService.findFollowerId({ myUserId, followedUserId: userId });
 
     if (isFollowing) {
-      await followersService.unfollowUser({ myUserId, unfollowedUserId: userId });
+      await this.followersService.unfollowUser({ myUserId, unfollowedUserId: userId });
 
-      return new OK({
+      new OK({
         message: 'Unfollow user successfully'
       }).send(res);
+      return;
     }
 
-    return new OK({
+    new OK({
       message: 'Not following user'
     }).send(res);
   }
 }
 
-export default new FollowersController();
+export default FollowersController;

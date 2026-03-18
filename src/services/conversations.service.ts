@@ -1,13 +1,23 @@
-import ConversationSchema, { IConversation } from '@/models/schemas/conversation.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import { ObjectId } from 'mongodb';
+import { IConversation } from '@/models/schemas/conversation.schema';
+import { IConversationRepository } from '@/repositories/conversation.repository';
 
-class ConversationService {
-  constructor() {}
+export interface IConversationsService {
+  getConversations(payload: {
+    senderId: string;
+    receiverId: string;
+    page: number;
+    limit: number;
+  }): Promise<{ conversations: IConversation[]; totalConversations: number }>;
+  createConversation(payload: {
+    senderId: string;
+    receiverId: string;
+    content: string;
+    lastMessage: string;
+  }): Promise<IConversation>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
-  }
+class ConversationService implements IConversationsService {
+  constructor(private readonly conversationRepository: IConversationRepository) {}
 
   async getConversations({
     senderId,
@@ -20,46 +30,28 @@ class ConversationService {
     page: number;
     limit: number;
   }): Promise<{ conversations: IConversation[]; totalConversations: number }> {
-    const match = {
-      $or: [
-        { senderId: new ObjectId(senderId), receiverId: new ObjectId(receiverId) },
-        { senderId: new ObjectId(receiverId), receiverId: new ObjectId(senderId) }
-      ]
-    };
-
-    const conversationsPromise = this.db.conversations
-      .find<IConversation>(match)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .toArray();
-    const totalPromise = this.db.conversations.countDocuments(match);
+    const conversationsPromise = this.conversationRepository.findConversations({ senderId, receiverId, page, limit });
+    const totalPromise = this.conversationRepository.countConversations({ senderId, receiverId });
     const [conversations, totalConversations] = await Promise.all([conversationsPromise, totalPromise]);
 
     return { conversations, totalConversations };
   }
 
-  async createConversation({
-    senderId,
-    receiverId,
-    content,
-    lastMessage
-  }: {
+  async createConversation(payload: {
     senderId: string;
     receiverId: string;
     content: string;
     lastMessage: string;
   }): Promise<IConversation> {
-    const conversation = new ConversationSchema({
-      senderId: new ObjectId(senderId),
-      receiverId: new ObjectId(receiverId),
-      content,
-      lastMessage,
-      lastMessageAt: new Date()
-    });
-    await this.db.conversations.insertOne(conversation);
+    const conversation = await this.conversationRepository.create(payload);
+
+    // emit message to frontend
+    // if (toSocketId) {
+    //   socket.to(toSocketId).emit('receiveMessage', { senderId, receiverId, content });
+    // }
+
     return conversation;
   }
 }
 
-export default new ConversationService();
+export default ConversationService;

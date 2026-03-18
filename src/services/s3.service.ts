@@ -1,13 +1,23 @@
-import { envConfig } from '@/constants/config.constant';
-import { NotFoundError } from '@/models/error.response';
-import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
+import { envConfig } from '@/config';
+import { NotFoundError } from '@/responses/error.response';
+import { CompleteMultipartUploadCommandOutput, GetObjectCommandOutput, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Response } from 'express';
 import { readFileSync } from 'fs';
 import mime from 'mime-types';
 
-class S3Service {
+export interface IS3Service {
+  uploadFile(payload: {
+    filename: string;
+    filepath: string;
+    contentType: string;
+  }): Promise<CompleteMultipartUploadCommandOutput>;
+  createPresignedUrlWithClient(filename: string): Promise<string>;
+  sendFileFromS3(res: Response, filepath: string): Promise<GetObjectCommandOutput>;
+}
+
+class S3Service implements IS3Service {
   private readonly s3: S3;
 
   constructor() {
@@ -24,7 +34,15 @@ class S3Service {
     // });
   }
 
-  async uploadFile({ filename, filepath, contentType }: { filename: string; filepath: string; contentType: string }) {
+  async uploadFile({
+    filename,
+    filepath,
+    contentType
+  }: {
+    filename: string;
+    filepath: string;
+    contentType: string;
+  }): Promise<CompleteMultipartUploadCommandOutput> {
     try {
       const parallelUploads3 = new Upload({
         client: this.s3,
@@ -56,7 +74,7 @@ class S3Service {
     }
   }
 
-  createPresignedUrlWithClient(filename: string) {
+  createPresignedUrlWithClient(filename: string): Promise<string> {
     const contentType = mime.lookup(filename) || 'application/octet-stream';
     const command = new PutObjectCommand({
       Bucket: envConfig.AWS_S3_BUCKET_NAME,
@@ -66,7 +84,7 @@ class S3Service {
     return getSignedUrl(this.s3, command, { expiresIn: 10 }); // 10 seconds
   }
 
-  async sendFileFromS3(res: Response, filepath: string) {
+  async sendFileFromS3(res: Response, filepath: string): Promise<GetObjectCommandOutput> {
     try {
       const s3Object = await this.s3.getObject({
         Bucket: envConfig.AWS_S3_BUCKET_NAME,
@@ -82,7 +100,7 @@ class S3Service {
   }
 }
 
-export default new S3Service();
+export default S3Service;
 
 // Test upload file to S3
 // const s3Instance = new S3Service();

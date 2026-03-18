@@ -1,6 +1,6 @@
+import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
-import { HTTP_ERROR_MESSAGE } from '@/constants/message.constant';
-import { ErrorResponse } from '@/models/error.response';
+import { ErrorResponse } from '@/responses/error.response';
 import { NextFunction, Request, Response } from 'express';
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {

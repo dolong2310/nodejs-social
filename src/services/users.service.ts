@@ -1,74 +1,65 @@
 import { IUpdateMeRequestBody } from '@/models/requests/user.request';
 import { IUser } from '@/models/schemas/user.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import { ObjectId, WithId } from 'mongodb';
+import { IUserRepository } from '@/repositories/user.repository';
 
-class UsersService {
-  constructor() {}
+export interface IUsersService {
+  findUserByEmail(email: string): Promise<IUser | null>;
+  findUserById(userId: string): Promise<IUser | null>;
+  findUserByUsername(username: string): Promise<IUser | null>;
+  getMe(userId: string): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null>;
+  updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUser | null>;
+  getUserProfile(
+    username: string
+  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
-  }
+class UsersService implements IUsersService {
+  constructor(private readonly userRepository: IUserRepository) {}
 
   findUserByEmail(email: string): Promise<IUser | null> {
-    return this.db.users.findOne<IUser>({ email });
+    return this.userRepository.findByEmail(email);
   }
 
   findUserById(userId: string): Promise<IUser | null> {
-    return this.db.users.findOne<IUser>({ _id: new ObjectId(userId) });
+    return this.userRepository.findById(userId);
   }
 
   findUserByUsername(username: string): Promise<IUser | null> {
-    return this.db.users.findOne<IUser>({ username });
+    return this.userRepository.findByUsername(username);
   }
 
-  getMe(
-    userId: string
-  ): Promise<WithId<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>> | null> {
-    return this.db.users.findOne(
-      { _id: new ObjectId(userId) },
-      {
-        projection: {
-          password: 0,
-          emailVerificationToken: 0,
-          forgotPasswordToken: 0
-        }
+  getMe(userId: string): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null> {
+    return this.userRepository.findById(userId, {
+      projection: {
+        password: 0,
+        emailVerificationToken: 0,
+        forgotPasswordToken: 0
       }
-    );
+    });
   }
 
   updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUser | null> {
-    return this.db.users.findOneAndUpdate(
-      { _id: new ObjectId(userId) },
-      {
-        $set: body,
-        $currentDate: { updatedAt: true }
-      },
-      {
-        returnDocument: 'after',
-        projection: {
-          password: 0,
-          emailVerificationToken: 0,
-          forgotPasswordToken: 0
-        }
+    return this.userRepository.findOneAndUpdate(userId, body, {
+      returnDocument: 'after',
+      projection: {
+        password: 0,
+        emailVerificationToken: 0,
+        forgotPasswordToken: 0
       }
-    );
+    });
   }
 
   getUserProfile(
     username: string
-  ): Promise<WithId<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>> | null> {
-    return this.db.users.findOne(
-      { username },
-      {
-        projection: {
-          password: 0,
-          emailVerificationToken: 0,
-          forgotPasswordToken: 0
-        }
+  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null> {
+    return this.userRepository.findByUsername(username, {
+      projection: {
+        password: 0,
+        emailVerificationToken: 0,
+        forgotPasswordToken: 0
       }
-    );
+    });
   }
 }
 
-export default new UsersService();
+export default UsersService;

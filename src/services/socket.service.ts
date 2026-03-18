@@ -1,11 +1,21 @@
-import { envConfig } from '@/constants/config.constant';
-import { verifyAuthorizationMiddleware, verifyUserMiddleware } from '@/middlewares/common.middleware';
-import conversationsService from '@/services/conversations.service';
-import { AccessTokenPayload } from '@/types/token.type';
+import { envConfig } from '@/config';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { DatabaseInstance } from '@/database';
+import { ETokenType } from '@/enums/token.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
+import { UserRepository } from '@/repositories/user.repository';
+import { AuthFailureError, ForbiddenError, NotFoundError } from '@/responses/error.response';
+import TokenService from '@/services/token.service';
+import UsersService from '@/services/users.service';
+import { TokenPayload } from '@/types/token.type';
 import { Server as HttpServer } from 'http';
 import { ExtendedError, Server, Socket } from 'socket.io';
 
-class SocketService {
+export interface ISocketService {
+  run(): void;
+}
+
+class SocketService implements ISocketService {
   private io: Server;
   private users: Map<string, string> = new Map();
 
@@ -28,8 +38,30 @@ class SocketService {
     try {
       const { Authorization } = socket.handshake.auth;
       const accessToken = Authorization?.split(' ')[1];
-      const decoded = await verifyAuthorizationMiddleware(accessToken);
-      await verifyUserMiddleware(decoded.userId);
+      // TODO: spit check + decoded token
+      if (!accessToken) {
+        throw new AuthFailureError();
+      }
+
+      const tokenService = new TokenService();
+      const decoded = await tokenService.verifyAccessToken(accessToken);
+      if (decoded.type !== ETokenType.ACCESS_TOKEN) {
+        throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      }
+
+      // TODO: spit usersService
+      const usersService = new UsersService(new UserRepository(DatabaseInstance.get()));
+      const user = await usersService.findUserById(decoded.userId); // TODO: cache by redis
+      if (!user) {
+        throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      }
+      if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
+        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET);
+      }
+      if (user.verificationStatus === EUserVerificationStatus.BANNED) {
+        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+      }
+
       socket.handshake.auth.decoded = decoded;
       socket.handshake.auth.accessToken = accessToken;
       next();
@@ -43,13 +75,23 @@ class SocketService {
   }
 
   private onConnection(socket: Socket) {
-    const { userId } = socket.handshake.auth.decoded as AccessTokenPayload;
+    const { userId } = socket.handshake.auth.decoded as TokenPayload;
     this.users.set(userId, socket.id);
 
     socket.use(async (packet, next) => {
       try {
         const { accessToken } = socket.handshake.auth;
-        await verifyAuthorizationMiddleware(accessToken);
+        // TODO: spit check + decoded token
+        if (!accessToken) {
+          throw new AuthFailureError();
+        }
+
+        const tokenService = new TokenService();
+        const decoded = await tokenService.verifyAccessToken(accessToken);
+        if (decoded.type !== ETokenType.ACCESS_TOKEN) {
+          throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+        }
+
         next();
       } catch (error) {
         next(new Error('Unauthorized'));
@@ -72,18 +114,18 @@ class SocketService {
         socket.to(toSocketId).emit('receiveMessage', { senderId, receiverId, content });
       }
 
-      // create conversation database
-      await conversationsService.createConversation({
-        senderId,
-        receiverId,
-        content,
-        lastMessage: content
-      });
+      // TODO: create conversation database
+      // await conversationsService.createConversation({
+      //   senderId,
+      //   receiverId,
+      //   content,
+      //   lastMessage: content
+      // });
     });
   }
 
   private onDisconnect(socket: Socket) {
-    const { userId } = socket.handshake.auth.decoded as AccessTokenPayload;
+    const { userId } = socket.handshake.auth.decoded as TokenPayload;
     this.users.delete(userId);
   }
 }

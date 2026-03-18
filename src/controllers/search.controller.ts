@@ -1,21 +1,28 @@
+import { BaseController } from '@/controllers/base.controller';
 import { ESearchType } from '@/enums/search.enum';
 import { ISearchRequestParams, ISearchRequestQuery } from '@/models/requests/search.request';
-import { OK } from '@/models/success.response';
-import searchService from '@/services/search.service';
+import { OK } from '@/responses/success.response';
+import { ISearchService } from '@/services/search.service';
 import { Request, Response } from 'express';
 
-export class SearchController {
-  constructor() {}
+export interface ISearchController {
+  search(req: Request<ISearchRequestParams, {}, {}, ISearchRequestQuery>, res: Response): Promise<void>;
+}
+
+export class SearchController extends BaseController implements ISearchController {
+  constructor(private readonly searchService: ISearchService) {
+    super();
+  }
 
   async search(req: Request<ISearchRequestParams, {}, {}, ISearchRequestQuery>, res: Response) {
     const { query = '', type, people_follow, page = 1, limit = 10 } = req.query;
-    const userId = req.accessTokenPayload?.userId;
+    const userId = req.tokenPayload?.userId;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
 
     const [results, totalItems] = await [
-      searchService.searchPosts({
+      this.searchService.searchPosts({
         userId,
         query,
         type,
@@ -23,7 +30,7 @@ export class SearchController {
         page: pageNumber,
         limit: limitNumber
       }),
-      searchService.searchUsers({
+      this.searchService.searchUsers({
         userId,
         query,
         peopleFollow: people_follow,
@@ -32,7 +39,7 @@ export class SearchController {
       })
     ][Number(type === ESearchType.USER)];
 
-    return new OK({
+    new OK({
       data: {
         data: results,
         page: pageNumber,
@@ -45,4 +52,4 @@ export class SearchController {
   }
 }
 
-export default new SearchController();
+export default SearchController;

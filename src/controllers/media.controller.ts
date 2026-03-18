@@ -1,17 +1,39 @@
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
+import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
-import { HTTP_ERROR_MESSAGE } from '@/constants/message.constant';
-import { BadRequestError, InternalServerError, NotFoundError } from '@/models/error.response';
-import { OK } from '@/models/success.response';
-import mediaService from '@/services/media.service';
-import s3Service from '@/services/s3.service';
+import { BaseController } from '@/controllers/base.controller';
+import { BadRequestError, InternalServerError, NotFoundError } from '@/responses/error.response';
+import { OK } from '@/responses/success.response';
+import { IMediaService } from '@/services/media.service';
+import { IS3Service } from '@/services/s3.service';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import mime from 'mime';
 import path from 'path';
 
-class mediaController {
-  constructor() {}
+export interface IMediaController {
+  getStaticImage(req: Request<{ filename: string }>, res: Response, next: NextFunction): void;
+  getStaticVideo(req: Request<{ filename: string }>, res: Response, next: NextFunction): void;
+  getStaticVideoStream(req: Request<{ filename: string }>, res: Response, next: NextFunction): void;
+  getStaticVideoHLSMaster(req: Request<{ id: string }>, res: Response, next: NextFunction): void;
+  getStaticVideoHLSSegment(
+    req: Request<{ id: string; version: string; segment: string }>,
+    res: Response,
+    next: NextFunction
+  ): void;
+  uploadImage(req: Request, res: Response, next: NextFunction): Promise<void>;
+  uploadVideo(req: Request, res: Response, next: NextFunction): Promise<void>;
+  uploadVideoHLS(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getVideoStatus(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
+
+class MediaController extends BaseController implements IMediaController {
+  constructor(
+    private readonly mediaService: IMediaService,
+    private readonly s3Service: IS3Service
+  ) {
+    super();
+  }
 
   getStaticImage(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
     const { filename } = req.params;
@@ -82,12 +104,7 @@ class mediaController {
 
   getStaticVideoHLSMaster(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     const { id } = req.params;
-    return s3Service.sendFileFromS3(res, `videos-hls/${id}/master.m3u8`);
-    // const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, 'master.m3u8');
-    // if (!fs.existsSync(videoPath)) {
-    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
-    // }
-    // return res.sendFile(videoPath);
+    return this.s3Service.sendFileFromS3(res, `videos-hls/${id}/master.m3u8`);
   }
 
   getStaticVideoHLSSegment(
@@ -96,36 +113,31 @@ class mediaController {
     next: NextFunction
   ) {
     const { id, version, segment } = req.params;
-    return s3Service.sendFileFromS3(res, `videos-hls/${id}/${version}/${segment}`);
-    // const videoPath = path.resolve(UPLOAD_DIR_VIDEO, id, version, segment);
-    // if (!fs.existsSync(videoPath)) {
-    //   return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
-    // }
-    // return res.sendFile(videoPath);
+    return this.s3Service.sendFileFromS3(res, `videos-hls/${id}/${version}/${segment}`);
   }
 
   async uploadImage(req: Request, res: Response, next: NextFunction) {
-    const results = await mediaService.uploadImage(req);
+    const results = await this.mediaService.uploadImage(req);
 
-    return new OK({
+    new OK({
       data: results,
       message: 'Upload successfully'
     }).send(res);
   }
 
   async uploadVideo(req: Request, res: Response, next: NextFunction) {
-    const results = await mediaService.uploadVideo(req);
+    const results = await this.mediaService.uploadVideo(req);
 
-    return new OK({
+    new OK({
       data: results,
       message: 'Upload successfully'
     }).send(res);
   }
 
   async uploadVideoHLS(req: Request, res: Response, next: NextFunction) {
-    const results = await mediaService.uploadVideoHLS(req);
+    const results = await this.mediaService.uploadVideoHLS(req);
 
-    return new OK({
+    new OK({
       data: results,
       message: 'Upload successfully'
     }).send(res);
@@ -133,13 +145,13 @@ class mediaController {
 
   async getVideoStatus(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params as { id: string };
-    const videoStatus = await mediaService.getVideoStatusById(id);
+    const videoStatus = await this.mediaService.getVideoStatusByName(id);
 
-    return new OK({
+    new OK({
       data: videoStatus,
       message: 'Get video status successfully'
     }).send(res);
   }
 }
 
-export default new mediaController();
+export default MediaController;

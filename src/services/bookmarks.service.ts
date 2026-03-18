@@ -1,25 +1,21 @@
-import BookmarkSchema from '@/models/schemas/bookmark.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import { ObjectId } from 'mongodb';
+import { IBookmark } from '@/models/schemas/bookmark.schema';
+import { IBookmarkRepository } from '@/repositories/bookmark.repository';
 
-class BookmarksService {
-  constructor() {}
+export interface IBookmarksService {
+  bookmarkPost({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null>;
+  unbookmarkPost({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
+class BookmarksService implements IBookmarksService {
+  constructor(private readonly bookmarkRepository: IBookmarkRepository) {}
+
+  bookmarkPost({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null> {
+    return this.bookmarkRepository.findOneAndUpdate({ userId, postId });
   }
 
-  bookmarkPost({ userId, postId }: { userId: string; postId: string }) {
-    return this.db.bookmarks.findOneAndUpdate(
-      { userId: new ObjectId(userId), postId: new ObjectId(postId) },
-      { $setOnInsert: new BookmarkSchema({ userId: new ObjectId(userId), postId: new ObjectId(postId) }) },
-      { upsert: true, returnDocument: 'after' }
-    );
-  }
-
-  unbookmarkPost({ userId, postId }: { userId: string; postId: string }) {
-    return this.db.bookmarks.findOneAndDelete({ userId: new ObjectId(userId), postId: new ObjectId(postId) });
+  unbookmarkPost({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null> {
+    return this.bookmarkRepository.findOneAndDelete({ userId, postId });
   }
 }
 
-export default new BookmarksService();
+export default BookmarksService;

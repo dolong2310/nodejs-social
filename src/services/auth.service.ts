@@ -1,29 +1,67 @@
-import { envConfig } from '@/constants/config.constant';
+import { envConfig } from '@/config';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { BadRequestError, NotFoundError } from '@/models/error.response';
 import { ILoginRequestBody, IRegisterRequestBody } from '@/models/requests/auth.request';
-import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
-import UserSchema, { IUser } from '@/models/schemas/user.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import emailService, { EEmailTemplate } from '@/services/email.service';
-import tokenService from '@/services/token.service';
-import usersService from '@/services/users.service';
+import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
+import { IUser } from '@/models/schemas/user.schema';
+import { IUserRepository } from '@/repositories/user.repository';
+import { BadRequestError, NotFoundError } from '@/responses/error.response';
+import { EEmailTemplate, IEmailService } from '@/services/email.service';
+import { ITokenService } from '@/services/token.service';
 import { comparePassword, hashPassword } from '@/utils/helper.util';
 import { omit } from 'lodash-es';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
-class AuthService {
-  constructor() {}
+export interface IAuthService {
+  findRefreshTokenByToken(token: string): Promise<IRefreshToken | null>;
+  // Nếu autoLogin là true, trả về accessToken và refreshToken.
+  register(
+    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
+    options: { autoLogin: true }
+  ): Promise<{ accessToken: string; refreshToken: string }>;
+  // Nếu autoLogin là false hoặc không truyền options, trả về thông tin user
+  register(
+    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
+    options?: { autoLogin?: false }
+  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>>;
+  // Overload Functions
+  register(
+    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
+    options?: {
+      autoLogin?: boolean;
+    }
+  ): Promise<
+    | Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>
+    | { accessToken: string; refreshToken: string }
+  >;
+  login(body: ILoginRequestBody, user: IUser): Promise<{ accessToken: string; refreshToken: string }>;
+  logout(refreshToken: string): Promise<void>;
+  refreshToken(payload: {
+    userId: string;
+    refreshTokenBody: string;
+    exp: number;
+  }): Promise<{ accessToken: string; refreshToken: string }>;
+  verifyEmail(userId: string): Promise<void>;
+  resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<void>;
+  forgotPassword(payload: { userId: string; name: string; email: string }): Promise<void>;
+  resetPassword(payload: { userId: string; password: string }): Promise<void>;
+  changePassword(payload: {
+    userId: string;
+    newPassword: string;
+  }): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
-  }
+class AuthService implements IAuthService {
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly tokenService: ITokenService,
+    private readonly emailService: IEmailService
+  ) {}
 
   findRefreshTokenByToken(token: string): Promise<IRefreshToken | null> {
-    return this.db.refreshTokens.findOne<IRefreshToken>({ token });
+    return this.userRepository.findRefreshToken(token);
   }
 
   // Nếu autoLogin là true, trả về accessToken và refreshToken.
@@ -52,14 +90,14 @@ class AuthService {
     const userId = new ObjectId();
 
     // tạo email verification token
-    const emailVerificationToken = await tokenService.signEmailVerificationToken({
+    const emailVerificationToken = await this.tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
     // gửi email xác thực
     // TIPS: khi gửi email mà không muốn tạo email mới thì chỉ cần thêm +1 vào cuối của email đó (ví dụ: test123@gmail.com -> test123+1@gmail.com)
-    await emailService.sendEmail({
+    await this.emailService.sendEmail({
       toAddress: email,
       subject: 'Email Verification',
       body: {
@@ -72,23 +110,22 @@ class AuthService {
       template: EEmailTemplate.VERIFY_EMAIL
     });
 
-    const user = await usersService.findUserByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
     if (user) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
     }
 
     const hashedPassword = await hashPassword(password);
-    const newUser = new UserSchema({
-      _id: userId,
+    const newUser = await this.userRepository.create({
+      userId: userId.toString(),
       name,
       email,
       password: hashedPassword,
-      dateOfBirth: new Date(dateOfBirth),
+      dateOfBirth: dateOfBirth,
       username: `user-${uuidv4()}`,
       emailVerificationToken,
       verificationStatus: EUserVerificationStatus.UNVERIFIED
     });
-    await this.db.users.insertOne(newUser);
 
     if (autoLogin) {
       return this.login({ email, password }, newUser);
@@ -97,12 +134,10 @@ class AuthService {
     return omit(newUser, ['password', 'emailVerificationToken', 'forgotPasswordToken']);
   }
 
-  async login(body: ILoginRequestBody, user?: IUser): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(body: ILoginRequestBody, user: IUser): Promise<{ accessToken: string; refreshToken: string }> {
     const { password } = body;
 
-    if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
-    }
+    const userId = user._id!.toString();
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
@@ -111,23 +146,18 @@ class AuthService {
 
     // Tạo cặp token JWT
     const [accessToken, refreshToken] = await Promise.all([
-      tokenService.signAccessToken({
-        userId: user._id!.toString(),
+      this.tokenService.signAccessToken({
+        userId,
         type: ETokenType.ACCESS_TOKEN
       }),
-      tokenService.signRefreshToken({
-        userId: user._id!.toString(),
+      this.tokenService.signRefreshToken({
+        userId,
         type: ETokenType.REFRESH_TOKEN
       })
     ]);
 
     // Lưu token vào database
-    await this.db.refreshTokens.insertOne(
-      new RefreshTokenSchema({
-        token: refreshToken,
-        userId: new ObjectId(user._id)
-      })
-    );
+    await this.userRepository.createRefreshToken(refreshToken, userId);
 
     return {
       accessToken,
@@ -136,10 +166,7 @@ class AuthService {
   }
 
   async logout(refreshToken: string): Promise<void> {
-    // delete refresh token from database
-    await this.db.refreshTokens.deleteOne({
-      token: refreshToken
-    });
+    await this.userRepository.deleteRefreshToken(refreshToken);
   }
 
   async refreshToken({
@@ -152,11 +179,11 @@ class AuthService {
     exp: number;
   }): Promise<{ accessToken: string; refreshToken: string }> {
     const [newAccessToken, newRefreshToken] = await Promise.all([
-      tokenService.signAccessToken({
+      this.tokenService.signAccessToken({
         userId,
         type: ETokenType.ACCESS_TOKEN
       }),
-      tokenService.signRefreshToken({
+      this.tokenService.signRefreshToken({
         userId,
         type: ETokenType.REFRESH_TOKEN,
         exp
@@ -164,15 +191,8 @@ class AuthService {
     ]);
 
     await Promise.all([
-      this.db.refreshTokens.deleteOne({
-        token: refreshTokenBody
-      }),
-      this.db.refreshTokens.insertOne(
-        new RefreshTokenSchema({
-          token: newRefreshToken,
-          userId: new ObjectId(userId)
-        })
-      )
+      this.userRepository.deleteRefreshToken(refreshTokenBody),
+      this.userRepository.createRefreshToken(newRefreshToken, userId)
     ]);
 
     return {
@@ -182,28 +202,20 @@ class AuthService {
   }
 
   async verifyEmail(userId: string): Promise<void> {
-    // cập nhật user
-    await this.db.users.updateOne(
-      { _id: new ObjectId(userId) },
-      {
-        $set: {
-          emailVerificationToken: '',
-          verificationStatus: EUserVerificationStatus.VERIFIED
-          // updatedAt: new Date() // giá trị được cập nhật tại thời điểm update trong service
-        },
-        $currentDate: { updatedAt: true } // giá trị được cập nhật tại thời điểm mongodb update document (chênh lệch với service vì nó chạy sau)
-      }
-    );
+    await this.userRepository.update(userId, {
+      emailVerificationToken: '',
+      verificationStatus: EUserVerificationStatus.VERIFIED
+    });
   }
 
-  async resendVerifyEmail({ userId, name, email }: { userId: string; name: string; email: string }) {
-    const emailVerificationToken = await tokenService.signEmailVerificationToken({
+  async resendVerifyEmail({ userId, name, email }: { userId: string; name: string; email: string }): Promise<void> {
+    const emailVerificationToken = await this.tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
     // gửi email xác thực
-    await emailService.sendEmail({
+    await this.emailService.sendEmail({
       toAddress: email,
       subject: 'Email Verification',
       body: {
@@ -216,20 +228,19 @@ class AuthService {
       template: EEmailTemplate.VERIFY_EMAIL
     });
 
-    await this.db.users.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: { emailVerificationToken }, $currentDate: { updatedAt: true } }
-    );
+    await this.userRepository.update(userId, {
+      emailVerificationToken
+    });
   }
 
-  async forgotPassword({ userId, name, email }: { userId: string; name: string; email: string }) {
-    const forgotPasswordToken = await tokenService.signForgotPasswordToken({
+  async forgotPassword({ userId, name, email }: { userId: string; name: string; email: string }): Promise<void> {
+    const forgotPasswordToken = await this.tokenService.signForgotPasswordToken({
       userId,
       type: ETokenType.FORGOT_PASSWORD_TOKEN
     });
 
     // gửi email xác thực
-    await emailService.sendEmail({
+    await this.emailService.sendEmail({
       toAddress: email,
       subject: 'Forgot Password',
       body: {
@@ -242,33 +253,33 @@ class AuthService {
       template: EEmailTemplate.FORGOT_PASSWORD
     });
 
-    await this.db.users.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: { forgotPasswordToken }, $currentDate: { updatedAt: true } }
-    );
+    await this.userRepository.update(userId, {
+      forgotPasswordToken
+    });
   }
 
-  async resetPassword({ userId, password }: { userId: string; password: string }) {
+  async resetPassword({ userId, password }: { userId: string; password: string }): Promise<void> {
     const hashedPassword = await hashPassword(password);
 
-    await this.db.users.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: { forgotPasswordToken: '', password: hashedPassword }, $currentDate: { updatedAt: true } }
-    );
+    await this.userRepository.update(userId, {
+      forgotPasswordToken: '',
+      password: hashedPassword
+    });
   }
 
-  async changePassword({ userId, newPassword }: { userId: string; newPassword: string }) {
+  async changePassword({
+    userId,
+    newPassword
+  }: {
+    userId: string;
+    newPassword: string;
+  }): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null> {
     const hashedPassword = await hashPassword(newPassword);
 
-    return this.db.users.findOneAndUpdate(
-      { _id: new ObjectId(userId) },
+    return this.userRepository.findOneAndUpdate(
+      userId,
       {
-        $set: {
-          password: hashedPassword
-        },
-        $currentDate: {
-          updatedAt: true
-        }
+        password: hashedPassword
       },
       {
         returnDocument: 'after',
@@ -282,4 +293,4 @@ class AuthService {
   }
 }
 
-export default new AuthService();
+export default AuthService;

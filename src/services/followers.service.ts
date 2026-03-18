@@ -1,48 +1,34 @@
-import FollowerSchema from '@/models/schemas/follower.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import { FindOptions, ObjectId } from 'mongodb';
+import { IFollower } from '@/models/schemas/follower.schema';
+import { IFollowerRepository } from '@/repositories/follower.repository';
+import { ObjectId } from 'mongodb';
 
-class FollowersService {
-  constructor() {}
+export interface IFollowersService {
+  findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+  findFollowerId(payload: { myUserId: string; followedUserId: string }): Promise<IFollower | null>;
+  followUser(payload: { myUserId: string; followedUserId: string }): Promise<IFollower>;
+  unfollowUser(payload: { myUserId: string; unfollowedUserId: string }): Promise<boolean>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
-  }
+class FollowersService implements IFollowersService {
+  constructor(private readonly followerRepository: IFollowerRepository) {}
 
   async findFollowedUserIds(userId: string) {
-    const objectFollowedUserIds = await this.db.followers
-      .find({ userId: new ObjectId(userId) })
-      .project({ _id: 0, followedUserId: 1 })
-      .toArray();
-    const followedUserIds: ObjectId[] = objectFollowedUserIds.map((item) => item.followedUserId);
+    const followedUsers = await this.followerRepository.findFollowedUser(userId);
+    const followedUserIds: ObjectId[] = followedUsers.map((item) => item.followedUserId);
     return followedUserIds;
   }
 
-  findFollower({ myUserId, followedUserId }: { myUserId: string; followedUserId: string }, options?: FindOptions) {
-    return this.db.followers.findOne(
-      {
-        userId: new ObjectId(myUserId),
-        followedUserId: new ObjectId(followedUserId)
-      },
-      options
-    );
+  findFollowerId(payload: { myUserId: string; followedUserId: string }) {
+    return this.followerRepository.findOne(payload, { projection: { _id: 1 } });
   }
 
-  followUser({ myUserId, followedUserId }: { myUserId: string; followedUserId: string }) {
-    return this.db.followers.insertOne(
-      new FollowerSchema({
-        userId: new ObjectId(myUserId),
-        followedUserId: new ObjectId(followedUserId)
-      })
-    );
+  followUser(payload: { myUserId: string; followedUserId: string }) {
+    return this.followerRepository.followUser(payload);
   }
 
-  unfollowUser({ myUserId, unfollowedUserId }: { myUserId: string; unfollowedUserId: string }) {
-    return this.db.followers.deleteOne({
-      userId: new ObjectId(myUserId),
-      followedUserId: new ObjectId(unfollowedUserId)
-    });
+  unfollowUser(payload: { myUserId: string; unfollowedUserId: string }) {
+    return this.followerRepository.unfollowUser(payload);
   }
 }
 
-export default new FollowersService();
+export default FollowersService;

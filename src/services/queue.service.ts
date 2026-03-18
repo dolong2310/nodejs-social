@@ -3,7 +3,25 @@ interface QueueItem {
   onStart?: () => Promise<void>;
 }
 
-class QueueService {
+export interface IQueueService {
+  enqueue({ item, onStart }: { item: string; onStart?: () => Promise<void> }): void | Promise<void>;
+  dequeue(): QueueItem | undefined;
+  isEmpty(): boolean;
+  isProcessing(): boolean;
+  startProcessing<T>({
+    task,
+    onProcess,
+    onSuccess,
+    onError
+  }: {
+    task: (item: string) => Promise<T>;
+    onProcess: (item: string) => Promise<void>;
+    onSuccess: (item: T) => Promise<void>;
+    onError: (error: Error, item: string) => Promise<void>;
+  }): Promise<void>;
+}
+
+class QueueService implements IQueueService {
   private items: QueueItem[] = [];
   private processing: boolean = false;
   private onStartWhenEnqueue: boolean = false;

@@ -1,12 +1,19 @@
-import { envConfig } from '@/constants/config.constant';
-import { BadRequestError } from '@/models/error.response';
-import authService from '@/services/auth.service';
-import usersService from '@/services/users.service';
+import { envConfig } from '@/config';
+import { BadRequestError } from '@/responses/error.response';
+import { IAuthService } from '@/services/auth.service';
+import { IUsersService } from '@/services/users.service';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-class OAuthService {
-  constructor() {}
+export interface IOAuthService {
+  googleLogin(state: string, code: string): Promise<{ accessToken: string; refreshToken: string }>;
+}
+
+class OAuthService implements IOAuthService {
+  constructor(
+    private readonly authService: IAuthService,
+    private readonly usersService: IUsersService
+  ) {}
 
   private async getOAuthGoogleToken(code: string): Promise<{ access_token: string; id_token: string }> {
     const body = {
@@ -59,11 +66,11 @@ class OAuthService {
     }
 
     // check user exists
-    const user = await usersService.findUserByEmail(userInfo.email);
+    const user = await this.usersService.findUserByEmail(userInfo.email);
 
     // if user exists, login
     if (user) {
-      const { accessToken, refreshToken } = await authService.login(
+      const { accessToken, refreshToken } = await this.authService.login(
         { email: userInfo.email, password: user.password },
         user
       );
@@ -71,7 +78,7 @@ class OAuthService {
     }
     // else, register
     const randomPassword = uuidv4();
-    return await authService.register(
+    return await this.authService.register(
       {
         name: userInfo.name,
         email: userInfo.email,
@@ -83,7 +90,7 @@ class OAuthService {
       }
     );
 
-    // const { accessToken, refreshToken } = await authService.login(
+    // const { accessToken, refreshToken } = await this.authService.login(
     //   { email: userInfo.email, password: newUser.password },
     //   newUser
     // );
@@ -91,4 +98,4 @@ class OAuthService {
   }
 }
 
-export default new OAuthService();
+export default OAuthService;

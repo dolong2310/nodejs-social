@@ -1,10 +1,10 @@
-import { envConfig, isDevelopment } from '@/constants/config.constant';
+import { envConfig, isDevelopment } from '@/config';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
-import VideoStatusSchema from '@/models/schemas/videoStatus.schema';
-import { DatabaseSingleton } from '@/services/database.singleton';
-import QueueService from '@/services/queue.service';
-import s3Service from '@/services/s3.service';
+import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
+import { IMediaRepository } from '@/repositories/media.repository';
+import { IQueueService } from '@/services/queue.service';
+import { IS3Service } from '@/services/s3.service';
 import { IMedia } from '@/types/media.type';
 import {
   getFiles,
@@ -20,15 +20,19 @@ import mime from 'mime';
 import path from 'path';
 import sharp from 'sharp';
 
-class MediaService {
-  private queueService: QueueService;
-  constructor() {
-    this.queueService = new QueueService({ onStartWhenEnqueue: true });
-  }
+export interface IMediaService {
+  uploadImage(req: Request): Promise<IMedia[]>;
+  uploadVideo(req: Request): Promise<IMedia[]>;
+  uploadVideoHLS(req: Request): Promise<IMedia[]>;
+  getVideoStatusByName(name: string): Promise<IVideoStatus | null>;
+}
 
-  private get db() {
-    return DatabaseSingleton.get();
-  }
+class MediaService implements IMediaService {
+  constructor(
+    private readonly mediaRepository: IMediaRepository,
+    private readonly s3Service: IS3Service,
+    private readonly queueService: IQueueService
+  ) {}
 
   async uploadImage(req: Request) {
     const files = await handleUploadImage(req);
@@ -38,7 +42,7 @@ class MediaService {
         const newPath = path.resolve(UPLOAD_DIR_IMAGE, `${newName}.jpg`);
         await sharp(file.filepath).jpeg().toFile(newPath);
 
-        const result = await s3Service.uploadFile({
+        const result = await this.s3Service.uploadFile({
           filename: 'images/' + newName,
           filepath: newPath,
           contentType: mime.getType(newPath) ?? 'application/octet-stream'
@@ -62,7 +66,7 @@ class MediaService {
       files.map(async (file) => {
         const newName = getNameFromFullname(file.newFilename);
 
-        const result = await s3Service.uploadFile({
+        const result = await this.s3Service.uploadFile({
           filename: 'videos/' + newName,
           filepath: file.filepath,
           contentType: mime.getType(file.filepath) ?? 'video/mp4'
@@ -92,9 +96,7 @@ class MediaService {
         this.queueService.enqueue({
           item: file.filepath,
           onStart: async () => {
-            await this.db.videoStatuses.insertOne(
-              new VideoStatusSchema({ name: idName, status: EEncodingVideoStatus.PENDING })
-            );
+            await this.mediaRepository.createVideoStatus({ name: idName, status: EEncodingVideoStatus.PENDING });
           }
         });
         this.queueService.startProcessing({
@@ -109,7 +111,7 @@ class MediaService {
             await Promise.all(
               filepaths.map(async (_filepath) => {
                 const filename = 'videos-hls' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
-                return s3Service.uploadFile({
+                return this.s3Service.uploadFile({
                   filename,
                   filepath: _filepath,
                   contentType: mime.getType(_filepath) ?? 'video/mp4'
@@ -124,26 +126,24 @@ class MediaService {
           },
           onProcess: async (filepath) => {
             const currentIdName = getNameFromFullname(path.basename(filepath));
-            await this.db.videoStatuses.updateOne(
-              { name: currentIdName },
-              { $set: { status: EEncodingVideoStatus.PROCESSING }, $currentDate: { updatedAt: true } }
-            );
+            await this.mediaRepository.updateVideoStatus({
+              name: currentIdName,
+              status: EEncodingVideoStatus.PROCESSING
+            });
           },
           onSuccess: async (currentIdName) => {
-            await this.db.videoStatuses.updateOne(
-              { name: currentIdName },
-              { $set: { status: EEncodingVideoStatus.SUCCESS }, $currentDate: { updatedAt: true } }
-            );
+            await this.mediaRepository.updateVideoStatus({
+              name: currentIdName,
+              status: EEncodingVideoStatus.SUCCESS
+            });
           },
           onError: async (error, item) => {
             const currentIdName = getNameFromFullname(path.basename(item));
-            await this.db.videoStatuses.updateOne(
-              { name: currentIdName },
-              {
-                $set: { status: EEncodingVideoStatus.FAILED, message: error.message },
-                $currentDate: { updatedAt: true }
-              }
-            );
+            await this.mediaRepository.updateVideoStatus({
+              name: currentIdName,
+              status: EEncodingVideoStatus.FAILED,
+              message: error.message
+            });
           }
         });
 
@@ -152,10 +152,9 @@ class MediaService {
     );
   }
 
-  async getVideoStatusById(id: string) {
-    const videoStatus = await this.db.videoStatuses.findOne({ name: id });
-    return videoStatus;
+  getVideoStatusByName(name: string): Promise<IVideoStatus | null> {
+    return this.mediaRepository.findVideoStatusByName(name);
   }
 }
 
-export default new MediaService();
+export default MediaService;

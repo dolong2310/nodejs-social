@@ -1,4 +1,3 @@
-// import { envConfig } from '@/constants/config.constant';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFollower } from '@/models/schemas/follower.schema';

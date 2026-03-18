@@ -1,7 +1,7 @@
 'use strict';
 
+import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
-import { HTTP_ERROR_MESSAGE } from '@/constants/message.constant';
 import { Response } from 'express';
 
 interface SuccessResponseParams {
