@@ -27,6 +27,7 @@ import swaggerUi from 'swagger-ui-express';
 export async function createApp(httpServer: HttpServer, appConfig: AppConfig): Promise<Express> {
   const databaseService = DatabaseInstance.init(appConfig.database);
   await databaseService.connect();
+  await databaseService.initializeIndexes();
 
   const app = createExpressApp();
   httpServer.on('request', app);
@@ -46,6 +47,13 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
   app.use(config.api.prefix, setupSwagger());
 
   app.use(errorHandler);
+
+  // setTimeout(() => {
+  //   console.log('fake data is running...');
+  //   import('@/utils/fake-data').then(({ default: fakeData }) => {
+  //     fakeData();
+  //   });
+  // }, 100);
 
   return app;
 }

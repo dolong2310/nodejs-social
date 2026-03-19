@@ -76,15 +76,18 @@ class AuthService extends BaseService implements IAuthService {
     const { name, email, password, dateOfBirth } = body;
     const { autoLogin = false } = options ?? {};
 
+    const existingUser = await this.userRepository.findByEmail(email);
+    if (existingUser) {
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
+    }
+
     const userId = new ObjectId();
 
-    // tạo email verification token
     const emailVerificationToken = await this.tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
-    // gửi email xác thực
     // TIPS: khi gửi email mà không muốn tạo email mới thì chỉ cần thêm +1 vào cuối của email đó (ví dụ: test123@gmail.com -> test123+1@gmail.com)
     await this.emailService.sendEmail({
       toAddress: email,
@@ -98,11 +101,6 @@ class AuthService extends BaseService implements IAuthService {
       },
       template: EEmailTemplate.VERIFY_EMAIL
     });
-
-    const user = await this.userRepository.findByEmail(email);
-    if (user) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
-    }
 
     const hashedPassword = await hashPassword(password);
     const newUser = await this.userRepository.create({

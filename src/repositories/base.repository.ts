@@ -5,7 +5,7 @@
  */
 
 import DatabaseService from '@/database/database.service';
-import { Collection, Document, Filter, Sort, WithId } from 'mongodb';
+import { Collection, CountDocumentsOptions, Document, Filter, Sort, WithId } from 'mongodb';
 
 export abstract class BaseRepository {
   protected db: DatabaseService;
@@ -16,13 +16,13 @@ export abstract class BaseRepository {
 
   // Generic method to check if a record exists
   protected async exists<T extends Document>(model: Collection<T>, filter: Filter<T>): Promise<boolean> {
-    const record = await model.findOne(filter);
-    return record !== null;
+    const count = await model.countDocuments(filter, { limit: 1 } as CountDocumentsOptions);
+    return count > 0;
   }
 
   // Generic method to count records
   protected async count<T extends Document>(model: Collection<T>, filter?: Filter<T>): Promise<number> {
-    return await model.countDocuments(filter);
+    return model.countDocuments(filter);
   }
 
   // Generic method to find many with pagination

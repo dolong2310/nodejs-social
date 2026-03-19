@@ -3,9 +3,6 @@ import { config, envConfig, isProduction } from './src/config/index.js';
 import { createApp } from './src/index.js';
 import { initUploadsFolder } from './src/utils/file.util.js';
 
-// import fakeData from '@/utils/fake-data';
-// fakeData();
-
 async function bootstrap() {
   const port = config.port;
   const httpServer = createServer();

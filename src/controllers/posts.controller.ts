@@ -33,7 +33,7 @@ class PostsController extends BaseController implements IPostsController {
 
   getNewFeeds = async (req: Request<ParamsDictionary, object, object, IPaginationRequestQuery>, res: Response) => {
     const { page, limit } = req.query;
-    const userId = this.getUserId(req);
+    const userId = this.getUserId(req, { optional: true });
 
     let posts: IPostNewFeedResponse[];
     let totalPosts: number;

@@ -11,7 +11,7 @@ import HashtagSchema, { IHashtag } from '@/models/schemas/hashtag.schema';
 import PostSchema, { IPost } from '@/models/schemas/post.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
-import { FindOneAndUpdateOptions, ObjectId, UpdateResult } from 'mongodb';
+import { FindOneAndUpdateOptions, ObjectId, UpdateResult, AnyBulkWriteOperation } from 'mongodb';
 
 export interface IPostRepository {
   findById(id: string): Promise<IPostDetailResponse>;
@@ -227,27 +227,26 @@ export class PostRepository extends BaseRepository implements IPostRepository {
   }
 
   async countPosts({ userId, followedUserIds }: { userId: string; followedUserIds: ObjectId[] }): Promise<number> {
-    const match = {
-      userId: {
-        $in: followedUserIds
-      },
-      $or: [
-        { audience: EPostAudience.PUBLIC },
-        { audience: EPostAudience.FOLLOWERS },
-        {
-          $and: [
-            { audience: EPostAudience.ONLY_ME },
-            {
-              userId: {
-                $eq: new ObjectId(userId)
-              }
-            }
-          ]
-        }
-      ]
-    };
-    const totalPosts = await this.count(this.db.posts, match);
-    return totalPosts;
+    let match: Record<string, unknown>;
+
+    if (!followedUserIds || followedUserIds.length === 0) {
+      match = {
+        $or: [{ audience: EPostAudience.PUBLIC }, { userId: new ObjectId(userId) }]
+      };
+    } else {
+      match = {
+        userId: { $in: followedUserIds },
+        $or: [
+          { audience: EPostAudience.PUBLIC },
+          { audience: EPostAudience.FOLLOWERS },
+          {
+            $and: [{ audience: EPostAudience.ONLY_ME }, { userId: { $eq: new ObjectId(userId) } }]
+          }
+        ]
+      };
+    }
+
+    return this.count(this.db.posts, match);
   }
 
   async findGuestPosts({ page, limit }: { page: number; limit: number }): Promise<IPostNewFeedResponse[]> {
@@ -370,15 +369,20 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     );
   }
 
-  findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]> {
-    return Promise.all(
-      hashtags.map((hashtag) => {
-        return this.db.hashtags.findOneAndUpdate(
-          { name: hashtag },
-          { $setOnInsert: new HashtagSchema({ name: hashtag }) },
-          { upsert: true, returnDocument: 'after' }
-        );
-      })
-    );
+  async findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]> {
+    if (hashtags.length === 0) return [];
+
+    const now = new Date();
+    const ops: AnyBulkWriteOperation<IHashtag>[] = hashtags.map((name) => ({
+      updateOne: {
+        filter: { name },
+        update: { $setOnInsert: new HashtagSchema({ name, createdAt: now }) },
+        upsert: true
+      }
+    }));
+
+    await this.db.hashtags.bulkWrite(ops, { ordered: false });
+
+    return this.db.hashtags.find({ name: { $in: hashtags } }).toArray();
   }
 }

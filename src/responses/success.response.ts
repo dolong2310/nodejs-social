@@ -27,7 +27,7 @@ export class SuccessResponse<T> {
     this.data = data;
   }
 
-  send(res: Response, header: Record<string, string> = {}): Response {
+  send(res: Response): Response {
     return res.status(this.statusCode).json(this);
   }
 }

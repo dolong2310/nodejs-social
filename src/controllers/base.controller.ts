@@ -58,8 +58,8 @@ export abstract class BaseController {
     const limit = Number(pagination.limit);
     const totalItems = Number(pagination.totalItems);
     const totalPages = Math.ceil(totalItems / limit);
-    const hasNext = page ? page < totalPages! : false;
-    const hasPrev = page ? page > 1 : false;
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
 
     const payload = {
       data,
@@ -84,12 +84,12 @@ export abstract class BaseController {
   /**
    * Retrieves the user ID from the request object.
    */
-  protected getUserId(req: Request): string {
+  protected getUserId(req: Request, options?: { optional?: boolean }): string {
     const userId = req.tokenPayload?.userId;
-    if (!userId) {
+    if (!userId && !options?.optional) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
-    return userId;
+    return userId || '';
   }
 
   /**

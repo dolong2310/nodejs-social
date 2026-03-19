@@ -1,4 +1,6 @@
-import { DatabaseInstance } from '@/database';
+import { envConfig } from '@/config';
+import DatabaseService from '@/database/database.service';
+import { DatabaseInstance } from '@/database/index.js';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { ETokenType } from '@/enums/token.enum';
@@ -15,7 +17,7 @@ import { hashPassword } from '@/utils/helper.util';
 import { faker } from '@faker-js/faker';
 import { ObjectId } from 'mongodb';
 
-const MYID = '69b3f6e3e07d783dbde0a80b';
+const MYID = '69bc51a34e2dae18a947af8f';
 const PASSWORD = '@Bc123';
 const USER_COUNT = 1000;
 const POST_PER_USER = 10;
@@ -23,7 +25,10 @@ const HASHTAG_PER_POST = 10;
 const MENTION_PER_POST = 10;
 const MEDIA_PER_POST = 10;
 
-const db = () => DatabaseInstance.get();
+const db = new DatabaseService({
+  uri: envConfig.MONGODB_URI,
+  databaseName: envConfig.DATABASE_NAME
+});
 
 const createRandomUserBody = (): IRegisterRequestBody => {
   const user: IRegisterRequestBody & { confirmPassword: string } = {
@@ -127,7 +132,7 @@ const insertMultipleUsers = async (userBodies: IRegisterRequestBody[]): Promise<
         EUserVerificationStatus.BANNED
       ]);
 
-      const user = await db().users.insertOne(
+      const user = await db.users.insertOne(
         new UserSchema({
           ...userBody,
           username: `user-${new ObjectId().toString()}`,
@@ -145,7 +150,7 @@ const insertMultipleUsers = async (userBodies: IRegisterRequestBody[]): Promise<
           type: ETokenType.EMAIL_VERIFICATION_TOKEN
         });
 
-        await db().users.updateOne({ _id: user.insertedId }, { $set: { emailVerificationToken } });
+        await db.users.updateOne({ _id: user.insertedId }, { $set: { emailVerificationToken } });
       }
 
       console.log(`Created user ${user.insertedId}`);
@@ -161,7 +166,7 @@ const followMultipleUsers = async (userId: ObjectId, followedUserIds: ObjectId[]
   const followedUsers = await Promise.all(
     followedUserIds.map((followedUserId) => {
       console.log(`Following user ${followedUserId}`);
-      return db().followers.insertOne(
+      return db.followers.insertOne(
         new FollowerSchema({
           userId,
           followedUserId

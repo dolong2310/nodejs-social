@@ -72,10 +72,56 @@ class DatabaseService {
     await this.posts.createIndex({ content: 'text' }, { default_language: 'none' });
   }
 
+  async createPostsAdditionalIndexes() {
+    await Promise.all([
+      // For findPostsType / countPostsType queries: { parentId, type }
+      // Also used by the $lookup self-join in aggregation pipelines that counts child posts (comments/reposts/quotes)
+      this.posts.createIndex({ parentId: 1, type: 1 }, { sparse: true }),
+      // For new-feed queries: { userId: { $in: [...] }, $or: [audience conditions] }
+      this.posts.createIndex({ userId: 1, audience: 1 }),
+      // For guest feed & audience-only filters: { audience }
+      this.posts.createIndex({ audience: 1 })
+    ]);
+  }
+
+  async createBookmarksIndex() {
+    await Promise.all([
+      // For bookmark create (upsert) and delete: { userId, postId } — also prevents duplicate bookmarks
+      this.bookmarks.createIndex({ userId: 1, postId: 1 }, { unique: true }),
+      // For the $lookup in post aggregation pipelines that calculates bookmarkCount per post
+      this.bookmarks.createIndex({ postId: 1 })
+    ]);
+  }
+
+  async createConversationsIndex() {
+    // For findConversations / countConversations which filter by senderId+receiverId in both directions
+    await this.conversations.createIndex({ senderId: 1, receiverId: 1 });
+  }
+
+  async createHashtagsIndex() {
+    // For findAndUpsertHashtags upsert filter and find-by-name queries
+    await this.hashtags.createIndex({ name: 1 }, { unique: true });
+  }
+
   async createUsersSearchIndex() {
     const isIndexExists = await this.users.indexExists(['name_1_username_1_email_1']);
     if (isIndexExists) return;
     await this.users.createIndex({ name: 'text', username: 'text', email: 'text' }, { default_language: 'none' });
+  }
+
+  async initializeIndexes() {
+    await Promise.all([
+      this.createUsersIndex(),
+      this.createUsersSearchIndex(),
+      this.createRefreshTokensIndex(),
+      this.createVideoStatusesIndex(),
+      this.createFollowersIndex(),
+      this.createPostsIndex(),
+      this.createPostsAdditionalIndexes(),
+      this.createBookmarksIndex(),
+      this.createConversationsIndex(),
+      this.createHashtagsIndex()
+    ]);
   }
 
   get users(): Collection<IUser> {

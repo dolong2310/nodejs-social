@@ -79,7 +79,7 @@ class TokenService implements ITokenService {
     return jwt.sign(payload, config.secret, options);
   }
 
-  private async signToken(params: TokenSignParams, config: SignOptions): Promise<string> {
+  private signToken(params: TokenSignParams, config: SignOptions): Promise<string> {
     return Promise.resolve(this.signTokenSync(params, config));
   }
 
@@ -87,7 +87,7 @@ class TokenService implements ITokenService {
     return jwt.verify(token, secret) as T;
   }
 
-  private async verifyToken<T>(token: string, secret: string | Secret): Promise<T> {
+  private verifyToken<T>(token: string, secret: string | Secret): Promise<T> {
     return Promise.resolve(this.verifyTokenSync<T>(token, secret));
   }
 

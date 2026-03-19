@@ -5,8 +5,8 @@ import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import { UserRepository } from '@/repositories/user.repository';
 import { AuthFailureError, ForbiddenError, NotFoundError } from '@/responses/error.response';
-import TokenService from '@/services/token.service';
-import UsersService from '@/services/users.service';
+import TokenService, { ITokenService } from '@/services/token.service';
+import UsersService, { IUsersService } from '@/services/users.service';
 import { TokenPayload } from '@/types/token.type';
 import { Server as HttpServer } from 'http';
 import { ExtendedError, Server, Socket } from 'socket.io';
@@ -17,6 +17,8 @@ export interface ISocketService {
 
 class SocketService implements ISocketService {
   private io: Server;
+  private readonly tokenService: ITokenService;
+  private readonly usersService: IUsersService;
   private users: Map<string, string> = new Map();
 
   constructor(httpServer: HttpServer) {
@@ -26,32 +28,30 @@ class SocketService implements ISocketService {
         credentials: true
       }
     });
+
+    this.tokenService = new TokenService();
+    this.usersService = new UsersService(new UserRepository(DatabaseInstance.get()));
   }
 
   public run() {
     this.io.use(this.initMiddleware.bind(this));
     this.io.on('connection', this.onConnection.bind(this));
-    this.io.on('disconnect', this.onDisconnect.bind(this));
   }
 
   private async initMiddleware(socket: Socket, next: (err?: ExtendedError) => void) {
     try {
       const { Authorization } = socket.handshake.auth;
       const accessToken = Authorization?.split(' ')[1];
-      // TODO: spit check + decoded token
       if (!accessToken) {
         throw new AuthFailureError();
       }
 
-      const tokenService = new TokenService();
-      const decoded = await tokenService.verifyAccessToken(accessToken);
+      const decoded = await this.tokenService.verifyAccessToken(accessToken);
       if (decoded.type !== ETokenType.ACCESS_TOKEN) {
         throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
       }
 
-      // TODO: spit usersService
-      const usersService = new UsersService(new UserRepository(DatabaseInstance.get()));
-      const user = await usersService.findUserById(decoded.userId); // TODO: cache by redis
+      const user = await this.usersService.findUserById(decoded.userId);
       if (!user) {
         throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
       }
@@ -78,7 +78,7 @@ class SocketService implements ISocketService {
     const { userId } = socket.handshake.auth.decoded as TokenPayload;
     this.users.set(userId, socket.id);
 
-    socket.use(async (packet, next) => {
+    socket.use(async (_packet, next) => {
       try {
         const { accessToken } = socket.handshake.auth;
         // TODO: spit check + decoded token
@@ -86,14 +86,13 @@ class SocketService implements ISocketService {
           throw new AuthFailureError();
         }
 
-        const tokenService = new TokenService();
-        const decoded = await tokenService.verifyAccessToken(accessToken);
+        const decoded = await this.tokenService.verifyAccessToken(accessToken);
         if (decoded.type !== ETokenType.ACCESS_TOKEN) {
           throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
         }
 
         next();
-      } catch (error) {
+      } catch {
         next(new Error('Unauthorized'));
       }
     });
@@ -102,6 +101,10 @@ class SocketService implements ISocketService {
       if (error.message === 'Unauthorized') {
         socket.disconnect();
       }
+    });
+
+    socket.on('disconnect', () => {
+      this.users.delete(userId);
     });
 
     // TODO: Tách ra Rest API để tạo conversation
@@ -122,11 +125,6 @@ class SocketService implements ISocketService {
       //   lastMessage: content
       // });
     });
-  }
-
-  private onDisconnect(socket: Socket) {
-    const { userId } = socket.handshake.auth.decoded as TokenPayload;
-    this.users.delete(userId);
   }
 }
 

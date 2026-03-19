@@ -3,7 +3,7 @@
  */
 
 import { IPostsController } from '@/controllers/posts.controller';
-import { protectIfHasBearerToken } from '@/middlewares/auth.middleware';
+import { optionalAuth } from '@/middlewares/auth.middleware';
 import { validatePaginationQuery } from '@/middlewares/common.middleware';
 import { postsLimiter } from '@/middlewares/limiter.middleware';
 import { BaseRoute } from '@/routes/base.route';
@@ -29,16 +29,14 @@ export class PostsRoute extends BaseRoute {
     this.router.get(
       '/',
       postsLimiter,
-      protectIfHasBearerToken,
-      this.usersValidation.userVerifiedValidation,
+      optionalAuth(this.usersValidation.userVerifiedValidation),
       validatePaginationQuery,
       asyncHandler(this.postsController.getNewFeeds)
     );
     this.router.get(
       '/:postId',
       postsLimiter,
-      protectIfHasBearerToken,
-      this.usersValidation.userVerifiedValidation,
+      optionalAuth(this.usersValidation.userVerifiedValidation),
       this.postsValidation.postIdValidation('postId', 'params'),
       this.postsValidation.audienceValidation,
       asyncHandler(this.postsController.getPostDetail)
@@ -46,8 +44,7 @@ export class PostsRoute extends BaseRoute {
     this.router.get(
       '/:type/:postId',
       postsLimiter,
-      protectIfHasBearerToken,
-      this.usersValidation.userVerifiedValidation,
+      optionalAuth(this.usersValidation.userVerifiedValidation),
       this.postsValidation.postIdValidation('postId', 'params'),
       this.postsValidation.audienceValidation,
       this.postsValidation.postTypeValidation,
@@ -57,8 +54,7 @@ export class PostsRoute extends BaseRoute {
     this.router.post(
       '/',
       postsLimiter,
-      protectIfHasBearerToken,
-      this.usersValidation.userVerifiedValidation,
+      optionalAuth(this.usersValidation.userVerifiedValidation),
       this.postsValidation.createPostValidation,
       asyncHandler(this.postsController.createPost)
     );
