@@ -35,19 +35,19 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
 // These limiters can be applied to authentication and note operations
 // They define the time window and maximum number of requests allowed
 export const authLimiter = createRateLimiter(
-  15 * 60 * 1000, // 15 minutes
+  5 * 60 * 1000, // 5 minutes
   5,
   RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_AUTHENTICATION_ATTEMPTS
 );
 
 export const postsLimiter = createRateLimiter(
-  15 * 60 * 1000, // 15 minutes
+  5 * 60 * 1000, // 5 minutes
   30,
   RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_REQUESTS
 );
 
 export const appLimiter = createRateLimiter(
-  15 * 60 * 1000, // 15 minutes
+  5 * 60 * 1000, // 5 minutes
   100,
   RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_REQUESTS
 );

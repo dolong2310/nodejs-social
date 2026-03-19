@@ -178,25 +178,42 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     page: number;
     limit: number;
   }): Promise<IPostNewFeedResponse[]> {
-    const match = {
-      userId: {
-        $in: followedUserIds
-      },
-      $or: [
-        { audience: EPostAudience.PUBLIC },
-        { audience: EPostAudience.FOLLOWERS },
-        {
-          $and: [
-            { audience: EPostAudience.ONLY_ME },
-            {
-              userId: {
-                $eq: new ObjectId(userId)
+    /**
+     * Bộ lọc (filter) này nhằm lấy các bài post hiển thị cho user:
+     * - Nếu user chưa follow ai (followedUserIds là mảng rỗng),
+     *   chỉ hiện các bài public, hoặc bài của chính user đó (bất kể audience gì, kể cả only_me).
+     * - Nếu user đã follow ai đó:
+     *   - Hiện các post của những người mình đang follow:
+     *     + audience là PUBLIC hoặc FOLLOWERS.
+     *     + audience là ONLY_ME thì chỉ lấy bài của chính mình (khi userId trùng với người đang đăng nhập).
+     */
+    let match: Record<string, unknown>;
+
+    if (!followedUserIds || followedUserIds.length === 0) {
+      match = {
+        $or: [{ audience: EPostAudience.PUBLIC }, { userId: new ObjectId(userId) }]
+      };
+    } else {
+      match = {
+        userId: {
+          $in: followedUserIds
+        },
+        $or: [
+          { audience: EPostAudience.PUBLIC },
+          { audience: EPostAudience.FOLLOWERS },
+          {
+            $and: [
+              { audience: EPostAudience.ONLY_ME },
+              {
+                userId: {
+                  $eq: new ObjectId(userId)
+                }
               }
-            }
-          ]
-        }
-      ]
-    };
+            ]
+          }
+        ]
+      };
+    }
 
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
