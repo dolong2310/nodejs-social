@@ -1,9 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 async function main() {
-  const client = new MongoClient(
-    'mongodb+srv://longdo_user:f0x4lfmYKpDm0kdM@nodejs-social.vy5jesg.mongodb.net/?appName=Nodejs-Social'
-  );
+  const client = new MongoClient(process.env.MONGODB_URI as string);
   await client.connect();
   const db = client.db('test');
   const users = db.collection('users');
