@@ -1,6 +1,5 @@
 import { ICreateBookmarkRequestBody, IDeleteBookmarkRequestParams } from '@/models/requests/bookmark.request';
 import { ICreateBookmarkResponse, IDeleteBookmarkResponse } from '@/models/responses/bookmark.response';
-import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IBookmarkRepository } from '@/repositories/bookmark.repository';
 import { BaseService } from '@/services/base.service';
 

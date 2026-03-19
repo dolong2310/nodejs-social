@@ -29,17 +29,18 @@ import { IAuthService } from '@/services/auth.service';
 import { IUsersService } from '@/services/users.service';
 import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IAuthController {
-  register(req: Request<{}, {}, IRegisterRequestBody>, res: Response): Promise<void>;
-  login(req: Request<{}, {}, ILoginRequestBody>, res: Response): Promise<void>;
-  logout(req: Request<{}, {}, ILogoutRequestBody>, res: Response): Promise<void>;
-  refreshToken(req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response): Promise<void>;
-  verifyEmail(req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response): Promise<void>;
+  register(req: Request<ParamsDictionary, object, IRegisterRequestBody>, res: Response): Promise<void>;
+  login(req: Request<ParamsDictionary, object, ILoginRequestBody>, res: Response): Promise<void>;
+  logout(req: Request<ParamsDictionary, object, ILogoutRequestBody>, res: Response): Promise<void>;
+  refreshToken(req: Request<ParamsDictionary, object, IRefreshTokenRequestBody>, res: Response): Promise<void>;
+  verifyEmail(req: Request<ParamsDictionary, object, IVerifyEmailRequestBody>, res: Response): Promise<void>;
   resendVerifyEmail(req: Request, res: Response): Promise<void>;
-  forgotPassword(req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response): Promise<void>;
-  resetPassword(req: Request<{}, {}, IResetPasswordRequestBody>, res: Response): Promise<void>;
-  changePassword(req: Request<{}, {}, IChangePasswordRequestBody>, res: Response): Promise<void>;
+  forgotPassword(req: Request<ParamsDictionary, object, IForgotPasswordRequestBody>, res: Response): Promise<void>;
+  resetPassword(req: Request<ParamsDictionary, object, IResetPasswordRequestBody>, res: Response): Promise<void>;
+  changePassword(req: Request<ParamsDictionary, object, IChangePasswordRequestBody>, res: Response): Promise<void>;
 }
 
 class AuthController extends BaseController implements IAuthController {
@@ -50,7 +51,7 @@ class AuthController extends BaseController implements IAuthController {
     super();
   }
 
-  register = async (req: Request<{}, {}, IRegisterRequestBody>, res: Response) => {
+  register = async (req: Request<ParamsDictionary, object, IRegisterRequestBody>, res: Response) => {
     const { name, email, password, dateOfBirth } = req.body;
 
     const existingUser = await this.usersService.findUserByEmail(email);
@@ -69,7 +70,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  login = async (req: Request<{}, {}, ILoginRequestBody>, res: Response) => {
+  login = async (req: Request<ParamsDictionary, object, ILoginRequestBody>, res: Response) => {
     const { email, password } = req.body;
 
     const existingUser = await this.usersService.findUserByEmail(email);
@@ -87,7 +88,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  logout = async (req: Request<{}, {}, ILogoutRequestBody>, res: Response) => {
+  logout = async (req: Request<ParamsDictionary, object, ILogoutRequestBody>, res: Response) => {
     const { refreshToken } = req.body;
     const { type } = req.tokenPayload as TokenPayload;
 
@@ -105,7 +106,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  refreshToken = async (req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response) => {
+  refreshToken = async (req: Request<ParamsDictionary, object, IRefreshTokenRequestBody>, res: Response) => {
     const { refreshToken: refreshTokenBody } = req.body;
     const { userId, exp, type } = req.tokenPayload as TokenPayload;
 
@@ -128,7 +129,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  verifyEmail = async (req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response) => {
+  verifyEmail = async (req: Request<ParamsDictionary, object, IVerifyEmailRequestBody>, res: Response) => {
     const { token } = req.body;
     const userId = this.getUserId(req);
 
@@ -175,7 +176,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  forgotPassword = async (req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response) => {
+  forgotPassword = async (req: Request<ParamsDictionary, object, IForgotPasswordRequestBody>, res: Response) => {
     const { email } = req.body;
 
     const existingUser = await this.usersService.findUserByEmail(email);
@@ -196,7 +197,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  resetPassword = async (req: Request<{}, {}, IResetPasswordRequestBody>, res: Response) => {
+  resetPassword = async (req: Request<ParamsDictionary, object, IResetPasswordRequestBody>, res: Response) => {
     const { token, password, confirmPassword } = req.body;
     const userId = this.getUserId(req);
 
@@ -218,7 +219,7 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  changePassword = async (req: Request<{}, {}, IChangePasswordRequestBody>, res: Response) => {
+  changePassword = async (req: Request<ParamsDictionary, object, IChangePasswordRequestBody>, res: Response) => {
     const userId = this.getUserId(req);
     const { password, confirmPassword } = req.body;
 

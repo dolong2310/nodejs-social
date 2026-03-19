@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 
 export interface IConversationsController {
   getConversations(
-    req: Request<IGetConversationsRequestParams, {}, {}, IGetConversationsRequestQuery>,
+    req: Request<IGetConversationsRequestParams, object, object, IGetConversationsRequestQuery>,
     res: Response
   ): Promise<void>;
   createConversation(req: Request, res: Response): Promise<void>;
@@ -20,7 +20,7 @@ class ConversationsController extends BaseController implements IConversationsCo
   }
 
   getConversations = async (
-    req: Request<IGetConversationsRequestParams, {}, {}, IGetConversationsRequestQuery>,
+    req: Request<IGetConversationsRequestParams, object, object, IGetConversationsRequestQuery>,
     res: Response
   ) => {
     const userId = this.getUserId(req);

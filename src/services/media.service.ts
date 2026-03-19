@@ -1,4 +1,4 @@
-import { config, envConfig, isDevelopment } from '@/config';
+import { config } from '@/config';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';

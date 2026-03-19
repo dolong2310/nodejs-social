@@ -60,12 +60,12 @@ export const imageSchema: ParamSchema = {
 };
 
 export interface IUsersValidation {
-  updateMeValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  userVerifiedValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
+  updateMeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  userVerifiedValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   userIdValidation: (
     key: string,
     location: Location
-  ) => RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
+  ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
 class UsersValidation implements IUsersValidation {

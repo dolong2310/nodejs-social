@@ -78,7 +78,7 @@ export interface IContainer {
 }
 
 export class Container implements IContainer {
-  private static instance: Container;
+  private static instance: Container | null = null;
   private db: DatabaseService;
 
   // Repositories
@@ -146,7 +146,7 @@ export class Container implements IContainer {
   // Method to reset the singleton instance
   // This can be useful for testing purposes or when you need to reinitialize the container
   public static resetInstance(): void {
-    Container.instance = null as any;
+    Container.instance = null;
   }
 
   // Private methods to initialize repositories, services, and controllers

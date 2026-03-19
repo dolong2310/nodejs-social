@@ -6,7 +6,7 @@ import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
 export interface ISearchValidation {
-  searchValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
+  searchValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
 class SearchValidation implements ISearchValidation {

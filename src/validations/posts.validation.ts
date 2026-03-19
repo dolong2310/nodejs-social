@@ -17,13 +17,13 @@ import { isEmpty } from 'lodash-es';
 import { ObjectId } from 'mongodb';
 
 export interface IPostsValidation {
-  createPostValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
+  createPostValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   postIdValidation: (
     key: string,
     location: Location
-  ) => RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  audienceValidation: RequestHandler<IGetPostDetailRequestParams, any, any, Query, Record<string, any>>;
-  postTypeValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
+  ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  audienceValidation: RequestHandler<IGetPostDetailRequestParams, object, object, Query, Record<string, unknown>>;
+  postTypeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
 class PostsValidation implements IPostsValidation {
@@ -193,7 +193,7 @@ class PostsValidation implements IPostsValidation {
   };
 
   audienceValidation = async (
-    req: Request<IGetPostDetailRequestParams, any, any, Query, Record<string, any>>,
+    req: Request<IGetPostDetailRequestParams, object, object, Query, Record<string, unknown>>,
     _res: Response,
     next: NextFunction
   ): Promise<void> => {

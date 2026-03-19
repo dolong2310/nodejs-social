@@ -95,7 +95,7 @@ const createRandomPostBody = (mentionedUserIds: string[], parentPostIds: string[
   const content = randomType === EPostType.REPOST ? '' : faker.lorem.paragraph({ min: 10, max: 20 });
 
   // 7. parentId theo đúng rule
-  let parentId: string | null = null;
+  let parentId: string | null;
   if (randomType === EPostType.POST) {
     parentId = null;
   } else {

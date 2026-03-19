@@ -5,9 +5,10 @@ import { IPostDetailResponse } from '@/models/responses/post.response';
 import { IUser } from '@/models/schemas/user.schema';
 import { ISearchService } from '@/services/search.service';
 import { Request, Response } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ISearchController {
-  search(req: Request<{}, {}, {}, ISearchRequestQuery>, res: Response): Promise<void>;
+  search(req: Request<ParamsDictionary, object, object, ISearchRequestQuery>, res: Response): Promise<void>;
 }
 
 export class SearchController extends BaseController implements ISearchController {
@@ -15,7 +16,7 @@ export class SearchController extends BaseController implements ISearchControlle
     super();
   }
 
-  search = async (req: Request<{}, {}, {}, ISearchRequestQuery>, res: Response) => {
+  search = async (req: Request<ParamsDictionary, object, object, ISearchRequestQuery>, res: Response) => {
     const { query = '', type, people_follow, page = '1', limit = '10' } = req.query;
     const userId = this.getUserId(req);
 

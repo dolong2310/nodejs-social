@@ -4,17 +4,16 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+import 'express-serve-static-core';
 
-declare global {
-  namespace Express {
-    interface Request {
-      pagination?: {
-        page: number;
-        limit: number;
-        skip: number;
-        getPaginationResult<T>(model: any, query: any): Promise<PaginationResult<T>>;
-      };
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    pagination?: {
+      page: number;
+      limit: number;
+      skip: number;
+      getPaginationResult<T>(model: any, query: any): Promise<PaginationResult<T>>;
+    };
   }
 }
 
@@ -36,8 +35,8 @@ export interface PaginationResult<T> {
 // Extracts page and limit from query parameters
 // Adds a method to the request object to fetch paginated results from a MongoDB model
 export const paginateResults = (req: Request, _res: Response, next: NextFunction): void => {
-  const page = Number(req.query.page as string) ?? 1;
-  const limit = Number(req.query.limit as string) ?? 10;
+  const page = Number(req.query.page as string) || 1;
+  const limit = Number(req.query.limit as string) || 10;
 
   req.pagination = {
     page,

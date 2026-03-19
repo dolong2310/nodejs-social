@@ -68,7 +68,7 @@ class TokenService implements ITokenService {
   private signTokenSync(params: TokenSignParams, config: SignOptions): string {
     // Add a uuid for uniqueness
     const { userId, type, exp } = params;
-    const payload: any = { uuid: uuidv4(), userId, type };
+    const payload: Record<string, string | number> = { uuid: uuidv4(), userId, type };
     if (typeof exp === 'number') payload.exp = exp;
 
     const options: jwt.SignOptions = {

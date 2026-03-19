@@ -80,13 +80,13 @@ const confirmPasswordSchema: ParamSchema = {
 };
 
 export interface IAuthValidation {
-  registerValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  loginValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  verifyEmailValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  forgotPasswordValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  resetPasswordValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  changePasswordValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
-  refreshTokenValidation: RequestHandler<ParamsDictionary, any, any, Query, Record<string, any>>;
+  registerValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  loginValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  verifyEmailValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  forgotPasswordValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  resetPasswordValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  changePasswordValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  refreshTokenValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
 class AuthValidation implements IAuthValidation {

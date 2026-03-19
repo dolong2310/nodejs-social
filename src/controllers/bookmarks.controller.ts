@@ -6,9 +6,10 @@ import { BadRequestError } from '@/responses/error.response';
 import { Created } from '@/responses/success.response';
 import { IBookmarksService } from '@/services/bookmarks.service';
 import { Request, Response } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IBookmarksController {
-  createBookmark(req: Request<{}, {}, ICreateBookmarkRequestBody>, res: Response): Promise<void>;
+  createBookmark(req: Request<ParamsDictionary, object, ICreateBookmarkRequestBody>, res: Response): Promise<void>;
   deleteBookmark(req: Request<IDeleteBookmarkRequestParams>, res: Response): Promise<void>;
 }
 
@@ -17,7 +18,7 @@ class BookmarksController extends BaseController implements IBookmarksController
     super();
   }
 
-  createBookmark = async (req: Request<{}, {}, ICreateBookmarkRequestBody>, res: Response) => {
+  createBookmark = async (req: Request<ParamsDictionary, object, ICreateBookmarkRequestBody>, res: Response) => {
     const userId = this.getUserId(req);
     const { postId } = req.body;
 

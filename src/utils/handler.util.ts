@@ -4,10 +4,10 @@ import { ParsedQs } from 'qs';
 
 export const asyncHandler = <
   Params = ParamsDictionary,
-  ResBody = any,
-  ReqBody = any,
+  ResBody = object,
+  ReqBody = object,
   ReqQuery = ParsedQs,
-  Locals extends Record<string, any> = Record<string, any>
+  Locals extends Record<string, unknown> = Record<string, unknown>
 >(
   fn: RequestHandler<Params, ResBody, ReqBody, ReqQuery, Locals>
 ) => {

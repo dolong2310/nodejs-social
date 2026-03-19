@@ -5,7 +5,7 @@
  */
 
 import DatabaseService from '@/database/database.service';
-import { Collection, Document, Filter, WithId } from 'mongodb';
+import { Collection, Document, Filter, Sort, WithId } from 'mongodb';
 
 export abstract class BaseRepository {
   protected db: DatabaseService;
@@ -29,13 +29,13 @@ export abstract class BaseRepository {
   protected async findManyWithPagination<T extends Document>(
     model: Collection<T>,
     filter?: Filter<T>,
-    orderBy?: any,
+    orderBy?: Sort | string,
     pagination?: { page: number; limit: number } // PaginationParams
   ): Promise<WithId<T>[]> {
     const { page = 1, limit = 10 } = pagination ?? {};
     return await model
       .find(filter ?? {})
-      .sort(orderBy)
+      .sort(orderBy ?? {})
       .skip((page - 1) * limit)
       .limit(limit)
       .toArray();

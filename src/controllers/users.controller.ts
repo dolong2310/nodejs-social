@@ -5,10 +5,11 @@ import { IUserResponse } from '@/models/responses/user.response';
 import { NotFoundError } from '@/responses/error.response';
 import { IUsersService } from '@/services/users.service';
 import { Request, Response } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IUsersController {
   getMe(req: Request, res: Response): Promise<void>;
-  updateMe(req: Request<{}, {}, IUpdateMeRequestBody>, res: Response): Promise<void>;
+  updateMe(req: Request<ParamsDictionary, object, IUpdateMeRequestBody>, res: Response): Promise<void>;
   getUserProfile(req: Request<IGetUserProfileRequestParams>, res: Response): Promise<void>;
 }
 
@@ -33,7 +34,7 @@ class UsersController extends BaseController implements IUsersController {
     });
   };
 
-  updateMe = async (req: Request<{}, {}, IUpdateMeRequestBody>, res: Response) => {
+  updateMe = async (req: Request<ParamsDictionary, object, IUpdateMeRequestBody>, res: Response) => {
     const userId = this.getUserId(req);
     const { body } = req;
 

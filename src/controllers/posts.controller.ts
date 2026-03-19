@@ -11,12 +11,16 @@ import { Created } from '@/responses/success.response';
 import { IFollowersService } from '@/services/followers.service';
 import { IPostsService } from '@/services/posts.service';
 import { Request, Response } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostsController {
-  getNewFeeds(req: Request<{}, {}, {}, IPaginationRequestQuery>, res: Response): Promise<void>;
+  getNewFeeds(req: Request<ParamsDictionary, object, object, IPaginationRequestQuery>, res: Response): Promise<void>;
   getPostDetail(req: Request<IGetPostDetailRequestParams>, res: Response): Promise<void>;
-  getPostsType(req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response): Promise<void>;
-  createPost(req: Request<{}, {}, ICreatePostRequestBody>, res: Response): Promise<void>;
+  getPostsType(
+    req: Request<IGetPostsRequestParams, object, object, IPaginationRequestQuery>,
+    res: Response
+  ): Promise<void>;
+  createPost(req: Request<ParamsDictionary, object, ICreatePostRequestBody>, res: Response): Promise<void>;
 }
 
 class PostsController extends BaseController implements IPostsController {
@@ -27,12 +31,12 @@ class PostsController extends BaseController implements IPostsController {
     super();
   }
 
-  getNewFeeds = async (req: Request<{}, {}, {}, IPaginationRequestQuery>, res: Response) => {
+  getNewFeeds = async (req: Request<ParamsDictionary, object, object, IPaginationRequestQuery>, res: Response) => {
     const { page, limit } = req.query;
     const userId = this.getUserId(req);
 
-    let posts: IPostNewFeedResponse[] = [];
-    let totalPosts = 0;
+    let posts: IPostNewFeedResponse[];
+    let totalPosts: number;
 
     if (userId) {
       const followedUserIds = await this.followersService.findFollowedUserIds(userId);
@@ -87,7 +91,10 @@ class PostsController extends BaseController implements IPostsController {
     });
   };
 
-  getPostsType = async (req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response) => {
+  getPostsType = async (
+    req: Request<IGetPostsRequestParams, object, object, IPaginationRequestQuery>,
+    res: Response
+  ) => {
     const { postId, type } = req.params;
     const { page, limit } = req.query;
     const userId = this.getUserId(req);
@@ -112,7 +119,7 @@ class PostsController extends BaseController implements IPostsController {
     });
   };
 
-  createPost = async (req: Request<{}, {}, ICreatePostRequestBody>, res: Response) => {
+  createPost = async (req: Request<ParamsDictionary, object, ICreatePostRequestBody>, res: Response) => {
     const userId = this.getUserId(req);
     const { type, audience, content, parentId, hashtags, mentions, media } = req.body;
 

@@ -11,20 +11,20 @@ export abstract class BaseService {
   /**
    * Replace ObjectId to string in the object
    */
-  protected replaceObjectIdToString<T extends any>(obj: any): T {
+  protected replaceObjectIdToString<T>(obj: any): T {
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [key, value instanceof ObjectId ? value.toString() : value])
     ) as T;
   }
 
   // Method to handle errors
-  protected handleError(error: unknown) {}
+  // protected handleError(error: unknown) {}
 
   /*
    * Validates required fields in the provided data object.
    * Throws an AppError if any required field is missing.
    */
-  protected validateRequiredFields(data: Record<string, any>, requiredFields: string[]): void {}
+  // protected validateRequiredFields(data: Record<string, any>, requiredFields: string[]): void {}
 
   /*
    * Sanitizes a string by trimming whitespace and replacing multiple spaces with a single space.

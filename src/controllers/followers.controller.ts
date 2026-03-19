@@ -5,9 +5,10 @@ import { IFollowUserResponse, IUnfollowUserResponse } from '@/models/responses/f
 import { BadRequestError } from '@/responses/error.response';
 import { IFollowersService } from '@/services/followers.service';
 import { Request, Response } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IFollowersController {
-  followUser(req: Request<{}, {}, IFollowUserRequestBody>, res: Response): Promise<void>;
+  followUser(req: Request<ParamsDictionary, object, IFollowUserRequestBody>, res: Response): Promise<void>;
   unfollowUser(req: Request<IUnfollowUserRequestParams>, res: Response): Promise<void>;
 }
 
@@ -16,7 +17,7 @@ class FollowersController extends BaseController implements IFollowersController
     super();
   }
 
-  followUser = async (req: Request<{}, {}, IFollowUserRequestBody>, res: Response) => {
+  followUser = async (req: Request<ParamsDictionary, object, IFollowUserRequestBody>, res: Response) => {
     const myUserId = this.getUserId(req);
 
     const { userId: followedUserId } = req.body;
