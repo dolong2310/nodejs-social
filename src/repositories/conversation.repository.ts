@@ -4,6 +4,7 @@
  * It provides methods to interact with the conversation data in the database.
  */
 
+import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
 import ConversationSchema, { IConversation } from '@/models/schemas/conversation.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
@@ -14,13 +15,8 @@ export interface IConversationRepository {
     receiverId,
     page,
     limit
-  }: {
-    senderId: string;
-    receiverId: string;
-    page: number;
-    limit: number;
-  }): Promise<IConversation[]>;
-  countConversations({ senderId, receiverId }: { senderId: string; receiverId: string }): Promise<number>;
+  }: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }): Promise<IConversation[]>;
+  countConversations({ senderId, receiverId }: IGetConversationsRequestParams & { senderId: string }): Promise<number>;
   create({
     senderId,
     receiverId,
@@ -40,19 +36,19 @@ export class ConversationRepository extends BaseRepository implements IConversat
     receiverId,
     page,
     limit
-  }: {
-    senderId: string;
-    receiverId: string;
-    page: number;
-    limit: number;
-  }): Promise<IConversation[]> {
+  }: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }): Promise<IConversation[]> {
     const match = {
       $or: [
         { senderId: new ObjectId(senderId), receiverId: new ObjectId(receiverId) },
         { senderId: new ObjectId(receiverId), receiverId: new ObjectId(senderId) }
       ]
     };
-    return this.findManyWithPagination<IConversation>(this.db.conversations, match, { createdAt: -1 }, { page, limit });
+    return this.findManyWithPagination<IConversation>(
+      this.db.conversations,
+      match,
+      { createdAt: -1 },
+      { page: Number(page), limit: Number(limit) }
+    );
   }
 
   countConversations({ senderId, receiverId }: { senderId: string; receiverId: string }): Promise<number> {

@@ -5,7 +5,18 @@
  * It uses a custom AppError class for error management.
  */
 
+import { ObjectId } from 'mongodb';
+
 export abstract class BaseService {
+  /**
+   * Replace ObjectId to string in the object
+   */
+  protected replaceObjectIdToString<T extends any>(obj: any): T {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [key, value instanceof ObjectId ? value.toString() : value])
+    ) as T;
+  }
+
   // Method to handle errors
   protected handleError(error: unknown) {}
 

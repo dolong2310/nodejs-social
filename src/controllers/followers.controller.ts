@@ -1,10 +1,9 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
-import { BadRequestError } from '@/responses/error.response';
 import { IFollowUserRequestBody, IUnfollowUserRequestParams } from '@/models/requests/follower.request';
-import { OK } from '@/responses/success.response';
+import { IFollowUserResponse, IUnfollowUserResponse } from '@/models/responses/follower.response';
+import { BadRequestError } from '@/responses/error.response';
 import { IFollowersService } from '@/services/followers.service';
-import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
 export interface IFollowersController {
@@ -20,27 +19,29 @@ class FollowersController extends BaseController implements IFollowersController
   followUser = async (req: Request<{}, {}, IFollowUserRequestBody>, res: Response) => {
     const myUserId = this.getUserId(req);
 
-    const { followedUserId } = req.body;
+    const { userId: followedUserId } = req.body;
 
     // cannot follow yourself
     if (myUserId === followedUserId) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.YOU_CANNOT_FOLLOW_YOURSELF);
     }
 
-    const isFollowing = await this.followersService.findFollowerId({ myUserId, followedUserId });
+    const isFollowing = await this.followersService.findFollowerId({ myUserId, userId: followedUserId });
 
     if (isFollowing) {
-      new OK({
+      this.sendResponse<IFollowUserResponse>({
+        res,
         message: 'Already following user'
-      }).send(res);
+      });
       return;
     }
 
-    await this.followersService.followUser({ myUserId, followedUserId });
+    await this.followersService.followUser({ myUserId, userId: followedUserId });
 
-    new OK({
+    this.sendResponse<IFollowUserResponse>({
+      res,
       message: 'Follow user successfully'
-    }).send(res);
+    });
   };
 
   unfollowUser = async (req: Request<IUnfollowUserRequestParams>, res: Response) => {
@@ -48,20 +49,22 @@ class FollowersController extends BaseController implements IFollowersController
 
     const { userId } = req.params;
 
-    const isFollowing = await this.followersService.findFollowerId({ myUserId, followedUserId: userId });
+    const isFollowing = await this.followersService.findFollowerId({ myUserId, userId });
 
     if (isFollowing) {
-      await this.followersService.unfollowUser({ myUserId, unfollowedUserId: userId });
+      await this.followersService.unfollowUser({ myUserId, userId });
 
-      new OK({
+      this.sendResponse<IUnfollowUserResponse>({
+        res,
         message: 'Unfollow user successfully'
-      }).send(res);
+      });
       return;
     }
 
-    new OK({
+    this.sendResponse<IUnfollowUserResponse>({
+      res,
       message: 'Not following user'
-    }).send(res);
+    });
   };
 }
 

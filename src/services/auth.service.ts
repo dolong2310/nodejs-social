@@ -2,11 +2,31 @@ import { envConfig } from '@/config';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ILoginRequestBody, IRegisterRequestBody } from '@/models/requests/auth.request';
+import {
+  IChangePasswordRequestBody,
+  IForgotPasswordRequestBody,
+  ILoginRequestBody,
+  ILogoutRequestBody,
+  IRefreshTokenRequestBody,
+  IRegisterRequestBody,
+  IResetPasswordRequestBody
+} from '@/models/requests/auth.request';
+import {
+  IChangePasswordResponse,
+  IForgotPasswordResponse,
+  ILoginResponse,
+  ILogoutResponse,
+  IRefreshTokenResponse,
+  IRegisterResponse,
+  IResendVerifyEmailResponse,
+  IResetPasswordResponse,
+  IVerifyEmailResponse
+} from '@/models/responses/auth.response';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { IUserRepository } from '@/repositories/user.repository';
-import { BadRequestError, NotFoundError } from '@/responses/error.response';
+import { BadRequestError } from '@/responses/error.response';
+import { BaseService } from '@/services/base.service';
 import { EEmailTemplate, IEmailService } from '@/services/email.service';
 import { ITokenService } from '@/services/token.service';
 import { comparePassword, hashPassword } from '@/utils/helper.util';
@@ -16,74 +36,43 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface IAuthService {
   findRefreshTokenByToken(token: string): Promise<IRefreshToken | null>;
-  // Nếu autoLogin là true, trả về accessToken và refreshToken.
-  register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
-    options: { autoLogin: true }
-  ): Promise<{ accessToken: string; refreshToken: string }>;
-  // Nếu autoLogin là false hoặc không truyền options, trả về thông tin user
-  register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
-    options?: { autoLogin?: false }
-  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>>;
-  // Overload Functions
-  register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
-    options?: {
-      autoLogin?: boolean;
-    }
-  ): Promise<
-    | Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>
-    | { accessToken: string; refreshToken: string }
-  >;
-  login(body: ILoginRequestBody, user: IUser): Promise<{ accessToken: string; refreshToken: string }>;
-  logout(refreshToken: string): Promise<void>;
-  refreshToken(payload: {
-    userId: string;
-    refreshTokenBody: string;
-    exp: number;
-  }): Promise<{ accessToken: string; refreshToken: string }>;
-  verifyEmail(userId: string): Promise<void>;
-  resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<void>;
-  forgotPassword(payload: { userId: string; name: string; email: string }): Promise<void>;
-  resetPassword(payload: { userId: string; password: string }): Promise<void>;
-  changePassword(payload: {
-    userId: string;
-    newPassword: string;
-  }): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null>;
+  register(body: IRegisterRequestBody, options: { autoLogin: true }): Promise<ILoginResponse>;
+  register(body: IRegisterRequestBody, options?: { autoLogin?: false }): Promise<IRegisterResponse>;
+  register(body: IRegisterRequestBody, options?: { autoLogin?: boolean }): Promise<IRegisterResponse | ILoginResponse>;
+  login(body: ILoginRequestBody, user: IUser): Promise<ILoginResponse>;
+  logout(refreshToken: ILogoutRequestBody): Promise<ILogoutResponse>;
+  refreshToken(payload: IRefreshTokenRequestBody & { userId: string; exp: number }): Promise<IRefreshTokenResponse>;
+  verifyEmail(userId: string): Promise<IVerifyEmailResponse>;
+  resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<IResendVerifyEmailResponse>;
+  forgotPassword(
+    payload: IForgotPasswordRequestBody & { userId: string; name: string }
+  ): Promise<IForgotPasswordResponse>;
+  resetPassword(payload: IResetPasswordRequestBody & { userId: string }): Promise<IResetPasswordResponse>;
+  changePassword(payload: IChangePasswordRequestBody & { userId: string }): Promise<IChangePasswordResponse>;
 }
 
-class AuthService implements IAuthService {
+class AuthService extends BaseService implements IAuthService {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly tokenService: ITokenService,
     private readonly emailService: IEmailService
-  ) {}
+  ) {
+    super();
+  }
 
   findRefreshTokenByToken(token: string): Promise<IRefreshToken | null> {
     return this.userRepository.findRefreshToken(token);
   }
 
   // Nếu autoLogin là true, trả về accessToken và refreshToken.
-  async register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
-    options: { autoLogin: true }
-  ): Promise<{ accessToken: string; refreshToken: string }>;
+  async register(body: IRegisterRequestBody, options: { autoLogin: true }): Promise<ILoginResponse>;
   // Nếu autoLogin là false hoặc không truyền options, trả về thông tin user
-  async register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
-    options?: { autoLogin?: false }
-  ): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>>;
+  async register(body: IRegisterRequestBody, options?: { autoLogin?: false }): Promise<IRegisterResponse>;
   // Overload Functions
   async register(
-    body: Omit<IRegisterRequestBody, 'confirmPassword'>,
-    options?: {
-      autoLogin?: boolean;
-    }
-  ): Promise<
-    | Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'>
-    | { accessToken: string; refreshToken: string }
-  > {
+    body: IRegisterRequestBody,
+    options?: { autoLogin?: boolean }
+  ): Promise<IRegisterResponse | ILoginResponse> {
     const { name, email, password, dateOfBirth } = body;
     const { autoLogin = false } = options ?? {};
 
@@ -131,12 +120,11 @@ class AuthService implements IAuthService {
       return this.login({ email, password }, newUser);
     }
 
-    return omit(newUser, ['password', 'emailVerificationToken', 'forgotPasswordToken']);
+    const result = omit(newUser, ['password', 'emailVerificationToken', 'forgotPasswordToken']);
+    return this.replaceObjectIdToString<IRegisterResponse>(result);
   }
 
-  async login(body: ILoginRequestBody, user: IUser): Promise<{ accessToken: string; refreshToken: string }> {
-    const { password } = body;
-
+  async login({ password }: ILoginRequestBody, user: IUser): Promise<ILoginResponse> {
     const userId = user._id!.toString();
 
     const isPasswordValid = await comparePassword(password, user.password);
@@ -165,19 +153,16 @@ class AuthService implements IAuthService {
     };
   }
 
-  async logout(refreshToken: string): Promise<void> {
+  async logout({ refreshToken }: ILogoutRequestBody): Promise<ILogoutResponse> {
     await this.userRepository.deleteRefreshToken(refreshToken);
+    return { message: 'Logout successfully' };
   }
 
   async refreshToken({
     userId,
-    refreshTokenBody,
+    refreshToken,
     exp
-  }: {
-    userId: string;
-    refreshTokenBody: string;
-    exp: number;
-  }): Promise<{ accessToken: string; refreshToken: string }> {
+  }: IRefreshTokenRequestBody & { userId: string; exp: number }): Promise<IRefreshTokenResponse> {
     const [newAccessToken, newRefreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -191,7 +176,7 @@ class AuthService implements IAuthService {
     ]);
 
     await Promise.all([
-      this.userRepository.deleteRefreshToken(refreshTokenBody),
+      this.userRepository.deleteRefreshToken(refreshToken),
       this.userRepository.createRefreshToken(newRefreshToken, userId)
     ]);
 
@@ -201,14 +186,23 @@ class AuthService implements IAuthService {
     };
   }
 
-  async verifyEmail(userId: string): Promise<void> {
+  async verifyEmail(userId: string): Promise<IVerifyEmailResponse> {
     await this.userRepository.update(userId, {
       emailVerificationToken: '',
       verificationStatus: EUserVerificationStatus.VERIFIED
     });
+    return { message: 'Email verified successfully' };
   }
 
-  async resendVerifyEmail({ userId, name, email }: { userId: string; name: string; email: string }): Promise<void> {
+  async resendVerifyEmail({
+    userId,
+    name,
+    email
+  }: {
+    userId: string;
+    name: string;
+    email: string;
+  }): Promise<IResendVerifyEmailResponse> {
     const emailVerificationToken = await this.tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
@@ -231,9 +225,20 @@ class AuthService implements IAuthService {
     await this.userRepository.update(userId, {
       emailVerificationToken
     });
+
+    return {
+      message: 'Email verification sent successfully'
+    };
   }
 
-  async forgotPassword({ userId, name, email }: { userId: string; name: string; email: string }): Promise<void> {
+  async forgotPassword({
+    userId,
+    name,
+    email
+  }: IForgotPasswordRequestBody & {
+    userId: string;
+    name: string;
+  }): Promise<IForgotPasswordResponse> {
     const forgotPasswordToken = await this.tokenService.signForgotPasswordToken({
       userId,
       type: ETokenType.FORGOT_PASSWORD_TOKEN
@@ -256,27 +261,35 @@ class AuthService implements IAuthService {
     await this.userRepository.update(userId, {
       forgotPasswordToken
     });
+
+    return {
+      message: 'Forgot password sent successfully'
+    };
   }
 
-  async resetPassword({ userId, password }: { userId: string; password: string }): Promise<void> {
+  async resetPassword({
+    userId,
+    password
+  }: IResetPasswordRequestBody & { userId: string }): Promise<IResetPasswordResponse> {
     const hashedPassword = await hashPassword(password);
 
     await this.userRepository.update(userId, {
       forgotPasswordToken: '',
       password: hashedPassword
     });
+
+    return {
+      message: 'Password reset successfully'
+    };
   }
 
   async changePassword({
     userId,
-    newPassword
-  }: {
-    userId: string;
-    newPassword: string;
-  }): Promise<Omit<IUser, 'password' | 'emailVerificationToken' | 'forgotPasswordToken'> | null> {
-    const hashedPassword = await hashPassword(newPassword);
+    password
+  }: IChangePasswordRequestBody & { userId: string }): Promise<IChangePasswordResponse> {
+    const hashedPassword = await hashPassword(password);
 
-    return this.userRepository.findOneAndUpdate(
+    await this.userRepository.findOneAndUpdate(
       userId,
       {
         password: hashedPassword
@@ -290,6 +303,10 @@ class AuthService implements IAuthService {
         }
       }
     );
+
+    return {
+      message: 'Password changed successfully'
+    };
   }
 }
 

@@ -1,36 +1,34 @@
-import { EPostType } from '@/enums/posts.enum';
-import { ICreatePostRequestBody } from '@/models/requests/post.request';
+import { IPaginationRequestQuery } from '@/models/requests/common.request';
+import {
+  ICreatePostRequestBody,
+  IGetNewFeedsPayload,
+  IGetPostDetailRequestParams,
+  IGetPostsRequestParams
+} from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import { IPostRepository } from '@/repositories/post.repository';
+import { BaseService } from '@/services/base.service';
 import { ObjectId } from 'mongodb';
 
 export interface IPostsService {
   findPostDetail(postId: string): Promise<IPostDetailResponse | null>;
-  getNewFeeds(payload: {
-    userId: string;
-    followedUserIds: ObjectId[];
-    page: number;
-    limit: number;
-  }): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
-  getGuestNewFeeds(payload: {
-    page: number;
-    limit: number;
-  }): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
-  getPostsType(payload: {
-    userId?: string;
-    page: number;
-    limit: number;
-    postId: string;
-    type: EPostType;
-  }): Promise<{ posts: IPostDetailResponse[]; totalPosts: number }>;
+  getNewFeeds(payload: IGetNewFeedsPayload): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
+  getGuestNewFeeds(payload: IPaginationRequestQuery): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
+  getPostsType(
+    payload: IGetPostsRequestParams &
+      IPaginationRequestQuery & {
+        userId?: string;
+      }
+  ): Promise<{ posts: IPostDetailResponse[]; totalPosts: number }>;
   findPostById(postId: string): Promise<IPost | null>;
   findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]>;
-  increaseViews(payload: {
-    postId: string;
-    userId?: string;
-  }): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null>;
+  increaseViews(
+    payload: IGetPostDetailRequestParams & {
+      userId?: string;
+    }
+  ): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null>;
   createPost(payload: { userId: string; body: ICreatePostRequestBody }): Promise<IPost>;
   updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
     posts,
@@ -41,29 +39,21 @@ export interface IPostsService {
   }): Promise<T[]>;
 }
 
-class PostsService implements IPostsService {
-  constructor(private readonly postRepository: IPostRepository) {}
+class PostsService extends BaseService implements IPostsService {
+  constructor(private readonly postRepository: IPostRepository) {
+    super();
+  }
 
   findPostDetail(postId: string) {
     return this.postRepository.findById(postId);
   }
 
-  async getNewFeeds({
-    userId,
-    followedUserIds,
-    page,
-    limit
-  }: {
-    userId: string;
-    followedUserIds: ObjectId[];
-    page: number;
-    limit: number;
-  }) {
+  async getNewFeeds({ userId, followedUserIds, page, limit }: IGetNewFeedsPayload) {
     const postsPromise = this.postRepository.findPosts({
       userId,
       followedUserIds,
-      page,
-      limit
+      page: Number(page),
+      limit: Number(limit)
     });
     const totalPostsPromise = this.postRepository.countPosts({ userId, followedUserIds });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
@@ -73,8 +63,8 @@ class PostsService implements IPostsService {
     return { posts: updatedPosts, totalPosts };
   }
 
-  async getGuestNewFeeds({ page, limit }: { page: number; limit: number }) {
-    const postsPromise = this.postRepository.findGuestPosts({ page, limit });
+  async getGuestNewFeeds({ page, limit }: IPaginationRequestQuery) {
+    const postsPromise = this.postRepository.findGuestPosts({ page: Number(page), limit: Number(limit) });
     const totalPostsPromise = this.postRepository.countGuestPosts();
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
@@ -89,14 +79,11 @@ class PostsService implements IPostsService {
     limit,
     postId,
     type
-  }: {
-    userId?: string;
-    page: number;
-    limit: number;
-    postId: string;
-    type: EPostType;
-  }) {
-    const postsPromise = this.postRepository.findPostsType({ page, limit, postId, type });
+  }: IGetPostsRequestParams &
+    IPaginationRequestQuery & {
+      userId?: string;
+    }) {
+    const postsPromise = this.postRepository.findPostsType({ postId, type, page: Number(page), limit: Number(limit) });
     const totalPostsPromise = this.postRepository.countPostsType({ postId, type });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
@@ -116,8 +103,7 @@ class PostsService implements IPostsService {
   increaseViews({
     postId,
     userId
-  }: {
-    postId: string;
+  }: IGetPostDetailRequestParams & {
     userId?: string;
   }): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null> {
     return this.postRepository.findOneAndUpdate(

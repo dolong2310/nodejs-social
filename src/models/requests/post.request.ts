@@ -1,6 +1,8 @@
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
+import { IPaginationRequestQuery } from '@/models/requests/common.request';
 import { IMedia } from '@/types/media.type';
 import { ParamsDictionary } from 'express-serve-static-core';
+import { ObjectId } from 'mongodb';
 
 export interface ICreatePostRequestBody {
   type: EPostType;
@@ -19,4 +21,12 @@ export interface IGetPostDetailRequestParams extends ParamsDictionary {
 export interface IGetPostsRequestParams extends ParamsDictionary {
   postId: string;
   type: EPostType;
+}
+
+// Payload
+export interface IGetNewFeedsPayload {
+  userId: string;
+  followedUserIds: ObjectId[];
+  page: IPaginationRequestQuery['page'];
+  limit: IPaginationRequestQuery['limit'];
 }

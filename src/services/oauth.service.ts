@@ -1,4 +1,6 @@
 import { envConfig } from '@/config';
+import { IOAuthGoogleLoginRequestQuery } from '@/models/requests/oauth.request';
+import { IOAuthGoogleLoginResponse } from '@/models/responses/oauth.response';
 import { BadRequestError } from '@/responses/error.response';
 import { IAuthService } from '@/services/auth.service';
 import { IUsersService } from '@/services/users.service';
@@ -6,7 +8,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IOAuthService {
-  googleLogin(state: string, code: string): Promise<{ accessToken: string; refreshToken: string }>;
+  googleLogin(query: IOAuthGoogleLoginRequestQuery): Promise<IOAuthGoogleLoginResponse>;
 }
 
 class OAuthService implements IOAuthService {
@@ -57,7 +59,7 @@ class OAuthService implements IOAuthService {
     return response.data;
   }
 
-  async googleLogin(state: string, code: string) {
+  async googleLogin({ code }: IOAuthGoogleLoginRequestQuery): Promise<IOAuthGoogleLoginResponse> {
     const token = await this.getOAuthGoogleToken(code);
     const userInfo = await this.getOAuthGoogleUser(token.access_token, token.id_token);
 
@@ -89,12 +91,6 @@ class OAuthService implements IOAuthService {
         autoLogin: true
       }
     );
-
-    // const { accessToken, refreshToken } = await this.authService.login(
-    //   { email: userInfo.email, password: newUser.password },
-    //   newUser
-    // );
-    // return { accessToken, refreshToken };
   }
 }
 

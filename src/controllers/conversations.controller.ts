@@ -1,8 +1,9 @@
 import { BaseController } from '@/controllers/base.controller';
 import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
-import { Created, OK } from '@/responses/success.response';
+import { IConversationResponse } from '@/models/responses/conversation.response';
+import { IConversation } from '@/models/schemas/conversation.schema';
+import { Created } from '@/responses/success.response';
 import { IConversationsService } from '@/services/conversations.service';
-import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
 export interface IConversationsController {
@@ -24,28 +25,25 @@ class ConversationsController extends BaseController implements IConversationsCo
   ) => {
     const userId = this.getUserId(req);
     const { receiverId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
+    const { page = '1', limit = '10' } = req.query;
 
     const { conversations, totalConversations } = await this.conversationsService.getConversations({
       senderId: userId,
       receiverId,
-      page: pageNumber,
-      limit: limitNumber
+      page,
+      limit
     });
 
-    new OK({
-      data: {
-        conversations,
-        page: pageNumber,
-        limit: limitNumber,
-        totalItems: totalConversations,
-        totalPages: Math.ceil(totalConversations / limitNumber)
+    this.sendPaginatedResponse<IConversation[], IConversationResponse>({
+      res,
+      data: conversations,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalConversations
       },
       message: 'Get conversations successfully'
-    }).send(res);
+    });
   };
 
   createConversation = async (req: Request, res: Response) => {
@@ -59,10 +57,12 @@ class ConversationsController extends BaseController implements IConversationsCo
       lastMessage: content
     });
 
-    new Created({
+    this.sendResponse<IConversation>({
+      res,
+      instance: Created,
       data: conversation,
       message: 'Create conversation successfully'
-    }).send(res);
+    });
   };
 }
 

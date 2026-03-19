@@ -90,7 +90,10 @@ export const VALIDATION_ERROR_MESSAGE = {
     'People follow must be one of the following: following, not_following, only_me',
 
   // Conversation errors
-  INVALID_RECEIVER_ID: 'Invalid receiver ID'
+  INVALID_RECEIVER_ID: 'Invalid receiver ID',
+
+  // Media errors
+  VIDEO_NOT_FOUND: 'Video not found'
 } as const;
 
 export const RATE_LIMIT_ERROR_MESSAGE = {

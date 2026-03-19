@@ -1,12 +1,13 @@
 import { BaseController } from '@/controllers/base.controller';
 import { ESearchType } from '@/enums/search.enum';
-import { ISearchRequestParams, ISearchRequestQuery } from '@/models/requests/search.request';
-import { OK } from '@/responses/success.response';
+import { ISearchRequestQuery } from '@/models/requests/search.request';
+import { IPostDetailResponse } from '@/models/responses/post.response';
+import { IUser } from '@/models/schemas/user.schema';
 import { ISearchService } from '@/services/search.service';
 import { Request, Response } from 'express';
 
 export interface ISearchController {
-  search(req: Request<ISearchRequestParams, {}, {}, ISearchRequestQuery>, res: Response): Promise<void>;
+  search(req: Request<{}, {}, {}, ISearchRequestQuery>, res: Response): Promise<void>;
 }
 
 export class SearchController extends BaseController implements ISearchController {
@@ -14,12 +15,9 @@ export class SearchController extends BaseController implements ISearchControlle
     super();
   }
 
-  search = async (req: Request<ISearchRequestParams, {}, {}, ISearchRequestQuery>, res: Response) => {
-    const { query = '', type, people_follow, page = 1, limit = 10 } = req.query;
+  search = async (req: Request<{}, {}, {}, ISearchRequestQuery>, res: Response) => {
+    const { query = '', type, people_follow, page = '1', limit = '10' } = req.query;
     const userId = this.getUserId(req);
-
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
 
     const [results, totalItems] = await [
       this.searchService.searchPosts({
@@ -27,28 +25,28 @@ export class SearchController extends BaseController implements ISearchControlle
         query,
         type,
         peopleFollow: people_follow,
-        page: pageNumber,
-        limit: limitNumber
+        page,
+        limit
       }),
       this.searchService.searchUsers({
         userId,
         query,
         peopleFollow: people_follow,
-        page: pageNumber,
-        limit: limitNumber
+        page,
+        limit
       })
     ][Number(type === ESearchType.USER)];
 
-    new OK({
-      data: {
-        data: results,
-        page: pageNumber,
-        limit: limitNumber,
-        totalItems: totalItems,
-        totalPages: Math.ceil(totalItems / limitNumber)
+    this.sendPaginatedResponse<IPostDetailResponse[] | IUser[]>({
+      res,
+      data: results,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalItems
       },
       message: 'Search successfully'
-    }).send(res);
+    });
   };
 }
 

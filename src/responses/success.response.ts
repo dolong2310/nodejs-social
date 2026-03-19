@@ -4,24 +4,24 @@ import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
 import { Response } from 'express';
 
-interface SuccessResponseParams {
+export interface SuccessResponseParams<T> {
   message?: string;
   statusCode?: number;
   reasonPhrasesCode?: string;
-  data?: any;
+  data?: T;
 }
 
-export class SuccessResponse {
+export class SuccessResponse<T> {
   message: string;
   statusCode: number;
-  data: any;
+  data: T;
 
   constructor({
     message,
     statusCode = HTTP_STATUS.OK,
     reasonPhrasesCode = HTTP_ERROR_MESSAGE.OK,
-    data = {}
-  }: SuccessResponseParams) {
+    data = {} as T
+  }: SuccessResponseParams<T>) {
     this.message = message || reasonPhrasesCode;
     this.statusCode = statusCode;
     this.data = data;
@@ -32,8 +32,8 @@ export class SuccessResponse {
   }
 }
 
-export class OK extends SuccessResponse {
-  constructor(params: SuccessResponseParams) {
+export class OK<T> extends SuccessResponse<T> {
+  constructor(params: SuccessResponseParams<T>) {
     super({
       ...params,
       statusCode: params.statusCode || HTTP_STATUS.OK,
@@ -42,8 +42,8 @@ export class OK extends SuccessResponse {
   }
 }
 
-export class Created extends SuccessResponse {
-  constructor(params: SuccessResponseParams) {
+export class Created<T> extends SuccessResponse<T> {
+  constructor(params: SuccessResponseParams<T>) {
     super({
       ...params,
       statusCode: params.statusCode || HTTP_STATUS.CREATED,

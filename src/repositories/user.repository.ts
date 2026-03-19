@@ -16,7 +16,7 @@ export interface IUserRepository {
   createRefreshToken(token: string, userId: string): Promise<IRefreshToken>;
   deleteRefreshToken(token: string): Promise<boolean>;
   create(
-    data: Omit<IRegisterRequestBody, 'confirmPassword'> & {
+    data: IRegisterRequestBody & {
       userId: string;
       emailVerificationToken: string;
       verificationStatus: EUserVerificationStatus;
@@ -24,10 +24,10 @@ export interface IUserRepository {
     }
   ): Promise<IUser>;
   update(id: string, data: Partial<IUser>): Promise<UpdateResult<IUser>>;
-  findOneAndUpdate(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<WithId<IUser> | null>;
-  findById(id: string, options?: FindOneOptions): Promise<IUser | null>;
-  findByEmail(email: string, options?: FindOneOptions): Promise<IUser | null>;
-  findByUsername(username: string, options?: FindOneOptions): Promise<IUser | null>;
+  findOneAndUpdate<T = IUser>(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<T | null>;
+  findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null>;
+  findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null>;
+  findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null>;
 }
 
 export class UserRepository extends BaseRepository implements IUserRepository {
@@ -50,7 +50,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
   }
 
   async create(
-    data: Omit<IRegisterRequestBody, 'confirmPassword'> & {
+    data: IRegisterRequestBody & {
       userId: string;
       emailVerificationToken: string;
       verificationStatus: EUserVerificationStatus;
@@ -85,11 +85,11 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return result;
   }
 
-  async findOneAndUpdate(
+  async findOneAndUpdate<T = WithId<IUser>>(
     id: string,
     data: Partial<IUser>,
     options?: FindOneAndUpdateOptions
-  ): Promise<WithId<IUser> | null> {
+  ): Promise<T | null> {
     const result = await this.db.users.findOneAndUpdate(
       { _id: new ObjectId(id) },
       {
@@ -100,18 +100,18 @@ export class UserRepository extends BaseRepository implements IUserRepository {
       },
       options ?? {}
     );
-    return result;
+    return result as T;
   }
 
-  findById(id: string, options?: FindOneOptions): Promise<IUser | null> {
-    return this.db.users.findOne<IUser>({ _id: new ObjectId(id) }, options ?? {});
+  findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null> {
+    return this.db.users.findOne<T>({ _id: new ObjectId(id) }, options ?? {});
   }
 
-  findByEmail(email: string, options?: FindOneOptions): Promise<IUser | null> {
-    return this.db.users.findOne<IUser>({ email }, options ?? {});
+  findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null> {
+    return this.db.users.findOne<T>({ email }, options ?? {});
   }
 
-  findByUsername(username: string, options?: FindOneOptions): Promise<IUser | null> {
-    return this.db.users.findOne<IUser>({ username }, options ?? {});
+  findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null> {
+    return this.db.users.findOne<T>({ username }, options ?? {});
   }
 }

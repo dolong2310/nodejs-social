@@ -6,10 +6,10 @@ import {
   IGetPostsRequestParams
 } from '@/models/requests/post.request';
 import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
-import { Created, OK } from '@/responses/success.response';
+import { IPost } from '@/models/schemas/post.schema';
+import { Created } from '@/responses/success.response';
 import { IFollowersService } from '@/services/followers.service';
 import { IPostsService } from '@/services/posts.service';
-import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
 export interface IPostsController {
@@ -31,9 +31,6 @@ class PostsController extends BaseController implements IPostsController {
     const { page, limit } = req.query;
     const userId = this.getUserId(req);
 
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
-
     let posts: IPostNewFeedResponse[] = [];
     let totalPosts = 0;
 
@@ -43,32 +40,32 @@ class PostsController extends BaseController implements IPostsController {
       const results = await this.postsService.getNewFeeds({
         userId,
         followedUserIds,
-        page: pageNumber,
-        limit: limitNumber
+        page,
+        limit
       });
 
       posts = results.posts;
       totalPosts = results.totalPosts;
     } else {
       const guestResults = await this.postsService.getGuestNewFeeds({
-        page: pageNumber,
-        limit: limitNumber
+        page,
+        limit
       });
 
       posts = guestResults.posts;
       totalPosts = guestResults.totalPosts;
     }
 
-    new OK({
-      data: {
-        posts,
-        page: pageNumber,
-        limit: limitNumber,
-        totalItems: totalPosts,
-        totalPages: Math.ceil(totalPosts / limitNumber)
+    this.sendPaginatedResponse<IPostNewFeedResponse[]>({
+      res,
+      data: posts,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalPosts
       },
       message: 'Get new feeds successfully'
-    }).send(res);
+    });
   };
 
   getPostDetail = async (req: Request<IGetPostDetailRequestParams>, res: Response) => {
@@ -83,10 +80,11 @@ class PostsController extends BaseController implements IPostsController {
       post.updatedAt = updatedViews.updatedAt;
     }
 
-    new OK({
+    this.sendResponse<IPostDetailResponse>({
+      res,
       data: post,
       message: 'Get post detail successfully'
-    }).send(res);
+    });
   };
 
   getPostsType = async (req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response) => {
@@ -94,27 +92,24 @@ class PostsController extends BaseController implements IPostsController {
     const { page, limit } = req.query;
     const userId = this.getUserId(req);
 
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
-
     const { posts, totalPosts } = await this.postsService.getPostsType({
       userId,
       postId,
       type,
-      page: pageNumber,
-      limit: limitNumber
+      page,
+      limit
     });
 
-    new OK({
-      data: {
-        posts,
-        page: pageNumber,
-        limit: limitNumber,
-        totalItems: totalPosts,
-        totalPages: Math.ceil(totalPosts / limitNumber)
+    this.sendPaginatedResponse<IPostDetailResponse[]>({
+      res,
+      data: posts,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalPosts
       },
       message: 'Get posts type successfully'
-    }).send(res);
+    });
   };
 
   createPost = async (req: Request<{}, {}, ICreatePostRequestBody>, res: Response) => {
@@ -126,10 +121,12 @@ class PostsController extends BaseController implements IPostsController {
       body: { type, audience, content, parentId, hashtags, mentions, media }
     });
 
-    new Created({
+    this.sendResponse<IPost>({
+      res,
+      instance: Created,
       data: post,
       message: 'Create post successfully'
-    }).send(res);
+    });
   };
 }
 

@@ -26,7 +26,7 @@ const MEDIA_PER_POST = 10;
 const db = () => DatabaseInstance.get();
 
 const createRandomUserBody = (): IRegisterRequestBody => {
-  const user: IRegisterRequestBody = {
+  const user: IRegisterRequestBody & { confirmPassword: string } = {
     name: faker.internet.displayName(),
     email: faker.internet.email(),
     password: PASSWORD,

@@ -1,57 +1,50 @@
-import { ESearchPeopleFollow, ESearchType } from '@/enums/search.enum';
+import { ISearchRequestQuery } from '@/models/requests/search.request';
 import { IPostDetailResponse } from '@/models/responses/post.response';
 import { IUser } from '@/models/schemas/user.schema';
 import { ISearchRepository } from '@/repositories/search.repository';
+import { BaseService } from '@/services/base.service';
 import { IFollowersService } from '@/services/followers.service';
 import { IPostsService } from '@/services/posts.service';
 
 export interface ISearchService {
-  searchPosts(payload: {
-    userId?: string;
-    query: string;
-    type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
-    page: number;
-    limit: number;
-  }): Promise<[IPostDetailResponse[], number]>;
-  searchUsers(payload: {
-    userId?: string;
-    query: string;
-    peopleFollow?: ESearchPeopleFollow;
-    page: number;
-    limit: number;
-  }): Promise<[IUser[], number]>;
+  searchPosts(
+    payload: ISearchRequestQuery & {
+      userId?: string;
+    }
+  ): Promise<[IPostDetailResponse[], number]>;
+  searchUsers(
+    payload: ISearchRequestQuery & {
+      userId?: string;
+    }
+  ): Promise<[IUser[], number]>;
 }
 
-class SearchService implements ISearchService {
+class SearchService extends BaseService implements ISearchService {
   constructor(
     private readonly searchRepository: ISearchRepository,
     private readonly followersService: IFollowersService,
     private readonly postsService: IPostsService
-  ) {}
+  ) {
+    super();
+  }
 
   async searchPosts({
     userId,
     query,
     type,
-    peopleFollow,
+    people_follow,
     page,
     limit
-  }: {
+  }: ISearchRequestQuery & {
     userId?: string;
-    query: string;
-    type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
-    page: number;
-    limit: number;
   }): Promise<[IPostDetailResponse[], number]> {
     const postsPromise = this.searchRepository.findPosts({
       userId,
       query,
       type,
-      peopleFollow,
-      page,
-      limit,
+      peopleFollow: people_follow,
+      page: Number(page),
+      limit: Number(limit),
       findFollowedUserIds: this.followersService.findFollowedUserIds
     });
 
@@ -59,7 +52,7 @@ class SearchService implements ISearchService {
       userId,
       query,
       type,
-      peopleFollow,
+      peopleFollow: people_follow,
       findFollowedUserIds: this.followersService.findFollowedUserIds
     });
 
@@ -73,15 +66,11 @@ class SearchService implements ISearchService {
   async searchUsers({
     userId,
     query,
-    peopleFollow,
+    people_follow,
     page,
     limit
-  }: {
+  }: ISearchRequestQuery & {
     userId?: string;
-    query: string;
-    peopleFollow?: ESearchPeopleFollow;
-    page: number;
-    limit: number;
   }): Promise<[IUser[], number]> {
     // Tìm kiếm users theo query (tìm kiếm theo name, username, email)
     // Nếu có userId (có nghĩa là đang login) thì có thể filter theo people follow, nếu không thì chỉ tìm tất cả users
@@ -89,16 +78,16 @@ class SearchService implements ISearchService {
     const usersPromise = this.searchRepository.findUsers({
       userId,
       query,
-      peopleFollow,
-      page,
-      limit,
+      peopleFollow: people_follow,
+      page: Number(page),
+      limit: Number(limit),
       findFollowedUserIds: this.followersService.findFollowedUserIds
     });
 
     const totalUsersPromise = this.searchRepository.countUsers({
       userId,
       query,
-      peopleFollow,
+      peopleFollow: people_follow,
       findFollowedUserIds: this.followersService.findFollowedUserIds
     });
     const [users, totalUsers] = await Promise.all([usersPromise, totalUsersPromise]);

@@ -4,7 +4,9 @@
  */
 
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { AuthFailureError, NotFoundError } from '@/responses/error.response';
+import { IPaginationResponse } from '@/models/responses/common.response';
+import { NotFoundError } from '@/responses/error.response';
+import { Created, OK, SuccessResponseParams } from '@/responses/success.response';
 import { NextFunction, Request, Response } from 'express';
 
 export abstract class BaseController {
@@ -18,37 +20,65 @@ export abstract class BaseController {
   /**
    * Sends a response with the specified status code, message, and data.
    */
-  protected sendResponse(res: Response, statusCode: number, message: string, data?: any): void {
-    res.status(statusCode).json({
-      statusCode,
+  protected sendResponse<T>({
+    res,
+    instance = OK,
+    data,
+    message,
+    statusCode,
+    reasonPhrasesCode
+  }: SuccessResponseParams<T> & { res: Response; instance?: typeof OK | typeof Created }): void {
+    new instance<T>({
+      data,
       message,
-      data
-    });
+      statusCode,
+      reasonPhrasesCode
+    }).send(res);
   }
 
   /**
    * Sends a paginated response with the specified status code, message, data, and pagination details.
    */
-  protected sendPaginatedResponse(
-    res: Response,
-    statusCode: number,
-    message: string,
-    data: any,
+  protected sendPaginatedResponse<T, P = IPaginationResponse & { data: T }>({
+    res,
+    data,
+    pagination,
+    message
+  }: {
+    res: Response;
+    data: T;
     pagination: {
-      currentPage?: number;
-      totalPages?: number;
-      totalItems?: number;
-      itemsPerPage?: number;
-      hasNext?: boolean;
-      hasPrev?: boolean;
-    }
-  ): void {
-    res.status(statusCode).json({
-      statusCode,
-      message,
+      page: string | number;
+      limit: string | number;
+      totalItems: string | number;
+    };
+    message: string;
+  }): void {
+    const page = Number(pagination.page);
+    const limit = Number(pagination.limit);
+    const totalItems = Number(pagination.totalItems);
+    const totalPages = Math.ceil(totalItems / limit);
+    const hasNext = page ? page < totalPages! : false;
+    const hasPrev = page ? page > 1 : false;
+
+    const payload = {
       data,
-      pagination
-    });
+      page,
+      limit,
+      totalItems,
+      totalPages,
+      hasNext,
+      hasPrev
+    } as P;
+
+    new OK<P>({
+      data: payload,
+      message
+    }).send(res);
+  }
+
+  sendFileResponse<T extends string>(res: Response, path: T): void {
+    res.sendFile(path);
   }
 
   /**

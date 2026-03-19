@@ -1,10 +1,9 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
-import { NotFoundError } from '@/responses/error.response';
 import { IGetUserProfileRequestParams, IUpdateMeRequestBody } from '@/models/requests/user.request';
-import { OK } from '@/responses/success.response';
+import { IUserResponse } from '@/models/responses/user.response';
+import { NotFoundError } from '@/responses/error.response';
 import { IUsersService } from '@/services/users.service';
-import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
 export interface IUsersController {
@@ -27,10 +26,11 @@ class UsersController extends BaseController implements IUsersController {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    new OK({
+    this.sendResponse<IUserResponse>({
+      res,
       data: user,
       message: 'Get me successfully'
-    }).send(res);
+    });
   };
 
   updateMe = async (req: Request<{}, {}, IUpdateMeRequestBody>, res: Response) => {
@@ -44,10 +44,15 @@ class UsersController extends BaseController implements IUsersController {
       _body as IUpdateMeRequestBody & { dateOfBirth?: Date }
     );
 
-    new OK({
+    if (!updatedUser) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+    }
+
+    this.sendResponse<IUserResponse>({
+      res,
       data: updatedUser,
       message: 'Update me successfully'
-    }).send(res);
+    });
   };
 
   getUserProfile = async (req: Request<IGetUserProfileRequestParams>, res: Response) => {
@@ -59,10 +64,11 @@ class UsersController extends BaseController implements IUsersController {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    new OK({
+    this.sendResponse<IUserResponse>({
+      res,
       data: user,
       message: 'Get user profile successfully'
-    }).send(res);
+    });
   };
 }
 

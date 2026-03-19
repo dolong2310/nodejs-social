@@ -156,7 +156,7 @@ class PostsValidation implements IPostsValidation {
     )
   );
 
-  postIdValidation(key: string, location: Location) {
+  postIdValidation = (key: string, location: Location) => {
     return validate(
       checkSchema(
         {
@@ -190,13 +190,13 @@ class PostsValidation implements IPostsValidation {
         [location]
       )
     );
-  }
+  };
 
-  async audienceValidation(
+  audienceValidation = async (
     req: Request<IGetPostDetailRequestParams, any, any, Query, Record<string, any>>,
     _res: Response,
     next: NextFunction
-  ): Promise<void> {
+  ): Promise<void> => {
     const userId = req.tokenPayload?.userId;
     const post = req.postDetail as IPostDetailResponse;
 
@@ -213,7 +213,7 @@ class PostsValidation implements IPostsValidation {
     const isOwner = isGuestUser ? false : post.userId.equals(userId);
     const isFollower = isGuestUser
       ? false
-      : await this.followersService.findFollowerId({ myUserId: userId, followedUserId: ownerId });
+      : await this.followersService.findFollowerId({ myUserId: userId, userId: ownerId });
     const isMention = isGuestUser ? false : post.mentions.map((mention) => mention.toString()).includes(userId);
 
     // kiểm tra user owner của bài post có bị banned không
@@ -241,7 +241,7 @@ class PostsValidation implements IPostsValidation {
 
     // bài post có chế độ "public" thì mọi người đều được xem bài post => không cần kiểm tra
     next();
-  }
+  };
 
   postTypeValidation = validate(
     checkSchema(

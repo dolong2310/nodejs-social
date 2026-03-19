@@ -1,13 +1,12 @@
+import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IConversationRepository } from '@/repositories/conversation.repository';
+import { BaseService } from '@/services/base.service';
 
 export interface IConversationsService {
-  getConversations(payload: {
-    senderId: string;
-    receiverId: string;
-    page: number;
-    limit: number;
-  }): Promise<{ conversations: IConversation[]; totalConversations: number }>;
+  getConversations(
+    payload: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }
+  ): Promise<{ conversations: IConversation[]; totalConversations: number }>;
   createConversation(payload: {
     senderId: string;
     receiverId: string;
@@ -16,21 +15,26 @@ export interface IConversationsService {
   }): Promise<IConversation>;
 }
 
-class ConversationService implements IConversationsService {
-  constructor(private readonly conversationRepository: IConversationRepository) {}
+class ConversationService extends BaseService implements IConversationsService {
+  constructor(private readonly conversationRepository: IConversationRepository) {
+    super();
+  }
 
   async getConversations({
     senderId,
     receiverId,
     page,
     limit
-  }: {
-    senderId: string;
-    receiverId: string;
-    page: number;
-    limit: number;
-  }): Promise<{ conversations: IConversation[]; totalConversations: number }> {
-    const conversationsPromise = this.conversationRepository.findConversations({ senderId, receiverId, page, limit });
+  }: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }): Promise<{
+    conversations: IConversation[];
+    totalConversations: number;
+  }> {
+    const conversationsPromise = this.conversationRepository.findConversations({
+      senderId,
+      receiverId,
+      page,
+      limit
+    });
     const totalPromise = this.conversationRepository.countConversations({ senderId, receiverId });
     const [conversations, totalConversations] = await Promise.all([conversationsPromise, totalPromise]);
 

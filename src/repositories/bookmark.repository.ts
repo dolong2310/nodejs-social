@@ -4,13 +4,14 @@
  * It provides methods to interact with the bookmark data in the database.
  */
 
+import { ICreateBookmarkRequestBody, IDeleteBookmarkRequestParams } from '@/models/requests/bookmark.request';
 import BookmarkSchema, { IBookmark } from '@/models/schemas/bookmark.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId, WithId } from 'mongodb';
 
 export interface IBookmarkRepository {
-  findOneAndUpdate({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null>;
-  findOneAndDelete({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null>;
+  findOneAndUpdate({ userId, postId }: ICreateBookmarkRequestBody & { userId: string }): Promise<IBookmark | null>;
+  findOneAndDelete({ userId, postId }: IDeleteBookmarkRequestParams & { userId: string }): Promise<IBookmark | null>;
 }
 
 export class BookmarkRepository extends BaseRepository implements IBookmarkRepository {

@@ -1,8 +1,10 @@
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
 import { ICreateBookmarkRequestBody, IDeleteBookmarkRequestParams } from '@/models/requests/bookmark.request';
-import { Created, OK } from '@/responses/success.response';
+import { ICreateBookmarkResponse, IDeleteBookmarkResponse } from '@/models/responses/bookmark.response';
+import { BadRequestError } from '@/responses/error.response';
+import { Created } from '@/responses/success.response';
 import { IBookmarksService } from '@/services/bookmarks.service';
-import { TokenPayload } from '@/types/token.type';
 import { Request, Response } from 'express';
 
 export interface IBookmarksController {
@@ -24,10 +26,16 @@ class BookmarksController extends BaseController implements IBookmarksController
       postId
     });
 
-    new Created({
+    if (!bookmark) {
+      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+    }
+
+    this.sendResponse<ICreateBookmarkResponse>({
+      res,
+      instance: Created,
       data: bookmark,
       message: 'Bookmark post successfully'
-    }).send(res);
+    });
   };
 
   deleteBookmark = async (req: Request<IDeleteBookmarkRequestParams>, res: Response) => {
@@ -39,9 +47,10 @@ class BookmarksController extends BaseController implements IBookmarksController
       postId
     });
 
-    new OK({
+    this.sendResponse<IDeleteBookmarkResponse>({
+      res,
       message: 'Unbookmark post successfully'
-    }).send(res);
+    });
   };
 }
 

@@ -27,7 +27,7 @@ export class FollowersRoute extends BaseRoute {
       appLimiter,
       protect,
       this.usersValidation.userVerifiedValidation,
-      this.usersValidation.userIdValidation('followedUserId', 'body'),
+      this.usersValidation.userIdValidation('userId', 'body'),
       asyncHandler(this.followersController.followUser)
     );
     this.router.delete(

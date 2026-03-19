@@ -165,7 +165,7 @@ class UsersValidation implements IUsersValidation {
     )
   );
 
-  async userVerifiedValidation(req: Request, _res: Response, next: NextFunction) {
+  userVerifiedValidation = async (req: Request, _res: Response, next: NextFunction) => {
     const userId: string | undefined = req.tokenPayload?.userId;
     if (!userId) {
       throw new AuthFailureError();
@@ -182,9 +182,9 @@ class UsersValidation implements IUsersValidation {
     }
     req.user = user;
     next();
-  }
+  };
 
-  userIdValidation(key: string, location: Location) {
+  userIdValidation = (key: string, location: Location) => {
     return validate(
       checkSchema(
         {
@@ -222,7 +222,7 @@ class UsersValidation implements IUsersValidation {
         [location]
       )
     );
-  }
+  };
 }
 
 export default UsersValidation;

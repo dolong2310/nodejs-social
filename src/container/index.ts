@@ -133,7 +133,7 @@ export class Container implements IContainer {
   }
 
   // Singleton pattern to ensure only one instance of Container is created
-  // This is useful for managing shared resources like PrismaClient
+  // This is useful for managing shared resources like MongoDBClient
   // and to avoid multiple instances of repositories, services, and controllers
   // This method returns the existing instance or creates a new one if it doesn't exist
   public static getInstance(db: DatabaseService): Container {

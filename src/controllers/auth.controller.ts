@@ -12,12 +12,23 @@ import {
   IResetPasswordRequestBody,
   IVerifyEmailRequestBody
 } from '@/models/requests/auth.request';
+import {
+  IChangePasswordResponse,
+  IForgotPasswordResponse,
+  ILoginResponse,
+  ILogoutResponse,
+  IRefreshTokenResponse,
+  IRegisterResponse,
+  IResendVerifyEmailResponse,
+  IResetPasswordResponse,
+  IVerifyEmailResponse
+} from '@/models/responses/auth.response';
 import { AuthFailureError, BadRequestError, NotFoundError } from '@/responses/error.response';
-import { Created, OK } from '@/responses/success.response';
+import { Created } from '@/responses/success.response';
 import { IAuthService } from '@/services/auth.service';
 import { IUsersService } from '@/services/users.service';
 import { TokenPayload } from '@/types/token.type';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
 export interface IAuthController {
   register(req: Request<{}, {}, IRegisterRequestBody>, res: Response): Promise<void>;
@@ -50,10 +61,12 @@ class AuthController extends BaseController implements IAuthController {
 
     const user = await this.authService.register({ name, email, password, dateOfBirth });
 
-    new Created({
+    this.sendResponse<IRegisterResponse>({
+      res,
+      instance: Created,
       data: user,
       message: 'User registered successfully'
-    }).send(res);
+    });
   };
 
   login = async (req: Request<{}, {}, ILoginRequestBody>, res: Response) => {
@@ -67,11 +80,11 @@ class AuthController extends BaseController implements IAuthController {
 
     const { accessToken, refreshToken } = await this.authService.login({ email, password }, existingUser);
 
-    // Trả về token
-    new OK({
+    this.sendResponse<ILoginResponse>({
+      res,
       data: { accessToken, refreshToken },
       message: 'Login successfully'
-    }).send(res);
+    });
   };
 
   logout = async (req: Request<{}, {}, ILogoutRequestBody>, res: Response) => {
@@ -84,11 +97,12 @@ class AuthController extends BaseController implements IAuthController {
       throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    await this.authService.logout(refreshToken);
+    const { message } = await this.authService.logout({ refreshToken });
 
-    new OK({
-      message: 'Logout successfully'
-    }).send(res);
+    this.sendResponse<ILogoutResponse>({
+      res,
+      message
+    });
   };
 
   refreshToken = async (req: Request<{}, {}, IRefreshTokenRequestBody>, res: Response) => {
@@ -101,12 +115,17 @@ class AuthController extends BaseController implements IAuthController {
       throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    const { accessToken, refreshToken } = await this.authService.refreshToken({ userId, refreshTokenBody, exp });
+    const { accessToken, refreshToken } = await this.authService.refreshToken({
+      userId,
+      refreshToken: refreshTokenBody,
+      exp
+    });
 
-    new OK({
+    this.sendResponse<IRefreshTokenResponse>({
+      res,
       data: { accessToken, refreshToken },
       message: 'Refresh token successfully'
-    }).send(res);
+    });
   };
 
   verifyEmail = async (req: Request<{}, {}, IVerifyEmailRequestBody>, res: Response) => {
@@ -127,11 +146,12 @@ class AuthController extends BaseController implements IAuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    await this.authService.verifyEmail(userId);
+    const { message } = await this.authService.verifyEmail(userId);
 
-    new OK({
-      message: 'Email verified successfully'
-    }).send(res);
+    this.sendResponse<IVerifyEmailResponse>({
+      res,
+      message
+    });
   };
 
   resendVerifyEmail = async (req: Request, res: Response) => {
@@ -147,11 +167,12 @@ class AuthController extends BaseController implements IAuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
     }
 
-    await this.authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
+    const { message } = await this.authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
 
-    new OK({
-      message: 'Email verification sent successfully'
-    }).send(res);
+    this.sendResponse<IResendVerifyEmailResponse>({
+      res,
+      message
+    });
   };
 
   forgotPassword = async (req: Request<{}, {}, IForgotPasswordRequestBody>, res: Response) => {
@@ -163,19 +184,20 @@ class AuthController extends BaseController implements IAuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
-    await this.authService.forgotPassword({
+    const { message } = await this.authService.forgotPassword({
       userId: existingUser._id!.toString(),
       name: existingUser.name,
       email: existingUser.email
     });
 
-    new OK({
-      message: 'Password reset email sent successfully'
-    }).send(res);
+    this.sendResponse<IForgotPasswordResponse>({
+      res,
+      message
+    });
   };
 
   resetPassword = async (req: Request<{}, {}, IResetPasswordRequestBody>, res: Response) => {
-    const { token, password } = req.body;
+    const { token, password, confirmPassword } = req.body;
     const userId = this.getUserId(req);
 
     const user = await this.usersService.findUserById(userId);
@@ -188,22 +210,24 @@ class AuthController extends BaseController implements IAuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    await this.authService.resetPassword({ userId, password });
+    const { message } = await this.authService.resetPassword({ userId, token, password, confirmPassword });
 
-    new OK({
-      message: 'Password reset successfully'
-    }).send(res);
+    this.sendResponse<IResetPasswordResponse>({
+      res,
+      message
+    });
   };
 
   changePassword = async (req: Request<{}, {}, IChangePasswordRequestBody>, res: Response) => {
     const userId = this.getUserId(req);
-    const { password: newPassword } = req.body;
+    const { password, confirmPassword } = req.body;
 
-    await this.authService.changePassword({ userId, newPassword });
+    const { message } = await this.authService.changePassword({ userId, password, confirmPassword });
 
-    new OK({
-      message: 'Password changed successfully'
-    }).send(res);
+    this.sendResponse<IChangePasswordResponse>({
+      res,
+      message
+    });
   };
 }
 
