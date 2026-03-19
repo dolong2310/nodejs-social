@@ -1,6 +1,7 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { AuthFailureError, ForbiddenError } from '@/responses/error.response';
 import TokenService from '@/services/token.service';
+import { TokenPayload } from '@/types/token.type';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -19,18 +20,9 @@ export const protect = (req: Request, _res: Response, next: NextFunction): void 
     token = authHeader.split(' ')[1];
   }
 
-  try {
-    const tokenService = new TokenService();
-    const decoded = tokenService.verifyAccessTokenSync(token);
-    req.tokenPayload = decoded;
-
-    next();
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_HAS_EXPIRED);
-    }
-    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
-  }
+  const decoded = _verifyAccessToken(token);
+  req.tokenPayload = decoded;
+  next();
 };
 
 // Optional auth middleware:
@@ -44,13 +36,16 @@ export const protectIfHasBearerToken = (req: Request, _res: Response, next: Next
   }
 
   const token = authHeader.split(' ')[1];
+  const decoded = _verifyAccessToken(token);
+  req.tokenPayload = decoded;
+  next();
+};
 
+const _verifyAccessToken = (token: string): TokenPayload => {
   try {
     const tokenService = new TokenService();
     const decoded = tokenService.verifyAccessTokenSync(token);
-    req.tokenPayload = decoded;
-
-    next();
+    return decoded;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_HAS_EXPIRED);

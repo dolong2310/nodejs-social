@@ -53,7 +53,6 @@ export class MediaRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const mediaRoute = new MediaRoute();
   return mediaRoute.getRouter();

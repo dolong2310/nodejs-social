@@ -14,9 +14,9 @@ export class SearchController extends BaseController implements ISearchControlle
     super();
   }
 
-  async search(req: Request<ISearchRequestParams, {}, {}, ISearchRequestQuery>, res: Response) {
+  search = async (req: Request<ISearchRequestParams, {}, {}, ISearchRequestQuery>, res: Response) => {
     const { query = '', type, people_follow, page = 1, limit = 10 } = req.query;
-    const userId = req.tokenPayload?.userId;
+    const userId = this.getUserId(req);
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -49,7 +49,7 @@ export class SearchController extends BaseController implements ISearchControlle
       },
       message: 'Search successfully'
     }).send(res);
-  }
+  };
 }
 
 export default SearchController;

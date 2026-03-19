@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { DatabaseInstance } from '@/database';
 import { errorHandler } from '@/middlewares/error.middleware';
@@ -16,33 +17,35 @@ import { AppConfig } from '@/types/app.type';
 import { getSwaggerDefinition } from '@/utils/file.util';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Express } from 'express';
+import express, { Express, Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { Server as HttpServer } from 'http';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
-export async function createApp(httpServer: HttpServer, config: AppConfig): Promise<Express> {
-  const databaseService = DatabaseInstance.init(config.database);
+export async function createApp(httpServer: HttpServer, appConfig: AppConfig): Promise<Express> {
+  const databaseService = DatabaseInstance.init(appConfig.database);
   await databaseService.connect();
 
   const app = createExpressApp();
   httpServer.on('request', app);
 
-  if (config.cors) {
-    app.use(cors(config.cors));
+  if (appConfig.cors) {
+    app.use(cors(appConfig.cors));
   }
 
-  if (config.rateLimitOptions) {
-    app.use(rateLimit(config.rateLimitOptions));
+  if (appConfig.rateLimitOptions) {
+    app.use(rateLimit(appConfig.rateLimitOptions));
   }
 
   const socket = new SocketService(httpServer);
   socket.run();
 
-  setupRoutes(app);
-  setupSwagger(app);
+  app.use(config.api.prefix, setupRoutes());
+  app.use(config.api.prefix, setupSwagger());
+
+  app.use(errorHandler);
 
   return app;
 }
@@ -57,24 +60,29 @@ function createExpressApp(): Express {
   return app;
 }
 
-function setupRoutes(app: Express) {
-  app.use('/auth', authRouter());
-  app.use('/users', usersRouter());
-  app.use('/oauth', oauthRouter());
-  app.use('/media', mediaRouter());
-  app.use('/static', staticRouter());
-  app.use('/posts', postsRouter());
-  app.use('/bookmarks', bookmarksRouter());
-  app.use('/followers', followersRouter());
-  app.use('/search', searchRouter());
-  app.use('/conversations', conversationsRouter());
-  app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
-  app.use(errorHandler);
+function setupRoutes(): Router {
+  const router = Router();
+
+  router.use('/auth', authRouter());
+  router.use('/users', usersRouter());
+  router.use('/oauth', oauthRouter());
+  router.use('/media', mediaRouter());
+  router.use('/static', staticRouter());
+  router.use('/posts', postsRouter());
+  router.use('/bookmarks', bookmarksRouter());
+  router.use('/followers', followersRouter());
+  router.use('/search', searchRouter());
+  router.use('/conversations', conversationsRouter());
+  router.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
+
+  return router;
 }
 
-function setupSwagger(app: Express) {
-  app.use(
-    '/api-docs',
+function setupSwagger(): Router {
+  const router = Router();
+
+  router.use(
+    '/docs',
     swaggerUi.serve,
     swaggerUi.setup(
       swaggerJsdoc({
@@ -83,4 +91,6 @@ function setupSwagger(app: Express) {
       })
     )
   );
+
+  return router;
 }

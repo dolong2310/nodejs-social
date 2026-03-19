@@ -80,7 +80,6 @@ export class AuthRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const authRoute = new AuthRoute();
   return authRoute.getRouter();

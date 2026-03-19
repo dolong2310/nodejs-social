@@ -65,7 +65,6 @@ export class PostsRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const postsRoute = new PostsRoute();
   return postsRoute.getRouter();

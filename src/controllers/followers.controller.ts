@@ -17,8 +17,8 @@ class FollowersController extends BaseController implements IFollowersController
     super();
   }
 
-  async followUser(req: Request<{}, {}, IFollowUserRequestBody>, res: Response) {
-    const { userId: myUserId } = req.tokenPayload as TokenPayload;
+  followUser = async (req: Request<{}, {}, IFollowUserRequestBody>, res: Response) => {
+    const myUserId = this.getUserId(req);
 
     const { followedUserId } = req.body;
 
@@ -41,10 +41,10 @@ class FollowersController extends BaseController implements IFollowersController
     new OK({
       message: 'Follow user successfully'
     }).send(res);
-  }
+  };
 
-  async unfollowUser(req: Request<IUnfollowUserRequestParams>, res: Response) {
-    const { userId: myUserId } = req.tokenPayload as TokenPayload;
+  unfollowUser = async (req: Request<IUnfollowUserRequestParams>, res: Response) => {
+    const myUserId = this.getUserId(req);
 
     const { userId } = req.params;
 
@@ -62,7 +62,7 @@ class FollowersController extends BaseController implements IFollowersController
     new OK({
       message: 'Not following user'
     }).send(res);
-  }
+  };
 }
 
 export default FollowersController;

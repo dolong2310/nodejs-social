@@ -25,7 +25,6 @@ export class StaticRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const staticRoute = new StaticRoute();
   return staticRoute.getRouter();

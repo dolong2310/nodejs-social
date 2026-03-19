@@ -27,9 +27,9 @@ class PostsController extends BaseController implements IPostsController {
     super();
   }
 
-  async getNewFeeds(req: Request<{}, {}, {}, IPaginationRequestQuery>, res: Response) {
+  getNewFeeds = async (req: Request<{}, {}, {}, IPaginationRequestQuery>, res: Response) => {
     const { page, limit } = req.query;
-    const userId = req.tokenPayload?.userId;
+    const userId = this.getUserId(req);
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -69,11 +69,11 @@ class PostsController extends BaseController implements IPostsController {
       },
       message: 'Get new feeds successfully'
     }).send(res);
-  }
+  };
 
-  async getPostDetail(req: Request<IGetPostDetailRequestParams>, res: Response) {
+  getPostDetail = async (req: Request<IGetPostDetailRequestParams>, res: Response) => {
     const { postId } = req.params;
-    const userId = req.tokenPayload?.userId;
+    const userId = this.getUserId(req);
     const post = req.postDetail as IPostDetailResponse;
 
     const updatedViews = await this.postsService.increaseViews({ postId, userId });
@@ -87,12 +87,12 @@ class PostsController extends BaseController implements IPostsController {
       data: post,
       message: 'Get post detail successfully'
     }).send(res);
-  }
+  };
 
-  async getPostsType(req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response) {
+  getPostsType = async (req: Request<IGetPostsRequestParams, {}, {}, IPaginationRequestQuery>, res: Response) => {
     const { postId, type } = req.params;
     const { page, limit } = req.query;
-    const userId = req.tokenPayload?.userId;
+    const userId = this.getUserId(req);
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -115,10 +115,10 @@ class PostsController extends BaseController implements IPostsController {
       },
       message: 'Get posts type successfully'
     }).send(res);
-  }
+  };
 
-  async createPost(req: Request<{}, {}, ICreatePostRequestBody>, res: Response) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  createPost = async (req: Request<{}, {}, ICreatePostRequestBody>, res: Response) => {
+    const userId = this.getUserId(req);
     const { type, audience, content, parentId, hashtags, mentions, media } = req.body;
 
     const post = await this.postsService.createPost({
@@ -130,7 +130,7 @@ class PostsController extends BaseController implements IPostsController {
       data: post,
       message: 'Create post successfully'
     }).send(res);
-  }
+  };
 }
 
 export default PostsController;

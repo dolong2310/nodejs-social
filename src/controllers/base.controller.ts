@@ -3,7 +3,8 @@
  * It includes methods for validation error handling, error handling, sending responses, pagination, user ID retrieval, and cookie management.
  */
 
-import { AuthFailureError } from '@/responses/error.response';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { AuthFailureError, NotFoundError } from '@/responses/error.response';
 import { NextFunction, Request, Response } from 'express';
 
 export abstract class BaseController {
@@ -52,13 +53,11 @@ export abstract class BaseController {
 
   /**
    * Retrieves the user ID from the request object.
-   * If the user ID is not found, it passes an error to the next middleware.
    */
-  protected getUserId(req: Request, next: NextFunction): string | null {
+  protected getUserId(req: Request): string {
     const userId = req.tokenPayload?.userId;
     if (!userId) {
-      next(new AuthFailureError());
-      return null;
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
     return userId;
   }

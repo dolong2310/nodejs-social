@@ -44,7 +44,6 @@ export class BookmarksRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const bookmarksRoute = new BookmarksRoute();
   return bookmarksRoute.getRouter();

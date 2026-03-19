@@ -1,14 +1,10 @@
-import { envConfig } from '@/config';
+import { config } from '@/config';
 import { ETokenType } from '@/enums/token.enum';
 import { TokenPayload, TokenPayloadCreate } from '@/types/token.type';
-import jwt, { type Secret } from 'jsonwebtoken';
+import jwt, { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import { v4 as uuidv4 } from 'uuid';
 
-type TokenSignConfig = {
-  secret: string | Secret;
-  expiresIn?: StringValue;
-};
 type TokenSignParams = {
   userId: string;
   type: number;
@@ -17,26 +13,30 @@ type TokenSignParams = {
 type SignOptions = {
   secret: string | Secret;
   expiresIn?: StringValue;
-  algorithm?: string;
+  algorithm?: Algorithm;
   exp?: number;
 };
 
 const TOKEN_CONFIG: Record<ETokenType, SignOptions> = {
   [ETokenType.ACCESS_TOKEN]: {
-    secret: envConfig.ACCESS_TOKEN_SECRET as Secret,
-    expiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN as StringValue
+    secret: config.jwt.accessTokenSecret,
+    expiresIn: config.jwt.accessTokenExpiresIn,
+    algorithm: config.jwt.algorithm
   },
   [ETokenType.REFRESH_TOKEN]: {
-    secret: envConfig.REFRESH_TOKEN_SECRET as Secret,
-    expiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN as StringValue
+    secret: config.jwt.refreshTokenSecret,
+    expiresIn: config.jwt.refreshTokenExpiresIn,
+    algorithm: config.jwt.algorithm
   },
   [ETokenType.EMAIL_VERIFICATION_TOKEN]: {
-    secret: envConfig.EMAIL_TOKEN_SECRET as Secret,
-    expiresIn: envConfig.EMAIL_TOKEN_EXPIRES_IN as StringValue
+    secret: config.jwt.emailTokenSecret,
+    expiresIn: config.jwt.emailTokenExpiresIn,
+    algorithm: config.jwt.algorithm
   },
   [ETokenType.FORGOT_PASSWORD_TOKEN]: {
-    secret: envConfig.FORGOT_PASSWORD_TOKEN_SECRET as Secret,
-    expiresIn: envConfig.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as StringValue
+    secret: config.jwt.forgotPasswordTokenSecret,
+    expiresIn: config.jwt.forgotPasswordTokenExpiresIn,
+    algorithm: config.jwt.algorithm
   }
 };
 
@@ -65,21 +65,21 @@ export interface ITokenService {
 class TokenService implements ITokenService {
   constructor() {}
 
-  private signTokenSync(params: TokenSignParams, config: TokenSignConfig): string {
+  private signTokenSync(params: TokenSignParams, config: SignOptions): string {
     // Add a uuid for uniqueness
     const { userId, type, exp } = params;
     const payload: any = { uuid: uuidv4(), userId, type };
     if (typeof exp === 'number') payload.exp = exp;
 
     const options: jwt.SignOptions = {
-      algorithm: 'HS256'
+      algorithm: config.algorithm
     };
     if (!exp && config.expiresIn) options.expiresIn = config.expiresIn;
 
     return jwt.sign(payload, config.secret, options);
   }
 
-  private async signToken(params: TokenSignParams, config: TokenSignConfig): Promise<string> {
+  private async signToken(params: TokenSignParams, config: SignOptions): Promise<string> {
     return Promise.resolve(this.signTokenSync(params, config));
   }
 

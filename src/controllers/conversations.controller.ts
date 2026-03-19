@@ -18,11 +18,11 @@ class ConversationsController extends BaseController implements IConversationsCo
     super();
   }
 
-  async getConversations(
+  getConversations = async (
     req: Request<IGetConversationsRequestParams, {}, {}, IGetConversationsRequestQuery>,
     res: Response
-  ) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  ) => {
+    const userId = this.getUserId(req);
     const { receiverId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
@@ -46,10 +46,10 @@ class ConversationsController extends BaseController implements IConversationsCo
       },
       message: 'Get conversations successfully'
     }).send(res);
-  }
+  };
 
-  async createConversation(req: Request, res: Response) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  createConversation = async (req: Request, res: Response) => {
+    const userId = this.getUserId(req);
     const { receiverId, content } = req.body;
 
     const conversation = await this.conversationsService.createConversation({
@@ -63,7 +63,7 @@ class ConversationsController extends BaseController implements IConversationsCo
       data: conversation,
       message: 'Create conversation successfully'
     }).send(res);
-  }
+  };
 }
 
 export default ConversationsController;

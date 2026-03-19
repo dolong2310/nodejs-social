@@ -18,8 +18,8 @@ class UsersController extends BaseController implements IUsersController {
     super();
   }
 
-  async getMe(req: Request, res: Response) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  getMe = async (req: Request, res: Response) => {
+    const userId = this.getUserId(req);
 
     const user = await this.usersService.getMe(userId);
 
@@ -31,10 +31,10 @@ class UsersController extends BaseController implements IUsersController {
       data: user,
       message: 'Get me successfully'
     }).send(res);
-  }
+  };
 
-  async updateMe(req: Request<{}, {}, IUpdateMeRequestBody>, res: Response) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  updateMe = async (req: Request<{}, {}, IUpdateMeRequestBody>, res: Response) => {
+    const userId = this.getUserId(req);
     const { body } = req;
 
     const _body = body.dateOfBirth ? { ...body, dateOfBirth: new Date(body.dateOfBirth) } : body;
@@ -48,9 +48,9 @@ class UsersController extends BaseController implements IUsersController {
       data: updatedUser,
       message: 'Update me successfully'
     }).send(res);
-  }
+  };
 
-  async getUserProfile(req: Request<IGetUserProfileRequestParams>, res: Response) {
+  getUserProfile = async (req: Request<IGetUserProfileRequestParams>, res: Response) => {
     const { username } = req.params;
 
     const user = await this.usersService.getUserProfile(username);
@@ -63,7 +63,7 @@ class UsersController extends BaseController implements IUsersController {
       data: user,
       message: 'Get user profile successfully'
     }).send(res);
-  }
+  };
 }
 
 export default UsersController;

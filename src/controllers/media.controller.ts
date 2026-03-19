@@ -35,7 +35,7 @@ class MediaController extends BaseController implements IMediaController {
     super();
   }
 
-  getStaticImage(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
+  getStaticImage = (req: Request<{ filename: string }>, res: Response, _next: NextFunction) => {
     const { filename } = req.params;
     const imagePath = path.resolve(UPLOAD_DIR_IMAGE, filename);
     if (!fs.existsSync(imagePath)) {
@@ -43,9 +43,9 @@ class MediaController extends BaseController implements IMediaController {
       // return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
     }
     return res.sendFile(imagePath);
-  }
+  };
 
-  getStaticVideo(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
+  getStaticVideo = (req: Request<{ filename: string }>, res: Response, _next: NextFunction) => {
     const { filename } = req.params;
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     if (!fs.existsSync(videoPath)) {
@@ -53,9 +53,9 @@ class MediaController extends BaseController implements IMediaController {
       // return res.status(HTTP_STATUS.NOT_FOUND).json({ message: HTTP_ERROR_MESSAGE.NOT_FOUND });
     }
     return res.sendFile(videoPath);
-  }
+  };
 
-  getStaticVideoStream(req: Request<{ filename: string }>, res: Response, next: NextFunction) {
+  getStaticVideoStream = (req: Request<{ filename: string }>, res: Response, _next: NextFunction) => {
     const { filename } = req.params;
     const range = req.headers.range;
     if (!range) {
@@ -100,50 +100,50 @@ class MediaController extends BaseController implements IMediaController {
       // res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: HTTP_ERROR_MESSAGE.INTERNAL_SERVER_ERROR }); // xử lý lỗi nếu có
     });
     return videoStream; // trả về stream cho client
-  }
+  };
 
-  getStaticVideoHLSMaster(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+  getStaticVideoHLSMaster = (req: Request<{ id: string }>, res: Response, _next: NextFunction) => {
     const { id } = req.params;
     return this.s3Service.sendFileFromS3(res, `videos-hls/${id}/master.m3u8`);
-  }
+  };
 
-  getStaticVideoHLSSegment(
+  getStaticVideoHLSSegment = (
     req: Request<{ id: string; version: string; segment: string }>,
     res: Response,
-    next: NextFunction
-  ) {
+    _next: NextFunction
+  ) => {
     const { id, version, segment } = req.params;
     return this.s3Service.sendFileFromS3(res, `videos-hls/${id}/${version}/${segment}`);
-  }
+  };
 
-  async uploadImage(req: Request, res: Response, next: NextFunction) {
+  uploadImage = async (req: Request, res: Response, _next: NextFunction) => {
     const results = await this.mediaService.uploadImage(req);
 
     new OK({
       data: results,
       message: 'Upload successfully'
     }).send(res);
-  }
+  };
 
-  async uploadVideo(req: Request, res: Response, next: NextFunction) {
+  uploadVideo = async (req: Request, res: Response, _next: NextFunction) => {
     const results = await this.mediaService.uploadVideo(req);
 
     new OK({
       data: results,
       message: 'Upload successfully'
     }).send(res);
-  }
+  };
 
-  async uploadVideoHLS(req: Request, res: Response, next: NextFunction) {
+  uploadVideoHLS = async (req: Request, res: Response, _next: NextFunction) => {
     const results = await this.mediaService.uploadVideoHLS(req);
 
     new OK({
       data: results,
       message: 'Upload successfully'
     }).send(res);
-  }
+  };
 
-  async getVideoStatus(req: Request, res: Response, next: NextFunction) {
+  getVideoStatus = async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params as { id: string };
     const videoStatus = await this.mediaService.getVideoStatusByName(id);
 
@@ -151,7 +151,7 @@ class MediaController extends BaseController implements IMediaController {
       data: videoStatus,
       message: 'Get video status successfully'
     }).send(res);
-  }
+  };
 }
 
 export default MediaController;

@@ -22,7 +22,6 @@ export class OAuthRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const oauthRoute = new OAuthRoute();
   return oauthRoute.getRouter();

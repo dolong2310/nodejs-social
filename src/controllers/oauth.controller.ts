@@ -12,7 +12,7 @@ class OAuthController extends BaseController implements IOAuthController {
     super();
   }
 
-  async googleLogin(req: Request, res: Response) {
+  googleLogin = async (req: Request, res: Response) => {
     const { state, code } = req.query;
 
     const { accessToken, refreshToken } = await this.oauthService.googleLogin(state as string, code as string);
@@ -20,7 +20,7 @@ class OAuthController extends BaseController implements IOAuthController {
     return res.redirect(
       `${envConfig.FRONTEND_URL}/oauth/google/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
     );
-  }
+  };
 }
 
 export default OAuthController;

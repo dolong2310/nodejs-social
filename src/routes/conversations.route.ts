@@ -43,7 +43,6 @@ export class ConversationsRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const conversationsRoute = new ConversationsRoute();
   return conversationsRoute.getRouter();

@@ -1,4 +1,4 @@
-import { envConfig, isDevelopment } from '@/config';
+import { config, envConfig, isDevelopment } from '@/config';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
@@ -54,7 +54,7 @@ class MediaService implements IMediaService {
           url: result.Location ?? '',
           type: EMediaType.IMAGE
         };
-        // const url = isDevelopment ? envConfig.DEVELOPMENT_URL : envConfig.PRODUCTION_URL;
+        // const url = config.client.url;
         // return { url: `${url}/static/images/${newName}.jpg`, type: EMediaType.IMAGE };
       })
     );
@@ -79,7 +79,7 @@ class MediaService implements IMediaService {
           type: EMediaType.VIDEO
         };
 
-        // const url = isDevelopment ? envConfig.DEVELOPMENT_URL : envConfig.PRODUCTION_URL;
+        // const url = config.client.url;
         // return { url: `${url}/static/videos/${newName}.mp4`, type: EMediaType.VIDEO };
       })
     );
@@ -91,7 +91,7 @@ class MediaService implements IMediaService {
       files.map(async (file) => {
         const newName = getNameFromFullname(file.newFilename);
         const idName = getNameFromFullname(file.newFilename.split('/').pop() as string);
-        const url = isDevelopment ? envConfig.DEVELOPMENT_URL : envConfig.PRODUCTION_URL;
+        const url = config.client.url;
 
         this.queueService.enqueue({
           item: file.filepath,

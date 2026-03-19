@@ -34,7 +34,6 @@ export class SearchRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const searchRoute = new SearchRoute();
   return searchRoute.getRouter();

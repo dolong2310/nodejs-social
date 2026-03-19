@@ -1,5 +1,5 @@
 import { createServer } from 'http';
-import { envConfig, isProduction } from './src/config/index.js';
+import { config, envConfig, isProduction } from './src/config/index.js';
 import { createApp } from './src/index.js';
 import { initUploadsFolder } from './src/utils/file.util.js';
 
@@ -7,20 +7,20 @@ import { initUploadsFolder } from './src/utils/file.util.js';
 // fakeData();
 
 async function bootstrap() {
-  const port = envConfig.PORT;
+  const port = config.port;
   const httpServer = createServer();
 
   initUploadsFolder();
 
   await createApp(httpServer, {
     database: {
-      uri: envConfig.MONGODB_URI,
-      databaseName: envConfig.DATABASE_NAME
+      uri: config.database.uri,
+      databaseName: config.database.name
     },
     cors: {
       origin: isProduction ? envConfig.FRONTEND_URL : '*',
       credentials: true
-    },
+    }
     // rateLimitOptions: {
     //   windowMs: 15 * 60 * 1000, // 15 minutes
     //   limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).

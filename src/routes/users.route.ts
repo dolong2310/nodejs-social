@@ -48,7 +48,6 @@ export class UsersRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const usersRoute = new UsersRoute();
   return usersRoute.getRouter();

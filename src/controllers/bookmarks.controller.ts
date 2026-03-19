@@ -15,8 +15,8 @@ class BookmarksController extends BaseController implements IBookmarksController
     super();
   }
 
-  async createBookmark(req: Request<{}, {}, ICreateBookmarkRequestBody>, res: Response) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  createBookmark = async (req: Request<{}, {}, ICreateBookmarkRequestBody>, res: Response) => {
+    const userId = this.getUserId(req);
     const { postId } = req.body;
 
     const bookmark = await this.bookmarksService.bookmarkPost({
@@ -28,10 +28,10 @@ class BookmarksController extends BaseController implements IBookmarksController
       data: bookmark,
       message: 'Bookmark post successfully'
     }).send(res);
-  }
+  };
 
-  async deleteBookmark(req: Request<IDeleteBookmarkRequestParams>, res: Response) {
-    const { userId } = req.tokenPayload as TokenPayload;
+  deleteBookmark = async (req: Request<IDeleteBookmarkRequestParams>, res: Response) => {
+    const userId = this.getUserId(req);
     const { postId } = req.params;
 
     await this.bookmarksService.unbookmarkPost({
@@ -42,7 +42,7 @@ class BookmarksController extends BaseController implements IBookmarksController
     new OK({
       message: 'Unbookmark post successfully'
     }).send(res);
-  }
+  };
 }
 
 export default BookmarksController;

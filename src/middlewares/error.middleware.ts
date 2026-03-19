@@ -3,7 +3,7 @@ import { HTTP_STATUS } from '@/constants/httpStatus.constant';
 import { ErrorResponse } from '@/responses/error.response';
 import { NextFunction, Request, Response } from 'express';
 
-export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof ErrorResponse) {
     return res.status(err.statusCode).json({ message: err.message, errors: err.errors || {} });
   }

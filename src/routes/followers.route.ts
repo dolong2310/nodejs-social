@@ -41,7 +41,6 @@ export class FollowersRoute extends BaseRoute {
   }
 }
 
-// Create instance and export router for backward compatibility
 export default () => {
   const followersRoute = new FollowersRoute();
   return followersRoute.getRouter();
