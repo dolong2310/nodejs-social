@@ -467,8 +467,9 @@ components:
             data:
               type: object
               properties:
-                posts:
+                data:
                   type: array
+                  description: Danh sách bài viết (sendPaginatedResponse)
                   items:
                     $ref: '#/components/schemas/PostDetailResponse'
                 page:
@@ -483,11 +484,17 @@ components:
                 totalPages:
                   type: integer
                   example: 3
+                hasNext:
+                  type: boolean
+                  example: true
+                hasPrev:
+                  type: boolean
+                  example: false
       example:
         message: "Get new feeds successfully"
         statusCode: 200
         data:
-          posts:
+          data:
             - _id: "507f1f77bcf86cd799439013"
               userId: "507f1f77bcf86cd799439011"
               type: "post"
@@ -508,17 +515,19 @@ components:
           limit: 10
           totalItems: 25
           totalPages: 3
+          hasNext: true
+          hasPrev: false
 
     # Follower schemas
     FollowUserRequest:
       type: object
-      required: [followedUserId]
+      required: [userId]
       properties:
-        followedUserId:
+        userId:
           $ref: '#/components/schemas/MongoId'
           description: ID người dùng cần follow
       example:
-        followedUserId: "507f1f77bcf86cd799439012"
+        userId: "507f1f77bcf86cd799439012"
     FollowResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -528,12 +537,26 @@ components:
         data: {}
 
     # Bookmark schemas
+    BookmarkResponse:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/MongoId'
+        userId:
+          $ref: '#/components/schemas/MongoId'
+        postId:
+          $ref: '#/components/schemas/MongoId'
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 format
     BookmarkSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
         - type: object
           properties:
-            data: {}
+            data:
+              $ref: '#/components/schemas/BookmarkResponse'
     CreateBookmarkRequest:
       type: object
       required: [postId]
@@ -603,7 +626,7 @@ components:
             data:
               type: object
               properties:
-                conversations:
+                data:
                   type: array
                   items:
                     $ref: '#/components/schemas/ConversationResponse'
@@ -619,11 +642,17 @@ components:
                 totalPages:
                   type: integer
                   example: 5
+                hasNext:
+                  type: boolean
+                  example: true
+                hasPrev:
+                  type: boolean
+                  example: false
       example:
         message: "Get conversations successfully"
         statusCode: 200
         data:
-          conversations:
+          data:
             - _id: "507f1f77bcf86cd799439014"
               senderId: "507f1f77bcf86cd799439011"
               receiverId: "507f1f77bcf86cd799439012"
@@ -635,6 +664,8 @@ components:
           limit: 10
           totalItems: 50
           totalPages: 5
+          hasNext: true
+          hasPrev: false
 
     # Media schemas
     MediaUploadResponse:
@@ -705,6 +736,7 @@ components:
               properties:
                 data:
                   type: array
+                  description: Kết quả (PostDetailResponse[] hoặc User[] tùy query type)
                 page:
                   type: integer
                   example: 1
@@ -717,6 +749,12 @@ components:
                 totalPages:
                   type: integer
                   example: 2
+                hasNext:
+                  type: boolean
+                  example: true
+                hasPrev:
+                  type: boolean
+                  example: false
       example:
         message: "Search successfully"
         statusCode: 200
@@ -732,6 +770,8 @@ components:
           limit: 10
           totalItems: 15
           totalPages: 2
+          hasNext: true
+          hasPrev: false
 
     # Error schema (deprecated - use ErrorResponse)
     Error:

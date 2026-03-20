@@ -1,5 +1,0 @@
-servers:
-  - url: http://localhost:8080
-    description: Development server
-  - url: https://api.nodejs-social.com
-    description: Production server

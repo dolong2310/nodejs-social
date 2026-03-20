@@ -3,11 +3,21 @@ info:
   title: NodeJS Social API
   description: |
     API documentation cho ứng dụng mạng xã hội NodeJS Social.
-    Sử dụng Bearer token (Access Token) trong header Authorization cho các endpoint yêu cầu xác thực.
+
+    **Base path:** mọi route (trừ tài liệu) nằm dưới prefix `/api` (ví dụ đăng nhập: `POST /api/auth/login`).
+    **Swagger UI:** `/api/docs`.
+
+    Xác thực: header `Authorization: Bearer <accessToken>`, hoặc cookie `accessToken` (cookie không mô tả trong OpenAPI).
 
     **Chuẩn Response:**
-    - Success: `{ message, statusCode, data? }` - SuccessResponse
-    - Error: `{ message, errors }` - ErrorResponse (errors chứa chi tiết validation theo field)
+    - Success: `{ message, statusCode, data? }` — SuccessResponse
+    - Error: `{ message, errors }` — ErrorResponse (errors chứa chi tiết validation theo field)
   version: 1.0.0
   contact:
     email: support@nodejs-social.com
+servers:
+  - url: http://localhost:8080/api
+    description: Development server (PORT theo biến môi trường, mặc định thường 8080)
+  - url: https://api.nodejs-social.com/api
+    description: Production server
+paths: {}

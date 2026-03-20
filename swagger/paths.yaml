@@ -421,6 +421,7 @@ paths:
     get:
       tags: [posts]
       summary: Lấy new feed
+      description: Bearer token tùy chọn — có token (user đã verify) thì feed cá nhân hóa theo follow; không có token thì dùng feed khách.
       operationId: getNewFeeds
       parameters:
         - name: page
@@ -445,6 +446,7 @@ paths:
       summary: Tạo bài viết mới
       operationId: createPost
       security: [{ bearerAuth: [] }]
+      description: Yêu cầu Bearer token; user phải đã verify email (middleware tương ứng khi gửi Authorization).
       requestBody:
         required: true
         content:
@@ -469,6 +471,7 @@ paths:
       tags: [posts]
       summary: Lấy chi tiết bài viết
       operationId: getPostDetail
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: postId
           in: path
@@ -482,8 +485,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostDetailSuccessResponse'
+        '401':
+          description: Thiếu hoặc token không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Không tìm thấy bài viết
+          description: Không tìm thấy bài viết hoặc user (token)
           content:
             application/json:
               schema:
@@ -493,6 +502,7 @@ paths:
       tags: [posts]
       summary: Lấy danh sách bài viết theo loại (comments, quotes, reposts)
       operationId: getPostsType
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: type
           in: path
@@ -522,6 +532,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostsPaginatedResponse'
+        '401':
+          description: Thiếu hoặc token không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Không tìm thấy
           content:
@@ -582,7 +598,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== FOLLOWERS ====================
-  /followers/follow:
+  /followers:
     post:
       tags: [followers]
       summary: Follow người dùng
@@ -613,7 +629,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /followers/follow/{userId}:
+  /followers/{userId}:
     delete:
       tags: [followers]
       summary: Unfollow người dùng
@@ -644,11 +660,12 @@ paths:
     get:
       tags: [search]
       summary: Tìm kiếm
+      description: Query `query` là tùy chọn (mặc định rỗng). Bearer tùy chọn — có token thì lọc theo ngữ cảnh user.
       operationId: search
       parameters:
         - name: query
           in: query
-          required: true
+          required: false
           schema:
             type: string
         - name: type

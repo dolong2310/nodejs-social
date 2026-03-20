@@ -386,6 +386,10 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       }
     }));
 
+    // Thực hiện bulkWrite để upsert (chèn mới hoặc cập nhật) nhiều hashtag cùng lúc.
+    // option { ordered: false } cho phép các thao tác upsert diễn ra song song, không dừng lại khi có 1 thao tác bị lỗi (ví dụ trùng key),
+    // Điều này giúp tối ưu hiệu suất khi insert nhiều hashtag cùng lúc và không bị ảnh hưởng nếu có hashtag đã tồn tại.
+    // Tránh loop find one and update vì N + 1 query (nhiều round-trip).
     await this.db.hashtags.bulkWrite(ops, { ordered: false });
 
     return this.db.hashtags.find({ name: { $in: hashtags } }).toArray();

@@ -96,7 +96,7 @@ function setupSwagger(): Router {
     swaggerUi.setup(
       swaggerJsdoc({
         definition: getSwaggerDefinition(),
-        apis: ['./swagger/*.yaml']
+        apis: ['./swagger/paths.yaml', './swagger/components.yaml', './swagger/tags.yaml', './swagger/security.yaml']
       })
     )
   );
