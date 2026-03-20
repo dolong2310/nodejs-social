@@ -1,5 +1,5 @@
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
-import { IRedisService } from '@/database/redis.service';
+import { IRedisService } from '@/database/redis/redis.service';
 import { IFollowUserRequestBody, IUnfollowUserRequestParams } from '@/models/requests/follower.request';
 import { IFollower } from '@/models/schemas/follower.schema';
 import { IFollowerRepository } from '@/repositories/follower.repository';

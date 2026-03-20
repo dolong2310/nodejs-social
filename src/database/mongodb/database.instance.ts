@@ -1,4 +1,4 @@
-import DatabaseService from '@/database/database.service';
+import DatabaseService from '@/database/mongodb/database.service';
 
 export class DatabaseInstance {
   private static instance: DatabaseService | null = null;

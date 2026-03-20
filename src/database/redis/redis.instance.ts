@@ -1,4 +1,4 @@
-import RedisService from '@/database/redis.service';
+import RedisService from '@/database/redis/redis.service';
 import Redis, { type RedisOptions } from 'ioredis';
 
 export class RedisInstance {

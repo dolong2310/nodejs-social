@@ -1,6 +1,6 @@
 import { envConfig } from '@/config';
-import DatabaseService from '@/database/database.service';
-import { DatabaseInstance } from '@/database/database.instance.js';
+import DatabaseService from '@/database/mongodb/database.service';
+import { DatabaseInstance } from '@/database/mongodb/database.instance.js';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { ETokenType } from '@/enums/token.enum';

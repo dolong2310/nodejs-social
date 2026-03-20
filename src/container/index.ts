@@ -3,8 +3,8 @@
  * It manages the instantiation and retrieval of repositories, services, and controllers.
  */
 
-import DatabaseService from '@/database/database.service';
-import RedisService from '@/database/redis.service';
+import DatabaseService from '@/database/mongodb/database.service';
+import RedisService from '@/database/redis/redis.service';
 // Queues
 import { QueueService } from '@/queue';
 import { IEmailJobQueue } from '@/queue/queues/email.queue';

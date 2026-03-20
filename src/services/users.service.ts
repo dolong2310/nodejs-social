@@ -1,5 +1,5 @@
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
-import { IRedisService } from '@/database/redis.service';
+import { IRedisService } from '@/database/redis/redis.service';
 import { IUpdateMeRequestBody } from '@/models/requests/user.request';
 import { IUserResponse } from '@/models/responses/user.response';
 import { IUser } from '@/models/schemas/user.schema';

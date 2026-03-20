@@ -1,7 +1,7 @@
 import { envConfig } from '@/config';
 import { CACHE_KEYS } from '@/constants/cache.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { IRedisService } from '@/database/redis.service';
+import { IRedisService } from '@/database/redis/redis.service';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import {
