@@ -18,18 +18,18 @@ if (envFound.error) {
 }
 
 const ENV_KEYS = [
-  // App configs
+  // App
   'PORT',
-  'REDIS_HOST',
-  'REDIS_PORT',
-  'REDIS_PASSWORD',
-  'REDIS_DB',
+  'LOG_LEVEL',
+  'FRONTEND_URL',
   'PRODUCTION_URL',
   'DEVELOPMENT_URL',
+
+  // Database
   'DATABASE_URI',
   'DATABASE_NAME',
 
-  // JWT configs
+  // JWT
   'JWT_ALGO',
   'ACCESS_TOKEN_SECRET',
   'REFRESH_TOKEN_SECRET',
@@ -40,16 +40,23 @@ const ENV_KEYS = [
   'EMAIL_TOKEN_EXPIRES_IN',
   'FORGOT_PASSWORD_TOKEN_EXPIRES_IN',
 
-  // Third-party configs
+  // Google
   'GOOGLE_CLIENT_ID',
   'GOOGLE_CLIENT_SECRET',
   'GOOGLE_REDIRECT_URI',
-  'FRONTEND_URL',
+
+  // AWS
   'AWS_ACCESS_KEY_ID',
   'AWS_SECRET_ACCESS_KEY',
   'AWS_REGION',
   'AWS_S3_BUCKET_NAME',
-  'SES_FROM_ADDRESS'
+  'SES_FROM_ADDRESS',
+
+  // Redis
+  'REDIS_HOST',
+  'REDIS_PORT',
+  'REDIS_PASSWORD',
+  'REDIS_DB'
 ] as const;
 
 type EnvKey = (typeof ENV_KEYS)[number];

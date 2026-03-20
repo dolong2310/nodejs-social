@@ -1,5 +1,6 @@
 import { createApp } from '@/app';
 import { config, envConfig, isProduction } from '@/config';
+import { logger } from '@/logger';
 import { initUploadsFolder } from '@/utils/file.util';
 import { createServer } from 'http';
 
@@ -30,7 +31,7 @@ async function bootstrap() {
   });
 
   httpServer.listen(port, () => {
-    console.log(`\x1b[32mServer is running on port ${port}\x1b[0m`);
+    logger.info({ port }, 'server listening');
   });
 }
 

@@ -1,3 +1,7 @@
+import { logger } from '@/logger';
+
+const log = logger.child({ module: 'in-memory-queue' });
+
 interface QueueItem {
   item: string;
   onStart?: () => Promise<void>;
@@ -68,7 +72,7 @@ class QueueService implements IQueueService {
     }
 
     this.processing = true;
-    console.log('\x1b[32m%s\x1b[0m', 'Processing started');
+    log.info('processing started');
 
     while (!this.isEmpty()) {
       const queueItem = this.dequeue();
@@ -77,20 +81,20 @@ class QueueService implements IQueueService {
         try {
           if (!this.onStartWhenEnqueue && onStart) await onStart();
           await onProcess(item);
-          console.log('\x1b[32m%s\x1b[0m', 'Item processed successfully: ', item);
+          log.info({ item }, 'item processed successfully');
           const result = await task(item);
           await onSuccess(result);
         } catch (error) {
-          console.error('Error processing item: ', error);
-          await onError(error as Error, item).catch((error) => {
-            console.error('DB Error processing item: ', error);
+          log.error({ err: error, item }, 'error processing item');
+          await onError(error as Error, item).catch((err) => {
+            log.error({ err, item }, 'onError handler failed');
           });
         }
       }
     }
 
     this.processing = false;
-    console.log('\x1b[32m%s\x1b[0m', 'Processing finished');
+    log.info('processing finished');
   }
 }
 

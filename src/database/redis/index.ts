@@ -1,5 +1,8 @@
 import RedisService from '@/database/redis/redis.service';
+import { logger } from '@/logger';
 import Redis, { type RedisOptions } from 'ioredis';
+
+const log = logger.child({ module: 'redis' });
 
 export class RedisInstance {
   private static instance: RedisService | null = null;
@@ -17,15 +20,15 @@ export class RedisInstance {
     });
 
     client.on('error', (err: Error) => {
-      console.error('\x1b[31m%s\x1b[0m', `[Redis] ${err.message}`);
+      log.error({ err }, 'redis client error');
     });
 
     client.on('connect', () => {
-      console.log('\x1b[32m%s\x1b[0m', 'Successfully connected to Redis');
+      log.info('connected to redis');
     });
 
     client.on('reconnecting', () => {
-      console.warn('\x1b[33m%s\x1b[0m', '[Redis] Reconnecting...');
+      log.warn('redis reconnecting');
     });
 
     this.instance = new RedisService(client);

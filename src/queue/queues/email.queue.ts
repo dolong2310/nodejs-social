@@ -1,6 +1,9 @@
-import { Queue, type ConnectionOptions } from 'bullmq';
+import { logger } from '@/logger';
 import { IEmailJobResult, QUEUE_NAMES } from '@/queue/types';
 import { IEmailPayload } from '@/types/mail.type';
+import { Queue, type ConnectionOptions } from 'bullmq';
+
+const log = logger.child({ module: 'email-queue' });
 
 export interface IEmailJobQueue {
   add(data: IEmailPayload): Promise<void>;
@@ -23,7 +26,7 @@ export class EmailJobQueue implements IEmailJobQueue {
     });
 
     this.queue.on('error', (err) => {
-      console.error('\x1b[31m%s\x1b[0m', `[EmailQueue] ${err.message}`);
+      log.error({ err }, 'email queue error');
     });
   }
 

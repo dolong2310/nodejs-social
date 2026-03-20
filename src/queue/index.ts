@@ -1,9 +1,12 @@
+import { logger } from '@/logger';
 import { EmailJobQueue, IEmailJobQueue } from '@/queue/queues/email.queue';
 import { IVideoHLSJobQueue, VideoHLSJobQueue } from '@/queue/queues/video-hls.queue';
 import { EmailWorker } from '@/queue/workers/email.worker';
 import { VideoHLSWorker } from '@/queue/workers/video-hls.worker';
 import { type ConnectionOptions, type Worker } from 'bullmq';
-import { RedisOptions } from 'ioredis';
+import type { RedisOptions } from 'ioredis';
+
+const log = logger.child({ module: 'queue' });
 
 export interface IQueueService {
   getEmailJobQueue(): IEmailJobQueue;
@@ -37,7 +40,7 @@ export class QueueService implements IQueueService {
     // 2. Initialize workers
     this.workers = [new EmailWorker().createWorker(connection), new VideoHLSWorker().createWorker(connection)];
 
-    console.log('\x1b[32m%s\x1b[0m', 'QueueService initialized');
+    log.info('queue service initialized');
   }
 
   static init(redisOptions: RedisOptions): QueueService {
@@ -62,7 +65,7 @@ export class QueueService implements IQueueService {
       QueueService.instance.videoHLSJobQueue.close()
     ]);
     QueueService.instance = null;
-    console.log('\x1b[33m%s\x1b[0m', 'QueueService closed');
+    log.info('queue service closed');
   }
 
   static resetInstance(): void {

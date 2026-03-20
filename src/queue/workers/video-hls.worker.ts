@@ -1,7 +1,8 @@
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { Container } from '@/container';
 import { EEncodingVideoStatus } from '@/enums/media.enum';
-import { QUEUE_NAMES, IVideoHLSJobResult } from '@/queue/types';
+import { logger } from '@/logger';
+import { IVideoHLSJobResult, QUEUE_NAMES } from '@/queue/types';
 import { IMediaRepository } from '@/repositories/media.repository';
 import S3Service from '@/services/s3.service';
 import { IVideoHLSJobData } from '@/types/media.type';
@@ -12,6 +13,8 @@ import fs from 'fs/promises';
 import { get } from 'lodash-es';
 import mime from 'mime';
 import path from 'path';
+
+const log = logger.child({ module: 'video-hls-worker' });
 
 export interface IVideoHLSWorker {
   createWorker(connection: ConnectionOptions): Worker<IVideoHLSJobData, IVideoHLSJobResult>;
@@ -66,11 +69,11 @@ export class VideoHLSWorker implements IVideoHLSWorker {
     );
 
     worker.on('progress', (job, progress) => {
-      console.log(`[VideoHLSWorker] Job ${job.id} progress: ${progress}%`);
+      log.debug({ jobId: job.id, progress }, 'job progress');
     });
 
     worker.on('completed', (job) => {
-      console.log('\x1b[32m%s\x1b[0m', `[VideoHLSWorker] Job ${job.id} (${job.data.idName}) completed`);
+      log.info({ jobId: job.id, idName: job.data.idName }, 'job completed');
     });
 
     worker.on('failed', async (job, err) => {
@@ -79,7 +82,7 @@ export class VideoHLSWorker implements IVideoHLSWorker {
       const attemptsMade = get(job, 'attemptsMade', 0);
       const jobOptsAttempts = get(job, 'opts.attempts', 1);
       const message = get(err, 'message', '');
-      console.error('\x1b[31m%s\x1b[0m', `[VideoHLSWorker] Job ${jobId} failed (attempt ${attemptsMade}): ${message}`);
+      log.error({ jobId, idName, attemptsMade, err }, 'job failed');
       if (job && attemptsMade >= jobOptsAttempts) {
         await this.mediaRepository
           .updateVideoStatus({ name: idName, status: EEncodingVideoStatus.FAILED, message: message })
@@ -88,7 +91,7 @@ export class VideoHLSWorker implements IVideoHLSWorker {
     });
 
     worker.on('error', (err) => {
-      console.error('\x1b[31m%s\x1b[0m', `[VideoHLSWorker] ${err.message}`);
+      log.error({ err }, 'worker error');
     });
 
     return worker;

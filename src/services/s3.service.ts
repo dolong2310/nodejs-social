@@ -1,4 +1,5 @@
 import { envConfig } from '@/config';
+import { logger } from '@/logger';
 import { NotFoundError } from '@/responses/error.response';
 import { CompleteMultipartUploadCommandOutput, GetObjectCommandOutput, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -6,6 +7,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Response } from 'express';
 import { readFileSync } from 'fs';
 import mime from 'mime-types';
+
+const log = logger.child({ module: 's3' });
 
 export interface IS3Service {
   uploadFile(payload: {
@@ -69,7 +72,7 @@ class S3Service implements IS3Service {
 
       return await parallelUploads3.done();
     } catch (error) {
-      console.log('error upload file to S3 service: ', error);
+      log.error({ err: error, filename }, 'upload to s3 failed');
       throw error;
     }
   }
@@ -94,7 +97,7 @@ class S3Service implements IS3Service {
       (s3Object.Body as any).pipe(res);
 
       return s3Object;
-    } catch (error) {
+    } catch {
       throw new NotFoundError();
     }
   }

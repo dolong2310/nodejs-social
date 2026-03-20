@@ -1,3 +1,4 @@
+import { logger } from '@/logger';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFollower } from '@/models/schemas/follower.schema';
@@ -7,6 +8,8 @@ import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
 import { Collection, Db, MongoClient } from 'mongodb';
+
+const log = logger.child({ module: 'mongodb' });
 
 export interface IDatabaseService {
   connect(): Promise<void>;
@@ -31,9 +34,9 @@ class DatabaseService implements IDatabaseService {
   async connect() {
     try {
       await this.db.command({ ping: 1 });
-      console.log('\x1b[32m%s\x1b[0m', 'Successfully connected to database');
+      log.info('connected to database');
     } catch (error) {
-      console.error('\x1b[31m%s\x1b[0m', 'Error connecting to database:', error);
+      log.error({ err: error }, 'error connecting to database');
       await this.close(); // Ensures that the client will close when you error
       throw error;
     }

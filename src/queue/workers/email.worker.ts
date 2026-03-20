@@ -1,7 +1,10 @@
+import { logger } from '@/logger';
 import { IEmailJobResult, QUEUE_NAMES } from '@/queue/types';
 import EmailService from '@/services/email.service';
 import { IEmailPayload } from '@/types/mail.type';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
+
+const log = logger.child({ module: 'email-worker' });
 
 export interface IEmailWorker {
   createWorker(connection: ConnectionOptions): Worker<IEmailPayload, IEmailJobResult>;
@@ -24,18 +27,15 @@ export class EmailWorker implements IEmailWorker {
     });
 
     worker.on('completed', (job) => {
-      console.log('\x1b[32m%s\x1b[0m', `[EmailWorker] Job ${job.id} completed`);
+      log.info({ jobId: job.id }, 'job completed');
     });
 
     worker.on('failed', (job, err) => {
-      console.error(
-        '\x1b[31m%s\x1b[0m',
-        `[EmailWorker] Job ${job?.id} failed (attempt ${job?.attemptsMade}): ${err.message}`
-      );
+      log.error({ err, jobId: job?.id, attemptsMade: job?.attemptsMade }, 'job failed');
     });
 
     worker.on('error', (err) => {
-      console.error('\x1b[31m%s\x1b[0m', `[EmailWorker] ${err.message}`);
+      log.error({ err }, 'worker error');
     });
 
     return worker;

@@ -1,6 +1,9 @@
-import { QUEUE_NAMES, IVideoHLSJobResult } from '@/queue/types';
+import { logger } from '@/logger';
+import { IVideoHLSJobResult, QUEUE_NAMES } from '@/queue/types';
 import { IVideoHLSJobData } from '@/types/media.type';
 import { Queue, type ConnectionOptions } from 'bullmq';
+
+const log = logger.child({ module: 'video-hls-queue' });
 
 export interface IVideoHLSJobQueue {
   add(data: IVideoHLSJobData): Promise<void>;
@@ -23,7 +26,7 @@ export class VideoHLSJobQueue implements IVideoHLSJobQueue {
     });
 
     this.queue.on('error', (err) => {
-      console.error('\x1b[31m%s\x1b[0m', `[VideoHLSQueue] ${err.message}`);
+      log.error({ err }, 'video hls queue error');
     });
   }
 

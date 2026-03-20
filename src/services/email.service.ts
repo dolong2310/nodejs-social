@@ -1,8 +1,11 @@
 import { envConfig } from '@/config';
+import { logger } from '@/logger';
 import { EEmailTemplate, IEmailPayload } from '@/types/mail.type';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import fs from 'fs';
 import path from 'path';
+
+const log = logger.child({ module: 'email' });
 
 export interface IEmailService {
   sendEmail(payload: IEmailPayload): Promise<SendEmailCommandOutput>;
@@ -100,7 +103,7 @@ class EmailService {
       const sendEmailCommandOutput = await this.sesClient.send(sendEmailCommand);
       return sendEmailCommandOutput;
     } catch (error) {
-      console.error('Failed to send email: ', error);
+      log.error({ err: error }, 'failed to send email');
       throw error;
     }
   }

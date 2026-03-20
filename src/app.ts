@@ -3,6 +3,7 @@ import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { Container } from '@/container';
 import { DatabaseInstance } from '@/database/mongodb';
 import { RedisInstance } from '@/database/redis';
+import { httpLogger, logger } from '@/logger';
 import { errorHandler } from '@/middlewares/error.middleware';
 import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
@@ -62,6 +63,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
 function createExpressApp(): Express {
   const app = express();
 
+  app.use(httpLogger);
   app.use(helmet());
   app.use(express.json());
   app.use(cookieParser());
@@ -106,14 +108,14 @@ function setupSwagger(): Router {
 
 function setupGracefulShutdown(httpServer: HttpServer): void {
   const shutdown = async (signal: string) => {
-    console.log(`\n[${signal}] Shutting down gracefully...`);
+    logger.info({ signal }, 'shutting down gracefully');
     httpServer.close(async () => {
       await Promise.allSettled([
         DatabaseInstance.get().close(),
         RedisInstance.get().disconnect(),
         QueueService.close()
       ]);
-      console.log('All connections closed.');
+      logger.info('all connections closed');
       process.exit(0);
     });
   };

@@ -1,7 +1,6 @@
+import { envConfig, isDevelopment, isProduction } from '@/config/envConfig';
 import { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
-
-import { envConfig, isProduction } from './envConfig';
 
 // General configs
 export const config = {
@@ -36,7 +35,8 @@ export const config = {
   },
 
   logs: {
-    level: process.env.LOG_LEVEL || 'silly'
+    /** Pino levels: fatal, error, warn, info, debug, trace, silent */
+    level: envConfig.LOG_LEVEL || (isDevelopment ? 'debug' : 'info')
   },
 
   api: {
