@@ -1,12 +1,10 @@
 import { envConfig } from '@/config';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { DatabaseInstance } from '@/database';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { UserRepository } from '@/repositories/user.repository';
 import { AuthFailureError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import TokenService, { ITokenService } from '@/services/token.service';
-import UsersService, { IUsersService } from '@/services/users.service';
+import { IUsersService } from '@/services/users.service';
 import { TokenPayload } from '@/types/token.type';
 import { Server as HttpServer } from 'http';
 import { ExtendedError, Server, Socket } from 'socket.io';
@@ -18,10 +16,12 @@ export interface ISocketService {
 class SocketService implements ISocketService {
   private io: Server;
   private readonly tokenService: ITokenService;
-  private readonly usersService: IUsersService;
   private users: Map<string, string> = new Map();
 
-  constructor(httpServer: HttpServer) {
+  constructor(
+    httpServer: HttpServer,
+    private readonly usersService: IUsersService
+  ) {
     this.io = new Server(httpServer, {
       cors: {
         origin: envConfig.FRONTEND_URL,
@@ -30,7 +30,6 @@ class SocketService implements ISocketService {
     });
 
     this.tokenService = new TokenService();
-    this.usersService = new UsersService(new UserRepository(DatabaseInstance.get()));
   }
 
   public run() {

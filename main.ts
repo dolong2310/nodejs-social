@@ -14,6 +14,7 @@ async function bootstrap() {
       uri: config.database.uri,
       databaseName: config.database.name
     },
+    redis: config.redis,
     cors: {
       origin: isProduction ? envConfig.FRONTEND_URL : '*',
       credentials: true

@@ -1,6 +1,7 @@
 import { config } from '@/config';
 import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
-import { DatabaseInstance } from '@/database';
+import { Container } from '@/container';
+import { DatabaseInstance, RedisInstance } from '@/database';
 import { errorHandler } from '@/middlewares/error.middleware';
 import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
@@ -26,8 +27,8 @@ import swaggerUi from 'swagger-ui-express';
 
 export async function createApp(httpServer: HttpServer, appConfig: AppConfig): Promise<Express> {
   const databaseService = DatabaseInstance.init(appConfig.database);
-  await databaseService.connect();
-  await databaseService.initializeIndexes();
+  const redisService = RedisInstance.init(appConfig.redis);
+  await Promise.all([databaseService.connect(), databaseService.initializeIndexes(), redisService.connect()]);
 
   const app = createExpressApp();
   httpServer.on('request', app);
@@ -40,7 +41,9 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
     app.use(rateLimit(appConfig.rateLimitOptions));
   }
 
-  const socket = new SocketService(httpServer);
+  // Bootstrap DI container once so SocketService shares the same service instances
+  const container = Container.getInstance(databaseService, redisService);
+  const socket = new SocketService(httpServer, container.getUsersService());
   socket.run();
 
   app.use(config.api.prefix, setupRoutes());
@@ -48,12 +51,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
 
   app.use(errorHandler);
 
-  // setTimeout(() => {
-  //   console.log('fake data is running...');
-  //   import('@/utils/fake-data').then(({ default: fakeData }) => {
-  //     fakeData();
-  //   });
-  // }, 100);
+  setupGracefulShutdown(httpServer);
 
   return app;
 }
@@ -101,4 +99,18 @@ function setupSwagger(): Router {
   );
 
   return router;
+}
+
+function setupGracefulShutdown(httpServer: HttpServer): void {
+  const shutdown = async (signal: string) => {
+    console.log(`\n[${signal}] Shutting down gracefully...`);
+    httpServer.close(async () => {
+      await Promise.allSettled([DatabaseInstance.get().close(), RedisInstance.get().disconnect()]);
+      console.log('All connections closed.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }

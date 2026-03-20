@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 async function main() {
-  const client = new MongoClient(process.env.MONGODB_URI as string);
+  const client = new MongoClient(process.env.DATABASE_URI as string);
   await client.connect();
   const db = client.db('test');
   const users = db.collection('users');

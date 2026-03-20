@@ -1,5 +1,7 @@
 import { envConfig } from '@/config';
+import { CACHE_KEYS } from '@/constants/cache.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { IRedisService } from '@/database/redis.service';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import {
@@ -55,7 +57,8 @@ class AuthService extends BaseService implements IAuthService {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly tokenService: ITokenService,
-    private readonly emailService: IEmailService
+    private readonly emailService: IEmailService,
+    private readonly redisService: IRedisService
   ) {
     super();
   }
@@ -189,6 +192,7 @@ class AuthService extends BaseService implements IAuthService {
       emailVerificationToken: '',
       verificationStatus: EUserVerificationStatus.VERIFIED
     });
+    await this.redisService.del(CACHE_KEYS.user(userId));
     return { message: 'Email verified successfully' };
   }
 
@@ -275,10 +279,9 @@ class AuthService extends BaseService implements IAuthService {
       forgotPasswordToken: '',
       password: hashedPassword
     });
+    await this.redisService.del(CACHE_KEYS.user(userId));
 
-    return {
-      message: 'Password reset successfully'
-    };
+    return { message: 'Password reset successfully' };
   }
 
   async changePassword({
@@ -289,9 +292,7 @@ class AuthService extends BaseService implements IAuthService {
 
     await this.userRepository.findOneAndUpdate(
       userId,
-      {
-        password: hashedPassword
-      },
+      { password: hashedPassword },
       {
         returnDocument: 'after',
         projection: {
@@ -301,10 +302,9 @@ class AuthService extends BaseService implements IAuthService {
         }
       }
     );
+    await this.redisService.del(CACHE_KEYS.user(userId));
 
-    return {
-      message: 'Password changed successfully'
-    };
+    return { message: 'Password changed successfully' };
   }
 }
 

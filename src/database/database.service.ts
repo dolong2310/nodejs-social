@@ -8,7 +8,17 @@ import { IUser } from '@/models/schemas/user.schema';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
 import { Collection, Db, MongoClient } from 'mongodb';
 
-class DatabaseService {
+export interface IDatabaseService {
+  connect(): Promise<void>;
+  close(): Promise<void>;
+  createUsersIndex(): Promise<void>;
+  createRefreshTokensIndex(): Promise<void>;
+  createVideoStatusesIndex(): Promise<void>;
+  createFollowersIndex(): Promise<void>;
+  createPostsIndex(): Promise<void>;
+}
+
+class DatabaseService implements IDatabaseService {
   private client: MongoClient;
   private db: Db;
   private isClosed = false;
@@ -21,9 +31,9 @@ class DatabaseService {
   async connect() {
     try {
       await this.db.command({ ping: 1 });
-      console.log('Successfully connected to database');
+      console.log('\x1b[32m%s\x1b[0m', 'Successfully connected to database');
     } catch (error) {
-      console.error('Error connecting to database:', error);
+      console.error('\x1b[31m%s\x1b[0m', 'Error connecting to database:', error);
       await this.close(); // Ensures that the client will close when you error
       throw error;
     }

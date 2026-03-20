@@ -1,6 +1,6 @@
 import { envConfig } from '@/config';
 import DatabaseService from '@/database/database.service';
-import { DatabaseInstance } from '@/database/index.js';
+import { DatabaseInstance } from '@/database/database.instance.js';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { ETokenType } from '@/enums/token.enum';
@@ -26,7 +26,7 @@ const MENTION_PER_POST = 10;
 const MEDIA_PER_POST = 10;
 
 const db = new DatabaseService({
-  uri: envConfig.MONGODB_URI,
+  uri: envConfig.DATABASE_URI,
   databaseName: envConfig.DATABASE_NAME
 });
 

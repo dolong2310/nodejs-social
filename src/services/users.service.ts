@@ -1,3 +1,5 @@
+import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
+import { IRedisService } from '@/database/redis.service';
 import { IUpdateMeRequestBody } from '@/models/requests/user.request';
 import { IUserResponse } from '@/models/responses/user.response';
 import { IUser } from '@/models/schemas/user.schema';
@@ -11,10 +13,14 @@ export interface IUsersService {
   getMe(userId: string): Promise<IUserResponse | null>;
   updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUserResponse | null>;
   getUserProfile(username: string): Promise<IUserResponse | null>;
+  invalidateUserCache(userId: string): Promise<void>;
 }
 
 class UsersService extends BaseService implements IUsersService {
-  constructor(private readonly userRepository: IUserRepository) {
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly redisService: IRedisService
+  ) {
     super();
   }
 
@@ -23,7 +29,11 @@ class UsersService extends BaseService implements IUsersService {
   }
 
   findUserById(userId: string): Promise<IUser | null> {
-    return this.userRepository.findById(userId);
+    return this.redisService.getOrSet(
+      CACHE_KEYS.user(userId),
+      () => this.userRepository.findById(userId),
+      CACHE_TTL.USER
+    );
   }
 
   findUserByUsername(username: string): Promise<IUser | null> {
@@ -40,8 +50,8 @@ class UsersService extends BaseService implements IUsersService {
     });
   }
 
-  updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUserResponse | null> {
-    return this.userRepository.findOneAndUpdate<IUserResponse>(userId, body, {
+  async updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUserResponse | null> {
+    const updated = await this.userRepository.findOneAndUpdate<IUserResponse>(userId, body, {
       returnDocument: 'after',
       projection: {
         password: 0,
@@ -49,6 +59,8 @@ class UsersService extends BaseService implements IUsersService {
         forgotPasswordToken: 0
       }
     });
+    await this.invalidateUserCache(userId);
+    return updated;
   }
 
   getUserProfile(username: string): Promise<IUserResponse | null> {
@@ -59,6 +71,10 @@ class UsersService extends BaseService implements IUsersService {
         forgotPasswordToken: 0
       }
     });
+  }
+
+  async invalidateUserCache(userId: string): Promise<void> {
+    await this.redisService.del(CACHE_KEYS.user(userId));
   }
 }
 

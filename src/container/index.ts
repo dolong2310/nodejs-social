@@ -3,16 +3,9 @@
  * It manages the instantiation and retrieval of repositories, services, and controllers.
  */
 
-import AuthController, { IAuthController } from '@/controllers/auth.controller';
-import BookmarksController, { IBookmarksController } from '@/controllers/bookmarks.controller';
-import ConversationsController, { IConversationsController } from '@/controllers/conversations.controller';
-import FollowersController, { IFollowersController } from '@/controllers/followers.controller';
-import MediaController, { IMediaController } from '@/controllers/media.controller';
-import OAuthController, { IOAuthController } from '@/controllers/oauth.controller';
-import PostsController, { IPostsController } from '@/controllers/posts.controller';
-import SearchController, { ISearchController } from '@/controllers/search.controller';
-import UsersController, { IUsersController } from '@/controllers/users.controller';
 import DatabaseService from '@/database/database.service';
+import RedisService from '@/database/redis.service';
+// Repositories
 import { BookmarkRepository, IBookmarkRepository } from '@/repositories/bookmark.repository';
 import { ConversationRepository, IConversationRepository } from '@/repositories/conversation.repository';
 import { FollowerRepository, IFollowerRepository } from '@/repositories/follower.repository';
@@ -20,6 +13,7 @@ import { IMediaRepository, MediaRepository } from '@/repositories/media.reposito
 import { IPostRepository, PostRepository } from '@/repositories/post.repository';
 import { ISearchRepository, SearchRepository } from '@/repositories/search.repository';
 import { IUserRepository, UserRepository } from '@/repositories/user.repository';
+// Services
 import AuthService, { IAuthService } from '@/services/auth.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
 import ConversationsService, { IConversationsService } from '@/services/conversations.service';
@@ -33,6 +27,17 @@ import S3Service, { IS3Service } from '@/services/s3.service';
 import SearchService, { ISearchService } from '@/services/search.service';
 import TokenService, { ITokenService } from '@/services/token.service';
 import UsersService, { IUsersService } from '@/services/users.service';
+// Controllers
+import AuthController, { IAuthController } from '@/controllers/auth.controller';
+import BookmarksController, { IBookmarksController } from '@/controllers/bookmarks.controller';
+import ConversationsController, { IConversationsController } from '@/controllers/conversations.controller';
+import FollowersController, { IFollowersController } from '@/controllers/followers.controller';
+import MediaController, { IMediaController } from '@/controllers/media.controller';
+import OAuthController, { IOAuthController } from '@/controllers/oauth.controller';
+import PostsController, { IPostsController } from '@/controllers/posts.controller';
+import SearchController, { ISearchController } from '@/controllers/search.controller';
+import UsersController, { IUsersController } from '@/controllers/users.controller';
+// Validations
 import AuthValidation, { IAuthValidation } from '@/validations/auth.validation';
 import PostsValidation, { IPostsValidation } from '@/validations/posts.validation';
 import SearchValidation, { ISearchValidation } from '@/validations/search.validation';
@@ -80,6 +85,7 @@ export interface IContainer {
 export class Container implements IContainer {
   private static instance: Container | null = null;
   private db: DatabaseService;
+  private redis: RedisService;
 
   // Repositories
   private userRepository!: IUserRepository;
@@ -124,21 +130,18 @@ export class Container implements IContainer {
   private postsValidation!: IPostsValidation;
   private searchValidation!: ISearchValidation;
 
-  private constructor(db: DatabaseService) {
+  private constructor(db: DatabaseService, redis: RedisService) {
     this.db = db;
+    this.redis = redis;
     this.initializeRepositories();
     this.initializeServices();
     this.initializeControllers();
     this.initializeValidations();
   }
 
-  // Singleton pattern to ensure only one instance of Container is created
-  // This is useful for managing shared resources like MongoDBClient
-  // and to avoid multiple instances of repositories, services, and controllers
-  // This method returns the existing instance or creates a new one if it doesn't exist
-  public static getInstance(db: DatabaseService): Container {
+  public static getInstance(db: DatabaseService, redis: RedisService): Container {
     if (!Container.instance) {
-      Container.instance = new Container(db);
+      Container.instance = new Container(db, redis);
     }
     return Container.instance;
   }
@@ -169,11 +172,11 @@ export class Container implements IContainer {
     this.queueService = new QueueService({ onStartWhenEnqueue: true });
 
     // Services
-    this.authService = new AuthService(this.userRepository, this.tokenService, this.emailService);
-    this.usersService = new UsersService(this.userRepository);
+    this.authService = new AuthService(this.userRepository, this.tokenService, this.emailService, this.redis);
+    this.usersService = new UsersService(this.userRepository, this.redis);
     this.bookmarksService = new BookmarksService(this.bookmarkRepository);
     this.conversationsService = new ConversationsService(this.conversationRepository);
-    this.followersService = new FollowersService(this.followerRepository);
+    this.followersService = new FollowersService(this.followerRepository, this.redis);
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.queueService);
     this.oauthService = new OAuthService(this.authService, this.usersService);
     this.postsService = new PostsService(this.postRepository);
