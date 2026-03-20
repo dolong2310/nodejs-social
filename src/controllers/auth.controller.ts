@@ -3,26 +3,26 @@ import { BaseController } from '@/controllers/base.controller';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import {
-  IChangePasswordRequestBody,
-  IForgotPasswordRequestBody,
-  ILoginRequestBody,
-  ILogoutRequestBody,
-  IRefreshTokenRequestBody,
-  IRegisterRequestBody,
-  IResetPasswordRequestBody,
-  IVerifyEmailRequestBody
-} from '@/models/requests/auth.request';
+  ChangePasswordRequestDTO,
+  ForgotPasswordRequestDTO,
+  LoginRequestDTO,
+  LogoutRequestDTO,
+  RefreshTokenRequestDTO,
+  RegisterRequestDTO,
+  ResetPasswordRequestDTO,
+  VerifyEmailRequestDTO
+} from '@/dtos/requests/auth.request.dto';
 import {
-  IChangePasswordResponse,
-  IForgotPasswordResponse,
-  ILoginResponse,
-  ILogoutResponse,
-  IRefreshTokenResponse,
-  IRegisterResponse,
-  IResendVerifyEmailResponse,
-  IResetPasswordResponse,
-  IVerifyEmailResponse
-} from '@/models/responses/auth.response';
+  ChangePasswordResponseDTO,
+  ForgotPasswordResponseDTO,
+  LoginResponseDTO,
+  LogoutResponseDTO,
+  RefreshTokenResponseDTO,
+  RegisterResponseDTO,
+  ResendVerifyEmailResponseDTO,
+  ResetPasswordResponseDTO,
+  VerifyEmailResponseDTO
+} from '@/dtos/responses/auth.response.dto';
 import { AuthFailureError, BadRequestError, NotFoundError } from '@/responses/error.response';
 import { Created } from '@/responses/success.response';
 import { IAuthService } from '@/services/auth.service';
@@ -32,15 +32,15 @@ import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IAuthController {
-  register(req: Request<ParamsDictionary, object, IRegisterRequestBody>, res: Response): Promise<void>;
-  login(req: Request<ParamsDictionary, object, ILoginRequestBody>, res: Response): Promise<void>;
-  logout(req: Request<ParamsDictionary, object, ILogoutRequestBody>, res: Response): Promise<void>;
-  refreshToken(req: Request<ParamsDictionary, object, IRefreshTokenRequestBody>, res: Response): Promise<void>;
-  verifyEmail(req: Request<ParamsDictionary, object, IVerifyEmailRequestBody>, res: Response): Promise<void>;
+  register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response): Promise<void>;
+  login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response): Promise<void>;
+  logout(req: Request<ParamsDictionary, object, LogoutRequestDTO>, res: Response): Promise<void>;
+  refreshToken(req: Request<ParamsDictionary, object, RefreshTokenRequestDTO>, res: Response): Promise<void>;
+  verifyEmail(req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response): Promise<void>;
   resendVerifyEmail(req: Request, res: Response): Promise<void>;
-  forgotPassword(req: Request<ParamsDictionary, object, IForgotPasswordRequestBody>, res: Response): Promise<void>;
-  resetPassword(req: Request<ParamsDictionary, object, IResetPasswordRequestBody>, res: Response): Promise<void>;
-  changePassword(req: Request<ParamsDictionary, object, IChangePasswordRequestBody>, res: Response): Promise<void>;
+  forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response): Promise<void>;
+  resetPassword(req: Request<ParamsDictionary, object, ResetPasswordRequestDTO>, res: Response): Promise<void>;
+  changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response): Promise<void>;
 }
 
 class AuthController extends BaseController implements IAuthController {
@@ -51,18 +51,18 @@ class AuthController extends BaseController implements IAuthController {
     super();
   }
 
-  register = async (req: Request<ParamsDictionary, object, IRegisterRequestBody>, res: Response) => {
-    const { name, email, password, dateOfBirth } = req.body;
+  register = async (req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response) => {
+    const dto = new RegisterRequestDTO(req.body);
 
-    const existingUser = await this.usersService.findUserByEmail(email);
+    const existingUser = await this.usersService.findUserByEmail(dto.email);
 
     if (existingUser) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
     }
 
-    const user = await this.authService.register({ name, email, password, dateOfBirth });
+    const user = await this.authService.register(dto);
 
-    this.sendResponse<IRegisterResponse>({
+    this.sendResponse<RegisterResponseDTO>({
       res,
       instance: Created,
       data: user,
@@ -70,67 +70,67 @@ class AuthController extends BaseController implements IAuthController {
     });
   };
 
-  login = async (req: Request<ParamsDictionary, object, ILoginRequestBody>, res: Response) => {
-    const { email, password } = req.body;
+  login = async (req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response) => {
+    const dto = new LoginRequestDTO(req.body);
 
-    const existingUser = await this.usersService.findUserByEmail(email);
+    const existingUser = await this.usersService.findUserByEmail(dto.email);
 
     if (!existingUser) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
-    const { accessToken, refreshToken } = await this.authService.login({ email, password }, existingUser);
+    const tokens = await this.authService.login(dto, existingUser);
 
-    this.sendResponse<ILoginResponse>({
+    this.sendResponse<LoginResponseDTO>({
       res,
-      data: { accessToken, refreshToken },
+      data: tokens,
       message: 'Login successfully'
     });
   };
 
-  logout = async (req: Request<ParamsDictionary, object, ILogoutRequestBody>, res: Response) => {
-    const { refreshToken } = req.body;
+  logout = async (req: Request<ParamsDictionary, object, LogoutRequestDTO>, res: Response) => {
+    const dto = new LogoutRequestDTO(req.body);
     const { type } = req.tokenPayload as TokenPayload;
 
-    const findRefreshToken = await this.authService.findRefreshTokenByToken(refreshToken);
+    const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
 
     if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
       throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    const { message } = await this.authService.logout({ refreshToken });
+    const { message } = await this.authService.logout(dto);
 
-    this.sendResponse<ILogoutResponse>({
+    this.sendResponse<LogoutResponseDTO>({
       res,
       message
     });
   };
 
-  refreshToken = async (req: Request<ParamsDictionary, object, IRefreshTokenRequestBody>, res: Response) => {
-    const { refreshToken: refreshTokenBody } = req.body;
+  refreshToken = async (req: Request<ParamsDictionary, object, RefreshTokenRequestDTO>, res: Response) => {
+    const dto = new RefreshTokenRequestDTO(req.body);
     const { userId, exp, type } = req.tokenPayload as TokenPayload;
 
-    const findRefreshToken = await this.authService.findRefreshTokenByToken(refreshTokenBody);
+    const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
 
     if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
       throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    const { accessToken, refreshToken } = await this.authService.refreshToken({
+    const tokens = await this.authService.refreshToken({
+      refreshToken: dto.refreshToken,
       userId,
-      refreshToken: refreshTokenBody,
       exp
     });
 
-    this.sendResponse<IRefreshTokenResponse>({
+    this.sendResponse<RefreshTokenResponseDTO>({
       res,
-      data: { accessToken, refreshToken },
+      data: tokens,
       message: 'Refresh token successfully'
     });
   };
 
-  verifyEmail = async (req: Request<ParamsDictionary, object, IVerifyEmailRequestBody>, res: Response) => {
-    const { token } = req.body;
+  verifyEmail = async (req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response) => {
+    const dto = new VerifyEmailRequestDTO(req.body);
     const userId = this.getUserId(req);
 
     const user = await this.usersService.findUserById(userId);
@@ -143,13 +143,13 @@ class AuthController extends BaseController implements IAuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
     }
 
-    if (user.emailVerificationToken !== token) {
+    if (user.emailVerificationToken !== dto.token) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
     const { message } = await this.authService.verifyEmail(userId);
 
-    this.sendResponse<IVerifyEmailResponse>({
+    this.sendResponse<VerifyEmailResponseDTO>({
       res,
       message
     });
@@ -170,35 +170,35 @@ class AuthController extends BaseController implements IAuthController {
 
     const { message } = await this.authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
 
-    this.sendResponse<IResendVerifyEmailResponse>({
+    this.sendResponse<ResendVerifyEmailResponseDTO>({
       res,
       message
     });
   };
 
-  forgotPassword = async (req: Request<ParamsDictionary, object, IForgotPasswordRequestBody>, res: Response) => {
-    const { email } = req.body;
+  forgotPassword = async (req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response) => {
+    const dto = new ForgotPasswordRequestDTO(req.body);
 
-    const existingUser = await this.usersService.findUserByEmail(email);
+    const existingUser = await this.usersService.findUserByEmail(dto.email);
 
     if (!existingUser) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
     const { message } = await this.authService.forgotPassword({
-      userId: existingUser._id!.toString(),
+      userId: existingUser._id.toString(),
       name: existingUser.name,
-      email: existingUser.email
+      email: dto.email
     });
 
-    this.sendResponse<IForgotPasswordResponse>({
+    this.sendResponse<ForgotPasswordResponseDTO>({
       res,
       message
     });
   };
 
-  resetPassword = async (req: Request<ParamsDictionary, object, IResetPasswordRequestBody>, res: Response) => {
-    const { token, password, confirmPassword } = req.body;
+  resetPassword = async (req: Request<ParamsDictionary, object, ResetPasswordRequestDTO>, res: Response) => {
+    const dto = new ResetPasswordRequestDTO(req.body);
     const userId = this.getUserId(req);
 
     const user = await this.usersService.findUserById(userId);
@@ -207,25 +207,25 @@ class AuthController extends BaseController implements IAuthController {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    if (user.forgotPasswordToken !== token) {
+    if (user.forgotPasswordToken !== dto.token) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    const { message } = await this.authService.resetPassword({ userId, token, password, confirmPassword });
+    const { message } = await this.authService.resetPassword({ ...dto, userId });
 
-    this.sendResponse<IResetPasswordResponse>({
+    this.sendResponse<ResetPasswordResponseDTO>({
       res,
       message
     });
   };
 
-  changePassword = async (req: Request<ParamsDictionary, object, IChangePasswordRequestBody>, res: Response) => {
+  changePassword = async (req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response) => {
+    const dto = new ChangePasswordRequestDTO(req.body);
     const userId = this.getUserId(req);
-    const { password, confirmPassword } = req.body;
 
-    const { message } = await this.authService.changePassword({ userId, password, confirmPassword });
+    const { message } = await this.authService.changePassword({ ...dto, userId });
 
-    this.sendResponse<IChangePasswordResponse>({
+    this.sendResponse<ChangePasswordResponseDTO>({
       res,
       message
     });

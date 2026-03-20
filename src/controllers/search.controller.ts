@@ -1,14 +1,14 @@
 import { BaseController } from '@/controllers/base.controller';
+import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
+import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { ESearchType } from '@/enums/search.enum';
-import { ISearchRequestQuery } from '@/models/requests/search.request';
-import { IPostDetailResponse } from '@/models/responses/post.response';
 import { IUser } from '@/models/schemas/user.schema';
 import { ISearchService } from '@/services/search.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ISearchController {
-  search(req: Request<ParamsDictionary, object, object, ISearchRequestQuery>, res: Response): Promise<void>;
+  search(req: Request<ParamsDictionary, object, object, SearchQueryDTO>, res: Response): Promise<void>;
 }
 
 export class SearchController extends BaseController implements ISearchController {
@@ -16,7 +16,7 @@ export class SearchController extends BaseController implements ISearchControlle
     super();
   }
 
-  search = async (req: Request<ParamsDictionary, object, object, ISearchRequestQuery>, res: Response) => {
+  search = async (req: Request<ParamsDictionary, object, object, SearchQueryDTO>, res: Response) => {
     const { query = '', type, people_follow, page = '1', limit = '10' } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
@@ -38,7 +38,7 @@ export class SearchController extends BaseController implements ISearchControlle
       })
     ][Number(type === ESearchType.USER)];
 
-    this.sendPaginatedResponse<IPostDetailResponse[] | IUser[]>({
+    this.sendPaginatedResponse<PostDetailResponseDTO[] | IUser[]>({
       res,
       data: results,
       pagination: {

@@ -4,19 +4,19 @@
  * It provides methods to interact with the user data in the database.
  */
 
+import { RegisterRequestDTO } from '@/dtos/requests/auth.request.dto';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { IRegisterRequestBody } from '@/models/requests/auth.request';
 import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import UserSchema, { IUser } from '@/models/schemas/user.schema';
 import { BaseRepository } from '@/repositories/base.repository';
-import { FindOneAndUpdateOptions, FindOneOptions, ObjectId, UpdateResult, WithId } from 'mongodb';
+import { FindOneAndUpdateOptions, FindOneOptions, ObjectId, UpdateResult } from 'mongodb';
 
 export interface IUserRepository {
   findRefreshToken(token: string): Promise<IRefreshToken | null>;
   createRefreshToken(token: string, userId: string): Promise<IRefreshToken>;
   deleteRefreshToken(token: string): Promise<boolean>;
   create(
-    data: IRegisterRequestBody & {
+    data: RegisterRequestDTO & {
       userId: string;
       emailVerificationToken: string;
       verificationStatus: EUserVerificationStatus;
@@ -24,7 +24,7 @@ export interface IUserRepository {
     }
   ): Promise<IUser>;
   update(id: string, data: Partial<IUser>): Promise<UpdateResult<IUser>>;
-  findOneAndUpdate<T = IUser>(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<T | null>;
+  findOneAndUpdate(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<IUser | null>;
   findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null>;
   findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null>;
   findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null>;
@@ -50,7 +50,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
   }
 
   async create(
-    data: IRegisterRequestBody & {
+    data: RegisterRequestDTO & {
       userId: string;
       emailVerificationToken: string;
       verificationStatus: EUserVerificationStatus;
@@ -85,11 +85,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return result;
   }
 
-  async findOneAndUpdate<T = WithId<IUser>>(
-    id: string,
-    data: Partial<IUser>,
-    options?: FindOneAndUpdateOptions
-  ): Promise<T | null> {
+  async findOneAndUpdate(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<IUser | null> {
     const result = await this.db.users.findOneAndUpdate(
       { _id: new ObjectId(id) },
       {
@@ -100,7 +96,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
       },
       options ?? {}
     );
-    return result as T;
+    return result;
   }
 
   findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null> {

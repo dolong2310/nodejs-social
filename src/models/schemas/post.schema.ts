@@ -3,7 +3,7 @@ import { IMedia } from '@/types/media.type';
 import { ObjectId } from 'mongodb';
 
 export interface IPost {
-  _id?: ObjectId;
+  _id: ObjectId;
   userId: ObjectId;
   type: EPostType;
   audience: EPostAudience;
@@ -19,7 +19,7 @@ export interface IPost {
 }
 
 class PostSchema {
-  public _id?: ObjectId;
+  public _id: ObjectId;
   public userId: ObjectId;
   public type: EPostType;
   public audience: EPostAudience;
@@ -47,7 +47,7 @@ class PostSchema {
     userViews,
     createdAt,
     updatedAt
-  }: IPost) {
+  }: Omit<IPost, '_id'> & { _id?: ObjectId }) {
     const date = new Date();
 
     this._id = _id ?? new ObjectId();

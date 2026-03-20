@@ -2,56 +2,58 @@ import { envConfig } from '@/config';
 import { CACHE_KEYS } from '@/constants/cache.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { IRedisService } from '@/database/redis/redis.service';
+import {
+  ChangePasswordRequestDTO,
+  ForgotPasswordRequestDTO,
+  LoginRequestDTO,
+  LogoutRequestDTO,
+  RefreshTokenRequestDTO,
+  RegisterRequestDTO,
+  ResetPasswordRequestDTO
+} from '@/dtos/requests/auth.request.dto';
+import {
+  ChangePasswordResponseDTO,
+  ForgotPasswordResponseDTO,
+  LoginResponseDTO,
+  LogoutResponseDTO,
+  RefreshTokenResponseDTO,
+  RegisterResponseDTO,
+  ResendVerifyEmailResponseDTO,
+  ResetPasswordResponseDTO,
+  VerifyEmailResponseDTO
+} from '@/dtos/responses/auth.response.dto';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import {
-  IChangePasswordRequestBody,
-  IForgotPasswordRequestBody,
-  ILoginRequestBody,
-  ILogoutRequestBody,
-  IRefreshTokenRequestBody,
-  IRegisterRequestBody,
-  IResetPasswordRequestBody
-} from '@/models/requests/auth.request';
-import {
-  IChangePasswordResponse,
-  IForgotPasswordResponse,
-  ILoginResponse,
-  ILogoutResponse,
-  IRefreshTokenResponse,
-  IRegisterResponse,
-  IResendVerifyEmailResponse,
-  IResetPasswordResponse,
-  IVerifyEmailResponse
-} from '@/models/responses/auth.response';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { IEmailJobQueue } from '@/queue/queues/email.queue';
 import { IUserRepository } from '@/repositories/user.repository';
 import { BadRequestError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
-import { EEmailTemplate } from '@/types/mail.type';
 import { ITokenService } from '@/services/token.service';
-import { comparePassword, hashPassword } from '@/utils/helper.util';
-import { omit } from 'lodash-es';
+import { EEmailTemplate } from '@/types/mail.type';
+import { comparePassword, hashPassword } from '@/utils/password.util';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IAuthService {
   findRefreshTokenByToken(token: string): Promise<IRefreshToken | null>;
-  register(body: IRegisterRequestBody, options: { autoLogin: true }): Promise<ILoginResponse>;
-  register(body: IRegisterRequestBody, options?: { autoLogin?: false }): Promise<IRegisterResponse>;
-  register(body: IRegisterRequestBody, options?: { autoLogin?: boolean }): Promise<IRegisterResponse | ILoginResponse>;
-  login(body: ILoginRequestBody, user: IUser): Promise<ILoginResponse>;
-  logout(refreshToken: ILogoutRequestBody): Promise<ILogoutResponse>;
-  refreshToken(payload: IRefreshTokenRequestBody & { userId: string; exp: number }): Promise<IRefreshTokenResponse>;
-  verifyEmail(userId: string): Promise<IVerifyEmailResponse>;
-  resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<IResendVerifyEmailResponse>;
+  register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<LoginResponseDTO>;
+  register(body: RegisterRequestDTO, options?: { autoLogin?: false }): Promise<RegisterResponseDTO>;
+  register(
+    body: RegisterRequestDTO,
+    options?: { autoLogin?: boolean }
+  ): Promise<RegisterResponseDTO | LoginResponseDTO>;
+  login(body: LoginRequestDTO, user: IUser): Promise<LoginResponseDTO>;
+  logout(refreshToken: LogoutRequestDTO): Promise<LogoutResponseDTO>;
+  refreshToken(payload: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<RefreshTokenResponseDTO>;
+  verifyEmail(userId: string): Promise<VerifyEmailResponseDTO>;
+  resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<ResendVerifyEmailResponseDTO>;
   forgotPassword(
-    payload: IForgotPasswordRequestBody & { userId: string; name: string }
-  ): Promise<IForgotPasswordResponse>;
-  resetPassword(payload: IResetPasswordRequestBody & { userId: string }): Promise<IResetPasswordResponse>;
-  changePassword(payload: IChangePasswordRequestBody & { userId: string }): Promise<IChangePasswordResponse>;
+    payload: ForgotPasswordRequestDTO & { userId: string; name: string }
+  ): Promise<ForgotPasswordResponseDTO>;
+  resetPassword(payload: ResetPasswordRequestDTO & { userId: string }): Promise<ResetPasswordResponseDTO>;
+  changePassword(payload: ChangePasswordRequestDTO & { userId: string }): Promise<ChangePasswordResponseDTO>;
 }
 
 class AuthService extends BaseService implements IAuthService {
@@ -68,15 +70,12 @@ class AuthService extends BaseService implements IAuthService {
     return this.userRepository.findRefreshToken(token);
   }
 
-  // Nếu autoLogin là true, trả về accessToken và refreshToken.
-  async register(body: IRegisterRequestBody, options: { autoLogin: true }): Promise<ILoginResponse>;
-  // Nếu autoLogin là false hoặc không truyền options, trả về thông tin user
-  async register(body: IRegisterRequestBody, options?: { autoLogin?: false }): Promise<IRegisterResponse>;
-  // Overload Functions
+  async register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<LoginResponseDTO>;
+  async register(body: RegisterRequestDTO, options?: { autoLogin?: false }): Promise<RegisterResponseDTO>;
   async register(
-    body: IRegisterRequestBody,
+    body: RegisterRequestDTO,
     options?: { autoLogin?: boolean }
-  ): Promise<IRegisterResponse | ILoginResponse> {
+  ): Promise<RegisterResponseDTO | LoginResponseDTO> {
     const { name, email, password, dateOfBirth } = body;
     const { autoLogin = false } = options ?? {};
 
@@ -112,7 +111,7 @@ class AuthService extends BaseService implements IAuthService {
       name,
       email,
       password: hashedPassword,
-      dateOfBirth: dateOfBirth,
+      dateOfBirth,
       username: `user-${uuidv4()}`,
       emailVerificationToken,
       verificationStatus: EUserVerificationStatus.UNVERIFIED
@@ -122,19 +121,17 @@ class AuthService extends BaseService implements IAuthService {
       return this.login({ email, password }, newUser);
     }
 
-    const result = omit(newUser, ['password', 'emailVerificationToken', 'forgotPasswordToken']);
-    return this.replaceObjectIdToString<IRegisterResponse>(result);
+    return new RegisterResponseDTO(newUser);
   }
 
-  async login({ password }: ILoginRequestBody, user: IUser): Promise<ILoginResponse> {
-    const userId = user._id!.toString();
+  async login({ password }: LoginRequestDTO, user: IUser): Promise<LoginResponseDTO> {
+    const userId = user._id.toString();
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
-    // Tạo cặp token JWT
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -146,7 +143,6 @@ class AuthService extends BaseService implements IAuthService {
       })
     ]);
 
-    // Lưu token vào database
     await this.userRepository.createRefreshToken(refreshToken, userId);
 
     return {
@@ -155,7 +151,7 @@ class AuthService extends BaseService implements IAuthService {
     };
   }
 
-  async logout({ refreshToken }: ILogoutRequestBody): Promise<ILogoutResponse> {
+  async logout({ refreshToken }: LogoutRequestDTO): Promise<LogoutResponseDTO> {
     await this.userRepository.deleteRefreshToken(refreshToken);
     return { message: 'Logout successfully' };
   }
@@ -164,7 +160,7 @@ class AuthService extends BaseService implements IAuthService {
     userId,
     refreshToken,
     exp
-  }: IRefreshTokenRequestBody & { userId: string; exp: number }): Promise<IRefreshTokenResponse> {
+  }: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<RefreshTokenResponseDTO> {
     const [newAccessToken, newRefreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -188,7 +184,7 @@ class AuthService extends BaseService implements IAuthService {
     };
   }
 
-  async verifyEmail(userId: string): Promise<IVerifyEmailResponse> {
+  async verifyEmail(userId: string): Promise<VerifyEmailResponseDTO> {
     await this.userRepository.update(userId, {
       emailVerificationToken: '',
       verificationStatus: EUserVerificationStatus.VERIFIED
@@ -205,7 +201,7 @@ class AuthService extends BaseService implements IAuthService {
     userId: string;
     name: string;
     email: string;
-  }): Promise<IResendVerifyEmailResponse> {
+  }): Promise<ResendVerifyEmailResponseDTO> {
     const emailVerificationToken = await this.tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
@@ -237,10 +233,10 @@ class AuthService extends BaseService implements IAuthService {
     userId,
     name,
     email
-  }: IForgotPasswordRequestBody & {
+  }: ForgotPasswordRequestDTO & {
     userId: string;
     name: string;
-  }): Promise<IForgotPasswordResponse> {
+  }): Promise<ForgotPasswordResponseDTO> {
     const forgotPasswordToken = await this.tokenService.signForgotPasswordToken({
       userId,
       type: ETokenType.FORGOT_PASSWORD_TOKEN
@@ -271,7 +267,7 @@ class AuthService extends BaseService implements IAuthService {
   async resetPassword({
     userId,
     password
-  }: IResetPasswordRequestBody & { userId: string }): Promise<IResetPasswordResponse> {
+  }: ResetPasswordRequestDTO & { userId: string }): Promise<ResetPasswordResponseDTO> {
     const hashedPassword = await hashPassword(password);
 
     await this.userRepository.update(userId, {
@@ -286,7 +282,7 @@ class AuthService extends BaseService implements IAuthService {
   async changePassword({
     userId,
     password
-  }: IChangePasswordRequestBody & { userId: string }): Promise<IChangePasswordResponse> {
+  }: ChangePasswordRequestDTO & { userId: string }): Promise<ChangePasswordResponseDTO> {
     const hashedPassword = await hashPassword(password);
 
     await this.userRepository.findOneAndUpdate(

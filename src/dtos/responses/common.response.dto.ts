@@ -1,4 +1,4 @@
-export interface IPaginationResponse {
+export interface PaginationResponseDTO {
   page: number;
   limit: number;
   totalItems: number;

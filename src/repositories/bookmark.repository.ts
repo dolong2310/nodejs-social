@@ -4,18 +4,18 @@
  * It provides methods to interact with the bookmark data in the database.
  */
 
-import { ICreateBookmarkRequestBody, IDeleteBookmarkRequestParams } from '@/models/requests/bookmark.request';
+import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/dtos/requests/bookmark.request.dto';
 import BookmarkSchema, { IBookmark } from '@/models/schemas/bookmark.schema';
 import { BaseRepository } from '@/repositories/base.repository';
-import { ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
 export interface IBookmarkRepository {
-  findOneAndUpdate({ userId, postId }: ICreateBookmarkRequestBody & { userId: string }): Promise<IBookmark | null>;
-  findOneAndDelete({ userId, postId }: IDeleteBookmarkRequestParams & { userId: string }): Promise<IBookmark | null>;
+  findOneAndUpdate({ userId, postId }: CreateBookmarkRequestDTO & { userId: string }): Promise<IBookmark | null>;
+  findOneAndDelete({ userId, postId }: DeleteBookmarkParamsDTO & { userId: string }): Promise<IBookmark | null>;
 }
 
 export class BookmarkRepository extends BaseRepository implements IBookmarkRepository {
-  findOneAndUpdate({ userId, postId }: { userId: string; postId: string }): Promise<WithId<IBookmark> | null> {
+  findOneAndUpdate({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null> {
     return this.db.bookmarks.findOneAndUpdate(
       { userId: new ObjectId(userId), postId: new ObjectId(postId) },
       { $setOnInsert: new BookmarkSchema({ userId: new ObjectId(userId), postId: new ObjectId(postId) }) },
@@ -23,7 +23,7 @@ export class BookmarkRepository extends BaseRepository implements IBookmarkRepos
     );
   }
 
-  findOneAndDelete({ userId, postId }: { userId: string; postId: string }): Promise<WithId<IBookmark> | null> {
+  findOneAndDelete({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null> {
     return this.db.bookmarks.findOneAndDelete({ userId: new ObjectId(userId), postId: new ObjectId(postId) });
   }
 }

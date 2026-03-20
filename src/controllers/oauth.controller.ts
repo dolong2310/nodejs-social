@@ -1,15 +1,12 @@
 import { envConfig } from '@/config';
 import { BaseController } from '@/controllers/base.controller';
-import { IOAuthGoogleLoginRequestQuery } from '@/models/requests/oauth.request';
+import { OAuthGoogleLoginQueryDTO } from '@/dtos/requests/oauth.request.dto';
 import { IOAuthService } from '@/services/oauth.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IOAuthController {
-  googleLogin(
-    req: Request<ParamsDictionary, object, object, IOAuthGoogleLoginRequestQuery>,
-    res: Response
-  ): Promise<void>;
+  googleLogin(req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response): Promise<void>;
 }
 
 class OAuthController extends BaseController implements IOAuthController {
@@ -17,10 +14,7 @@ class OAuthController extends BaseController implements IOAuthController {
     super();
   }
 
-  googleLogin = async (
-    req: Request<ParamsDictionary, object, object, IOAuthGoogleLoginRequestQuery>,
-    res: Response
-  ) => {
+  googleLogin = async (req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response) => {
     const { accessToken, refreshToken } = await this.oauthService.googleLogin(req.query);
 
     return res.redirect(

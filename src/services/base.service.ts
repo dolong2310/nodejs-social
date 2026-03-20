@@ -11,9 +11,12 @@ export abstract class BaseService {
   /**
    * Replace ObjectId to string in the object
    */
-  protected replaceObjectIdToString<T>(obj: any): T {
+  protected replaceObjectIdToString<T>(obj: unknown): T {
     return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [key, value instanceof ObjectId ? value.toString() : value])
+      Object.entries(obj as Record<string, unknown>).map(([key, value]) => [
+        key,
+        value instanceof ObjectId ? value.toString() : value
+      ])
     ) as T;
   }
 
@@ -30,16 +33,16 @@ export abstract class BaseService {
    * Sanitizes a string by trimming whitespace and replacing multiple spaces with a single space.
    * Returns the sanitized string.
    */
-  protected sanitizeString(str: string): string {
-    return str.trim().replace(/\s+/g, ' ');
-  }
+  // protected sanitizeString(str: string): string {
+  //   return str.trim().replace(/\s+/g, ' ');
+  // }
 
   /*
    * Validates an email address format.
    * Returns true if valid, false otherwise.
    */
-  protected isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
+  // protected isValidEmail(email: string): boolean {
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   return emailRegex.test(email);
+  // }
 }

@@ -10,7 +10,10 @@ import { FindOptions, ObjectId } from 'mongodb';
 
 export interface IFollowerRepository {
   findFollowedUser(userId: string): Promise<IFollower[]>;
-  findOne(payload: { myUserId: string; followedUserId: string }, options?: FindOptions): Promise<IFollower | null>;
+  findOne<T = IFollower>(
+    payload: { myUserId: string; followedUserId: string },
+    options?: FindOptions
+  ): Promise<T | null>;
   followUser(payload: { myUserId: string; followedUserId: string }): Promise<IFollower>;
   unfollowUser(payload: { myUserId: string; unfollowedUserId: string }): Promise<boolean>;
 }
@@ -24,10 +27,10 @@ export class FollowerRepository extends BaseRepository implements IFollowerRepos
     return results as IFollower[];
   }
 
-  findOne(
+  findOne<T = IFollower>(
     { myUserId, followedUserId }: { myUserId: string; followedUserId: string },
     options?: FindOptions
-  ): Promise<IFollower | null> {
+  ): Promise<T | null> {
     return this.db.followers.findOne(
       {
         userId: new ObjectId(myUserId),

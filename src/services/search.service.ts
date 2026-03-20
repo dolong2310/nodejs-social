@@ -1,5 +1,5 @@
-import { ISearchRequestQuery } from '@/models/requests/search.request';
-import { IPostDetailResponse } from '@/models/responses/post.response';
+import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
+import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
 import { ISearchRepository } from '@/repositories/search.repository';
 import { BaseService } from '@/services/base.service';
@@ -8,13 +8,15 @@ import { IPostsService } from '@/services/posts.service';
 
 export interface ISearchService {
   searchPosts(
-    payload: ISearchRequestQuery & {
+    payload: SearchQueryDTO & {
       userId?: string;
+      peopleFollow?: string;
     }
-  ): Promise<[IPostDetailResponse[], number]>;
+  ): Promise<[PostDetailResponseDTO[], number]>;
   searchUsers(
-    payload: ISearchRequestQuery & {
+    payload: SearchQueryDTO & {
       userId?: string;
+      peopleFollow?: string;
     }
   ): Promise<[IUser[], number]>;
 }
@@ -35,9 +37,9 @@ class SearchService extends BaseService implements ISearchService {
     people_follow,
     page,
     limit
-  }: ISearchRequestQuery & {
+  }: SearchQueryDTO & {
     userId?: string;
-  }): Promise<[IPostDetailResponse[], number]> {
+  }): Promise<[PostDetailResponseDTO[], number]> {
     const postsPromise = this.searchRepository.findPosts({
       userId,
       query,
@@ -58,7 +60,7 @@ class SearchService extends BaseService implements ISearchService {
 
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this.postsService.updatePostsViews<IPostDetailResponse>({ posts, userId });
+    const updatedPosts = await this.postsService.updatePostsViews<PostDetailResponseDTO>({ posts, userId });
 
     return [updatedPosts, totalPosts];
   }
@@ -69,12 +71,9 @@ class SearchService extends BaseService implements ISearchService {
     people_follow,
     page,
     limit
-  }: ISearchRequestQuery & {
+  }: SearchQueryDTO & {
     userId?: string;
   }): Promise<[IUser[], number]> {
-    // Tìm kiếm users theo query (tìm kiếm theo name, username, email)
-    // Nếu có userId (có nghĩa là đang login) thì có thể filter theo people follow, nếu không thì chỉ tìm tất cả users
-
     const usersPromise = this.searchRepository.findUsers({
       userId,
       query,

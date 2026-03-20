@@ -4,10 +4,10 @@
  * It provides methods to interact with the search data in the database.
  */
 
+import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience } from '@/enums/posts.enum';
 import { ESearchPeopleFollow, ESearchType } from '@/enums/search.enum';
-import { IPostDetailResponse } from '@/models/responses/post.response';
 import { IUser } from '@/models/schemas/user.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
@@ -22,7 +22,7 @@ export interface ISearchRepository {
     page: number;
     limit: number;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
-  }): Promise<IPostDetailResponse[]>;
+  }): Promise<PostDetailResponseDTO[]>;
   countPosts(payload: {
     userId?: string;
     query: string;
@@ -59,7 +59,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     page: number;
     limit: number;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
-  }): Promise<IPostDetailResponse[]> {
+  }): Promise<PostDetailResponseDTO[]> {
     const match = await this._getPostMatch(payload);
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
@@ -68,7 +68,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       includeAuthor: true
     });
 
-    const posts = await this.db.posts.aggregate<IPostDetailResponse>(pipelineGetNewFeeds).toArray();
+    const posts = await this.db.posts.aggregate<PostDetailResponseDTO>(pipelineGetNewFeeds).toArray();
     return posts;
   }
 
@@ -141,7 +141,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
   }) {
-    const match: Record<string, any> = {
+    const match: Record<string, unknown> = {
       audience: EPostAudience.PUBLIC
     };
 
@@ -204,7 +204,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
   }) {
-    const match: Record<string, any> = {};
+    const match: Record<string, unknown> = {};
 
     if (query) {
       match['$text'] = {

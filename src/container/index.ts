@@ -1,6 +1,6 @@
 /*
  * This file implements the Dependency Injection Container for the application.
- * It manages the instantiation and retrieval of repositories, services, and controllers.
+ * It manages the instantiation and retrieval of repositories, services, controllers, and validations.
  */
 
 import DatabaseService from '@/database/mongodb/database.service';

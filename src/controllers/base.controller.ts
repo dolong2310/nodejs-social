@@ -4,19 +4,12 @@
  */
 
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { IPaginationResponse } from '@/models/responses/common.response';
+import { PaginationResponseDTO } from '@/dtos/responses/common.response.dto';
 import { NotFoundError } from '@/responses/error.response';
 import { Created, OK, SuccessResponseParams } from '@/responses/success.response';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
 export abstract class BaseController {
-  /**
-   * Handles errors by passing them to the next middleware.
-   */
-  protected handleError(error: unknown, next: NextFunction): void {
-    next(error);
-  }
-
   /**
    * Sends a response with the specified status code, message, and data.
    */
@@ -39,7 +32,7 @@ export abstract class BaseController {
   /**
    * Sends a paginated response with the specified status code, message, data, and pagination details.
    */
-  protected sendPaginatedResponse<T, P = IPaginationResponse & { data: T }>({
+  protected sendPaginatedResponse<T, P = PaginationResponseDTO & { data: T }>({
     res,
     data,
     pagination,
@@ -110,4 +103,11 @@ export abstract class BaseController {
   protected clearCookie(res: Response, name: string): void {
     res.clearCookie(name);
   }
+
+  /**
+   * Handles errors by passing them to the next middleware.
+   */
+  // protected handleError(error: unknown, next: NextFunction): void {
+  //   next(error);
+  // }
 }

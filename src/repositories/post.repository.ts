@@ -4,32 +4,33 @@
  * It provides methods to interact with the post data in the database.
  */
 
+import DatabaseService from '@/database/mongodb/database.service';
+import { CreatePostRequestDTO } from '@/dtos/requests/post.request.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
-import { ICreatePostRequestBody } from '@/models/requests/post.request';
-import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
 import HashtagSchema, { IHashtag } from '@/models/schemas/hashtag.schema';
 import PostSchema, { IPost } from '@/models/schemas/post.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
-import { FindOneAndUpdateOptions, ObjectId, UpdateResult, AnyBulkWriteOperation } from 'mongodb';
+import { AnyBulkWriteOperation, FindOneAndUpdateOptions, ObjectId, UpdateResult } from 'mongodb';
 
 export interface IPostRepository {
-  findById(id: string): Promise<IPostDetailResponse>;
+  findById(id: string): Promise<PostDetailResponseDTO>;
   findPosts(payload: {
     userId: string;
     followedUserIds: ObjectId[];
     page: number;
     limit: number;
-  }): Promise<IPostNewFeedResponse[]>;
+  }): Promise<PostNewFeedResponseDTO[]>;
   countPosts(payload: { userId: string; followedUserIds: ObjectId[] }): Promise<number>;
-  findGuestPosts(payload: { page: number; limit: number }): Promise<IPostNewFeedResponse[]>;
+  findGuestPosts(payload: { page: number; limit: number }): Promise<PostNewFeedResponseDTO[]>;
   countGuestPosts(): Promise<number>;
   findPostsType(payload: {
     page: number;
     limit: number;
     postId: string;
     type: EPostType;
-  }): Promise<IPostDetailResponse[]>;
+  }): Promise<PostDetailResponseDTO[]>;
   countPostsType(payload: { postId: string; type: EPostType }): Promise<number>;
   findPostById(postId: string): Promise<IPost | null>;
   findOneAndUpdate(
@@ -38,10 +39,10 @@ export interface IPostRepository {
   ): Promise<IPost | null>;
   createPost(payload: {
     userId: string;
-    body: Omit<ICreatePostRequestBody, 'hashtags'> & { hashtags: ObjectId[] };
+    body: Omit<CreatePostRequestDTO, 'hashtags'> & { hashtags: ObjectId[] };
   }): Promise<IPost>;
   updatePosts(payload: {
-    posts: IPostDetailResponse[] | IPostNewFeedResponse[];
+    posts: PostDetailResponseDTO[] | PostNewFeedResponseDTO[];
     userId?: string;
     date: Date;
   }): Promise<UpdateResult<IPost>>;
@@ -49,7 +50,11 @@ export interface IPostRepository {
 }
 
 export class PostRepository extends BaseRepository implements IPostRepository {
-  async findById(id: string): Promise<IPostDetailResponse> {
+  constructor(readonly db: DatabaseService) {
+    super(db);
+  }
+
+  async findById(id: string): Promise<PostDetailResponseDTO> {
     const pipelineGetDetailPost = [
       {
         $match: {
@@ -162,7 +167,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
         }
       }
     ];
-    const [post] = await this.db.posts.aggregate<IPostDetailResponse>(pipelineGetDetailPost).toArray();
+    const [post] = await this.db.posts.aggregate<PostDetailResponseDTO>(pipelineGetDetailPost).toArray();
 
     return post;
   }
@@ -177,7 +182,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     followedUserIds: ObjectId[];
     page: number;
     limit: number;
-  }): Promise<IPostNewFeedResponse[]> {
+  }): Promise<PostNewFeedResponseDTO[]> {
     /**
      * Bộ lọc (filter) này nhằm lấy các bài post hiển thị cho user:
      * - Nếu user chưa follow ai (followedUserIds là mảng rỗng),
@@ -222,7 +227,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       includeAuthor: true
     });
 
-    const posts = await this.db.posts.aggregate<IPostNewFeedResponse>(pipelineGetNewFeeds).toArray();
+    const posts = await this.db.posts.aggregate<PostNewFeedResponseDTO>(pipelineGetNewFeeds).toArray();
     return posts;
   }
 
@@ -249,7 +254,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     return this.count(this.db.posts, match);
   }
 
-  async findGuestPosts({ page, limit }: { page: number; limit: number }): Promise<IPostNewFeedResponse[]> {
+  async findGuestPosts({ page, limit }: { page: number; limit: number }): Promise<PostNewFeedResponseDTO[]> {
     const match = {
       audience: EPostAudience.PUBLIC
     };
@@ -261,7 +266,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       includeAuthor: true
     });
 
-    const posts = await this.db.posts.aggregate<IPostNewFeedResponse>(pipelineGetGuestNewFeeds).toArray();
+    const posts = await this.db.posts.aggregate<PostNewFeedResponseDTO>(pipelineGetGuestNewFeeds).toArray();
     return posts;
   }
 
@@ -284,7 +289,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     limit: number;
     postId: string;
     type: EPostType;
-  }): Promise<IPostDetailResponse[]> {
+  }): Promise<PostDetailResponseDTO[]> {
     const match = {
       parentId: new ObjectId(postId),
       type
@@ -297,7 +302,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       includeAuthor: false
     });
 
-    const posts = await this.db.posts.aggregate<IPostDetailResponse>(pipelineGetPostsType).toArray();
+    const posts = await this.db.posts.aggregate<PostDetailResponseDTO>(pipelineGetPostsType).toArray();
     return posts;
   }
 
@@ -330,7 +335,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     body
   }: {
     userId: string;
-    body: Omit<ICreatePostRequestBody, 'hashtags'> & { hashtags: ObjectId[] };
+    body: Omit<CreatePostRequestDTO, 'hashtags'> & { hashtags: ObjectId[] };
   }): Promise<IPost> {
     const { type, audience, content, parentId, hashtags, mentions, media } = body;
 
@@ -356,12 +361,12 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     userId,
     date
   }: {
-    posts: IPostDetailResponse[] | IPostNewFeedResponse[];
+    posts: PostDetailResponseDTO[] | PostNewFeedResponseDTO[];
     userId?: string;
     date: Date;
   }): Promise<UpdateResult<IPost>> {
     return this.db.posts.updateMany(
-      { _id: { $in: posts.map((post) => post._id!) } },
+      { _id: { $in: posts.map((post) => post._id) } },
       {
         $inc: userId ? { userViews: 1 } : { guestViews: 1 },
         $set: { updatedAt: date }

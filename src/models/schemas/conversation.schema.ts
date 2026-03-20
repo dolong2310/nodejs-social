@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 export interface IConversation {
-  _id?: ObjectId;
+  _id: ObjectId;
   senderId: ObjectId;
   receiverId: ObjectId;
   content: string;
@@ -21,7 +21,7 @@ class ConversationSchema {
   public createdAt?: Date;
   public updatedAt?: Date;
 
-  constructor(conversation: IConversation) {
+  constructor(conversation: Omit<IConversation, '_id'> & { _id?: ObjectId }) {
     const date = new Date();
 
     this._id = conversation._id ?? new ObjectId();

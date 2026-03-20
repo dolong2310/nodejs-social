@@ -1,17 +1,11 @@
-import { ICreateBookmarkRequestBody, IDeleteBookmarkRequestParams } from '@/models/requests/bookmark.request';
-import { ICreateBookmarkResponse, IDeleteBookmarkResponse } from '@/models/responses/bookmark.response';
+import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/dtos/requests/bookmark.request.dto';
+import { CreateBookmarkResponseDTO, DeleteBookmarkResponseDTO } from '@/dtos/responses/bookmark.response.dto';
 import { IBookmarkRepository } from '@/repositories/bookmark.repository';
 import { BaseService } from '@/services/base.service';
 
 export interface IBookmarksService {
-  bookmarkPost({
-    userId,
-    postId
-  }: ICreateBookmarkRequestBody & { userId: string }): Promise<ICreateBookmarkResponse | null>;
-  unbookmarkPost({
-    userId,
-    postId
-  }: IDeleteBookmarkRequestParams & { userId: string }): Promise<IDeleteBookmarkResponse | null>;
+  bookmarkPost(payload: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO | null>;
+  unbookmarkPost(payload: DeleteBookmarkParamsDTO & { userId: string }): Promise<DeleteBookmarkResponseDTO | null>;
 }
 
 class BookmarksService extends BaseService implements IBookmarksService {
@@ -22,17 +16,17 @@ class BookmarksService extends BaseService implements IBookmarksService {
   async bookmarkPost({
     userId,
     postId
-  }: ICreateBookmarkRequestBody & { userId: string }): Promise<ICreateBookmarkResponse | null> {
+  }: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO | null> {
     const result = await this.bookmarkRepository.findOneAndUpdate({ userId, postId });
-    return this.replaceObjectIdToString<ICreateBookmarkResponse>(result);
+    return result ? new CreateBookmarkResponseDTO(result) : null;
   }
 
   async unbookmarkPost({
     userId,
     postId
-  }: IDeleteBookmarkRequestParams & { userId: string }): Promise<IDeleteBookmarkResponse | null> {
+  }: DeleteBookmarkParamsDTO & { userId: string }): Promise<DeleteBookmarkResponseDTO | null> {
     const result = await this.bookmarkRepository.findOneAndDelete({ userId, postId });
-    return this.replaceObjectIdToString<IDeleteBookmarkResponse>(result);
+    return result ? new DeleteBookmarkResponseDTO(result) : null;
   }
 }
 

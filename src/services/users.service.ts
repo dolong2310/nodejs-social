@@ -1,7 +1,7 @@
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { IRedisService } from '@/database/redis/redis.service';
-import { IUpdateMeRequestBody } from '@/models/requests/user.request';
-import { IUserResponse } from '@/models/responses/user.response';
+import { UpdateMeRequestDTO } from '@/dtos/requests/user.request.dto';
+import { UserResponseDTO } from '@/dtos/responses/user.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
 import { IUserRepository } from '@/repositories/user.repository';
 import { BaseService } from '@/services/base.service';
@@ -10,9 +10,9 @@ export interface IUsersService {
   findUserByEmail(email: string): Promise<IUser | null>;
   findUserById(userId: string): Promise<IUser | null>;
   findUserByUsername(username: string): Promise<IUser | null>;
-  getMe(userId: string): Promise<IUserResponse | null>;
-  updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUserResponse | null>;
-  getUserProfile(username: string): Promise<IUserResponse | null>;
+  getMe(userId: string): Promise<UserResponseDTO | null>;
+  updateMe(userId: string, body: UpdateMeRequestDTO): Promise<UserResponseDTO | null>;
+  getUserProfile(username: string): Promise<UserResponseDTO | null>;
   invalidateUserCache(userId: string): Promise<void>;
 }
 
@@ -40,8 +40,8 @@ class UsersService extends BaseService implements IUsersService {
     return this.userRepository.findByUsername(username);
   }
 
-  getMe(userId: string): Promise<IUserResponse | null> {
-    return this.userRepository.findById<IUserResponse>(userId, {
+  getMe(userId: string): Promise<UserResponseDTO | null> {
+    return this.userRepository.findById<UserResponseDTO>(userId, {
       projection: {
         password: 0,
         emailVerificationToken: 0,
@@ -50,8 +50,8 @@ class UsersService extends BaseService implements IUsersService {
     });
   }
 
-  async updateMe(userId: string, body: IUpdateMeRequestBody & { dateOfBirth?: Date }): Promise<IUserResponse | null> {
-    const updated = await this.userRepository.findOneAndUpdate<IUserResponse>(userId, body, {
+  async updateMe(userId: string, body: UpdateMeRequestDTO): Promise<UserResponseDTO | null> {
+    const updated = await this.userRepository.findOneAndUpdate(userId, body, {
       returnDocument: 'after',
       projection: {
         password: 0,
@@ -60,11 +60,11 @@ class UsersService extends BaseService implements IUsersService {
       }
     });
     await this.invalidateUserCache(userId);
-    return updated;
+    return updated ? new UserResponseDTO(updated) : null;
   }
 
-  getUserProfile(username: string): Promise<IUserResponse | null> {
-    return this.userRepository.findByUsername<IUserResponse>(username, {
+  getUserProfile(username: string): Promise<UserResponseDTO | null> {
+    return this.userRepository.findByUsername<UserResponseDTO>(username, {
       projection: {
         password: 0,
         emailVerificationToken: 0,

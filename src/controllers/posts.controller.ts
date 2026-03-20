@@ -1,11 +1,7 @@
 import { BaseController } from '@/controllers/base.controller';
-import { IPaginationRequestQuery } from '@/models/requests/common.request';
-import {
-  ICreatePostRequestBody,
-  IGetPostDetailRequestParams,
-  IGetPostsRequestParams
-} from '@/models/requests/post.request';
-import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
+import { PaginationQueryDTO } from '@/dtos/requests/common.request.dto';
+import { CreatePostRequestDTO, GetPostDetailParamsDTO, GetPostsParamsDTO } from '@/dtos/requests/post.request.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IPost } from '@/models/schemas/post.schema';
 import { Created } from '@/responses/success.response';
 import { IFollowersService } from '@/services/followers.service';
@@ -14,13 +10,10 @@ import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostsController {
-  getNewFeeds(req: Request<ParamsDictionary, object, object, IPaginationRequestQuery>, res: Response): Promise<void>;
-  getPostDetail(req: Request<IGetPostDetailRequestParams>, res: Response): Promise<void>;
-  getPostsType(
-    req: Request<IGetPostsRequestParams, object, object, IPaginationRequestQuery>,
-    res: Response
-  ): Promise<void>;
-  createPost(req: Request<ParamsDictionary, object, ICreatePostRequestBody>, res: Response): Promise<void>;
+  getNewFeeds(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
+  getPostDetail(req: Request<GetPostDetailParamsDTO>, res: Response): Promise<void>;
+  getPostsType(req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
+  createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response): Promise<void>;
 }
 
 class PostsController extends BaseController implements IPostsController {
@@ -31,11 +24,11 @@ class PostsController extends BaseController implements IPostsController {
     super();
   }
 
-  getNewFeeds = async (req: Request<ParamsDictionary, object, object, IPaginationRequestQuery>, res: Response) => {
+  getNewFeeds = async (req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) => {
     const { page, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    let posts: IPostNewFeedResponse[];
+    let posts: PostNewFeedResponseDTO[];
     let totalPosts: number;
 
     if (userId) {
@@ -60,7 +53,7 @@ class PostsController extends BaseController implements IPostsController {
       totalPosts = guestResults.totalPosts;
     }
 
-    this.sendPaginatedResponse<IPostNewFeedResponse[]>({
+    this.sendPaginatedResponse<PostNewFeedResponseDTO[]>({
       res,
       data: posts,
       pagination: {
@@ -72,10 +65,10 @@ class PostsController extends BaseController implements IPostsController {
     });
   };
 
-  getPostDetail = async (req: Request<IGetPostDetailRequestParams>, res: Response) => {
+  getPostDetail = async (req: Request<GetPostDetailParamsDTO>, res: Response) => {
     const { postId } = req.params;
     const userId = this.getUserId(req);
-    const post = req.postDetail as IPostDetailResponse;
+    const post = req.postDetail as PostDetailResponseDTO;
 
     const updatedViews = await this.postsService.increaseViews({ postId, userId });
     if (updatedViews) {
@@ -84,17 +77,14 @@ class PostsController extends BaseController implements IPostsController {
       post.updatedAt = updatedViews.updatedAt;
     }
 
-    this.sendResponse<IPostDetailResponse>({
+    this.sendResponse<PostDetailResponseDTO>({
       res,
       data: post,
       message: 'Get post detail successfully'
     });
   };
 
-  getPostsType = async (
-    req: Request<IGetPostsRequestParams, object, object, IPaginationRequestQuery>,
-    res: Response
-  ) => {
+  getPostsType = async (req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response) => {
     const { postId, type } = req.params;
     const { page, limit } = req.query;
     const userId = this.getUserId(req);
@@ -107,7 +97,7 @@ class PostsController extends BaseController implements IPostsController {
       limit
     });
 
-    this.sendPaginatedResponse<IPostDetailResponse[]>({
+    this.sendPaginatedResponse<PostDetailResponseDTO[]>({
       res,
       data: posts,
       pagination: {
@@ -119,13 +109,13 @@ class PostsController extends BaseController implements IPostsController {
     });
   };
 
-  createPost = async (req: Request<ParamsDictionary, object, ICreatePostRequestBody>, res: Response) => {
+  createPost = async (req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response) => {
     const userId = this.getUserId(req);
-    const { type, audience, content, parentId, hashtags, mentions, media } = req.body;
+    const dto = new CreatePostRequestDTO(req.body);
 
     const post = await this.postsService.createPost({
       userId,
-      body: { type, audience, content, parentId, hashtags, mentions, media }
+      body: dto
     });
 
     this.sendResponse<IPost>({

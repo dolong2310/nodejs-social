@@ -1,25 +1,26 @@
-import { envConfig } from '@/config';
-import { DatabaseInstance } from '@/database/mongodb/database.instance.js';
-import DatabaseService from '@/database/mongodb/database.service';
-import { RegisterRequestDTO } from '@/dtos/requests/auth.request.dto';
-import { CreatePostRequestDTO } from '@/dtos/requests/post.request.dto';
-import { EMediaType } from '@/enums/media.enum';
-import { EPostAudience, EPostType } from '@/enums/posts.enum';
-import { ETokenType } from '@/enums/token.enum';
-import { EUserVerificationStatus } from '@/enums/users.enum';
-import FollowerSchema from '@/models/schemas/follower.schema';
-import { IPost } from '@/models/schemas/post.schema';
-import UserSchema from '@/models/schemas/user.schema';
-import { PostRepository } from '@/repositories/post.repository';
-import PostsService from '@/services/posts.service';
-import TokenService from '@/services/token.service';
-import { hashPassword } from '@/utils/password.util';
+// npx tsx scripts/fake-data.ts --env=development
+
 import { faker } from '@faker-js/faker';
 import { ObjectId } from 'mongodb';
+import { envConfig } from '../src/config/index.js';
+import DatabaseService from '../src/database/mongodb/database.service.js';
+import { RegisterRequestDTO } from '../src/dtos/requests/auth.request.dto.js';
+import { CreatePostRequestDTO } from '../src/dtos/requests/post.request.dto.js';
+import { EMediaType } from '../src/enums/media.enum.js';
+import { EPostAudience, EPostType } from '../src/enums/posts.enum.js';
+import { ETokenType } from '../src/enums/token.enum.js';
+import { EUserVerificationStatus } from '../src/enums/users.enum.js';
+import FollowerSchema from '../src/models/schemas/follower.schema.js';
+import { IPost } from '../src/models/schemas/post.schema.js';
+import UserSchema from '../src/models/schemas/user.schema.js';
+import { PostRepository } from '../src/repositories/post.repository.js';
+import PostsService from '../src/services/posts.service.js';
+import TokenService from '../src/services/token.service.js';
+import { hashPassword } from '../src/utils/password.util.js';
 
 const MYID = '69bc51a34e2dae18a947af8f';
 const PASSWORD = '@Bc123';
-const USER_COUNT = 1000;
+const USER_COUNT = 10;
 const POST_PER_USER = 10;
 const HASHTAG_PER_POST = 10;
 const MENTION_PER_POST = 10;
@@ -156,7 +157,7 @@ const insertMultipleUsers = async (userBodies: RegisterRequestDTO[]): Promise<Ob
       console.log(`Created user ${user.insertedId}`);
       return user.insertedId;
     })
-  );
+  ).catch();
   console.log(`Created ${createdUsers.length} users`);
   return createdUsers;
 };
@@ -173,7 +174,7 @@ const followMultipleUsers = async (userId: ObjectId, followedUserIds: ObjectId[]
         })
       );
     })
-  );
+  ).catch();
   console.log(`Followed ${followedUsers.length} users`);
   return followedUsers;
 };
@@ -181,6 +182,8 @@ const followMultipleUsers = async (userId: ObjectId, followedUserIds: ObjectId[]
 const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
   console.log('Creating posts...');
   console.log('Counting...');
+
+  const postsService = new PostsService(new PostRepository(db));
 
   let count = 0;
   const parentPostIds: string[] = []; // danh sách _id các post gốc (type = POST)
@@ -191,7 +194,6 @@ const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
       for (let i = 0; i < POST_PER_USER; i++) {
         const body = createRandomPostBody(userIds, parentPostIds);
 
-        const postsService = new PostsService(new PostRepository(DatabaseInstance.get()));
         const newPost = await postsService.createPost({ userId, body });
 
         // Nếu là post gốc thì lưu lại _id để làm parent cho các post con sau này
@@ -204,7 +206,7 @@ const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
         return newPost;
       }
     })
-  );
+  ).catch();
 
   console.log(`Created ${createdPosts.length} users' posts`);
   return createdPosts as IPost[];
@@ -220,8 +222,13 @@ const main = async () => {
   await Promise.all([
     followMultipleUsers(new ObjectId(MYID), followedUserIds),
     insertMultiplePosts(userIds.map((userId) => userId.toString()))
-  ]);
+  ]).catch();
   console.log(`\x1b[32mDone\x1b[0m`);
 };
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(0);
+});
 
 export default main;

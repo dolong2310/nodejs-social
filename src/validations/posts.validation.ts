@@ -1,20 +1,20 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { CreatePostRequestDTO, GetPostDetailParamsDTO } from '@/dtos/requests/post.request.dto';
+import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { ICreatePostRequestBody, IGetPostDetailRequestParams } from '@/models/requests/post.request';
-import { IPostDetailResponse } from '@/models/responses/post.response';
 import { AuthFailureError, BadRequestError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { IFollowersService } from '@/services/followers.service';
 import { IPostsService } from '@/services/posts.service';
 import { IUsersService } from '@/services/users.service';
 import { IMedia } from '@/types/media.type';
+import { isValidMongoId } from '@/utils/common.util';
 import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema, Location, Meta } from 'express-validator';
 import { isEmpty } from 'lodash-es';
-import { ObjectId } from 'mongodb';
 
 export interface IPostsValidation {
   createPostValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
@@ -22,7 +22,7 @@ export interface IPostsValidation {
     key: string,
     location: Location
   ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  audienceValidation: RequestHandler<IGetPostDetailRequestParams, object, object, Query, Record<string, unknown>>;
+  audienceValidation: RequestHandler<GetPostDetailParamsDTO, object, object, Query, Record<string, unknown>>;
   postTypeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
@@ -61,7 +61,7 @@ class PostsValidation implements IPostsValidation {
           trim: true,
           custom: {
             options: async (content: string, { req }) => {
-              const { type, mentions, hashtags } = req.body as ICreatePostRequestBody;
+              const { type, mentions, hashtags } = req.body as CreatePostRequestDTO;
 
               if (type === EPostType.REPOST && content !== '') {
                 throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_EMPTY_STRING);
@@ -85,11 +85,11 @@ class PostsValidation implements IPostsValidation {
         parentId: {
           custom: {
             options: async (parentId: string | null, { req }) => {
-              const { type } = req.body as ICreatePostRequestBody;
+              const { type } = req.body as CreatePostRequestDTO;
 
               if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
                 // parentId không được null, phải là string hợp lệ (ObjectId)
-                if (parentId === null || typeof parentId !== 'string' || !ObjectId.isValid(parentId)) {
+                if (parentId === null || typeof parentId !== 'string' || !isValidMongoId(parentId)) {
                   throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_A_VALID_POST_ID);
                 }
               }
@@ -124,7 +124,7 @@ class PostsValidation implements IPostsValidation {
           },
           custom: {
             options: async (userIds: string[]) => {
-              if (userIds.length > 0 && !userIds.every((userId) => ObjectId.isValid(userId))) {
+              if (userIds.length > 0 && !userIds.every((userId) => isValidMongoId(userId))) {
                 throw new BadRequestError(VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS);
               }
 
@@ -170,7 +170,7 @@ class PostsValidation implements IPostsValidation {
             trim: true,
             custom: {
               options: async (postId: string, { req }: Meta) => {
-                if (!ObjectId.isValid(postId)) {
+                if (!isValidMongoId(postId)) {
                   throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_POST_ID);
                 }
 
@@ -193,12 +193,12 @@ class PostsValidation implements IPostsValidation {
   };
 
   audienceValidation = async (
-    req: Request<IGetPostDetailRequestParams, object, object, Query, Record<string, unknown>>,
+    req: Request<GetPostDetailParamsDTO, object, object, Query, Record<string, unknown>>,
     _res: Response,
     next: NextFunction
   ): Promise<void> => {
     const userId = req.tokenPayload?.userId;
-    const post = req.postDetail as IPostDetailResponse;
+    const post = req.postDetail as PostDetailResponseDTO;
 
     // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"
     const isGuestUser = !userId;

@@ -4,7 +4,7 @@
  * It provides methods to interact with the conversation data in the database.
  */
 
-import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
+import { GetConversationsParamsDTO, GetConversationsQueryDTO } from '@/dtos/requests/conversation.request.dto';
 import ConversationSchema, { IConversation } from '@/models/schemas/conversation.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
@@ -15,8 +15,8 @@ export interface IConversationRepository {
     receiverId,
     page,
     limit
-  }: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }): Promise<IConversation[]>;
-  countConversations({ senderId, receiverId }: IGetConversationsRequestParams & { senderId: string }): Promise<number>;
+  }: GetConversationsParamsDTO & GetConversationsQueryDTO & { senderId: string }): Promise<IConversation[]>;
+  countConversations({ senderId, receiverId }: GetConversationsParamsDTO & { senderId: string }): Promise<number>;
   create({
     senderId,
     receiverId,
@@ -36,7 +36,7 @@ export class ConversationRepository extends BaseRepository implements IConversat
     receiverId,
     page,
     limit
-  }: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }): Promise<IConversation[]> {
+  }: GetConversationsParamsDTO & GetConversationsQueryDTO & { senderId: string }): Promise<IConversation[]> {
     const match = {
       $or: [
         { senderId: new ObjectId(senderId), receiverId: new ObjectId(receiverId) },

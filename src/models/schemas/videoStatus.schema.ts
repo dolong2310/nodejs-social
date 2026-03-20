@@ -2,7 +2,7 @@ import { EEncodingVideoStatus } from '@/enums/media.enum';
 import { ObjectId } from 'mongodb';
 
 export interface IVideoStatus {
-  _id?: ObjectId;
+  _id: ObjectId;
   name: string;
   status: EEncodingVideoStatus;
   message?: string;
@@ -11,14 +11,14 @@ export interface IVideoStatus {
 }
 
 class VideoStatusSchema {
-  public _id?: ObjectId;
+  public _id: ObjectId;
   public name: string;
   public status: EEncodingVideoStatus;
   public message: string;
   public createdAt: Date;
   public updatedAt: Date;
 
-  constructor({ _id, name, status, message, createdAt, updatedAt }: IVideoStatus) {
+  constructor({ _id, name, status, message, createdAt, updatedAt }: Omit<IVideoStatus, '_id'> & { _id?: ObjectId }) {
     const date = new Date();
 
     this._id = _id ?? new ObjectId();

@@ -1,6 +1,6 @@
 import { BaseController } from '@/controllers/base.controller';
-import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
-import { IConversationResponse } from '@/models/responses/conversation.response';
+import { GetConversationsParamsDTO, GetConversationsQueryDTO } from '@/dtos/requests/conversation.request.dto';
+import { ConversationResponseDTO } from '@/dtos/responses/conversation.response.dto';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { Created } from '@/responses/success.response';
 import { IConversationsService } from '@/services/conversations.service';
@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 
 export interface IConversationsController {
   getConversations(
-    req: Request<IGetConversationsRequestParams, object, object, IGetConversationsRequestQuery>,
+    req: Request<GetConversationsParamsDTO, object, object, GetConversationsQueryDTO>,
     res: Response
   ): Promise<void>;
   createConversation(req: Request, res: Response): Promise<void>;
@@ -20,7 +20,7 @@ class ConversationsController extends BaseController implements IConversationsCo
   }
 
   getConversations = async (
-    req: Request<IGetConversationsRequestParams, object, object, IGetConversationsRequestQuery>,
+    req: Request<GetConversationsParamsDTO, object, object, GetConversationsQueryDTO>,
     res: Response
   ) => {
     const userId = this.getUserId(req);
@@ -34,7 +34,7 @@ class ConversationsController extends BaseController implements IConversationsCo
       limit
     });
 
-    this.sendPaginatedResponse<IConversation[], IConversationResponse>({
+    this.sendPaginatedResponse<IConversation[], ConversationResponseDTO>({
       res,
       data: conversations,
       pagination: {

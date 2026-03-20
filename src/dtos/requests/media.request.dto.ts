@@ -1,10 +1,10 @@
 import { ParamsDictionary } from 'express-serve-static-core';
 
-export interface IFilenameRequestParams extends ParamsDictionary {
+export interface FilenameParamsDTO extends ParamsDictionary {
   filename: string;
 }
 
-export interface IVideoHLSRequestParams extends ParamsDictionary {
+export interface VideoHLSParamsDTO extends ParamsDictionary {
   id: string;
   version: string;
   segment: string;

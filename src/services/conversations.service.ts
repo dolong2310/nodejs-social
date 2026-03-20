@@ -1,11 +1,11 @@
-import { IGetConversationsRequestParams, IGetConversationsRequestQuery } from '@/models/requests/conversation.request';
+import { GetConversationsParamsDTO, GetConversationsQueryDTO } from '@/dtos/requests/conversation.request.dto';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IConversationRepository } from '@/repositories/conversation.repository';
 import { BaseService } from '@/services/base.service';
 
 export interface IConversationsService {
   getConversations(
-    payload: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }
+    payload: GetConversationsParamsDTO & GetConversationsQueryDTO & { senderId: string }
   ): Promise<{ conversations: IConversation[]; totalConversations: number }>;
   createConversation(payload: {
     senderId: string;
@@ -25,7 +25,7 @@ class ConversationService extends BaseService implements IConversationsService {
     receiverId,
     page,
     limit
-  }: IGetConversationsRequestParams & IGetConversationsRequestQuery & { senderId: string }): Promise<{
+  }: GetConversationsParamsDTO & GetConversationsQueryDTO & { senderId: string }): Promise<{
     conversations: IConversation[];
     totalConversations: number;
   }> {

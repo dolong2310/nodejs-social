@@ -9,11 +9,11 @@ import {
   UnprocessableEntityError
 } from '@/responses/error.response';
 import { IUsersService } from '@/services/users.service';
+import { isValidMongoId } from '@/utils/common.util';
 import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema, Location, ParamSchema } from 'express-validator';
-import { ObjectId } from 'mongodb';
 
 export const nameSchema: ParamSchema = {
   notEmpty: {
@@ -198,7 +198,7 @@ class UsersValidation implements IUsersValidation {
             trim: true,
             custom: {
               options: async (userId: string, { req }) => {
-                if (!ObjectId.isValid(userId)) {
+                if (!isValidMongoId) {
                   throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_USER_ID);
                 }
 

@@ -1,6 +1,7 @@
 import { envConfig } from '@/config';
-import { IOAuthGoogleLoginRequestQuery } from '@/models/requests/oauth.request';
-import { IOAuthGoogleLoginResponse } from '@/models/responses/oauth.response';
+import { RegisterRequestDTO } from '@/dtos/requests/auth.request.dto';
+import { OAuthGoogleLoginQueryDTO } from '@/dtos/requests/oauth.request.dto';
+import { OAuthGoogleLoginResponseDTO } from '@/dtos/responses/oauth.response.dto';
 import { BadRequestError } from '@/responses/error.response';
 import { IAuthService } from '@/services/auth.service';
 import { IUsersService } from '@/services/users.service';
@@ -8,7 +9,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IOAuthService {
-  googleLogin(query: IOAuthGoogleLoginRequestQuery): Promise<IOAuthGoogleLoginResponse>;
+  googleLogin(query: OAuthGoogleLoginQueryDTO): Promise<OAuthGoogleLoginResponseDTO>;
 }
 
 class OAuthService implements IOAuthService {
@@ -59,7 +60,7 @@ class OAuthService implements IOAuthService {
     return response.data;
   }
 
-  async googleLogin({ code }: IOAuthGoogleLoginRequestQuery): Promise<IOAuthGoogleLoginResponse> {
+  async googleLogin({ code }: OAuthGoogleLoginQueryDTO): Promise<OAuthGoogleLoginResponseDTO> {
     const token = await this.getOAuthGoogleToken(code);
     const userInfo = await this.getOAuthGoogleUser(token.access_token, token.id_token);
 
@@ -81,15 +82,13 @@ class OAuthService implements IOAuthService {
     // else, register
     const randomPassword = uuidv4();
     return await this.authService.register(
-      {
+      new RegisterRequestDTO({
         name: userInfo.name,
         email: userInfo.email,
         password: randomPassword,
         dateOfBirth: new Date().toISOString()
-      },
-      {
-        autoLogin: true
-      }
+      }),
+      { autoLogin: true }
     );
   }
 }

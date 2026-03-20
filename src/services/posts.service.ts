@@ -1,36 +1,35 @@
-import { IPaginationRequestQuery } from '@/models/requests/common.request';
+import { PaginationQueryDTO } from '@/dtos/requests/common.request.dto';
 import {
-  ICreatePostRequestBody,
-  IGetNewFeedsPayload,
-  IGetPostDetailRequestParams,
-  IGetPostsRequestParams
-} from '@/models/requests/post.request';
-import { IPostDetailResponse, IPostNewFeedResponse } from '@/models/responses/post.response';
+  CreatePostRequestDTO,
+  GetNewFeedsPayloadDTO,
+  GetPostDetailParamsDTO,
+  GetPostsParamsDTO
+} from '@/dtos/requests/post.request.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import { IPostRepository } from '@/repositories/post.repository';
 import { BaseService } from '@/services/base.service';
-import { ObjectId } from 'mongodb';
 
 export interface IPostsService {
-  findPostDetail(postId: string): Promise<IPostDetailResponse | null>;
-  getNewFeeds(payload: IGetNewFeedsPayload): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
-  getGuestNewFeeds(payload: IPaginationRequestQuery): Promise<{ posts: IPostNewFeedResponse[]; totalPosts: number }>;
+  findPostDetail(postId: string): Promise<PostDetailResponseDTO | null>;
+  getNewFeeds(payload: GetNewFeedsPayloadDTO): Promise<{ posts: PostNewFeedResponseDTO[]; totalPosts: number }>;
+  getGuestNewFeeds(payload: PaginationQueryDTO): Promise<{ posts: PostNewFeedResponseDTO[]; totalPosts: number }>;
   getPostsType(
-    payload: IGetPostsRequestParams &
-      IPaginationRequestQuery & {
+    payload: GetPostsParamsDTO &
+      PaginationQueryDTO & {
         userId?: string;
       }
-  ): Promise<{ posts: IPostDetailResponse[]; totalPosts: number }>;
+  ): Promise<{ posts: PostDetailResponseDTO[]; totalPosts: number }>;
   findPostById(postId: string): Promise<IPost | null>;
   findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]>;
   increaseViews(
-    payload: IGetPostDetailRequestParams & {
+    payload: GetPostDetailParamsDTO & {
       userId?: string;
     }
   ): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null>;
-  createPost(payload: { userId: string; body: ICreatePostRequestBody }): Promise<IPost>;
-  updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
+  createPost(payload: { userId: string; body: CreatePostRequestDTO }): Promise<IPost>;
+  updatePostsViews<T extends PostDetailResponseDTO | PostNewFeedResponseDTO>({
     posts,
     userId
   }: {
@@ -48,7 +47,7 @@ class PostsService extends BaseService implements IPostsService {
     return this.postRepository.findById(postId);
   }
 
-  async getNewFeeds({ userId, followedUserIds, page, limit }: IGetNewFeedsPayload) {
+  async getNewFeeds({ userId, followedUserIds, page, limit }: GetNewFeedsPayloadDTO) {
     const postsPromise = this.postRepository.findPosts({
       userId,
       followedUserIds,
@@ -58,17 +57,17 @@ class PostsService extends BaseService implements IPostsService {
     const totalPostsPromise = this.postRepository.countPosts({ userId, followedUserIds });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this.updatePostsViews<IPostNewFeedResponse>({ posts });
+    const updatedPosts = await this.updatePostsViews<PostNewFeedResponseDTO>({ posts });
 
     return { posts: updatedPosts, totalPosts };
   }
 
-  async getGuestNewFeeds({ page, limit }: IPaginationRequestQuery) {
+  async getGuestNewFeeds({ page, limit }: PaginationQueryDTO) {
     const postsPromise = this.postRepository.findGuestPosts({ page: Number(page), limit: Number(limit) });
     const totalPostsPromise = this.postRepository.countGuestPosts();
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this.updatePostsViews<IPostNewFeedResponse>({ posts });
+    const updatedPosts = await this.updatePostsViews<PostNewFeedResponseDTO>({ posts });
 
     return { posts: updatedPosts, totalPosts };
   }
@@ -79,15 +78,15 @@ class PostsService extends BaseService implements IPostsService {
     limit,
     postId,
     type
-  }: IGetPostsRequestParams &
-    IPaginationRequestQuery & {
+  }: GetPostsParamsDTO &
+    PaginationQueryDTO & {
       userId?: string;
     }) {
     const postsPromise = this.postRepository.findPostsType({ postId, type, page: Number(page), limit: Number(limit) });
     const totalPostsPromise = this.postRepository.countPostsType({ postId, type });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
-    const updatedPosts = await this.updatePostsViews<IPostDetailResponse>({ posts, userId });
+    const updatedPosts = await this.updatePostsViews<PostDetailResponseDTO>({ posts, userId });
 
     return { posts: updatedPosts, totalPosts };
   }
@@ -103,7 +102,7 @@ class PostsService extends BaseService implements IPostsService {
   increaseViews({
     postId,
     userId
-  }: IGetPostDetailRequestParams & {
+  }: GetPostDetailParamsDTO & {
     userId?: string;
   }): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null> {
     return this.postRepository.findOneAndUpdate(
@@ -112,16 +111,16 @@ class PostsService extends BaseService implements IPostsService {
     );
   }
 
-  async createPost({ userId, body }: { userId: string; body: ICreatePostRequestBody }): Promise<IPost> {
+  async createPost({ userId, body }: { userId: string; body: CreatePostRequestDTO }): Promise<IPost> {
     const { hashtags: hashtagsBody } = body;
 
-    const hashtags = await this.findAndUpsertHashtags(hashtagsBody);
-    const hashtagIds = hashtags.filter(Boolean).map((hashtag) => hashtag!._id) as ObjectId[];
+    const hashtags = (await this.findAndUpsertHashtags(hashtagsBody)).filter((h) => h !== null);
+    const hashtagIds = hashtags.map((hashtag) => hashtag._id);
     const newPost = await this.postRepository.createPost({ userId, body: { ...body, hashtags: hashtagIds } });
     return newPost;
   }
 
-  async updatePostsViews<T extends IPostDetailResponse | IPostNewFeedResponse>({
+  async updatePostsViews<T extends PostDetailResponseDTO | PostNewFeedResponseDTO>({
     posts,
     userId
   }: {
