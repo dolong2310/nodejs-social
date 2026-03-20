@@ -7,7 +7,8 @@
  */
 
 import { Container } from '@/container';
-import { DatabaseInstance, RedisInstance } from '@/database';
+import { DatabaseInstance } from '@/database/mongodb';
+import { RedisInstance } from '@/database/redis';
 import express, { Router } from 'express';
 
 export abstract class BaseRoute {

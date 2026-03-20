@@ -1,2 +1,18 @@
-export * from './database.instance';
-export * from './database.service';
+import DatabaseService from '@/database/mongodb/database.service';
+
+export class DatabaseInstance {
+  private static instance: DatabaseService | null = null;
+
+  static init(config: { uri: string; databaseName: string }) {
+    if (this.instance) return this.instance;
+    this.instance = new DatabaseService(config);
+    return this.instance;
+  }
+
+  static get() {
+    if (!this.instance) {
+      throw new Error('DatabaseService has not been initialized. Call DatabaseInstance.init() during bootstrap.');
+    }
+    return this.instance;
+  }
+}
