@@ -16,7 +16,7 @@ export abstract class BaseRoute {
 
   constructor() {
     this.router = express.Router();
-    this.container = Container.getInstance(DatabaseInstance.get(), RedisInstance.get());
+    this.container = Container.getOrSet(DatabaseInstance.get(), RedisInstance.get());
     this.initializeRoutes();
   }
 

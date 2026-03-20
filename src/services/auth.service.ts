@@ -26,10 +26,11 @@ import {
 } from '@/models/responses/auth.response';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
+import { IEmailJobQueue } from '@/queue/queues/email.queue';
 import { IUserRepository } from '@/repositories/user.repository';
 import { BadRequestError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
-import { EEmailTemplate, IEmailService } from '@/services/email.service';
+import { EEmailTemplate } from '@/types/mail.type';
 import { ITokenService } from '@/services/token.service';
 import { comparePassword, hashPassword } from '@/utils/helper.util';
 import { omit } from 'lodash-es';
@@ -57,7 +58,7 @@ class AuthService extends BaseService implements IAuthService {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly tokenService: ITokenService,
-    private readonly emailService: IEmailService,
+    private readonly emailJobQueue: IEmailJobQueue,
     private readonly redisService: IRedisService
   ) {
     super();
@@ -92,7 +93,7 @@ class AuthService extends BaseService implements IAuthService {
     });
 
     // TIPS: khi gửi email mà không muốn tạo email mới thì chỉ cần thêm +1 vào cuối của email đó (ví dụ: test123@gmail.com -> test123+1@gmail.com)
-    await this.emailService.sendEmail({
+    await this.emailJobQueue.add({
       toAddress: email,
       subject: 'Email Verification',
       body: {
@@ -210,8 +211,7 @@ class AuthService extends BaseService implements IAuthService {
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
-    // gửi email xác thực
-    await this.emailService.sendEmail({
+    await this.emailJobQueue.add({
       toAddress: email,
       subject: 'Email Verification',
       body: {
@@ -246,8 +246,7 @@ class AuthService extends BaseService implements IAuthService {
       type: ETokenType.FORGOT_PASSWORD_TOKEN
     });
 
-    // gửi email xác thực
-    await this.emailService.sendEmail({
+    await this.emailJobQueue.add({
       toAddress: email,
       subject: 'Forgot Password',
       body: {

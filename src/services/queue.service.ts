@@ -3,6 +3,9 @@ interface QueueItem {
   onStart?: () => Promise<void>;
 }
 
+/**
+ * @deprecated in-memory queue (replaced by BullMQ)
+ */
 export interface IQueueService {
   enqueue({ item, onStart }: { item: string; onStart?: () => Promise<void> }): void | Promise<void>;
   dequeue(): QueueItem | undefined;

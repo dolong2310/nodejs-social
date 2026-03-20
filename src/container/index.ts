@@ -5,6 +5,10 @@
 
 import DatabaseService from '@/database/database.service';
 import RedisService from '@/database/redis.service';
+// Queues
+import { QueueService } from '@/queue';
+import { IEmailJobQueue } from '@/queue/queues/email.queue';
+import { IVideoHLSJobQueue } from '@/queue/queues/video-hls.queue';
 // Repositories
 import { BookmarkRepository, IBookmarkRepository } from '@/repositories/bookmark.repository';
 import { ConversationRepository, IConversationRepository } from '@/repositories/conversation.repository';
@@ -17,12 +21,10 @@ import { IUserRepository, UserRepository } from '@/repositories/user.repository'
 import AuthService, { IAuthService } from '@/services/auth.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
 import ConversationsService, { IConversationsService } from '@/services/conversations.service';
-import EmailService, { IEmailService } from '@/services/email.service';
 import FollowersService, { IFollowersService } from '@/services/followers.service';
 import MediaService, { IMediaService } from '@/services/media.service';
 import OAuthService, { IOAuthService } from '@/services/oauth.service';
 import PostsService, { IPostsService } from '@/services/posts.service';
-import QueueService, { IQueueService } from '@/services/queue.service';
 import S3Service, { IS3Service } from '@/services/s3.service';
 import SearchService, { ISearchService } from '@/services/search.service';
 import TokenService, { ITokenService } from '@/services/token.service';
@@ -98,9 +100,9 @@ export class Container implements IContainer {
 
   // Common Services
   private tokenService!: ITokenService;
-  private emailService!: IEmailService;
   private s3Service!: IS3Service;
-  private queueService!: IQueueService;
+  // private emailService!: IEmailService;
+  // private queueService!: IQueueService;
 
   // Services
   private authService!: IAuthService;
@@ -130,18 +132,30 @@ export class Container implements IContainer {
   private postsValidation!: IPostsValidation;
   private searchValidation!: ISearchValidation;
 
+  // Queues
+  private emailJobQueue!: IEmailJobQueue;
+  private videoHLSJobQueue!: IVideoHLSJobQueue;
+
   private constructor(db: DatabaseService, redis: RedisService) {
     this.db = db;
     this.redis = redis;
+    this.initializeQueues();
     this.initializeRepositories();
     this.initializeServices();
     this.initializeControllers();
     this.initializeValidations();
   }
 
-  public static getInstance(db: DatabaseService, redis: RedisService): Container {
+  public static getOrSet(db: DatabaseService, redis: RedisService): Container {
     if (!Container.instance) {
       Container.instance = new Container(db, redis);
+    }
+    return Container.instance;
+  }
+
+  public static get(): Container {
+    if (!Container.instance) {
+      throw new Error('Container has not been initialized. Call Container.getOrSet() during bootstrap.');
     }
     return Container.instance;
   }
@@ -152,8 +166,6 @@ export class Container implements IContainer {
     Container.instance = null;
   }
 
-  // Private methods to initialize repositories, services, and controllers
-  // These methods are called in the constructor to set up the container
   private initializeRepositories(): void {
     this.userRepository = new UserRepository(this.db);
     this.bookmarkRepository = new BookmarkRepository(this.db);
@@ -167,17 +179,17 @@ export class Container implements IContainer {
   private initializeServices(): void {
     // Common Services
     this.tokenService = new TokenService();
-    this.emailService = new EmailService();
     this.s3Service = new S3Service();
-    this.queueService = new QueueService({ onStartWhenEnqueue: true });
+    // this.emailService = new EmailService();
+    // this.queueService = new QueueService({ onStartWhenEnqueue: true });
 
     // Services
-    this.authService = new AuthService(this.userRepository, this.tokenService, this.emailService, this.redis);
+    this.authService = new AuthService(this.userRepository, this.tokenService, this.emailJobQueue, this.redis);
     this.usersService = new UsersService(this.userRepository, this.redis);
     this.bookmarksService = new BookmarksService(this.bookmarkRepository);
     this.conversationsService = new ConversationsService(this.conversationRepository);
     this.followersService = new FollowersService(this.followerRepository, this.redis);
-    this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.queueService);
+    this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
     this.postsService = new PostsService(this.postRepository);
     this.searchService = new SearchService(this.searchRepository, this.followersService, this.postsService);
@@ -200,6 +212,12 @@ export class Container implements IContainer {
     this.usersValidation = new UsersValidation(this.usersService);
     this.postsValidation = new PostsValidation(this.postsService, this.usersService, this.followersService);
     this.searchValidation = new SearchValidation();
+  }
+
+  private initializeQueues(): void {
+    const mq = QueueService.get();
+    this.emailJobQueue = mq.getEmailJobQueue();
+    this.videoHLSJobQueue = mq.getVideoHLSJobQueue();
   }
 
   // Repositories

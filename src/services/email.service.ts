@@ -1,20 +1,11 @@
 import { envConfig } from '@/config';
+import { EEmailTemplate, IEmailPayload } from '@/types/mail.type';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import fs from 'fs';
 import path from 'path';
 
-export enum EEmailTemplate {
-  VERIFY_EMAIL = 'verify-email',
-  FORGOT_PASSWORD = 'forgot-password'
-}
-
 export interface IEmailService {
-  sendEmail(payload: {
-    toAddress: string;
-    subject: string;
-    body: { name: string; url: string; expiresIn: string; appName: string; supportUrl: string };
-    template: EEmailTemplate;
-  }): Promise<SendEmailCommandOutput>;
+  sendEmail(payload: IEmailPayload): Promise<SendEmailCommandOutput>;
 }
 
 class EmailService {

@@ -3,6 +3,7 @@ import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { Container } from '@/container';
 import { DatabaseInstance, RedisInstance } from '@/database';
 import { errorHandler } from '@/middlewares/error.middleware';
+import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
 import conversationsRouter from '@/routes/conversations.route';
@@ -30,6 +31,8 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
   const redisService = RedisInstance.init(appConfig.redis);
   await Promise.all([databaseService.connect(), databaseService.initializeIndexes(), redisService.connect()]);
 
+  QueueService.init(appConfig.redis); // WARN: QueueService must be initialized before Container — Container.initializeQueues() calls QueueService.get()
+
   const app = createExpressApp();
   httpServer.on('request', app);
 
@@ -41,8 +44,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
     app.use(rateLimit(appConfig.rateLimitOptions));
   }
 
-  // Bootstrap DI container once so SocketService shares the same service instances
-  const container = Container.getInstance(databaseService, redisService);
+  const container = Container.getOrSet(databaseService, redisService);
   const socket = new SocketService(httpServer, container.getUsersService());
   socket.run();
 
@@ -105,7 +107,11 @@ function setupGracefulShutdown(httpServer: HttpServer): void {
   const shutdown = async (signal: string) => {
     console.log(`\n[${signal}] Shutting down gracefully...`);
     httpServer.close(async () => {
-      await Promise.allSettled([DatabaseInstance.get().close(), RedisInstance.get().disconnect()]);
+      await Promise.allSettled([
+        DatabaseInstance.get().close(),
+        RedisInstance.get().disconnect(),
+        QueueService.close()
+      ]);
       console.log('All connections closed.');
       process.exit(0);
     });
