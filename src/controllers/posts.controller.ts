@@ -4,7 +4,7 @@ import { CreatePostRequestDTO, GetPostDetailParamsDTO, GetPostsParamsDTO } from 
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IPost } from '@/models/schemas/post.schema';
 import { Created } from '@/responses/success.response';
-import { IFollowersService } from '@/services/followers.service';
+import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -19,7 +19,7 @@ export interface IPostsController {
 class PostsController extends BaseController implements IPostsController {
   constructor(
     private readonly postsService: IPostsService,
-    private readonly followersService: IFollowersService
+    private readonly friendsService: IFriendsService
   ) {
     super();
   }
@@ -32,7 +32,7 @@ class PostsController extends BaseController implements IPostsController {
     let totalPosts: number;
 
     if (userId) {
-      const followedUserIds = await this.followersService.findFollowedUserIds(userId);
+      const followedUserIds = await this.friendsService.findFollowedUserIds(userId);
 
       const results = await this.postsService.getNewFeeds({
         userId,

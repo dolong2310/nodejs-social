@@ -10,7 +10,6 @@ import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
 import conversationsRouter from '@/routes/conversations.route';
-import followersRouter from '@/routes/followers.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
 import postsRouter from '@/routes/posts.route';
@@ -91,7 +90,6 @@ function setupRoutes(): Router {
   router.use('/static', staticRouter());
   router.use('/posts', postsRouter());
   router.use('/bookmarks', bookmarksRouter());
-  router.use('/followers', followersRouter());
   router.use('/search', searchRouter());
   router.use('/conversations', conversationsRouter());
   router.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));

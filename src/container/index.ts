@@ -10,9 +10,11 @@ import { QueueService } from '@/queue';
 import { IEmailJobQueue } from '@/queue/queues/email.queue';
 import { IVideoHLSJobQueue } from '@/queue/queues/video-hls.queue';
 // Repositories
+import { BlockRepository } from '@/repositories/block.repository';
 import { BookmarkRepository, IBookmarkRepository } from '@/repositories/bookmark.repository';
 import { ConversationRepository, IConversationRepository } from '@/repositories/conversation.repository';
-import { FollowerRepository, IFollowerRepository } from '@/repositories/follower.repository';
+import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
+import { FriendshipRepository } from '@/repositories/friendship.repository';
 import { IMediaRepository, MediaRepository } from '@/repositories/media.repository';
 import { IPostRepository, PostRepository } from '@/repositories/post.repository';
 import { ISearchRepository, SearchRepository } from '@/repositories/search.repository';
@@ -21,7 +23,7 @@ import { IUserRepository, UserRepository } from '@/repositories/user.repository'
 import AuthService, { IAuthService } from '@/services/auth.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
 import ConversationsService, { IConversationsService } from '@/services/conversations.service';
-import FollowersService, { IFollowersService } from '@/services/followers.service';
+import FriendsService, { IFriendsService } from '@/services/friends.service';
 import MediaService, { IMediaService } from '@/services/media.service';
 import OAuthService, { IOAuthService } from '@/services/oauth.service';
 import PostsService, { IPostsService } from '@/services/posts.service';
@@ -33,7 +35,6 @@ import UsersService, { IUsersService } from '@/services/users.service';
 import AuthController, { IAuthController } from '@/controllers/auth.controller';
 import BookmarksController, { IBookmarksController } from '@/controllers/bookmarks.controller';
 import ConversationsController, { IConversationsController } from '@/controllers/conversations.controller';
-import FollowersController, { IFollowersController } from '@/controllers/followers.controller';
 import MediaController, { IMediaController } from '@/controllers/media.controller';
 import OAuthController, { IOAuthController } from '@/controllers/oauth.controller';
 import PostsController, { IPostsController } from '@/controllers/posts.controller';
@@ -50,7 +51,6 @@ export interface IContainer {
   getUserRepository(): IUserRepository;
   getBookmarkRepository(): IBookmarkRepository;
   getConversationRepository(): IConversationRepository;
-  getFollowerRepository(): IFollowerRepository;
   getMediaRepository(): IMediaRepository;
   getPostRepository(): IPostRepository;
   getSearchRepository(): ISearchRepository;
@@ -61,7 +61,7 @@ export interface IContainer {
   getUsersService(): IUsersService;
   getBookmarksService(): IBookmarksService;
   getConversationsService(): IConversationsService;
-  getFollowersService(): IFollowersService;
+  getFriendsService(): IFriendsService;
   getMediaService(): IMediaService;
   getOAuthService(): IOAuthService;
   getPostsService(): IPostsService;
@@ -72,7 +72,6 @@ export interface IContainer {
   getUsersController(): IUsersController;
   getBookmarksController(): IBookmarksController;
   getConversationsController(): IConversationsController;
-  getFollowersController(): IFollowersController;
   getMediaController(): IMediaController;
   getOAuthController(): IOAuthController;
   getPostsController(): IPostsController;
@@ -94,7 +93,9 @@ export class Container implements IContainer {
   private userRepository!: IUserRepository;
   private bookmarkRepository!: IBookmarkRepository;
   private conversationRepository!: IConversationRepository;
-  private followerRepository!: IFollowerRepository;
+  private friendshipRepository!: FriendshipRepository;
+  private friendRequestRepository!: FriendRequestRepository;
+  private blockRepository!: BlockRepository;
   private mediaRepository!: IMediaRepository;
   private postRepository!: IPostRepository;
   private searchRepository!: ISearchRepository;
@@ -110,7 +111,7 @@ export class Container implements IContainer {
   private usersService!: IUsersService;
   private bookmarksService!: IBookmarksService;
   private conversationsService!: IConversationsService;
-  private followersService!: IFollowersService;
+  private friendsService!: IFriendsService;
   private mediaService!: IMediaService;
   private oauthService!: IOAuthService;
   private postsService!: IPostsService;
@@ -121,7 +122,6 @@ export class Container implements IContainer {
   private usersController!: IUsersController;
   private bookmarksController!: IBookmarksController;
   private conversationsController!: IConversationsController;
-  private followersController!: IFollowersController;
   private mediaController!: IMediaController;
   private oauthController!: IOAuthController;
   private postsController!: IPostsController;
@@ -171,7 +171,9 @@ export class Container implements IContainer {
     this.userRepository = new UserRepository(this.db);
     this.bookmarkRepository = new BookmarkRepository(this.db);
     this.conversationRepository = new ConversationRepository(this.db);
-    this.followerRepository = new FollowerRepository(this.db);
+    this.friendshipRepository = new FriendshipRepository(this.db);
+    this.friendRequestRepository = new FriendRequestRepository(this.db);
+    this.blockRepository = new BlockRepository(this.db);
     this.mediaRepository = new MediaRepository(this.db);
     this.postRepository = new PostRepository(this.db);
     this.searchRepository = new SearchRepository(this.db);
@@ -189,11 +191,11 @@ export class Container implements IContainer {
     this.usersService = new UsersService(this.userRepository, this.redis);
     this.bookmarksService = new BookmarksService(this.bookmarkRepository);
     this.conversationsService = new ConversationsService(this.conversationRepository);
-    this.followersService = new FollowersService(this.followerRepository, this.redis);
+    this.friendsService = new FriendsService(this.friendshipRepository, this.redis);
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
     this.postsService = new PostsService(this.postRepository);
-    this.searchService = new SearchService(this.searchRepository, this.followersService, this.postsService, this.redis);
+    this.searchService = new SearchService(this.searchRepository, this.friendsService, this.postsService, this.redis);
   }
 
   private initializeControllers(): void {
@@ -201,17 +203,16 @@ export class Container implements IContainer {
     this.usersController = new UsersController(this.usersService);
     this.bookmarksController = new BookmarksController(this.bookmarksService);
     this.conversationsController = new ConversationsController(this.conversationsService);
-    this.followersController = new FollowersController(this.followersService);
     this.mediaController = new MediaController(this.mediaService, this.s3Service);
     this.oauthController = new OAuthController(this.oauthService);
-    this.postsController = new PostsController(this.postsService, this.followersService);
+    this.postsController = new PostsController(this.postsService, this.friendsService);
     this.searchController = new SearchController(this.searchService);
   }
 
   private initializeValidations(): void {
     this.authValidation = new AuthValidation(this.tokenService);
     this.usersValidation = new UsersValidation(this.usersService);
-    this.postsValidation = new PostsValidation(this.postsService, this.usersService, this.followersService);
+    this.postsValidation = new PostsValidation(this.postsService, this.usersService, this.friendsService);
     this.searchValidation = new SearchValidation();
   }
 
@@ -232,10 +233,6 @@ export class Container implements IContainer {
 
   public getConversationRepository(): IConversationRepository {
     return this.conversationRepository;
-  }
-
-  public getFollowerRepository(): IFollowerRepository {
-    return this.followerRepository;
   }
 
   public getMediaRepository(): IMediaRepository {
@@ -271,8 +268,8 @@ export class Container implements IContainer {
     return this.conversationsService;
   }
 
-  public getFollowersService(): IFollowersService {
-    return this.followersService;
+  public getFriendsService(): IFriendsService {
+    return this.friendsService;
   }
 
   public getMediaService(): IMediaService {
@@ -306,10 +303,6 @@ export class Container implements IContainer {
 
   public getConversationsController(): IConversationsController {
     return this.conversationsController;
-  }
-
-  public getFollowersController(): IFollowersController {
-    return this.followersController;
   }
 
   public getMediaController(): IMediaController {

@@ -2,7 +2,6 @@ import { logger } from '@/logger';
 import { IBlock } from '@/models/schemas/block.schema';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
-import { IFollower } from '@/models/schemas/follower.schema';
 import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
 import { IFriendship } from '@/models/schemas/friendship.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
@@ -21,7 +20,6 @@ export interface IDatabaseService {
   createUsersIndex(): Promise<void>;
   createRefreshTokensIndex(): Promise<void>;
   createVideoStatusesIndex(): Promise<void>;
-  createFollowersIndex(): Promise<void>;
   createFriendshipIndexes(): Promise<void>;
   createFriendRequestIndexes(): Promise<void>;
   createBlockIndexes(): Promise<void>;
@@ -94,12 +92,6 @@ class DatabaseService implements IDatabaseService {
     const isIndexExists = await this.videoStatuses.indexExists(['name_1']);
     if (isIndexExists) return;
     await this.videoStatuses.createIndex({ name: 1 });
-  }
-
-  async createFollowersIndex() {
-    const isIndexExists = await this.followers.indexExists(['userId_1_followedUserId_1']);
-    if (isIndexExists) return;
-    await this.followers.createIndex({ userId: 1, followedUserId: 1 });
   }
 
   async createFriendshipIndexes() {
@@ -190,7 +182,6 @@ class DatabaseService implements IDatabaseService {
       this.createUsersSearchIndex(),
       this.createRefreshTokensIndex(),
       this.createVideoStatusesIndex(),
-      this.createFollowersIndex(),
       this.createFriendshipIndexes(),
       this.createFriendRequestIndexes(),
       this.createBlockIndexes(),
@@ -209,10 +200,6 @@ class DatabaseService implements IDatabaseService {
 
   get refreshTokens(): Collection<IRefreshToken> {
     return this.db.collection<IRefreshToken>('refreshTokens');
-  }
-
-  get followers(): Collection<IFollower> {
-    return this.db.collection<IFollower>('followers');
   }
 
   get friendships(): Collection<IFriendship> {

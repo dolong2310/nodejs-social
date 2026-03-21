@@ -6,7 +6,7 @@ import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
 import { ISearchRepository } from '@/repositories/search.repository';
 import { BaseService } from '@/services/base.service';
-import { IFollowersService } from '@/services/followers.service';
+import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
 
 export interface ISearchService {
@@ -27,7 +27,7 @@ export interface ISearchService {
 class SearchService extends BaseService implements ISearchService {
   constructor(
     private readonly searchRepository: ISearchRepository,
-    private readonly followersService: IFollowersService,
+    private readonly friendsService: IFriendsService,
     private readonly postsService: IPostsService,
     private readonly redis: IRedisService
   ) {
@@ -51,7 +51,7 @@ class SearchService extends BaseService implements ISearchService {
       peopleFollow: people_follow,
       page: Number(page),
       limit: Number(limit),
-      findFollowedUserIds: this.followersService.findFollowedUserIds
+      findFollowedUserIds: this.friendsService.findFollowedUserIds
     });
 
     const totalPostsPromise = this.searchRepository.countPosts({
@@ -59,7 +59,7 @@ class SearchService extends BaseService implements ISearchService {
       query,
       type,
       peopleFollow: people_follow,
-      findFollowedUserIds: this.followersService.findFollowedUserIds
+      findFollowedUserIds: this.friendsService.findFollowedUserIds
     });
 
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
@@ -87,14 +87,14 @@ class SearchService extends BaseService implements ISearchService {
         peopleFollow: people_follow,
         page: Number(page),
         limit: Number(limit),
-        findFollowedUserIds: this.followersService.findFollowedUserIds
+        findFollowedUserIds: this.friendsService.findFollowedUserIds
       });
 
       const totalUsersPromise = this.searchRepository.countUsers({
         userId,
         query,
         peopleFollow: people_follow,
-        findFollowedUserIds: this.followersService.findFollowedUserIds
+        findFollowedUserIds: this.friendsService.findFollowedUserIds
       });
       return Promise.all([usersPromise, totalUsersPromise]);
     };

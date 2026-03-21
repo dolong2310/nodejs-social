@@ -5,7 +5,7 @@ import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import { AuthFailureError, BadRequestError, ForbiddenError, NotFoundError } from '@/responses/error.response';
-import { IFollowersService } from '@/services/followers.service';
+import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
 import { IUsersService } from '@/services/users.service';
 import { IMedia } from '@/types/media.type';
@@ -30,7 +30,7 @@ class PostsValidation implements IPostsValidation {
   constructor(
     private readonly postsService: IPostsService,
     private readonly usersService: IUsersService,
-    private readonly followersService: IFollowersService
+    private readonly friendsService: IFriendsService
   ) {}
 
   createPostValidation = validate(
@@ -211,9 +211,7 @@ class PostsValidation implements IPostsValidation {
     const ownerId = post.userId.toString();
 
     const isOwner = isGuestUser ? false : post.userId.equals(userId);
-    const isFollower = isGuestUser
-      ? false
-      : await this.followersService.findFollowerId({ myUserId: userId, userId: ownerId });
+    const isFriend = isGuestUser ? false : await this.friendsService.isFriendOf(userId, ownerId);
     const isMention = isGuestUser ? false : post.mentions.map((mention) => mention.toString()).includes(userId);
 
     // kiểm tra user owner của bài post có bị banned không
@@ -232,9 +230,9 @@ class PostsValidation implements IPostsValidation {
       }
     }
 
-    // kiểm tra bài post có chế độ "followers" thì chỉ user followers hoặc owner hoặc mentions mới được xem bài post
+    // kiểm tra bài post có audience friends-only (enum FOLLOWERS) thì chỉ bạn bè hoặc owner hoặc mentions mới được xem
     if (post.audience === EPostAudience.FOLLOWERS) {
-      if (!isFollower && !isOwner && !isMention) {
+      if (!isFriend && !isOwner && !isMention) {
         throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_FOLLOWERS_CAN_VIEW_POSTS);
       }
     }
