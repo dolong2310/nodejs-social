@@ -302,7 +302,7 @@ src/models/schemas/block.schema.ts
 | Phase 4 chat will need friends + blocks | Rework if APIs hidden | Expose service methods on container for reuse |
 | Phase 5 notifications | Duplicate events if accept retries | Optional idempotency key on notification insert (deferred) |
 
-## Validation architecture (Nyquist dimension 8 — test / verification)
+## Validation Architecture (Nyquist dimension 8 — test / verification)
 
 `workflow.nyquist_validation` is **enabled** in `.planning/config.json`. The repo **has no test runner** today (STACK.md); treat **test framework setup** as Wave 0 for this phase or parallel “spike” task.
 
