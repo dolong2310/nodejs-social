@@ -13,12 +13,12 @@
 
 ### Friends & requests
 
-- [ ] **FRND-01**: User có thể gửi **lời mời kết bạn** tới user khác (không gửi cho chính mình; chống trùng trạng thái hợp lệ).
-- [ ] **FRND-02**: User nhận có thể **chấp nhận** lời mời; tạo quan hệ bạn bè hai chiều ổn định (chuẩn hóa cặp id nếu cần).
-- [ ] **FRND-03**: User nhận có thể **từ chối**; người gửi có thể **thu hồi** lời mời đang chờ.
-- [ ] **FRND-04**: User có thể xem danh sách **bạn** và danh sách lời mời **đã gửi / đã nhận** (populate tối thiểu cho UI).
-- [ ] **FRND-05**: Giới hạn **~100** lời mời gửi đi **mỗi user mỗi ngày** (rolling hoặc calendar day — ghi rõ trong triển khai).
-- [ ] **FRND-06**: User có thể **hủy kết bạn** (unfriend).
+- [x] **FRND-01**: User có thể gửi **lời mời kết bạn** tới user khác (không gửi cho chính mình; chống trùng trạng thái hợp lệ).
+- [x] **FRND-02**: User nhận có thể **chấp nhận** lời mời; tạo quan hệ bạn bè hai chiều ổn định (chuẩn hóa cặp id nếu cần).
+- [x] **FRND-03**: User nhận có thể **từ chối**; người gửi có thể **thu hồi** lời mời đang chờ.
+- [x] **FRND-04**: User có thể xem danh sách **bạn** và danh sách lời mời **đã gửi / đã nhận** (populate tối thiểu cho UI).
+- [x] **FRND-05**: Giới hạn **~100** lời mời gửi đi **mỗi user mỗi ngày** (rolling hoặc calendar day — ghi rõ trong triển khai).
+- [x] **FRND-06**: User có thể **hủy kết bạn** (unfriend).
 
 ### Block
 
@@ -100,12 +100,12 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 | INFR-01 | Phase 1 | Complete |
 | INFR-02 | Phase 2 | Complete |
 | INFR-03 | Phase 1 | Complete |
-| FRND-01 | Phase 2 | Pending |
-| FRND-02 | Phase 2 | Pending |
-| FRND-03 | Phase 2 | Pending |
-| FRND-04 | Phase 2 | Pending |
-| FRND-05 | Phase 2 | Pending |
-| FRND-06 | Phase 2 | Pending |
+| FRND-01 | Phase 2 | Complete |
+| FRND-02 | Phase 2 | Complete |
+| FRND-03 | Phase 2 | Complete |
+| FRND-04 | Phase 2 | Complete |
+| FRND-05 | Phase 2 | Complete |
+| FRND-06 | Phase 2 | Complete |
 | BLCK-01 | Phase 2 | Pending |
 | BLCK-02 | Phase 2 | Complete |
 | BLCK-03 | Phase 2 | Pending |
