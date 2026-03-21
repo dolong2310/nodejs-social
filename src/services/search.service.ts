@@ -24,6 +24,7 @@ export interface ISearchService {
   ): Promise<[IUser[], number]>;
 }
 
+/** Search uses `findFollowedUserIds` for people_follow filters — backed by mutual friends (FriendsService). */
 class SearchService extends BaseService implements ISearchService {
   constructor(
     private readonly searchRepository: ISearchRepository,

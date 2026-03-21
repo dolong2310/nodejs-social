@@ -44,7 +44,7 @@ class PostsValidation implements IPostsValidation {
           },
           trim: true
         },
-        // audience phải là 1 trong 3 giá trị: public, followers, only_me
+        // audience phải là 1 trong 3 giá trị: public, friends-only (enum FOLLOWERS), only_me
         audience: {
           isIn: {
             options: [[EPostAudience.PUBLIC, EPostAudience.FOLLOWERS, EPostAudience.ONLY_ME]],

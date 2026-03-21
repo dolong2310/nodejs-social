@@ -72,7 +72,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',
   MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items',
   ONLY_OWNER_CAN_VIEW_POSTS: 'Only owner can view posts',
-  ONLY_FOLLOWERS_CAN_VIEW_POSTS: 'Only followers can view posts',
+  ONLY_FOLLOWERS_CAN_VIEW_POSTS: 'Only friends can view posts',
 
   // Bookmark errors
   POST_ID_IS_REQUIRED: 'Post ID is required',
