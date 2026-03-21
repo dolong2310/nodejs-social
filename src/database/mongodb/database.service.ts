@@ -1,7 +1,10 @@
 import { logger } from '@/logger';
+import { IBlock } from '@/models/schemas/block.schema';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFollower } from '@/models/schemas/follower.schema';
+import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
+import { IFriendship } from '@/models/schemas/friendship.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
@@ -19,6 +22,9 @@ export interface IDatabaseService {
   createRefreshTokensIndex(): Promise<void>;
   createVideoStatusesIndex(): Promise<void>;
   createFollowersIndex(): Promise<void>;
+  createFriendshipIndexes(): Promise<void>;
+  createFriendRequestIndexes(): Promise<void>;
+  createBlockIndexes(): Promise<void>;
   createPostsIndex(): Promise<void>;
 }
 
@@ -96,6 +102,38 @@ class DatabaseService implements IDatabaseService {
     await this.followers.createIndex({ userId: 1, followedUserId: 1 });
   }
 
+  async createFriendshipIndexes() {
+    const isIndexExists = await this.friendships.indexExists(['userIdLow_1_userIdHigh_1']);
+    if (isIndexExists) return;
+    await Promise.all([
+      this.friendships.createIndex({ userIdLow: 1, userIdHigh: 1 }, { unique: true }),
+      this.friendships.createIndex({ userIdLow: 1 }),
+      this.friendships.createIndex({ userIdHigh: 1 })
+    ]);
+  }
+
+  async createFriendRequestIndexes() {
+    const isIndexExists = await this.friendRequests.indexExists(['fromUserId_1_toUserId_1']);
+    if (isIndexExists) return;
+    await Promise.all([
+      this.friendRequests.createIndex({ fromUserId: 1, toUserId: 1 }, { unique: true }),
+      this.friendRequests.createIndex({ toUserId: 1, createdAt: -1 }),
+      this.friendRequests.createIndex({ fromUserId: 1, createdAt: -1 }),
+      // UTC-day cap counts (D-07): range on createdAt for fixed fromUserId
+      this.friendRequests.createIndex({ fromUserId: 1, createdAt: 1 })
+    ]);
+  }
+
+  async createBlockIndexes() {
+    const isIndexExists = await this.blocks.indexExists(['blockerId_1_blockedId_1']);
+    if (isIndexExists) return;
+    await Promise.all([
+      this.blocks.createIndex({ blockerId: 1, blockedId: 1 }, { unique: true }),
+      this.blocks.createIndex({ blockerId: 1 }),
+      this.blocks.createIndex({ blockedId: 1 })
+    ]);
+  }
+
   async createPostsIndex() {
     const isIndexExists = await this.posts.indexExists(['content_text']);
     if (isIndexExists) return;
@@ -153,6 +191,9 @@ class DatabaseService implements IDatabaseService {
       this.createRefreshTokensIndex(),
       this.createVideoStatusesIndex(),
       this.createFollowersIndex(),
+      this.createFriendshipIndexes(),
+      this.createFriendRequestIndexes(),
+      this.createBlockIndexes(),
       this.createPostsIndex(),
       this.createPostsAdditionalIndexes(),
       this.createSearchPostsAudienceMediaIndex(),
@@ -172,6 +213,18 @@ class DatabaseService implements IDatabaseService {
 
   get followers(): Collection<IFollower> {
     return this.db.collection<IFollower>('followers');
+  }
+
+  get friendships(): Collection<IFriendship> {
+    return this.db.collection<IFriendship>('friendships');
+  }
+
+  get friendRequests(): Collection<IFriendRequest> {
+    return this.db.collection<IFriendRequest>('friendRequests');
+  }
+
+  get blocks(): Collection<IBlock> {
+    return this.db.collection<IBlock>('blocks');
   }
 
   get videoStatuses(): Collection<IVideoStatus> {
