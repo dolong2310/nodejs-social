@@ -6,6 +6,11 @@ import { IFriendship } from '@/models/schemas/friendship.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 
+export interface IFriendshipRepository {
+  findFriendUserIdsForUser(userId: ObjectId): Promise<ObjectId[]>;
+  findFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<IFriendship | null>;
+}
+
 /**
  * Map two user ids to canonical storage order (D-04).
  * Ordering uses BSON ObjectId byte order (`Buffer.compare(a.id, b.id)`), not string `localeCompare`.
@@ -21,7 +26,7 @@ export function normalizeFriendshipPair(
   return cmp < 0 ? { userIdLow: a, userIdHigh: b } : { userIdLow: b, userIdHigh: a };
 }
 
-export class FriendshipRepository extends BaseRepository {
+export class FriendshipRepository extends BaseRepository implements IFriendshipRepository {
   async findFriendUserIdsForUser(userId: ObjectId): Promise<ObjectId[]> {
     const col = this.db.friendships;
     const [asLow, asHigh] = await Promise.all([

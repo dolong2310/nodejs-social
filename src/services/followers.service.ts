@@ -24,7 +24,7 @@ class FollowersService extends BaseService implements IFollowersService {
   }
 
   async findFollowedUserIds(userId: string): Promise<ObjectId[]> {
-    const cached = await this.redisService.get<string[]>(CACHE_KEYS.followers(userId));
+    const cached = await this.redisService.get<string[]>(CACHE_KEYS.friends(userId));
     if (cached !== null) {
       return cached.map((id) => new ObjectId(id));
     }
@@ -33,9 +33,9 @@ class FollowersService extends BaseService implements IFollowersService {
     const followedUserIds = followedUsers.map((item) => item.followedUserId);
 
     await this.redisService.set(
-      CACHE_KEYS.followers(userId),
+      CACHE_KEYS.friends(userId),
       followedUserIds.map((id) => id.toString()),
-      CACHE_TTL.FOLLOWERS
+      CACHE_TTL.FRIENDS_GRAPH
     );
 
     return followedUserIds;
@@ -53,13 +53,13 @@ class FollowersService extends BaseService implements IFollowersService {
 
   async followUser({ myUserId, userId }: FollowUserRequestDTO & { myUserId: string }): Promise<IFollower> {
     const result = await this.followerRepository.followUser({ myUserId, followedUserId: userId });
-    await this.redisService.del(CACHE_KEYS.followers(myUserId));
+    await this.redisService.del(CACHE_KEYS.friends(myUserId));
     return result;
   }
 
   async unfollowUser({ myUserId, userId }: UnfollowUserParamsDTO & { myUserId: string }): Promise<boolean> {
     const result = await this.followerRepository.unfollowUser({ myUserId, unfollowedUserId: userId });
-    await this.redisService.del(CACHE_KEYS.followers(myUserId));
+    await this.redisService.del(CACHE_KEYS.friends(myUserId));
     return result;
   }
 }

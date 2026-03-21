@@ -7,7 +7,7 @@ export type SearchUsersCacheKeyParts = SearchQueryDTO & {
 
 export const CACHE_KEYS = {
   user: (userId: string) => `user:${userId}`,
-  followers: (userId: string) => `followers:${userId}`,
+  friends: (userId: string) => `friends:${userId}`,
   searchUsers: (parts: SearchUsersCacheKeyParts): string => {
     const fingerprint = JSON.stringify(parts);
     const hash = createHash('sha256').update(fingerprint).digest('hex').slice(0, 40);
@@ -17,5 +17,5 @@ export const CACHE_KEYS = {
 
 export const CACHE_TTL = {
   USER: 300, // 5 minutes — user profile changes infrequently
-  FOLLOWERS: 600 // 10 minutes — follow graph changes infrequently
+  FRIENDS_GRAPH: 600 // 10 minutes — mutual friends graph changes infrequently
 } as const;
