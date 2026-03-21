@@ -197,7 +197,13 @@ export class Container implements IContainer {
     this.usersService = new UsersService(this.userRepository, this.redis);
     this.bookmarksService = new BookmarksService(this.bookmarkRepository);
     this.conversationsService = new ConversationsService(this.conversationRepository);
-    this.friendsService = new FriendsService(this.friendshipRepository, this.redis);
+    this.friendsService = new FriendsService(
+      this.friendshipRepository,
+      this.friendRequestRepository,
+      this.blockRepository,
+      this.redis,
+      this.userRepository
+    );
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
     this.postsService = new PostsService(this.postRepository);

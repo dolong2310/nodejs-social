@@ -54,6 +54,15 @@ export const VALIDATION_ERROR_MESSAGE = {
   // Follow errors
   YOU_CANNOT_FOLLOW_YOURSELF: 'You cannot follow yourself',
 
+  // Friends graph
+  CANNOT_SEND_FRIEND_REQUEST_TO_YOURSELF: 'You cannot send a friend request to yourself',
+  ALREADY_FRIENDS: 'You are already friends with this user',
+  FRIEND_REQUEST_ALREADY_PENDING: 'A friend request is already pending for this pair',
+  NO_PENDING_FRIEND_REQUEST: 'No pending friend request found',
+  NO_FRIENDSHIP_WITH_USER: 'You are not friends with this user',
+  FRIEND_ACTION_BLOCKED: 'Cannot perform this action because of a block between users',
+  FRIEND_REQUEST_DAILY_LIMIT_EXCEEDED: 'Daily limit for outgoing friend requests reached (100 per UTC day)',
+
   // Post errors
   INVALID_POST_TYPE: 'Invalid post type',
   INVALID_POST_AUDIENCE: 'Invalid post audience',

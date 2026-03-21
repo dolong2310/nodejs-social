@@ -2,13 +2,15 @@
  * FriendshipRepository — undirected friend edges (normalized userIdLow/userIdHigh).
  */
 
-import { IFriendship } from '@/models/schemas/friendship.schema';
+import FriendshipSchema, { IFriendship } from '@/models/schemas/friendship.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 
 export interface IFriendshipRepository {
   findFriendUserIdsForUser(userId: ObjectId): Promise<ObjectId[]>;
   findFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<IFriendship | null>;
+  insertFriendship(userIdA: ObjectId, userIdB: ObjectId): Promise<void>;
+  deleteFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<number>;
 }
 
 /**
@@ -43,8 +45,15 @@ export class FriendshipRepository extends BaseRepository implements IFriendshipR
     return this.db.friendships.findOne<IFriendship>({ userIdLow, userIdHigh });
   }
 
-  async deleteFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<void> {
+  async insertFriendship(userIdA: ObjectId, userIdB: ObjectId): Promise<void> {
     const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
-    await this.db.friendships.deleteOne({ userIdLow, userIdHigh });
+    const doc = new FriendshipSchema({ userIdLow, userIdHigh, createdAt: new Date() });
+    await this.db.friendships.insertOne(doc);
+  }
+
+  async deleteFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<number> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+    const result = await this.db.friendships.deleteOne({ userIdLow, userIdHigh });
+    return result.deletedCount;
   }
 }

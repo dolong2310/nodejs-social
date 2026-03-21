@@ -28,6 +28,7 @@ export interface IUserRepository {
   findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null>;
   findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null>;
   findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null>;
+  findManyByIds(ids: string[]): Promise<IUser[]>;
 }
 
 export class UserRepository extends BaseRepository implements IUserRepository {
@@ -109,5 +110,17 @@ export class UserRepository extends BaseRepository implements IUserRepository {
 
   findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null> {
     return this.db.users.findOne<T>({ username }, options ?? {});
+  }
+
+  async findManyByIds(ids: string[]): Promise<IUser[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const unique = [...new Set(ids)].filter((id) => ObjectId.isValid(id));
+    if (unique.length === 0) {
+      return [];
+    }
+    const oids = unique.map((id) => new ObjectId(id));
+    return this.db.users.find({ _id: { $in: oids } }).toArray();
   }
 }
