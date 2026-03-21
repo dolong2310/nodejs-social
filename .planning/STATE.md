@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-friends-graph-privacy-01-PLAN.md
-last_updated: "2026-03-21T16:36:14.343Z"
+stopped_at: Completed 02-friends-graph-privacy-02-PLAN.md
+last_updated: "2026-03-21T16:40:38.921Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 5
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-03-21)
 ## Current Position
 
 Phase: 2 (Friends graph & privacy) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Plan: 2 of 4
 
 *Update after each plan completion.*
 | Phase 02-friends-graph-privacy P01 | 1 min | 2 tasks | 7 files |
+| Phase 02-friends-graph-privacy P02 | 18 min | 3 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -50,6 +51,7 @@ Full log: PROJECT.md → Key Decisions. HTTP-first chat, notifications on social
 
 - [Phase 02]: Keep followers collection until 02-02 per 02-01 plan (avoid mid-phase build break).
 - [Phase 02]: initializeIndexes change is additive only; GitNexus CRITICAL risk noted for bootstrap blast radius.
+- [Phase 02-friends-graph-privacy]: INFR-02: legacy followers API, Mongo follower getter/index, and followers Redis key removed; posts/search use FriendsService mutual-friend cache.
 
 ### Pending Todos
 
@@ -61,6 +63,6 @@ None yet. See `.planning/codebase/CONCERNS.md` for targets phased into work (esp
 
 ## Session Continuity
 
-Last session: 2026-03-21T16:36:08.267Z
-Stopped at: Completed 02-friends-graph-privacy-01-PLAN.md
+Last session: 2026-03-21T16:40:35.093Z
+Stopped at: Completed 02-friends-graph-privacy-02-PLAN.md
 Resume file: None
