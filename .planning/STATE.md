@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-friends-graph-privacy-03-PLAN.md
-last_updated: "2026-03-21T16:46:47.365Z"
+stopped_at: Completed 02-friends-graph-privacy-04-PLAN.md
+last_updated: "2026-03-21T16:51:12.775Z"
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -41,6 +41,7 @@ Plan: 4 of 4
 | Phase 02-friends-graph-privacy P01 | 1 min | 2 tasks | 7 files |
 | Phase 02-friends-graph-privacy P02 | 18 min | 3 tasks | 15 files |
 | Phase 02-friends-graph-privacy P03 | 12min | 2 tasks | 12 files |
+| Phase 02-friends-graph-privacy P04 | 18min | 3 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -55,6 +56,8 @@ Full log: PROJECT.md → Key Decisions. HTTP-first chat, notifications on social
 - [Phase 02-friends-graph-privacy]: INFR-02: legacy followers API, Mongo follower getter/index, and followers Redis key removed; posts/search use FriendsService mutual-friend cache.
 - [Phase 02-friends-graph-privacy]: Friend outgoing request cap: 100 per UTC calendar day (not local TZ); documented in friends.service.ts.
 - [Phase 02-friends-graph-privacy]: Inverse pending friend requests (B→A vs A→B) allowed; uniqueness is per directed pair only.
+- [Phase 02-friends-graph-privacy]: Blocks: 409 on existing block (symmetric or duplicate key); unblock 404 when no directed block row.
+- [Phase 02-friends-graph-privacy]: ONLY_FRIENDS_CAN_VIEW_POSTS replaces ONLY_FOLLOWERS key; removed unused YOU_CANNOT_FOLLOW_YOURSELF.
 
 ### Pending Todos
 
@@ -66,6 +69,6 @@ None yet. See `.planning/codebase/CONCERNS.md` for targets phased into work (esp
 
 ## Session Continuity
 
-Last session: 2026-03-21T16:46:47.362Z
-Stopped at: Completed 02-friends-graph-privacy-03-PLAN.md
+Last session: 2026-03-21T16:51:12.773Z
+Stopped at: Completed 02-friends-graph-privacy-04-PLAN.md
 Resume file: None

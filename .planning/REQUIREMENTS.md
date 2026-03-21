@@ -22,9 +22,9 @@
 
 ### Block
 
-- [ ] **BLCK-01**: User có thể **chặn** user khác; chặn ⇒ **tự động hủy kết bạn** nếu đang là bạn.
+- [x] **BLCK-01**: User có thể **chặn** user khác; chặn ⇒ **tự động hủy kết bạn** nếu đang là bạn.
 - [x] **BLCK-02**: Khi A chặn B (hoặc ngược lại), **cả hai không còn thấy post của nhau** trong mọi luồng đọc (kể cả post `public`).
-- [ ] **BLCK-03**: User có thể **bỏ chặn** (nếu v1 có endpoint; nếu không thì ghi vào Out of Scope — mặc định v1 **có** bỏ chặn để tránh dead-end).
+- [x] **BLCK-03**: User có thể **bỏ chặn** (nếu v1 có endpoint; nếu không thì ghi vào Out of Scope — mặc định v1 **có** bỏ chặn để tránh dead-end).
 
 ### Posts — visibility & defaults
 
@@ -106,9 +106,9 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 | FRND-04 | Phase 2 | Complete |
 | FRND-05 | Phase 2 | Complete |
 | FRND-06 | Phase 2 | Complete |
-| BLCK-01 | Phase 2 | Pending |
+| BLCK-01 | Phase 2 | Complete |
 | BLCK-02 | Phase 2 | Complete |
-| BLCK-03 | Phase 2 | Pending |
+| BLCK-03 | Phase 2 | Complete |
 | POST-01 | Phase 3 | Pending |
 | POST-02 | Phase 3 | Pending |
 | POST-03 | Phase 3 | Pending |
