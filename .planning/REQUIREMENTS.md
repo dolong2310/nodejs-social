@@ -7,9 +7,9 @@
 
 ### Infrastructure & data
 
-- [ ] **INFR-01**: Ứng dụng đọc `DATABASE_CHAT_NAME` và kết nối MongoDB **cùng cluster**, database chat tách khỏi database social chính (hai `Db` từ cùng client hoặc tương đương an toàn).
+- [x] **INFR-01**: Ứng dụng đọc `DATABASE_CHAT_NAME` và kết nối MongoDB **cùng cluster**, database chat tách khỏi database social chính (hai `Db` từ cùng client hoặc tương đương an toàn).
 - [ ] **INFR-02**: Loại bỏ dữ liệu và API **followers** cũ theo quyết định drop (collection/indexes/routes liên quan được gỡ hoặc thay thế, không migration follow → friend).
-- [ ] **INFR-03**: Biến môi trường và `envConfig` cập nhật tài liệu/example cho `DATABASE_CHAT_NAME`.
+- [x] **INFR-03**: Biến môi trường và `envConfig` cập nhật tài liệu/example cho `DATABASE_CHAT_NAME`.
 
 ### Friends & requests
 

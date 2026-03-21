@@ -3,7 +3,7 @@ import DatabaseService from '@/database/mongodb/database.service';
 export class DatabaseInstance {
   private static instance: DatabaseService | null = null;
 
-  static init(config: { uri: string; databaseName: string }) {
+  static init(config: { uri: string; databaseName: string; chatDatabaseName: string }) {
     if (this.instance) return this.instance;
     this.instance = new DatabaseService(config);
     return this.instance;

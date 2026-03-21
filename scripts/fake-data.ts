@@ -28,7 +28,8 @@ const MEDIA_PER_POST = 10;
 
 const db = new DatabaseService({
   uri: envConfig.DATABASE_URI,
-  databaseName: envConfig.DATABASE_NAME
+  databaseName: envConfig.DATABASE_NAME,
+  chatDatabaseName: envConfig.DATABASE_CHAT_NAME
 });
 
 const createRandomUserBody = (): RegisterRequestDTO => {

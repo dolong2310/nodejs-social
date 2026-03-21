@@ -8,7 +8,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 
 **Phase numbering:** Integer phases are planned milestone work; decimal phases (e.g. 2.1) are urgent insertions between integers.
 
-- [ ] **Phase 1: Chat database foundation** — Second Mongo `Db`, env wiring, and documented configuration for `DATABASE_CHAT_NAME`
+- [x] **Phase 1: Chat database foundation** — Second Mongo `Db`, env wiring, and documented configuration for `DATABASE_CHAT_NAME`
 - [ ] **Phase 2: Friends graph & privacy** — Remove legacy followers; mutual friends, requests, unfriend, block/unblock, daily request cap
 - [ ] **Phase 3: Posts, feed & engagement** — Per-post visibility, merged feed, likes/comments/bookmarks under one permission matrix
 - [ ] **Phase 4: Chat HTTP API** — Friend-gated direct and group conversations, messages, read state, S3 media; replace `/api/conversations`
@@ -108,7 +108,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Chat database foundation | 01-01 | Not started | - |
+| 1. Chat database foundation | 01-01 | Hoàn thành (code) | 2026-03-21 |
 | 2. Friends graph & privacy | TBD | Not started | - |
 | 3. Posts, feed & engagement | TBD | Not started | - |
 | 4. Chat HTTP API | TBD | Not started | - |

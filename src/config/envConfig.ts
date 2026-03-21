@@ -28,6 +28,7 @@ const ENV_KEYS = [
   // Database
   'DATABASE_URI',
   'DATABASE_NAME',
+  'DATABASE_CHAT_NAME',
 
   // JWT
   'JWT_ALGO',

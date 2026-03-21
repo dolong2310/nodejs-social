@@ -6,6 +6,7 @@ export interface AppConfig {
   database: {
     uri: string;
     databaseName: string;
+    chatDatabaseName: string;
   };
   redis: RedisOptions;
   cors?: CorsOptions;

@@ -13,7 +13,8 @@ async function bootstrap() {
   await createApp(httpServer, {
     database: {
       uri: config.database.uri,
-      databaseName: config.database.name
+      databaseName: config.database.name,
+      chatDatabaseName: envConfig.DATABASE_CHAT_NAME
     },
     redis: config.redis,
     cors: {

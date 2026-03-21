@@ -12,6 +12,7 @@ import { Collection, Db, MongoClient } from 'mongodb';
 const log = logger.child({ module: 'mongodb' });
 
 export interface IDatabaseService {
+  readonly chatDb: Db;
   connect(): Promise<void>;
   close(): Promise<void>;
   createUsersIndex(): Promise<void>;
@@ -24,22 +25,38 @@ export interface IDatabaseService {
 class DatabaseService implements IDatabaseService {
   private client: MongoClient;
   private db: Db;
+  private readonly _chatDb: Db;
   private isClosed = false;
 
-  constructor(config: { uri: string; databaseName: string }) {
+  constructor(config: { uri: string; databaseName: string; chatDatabaseName: string }) {
     this.client = new MongoClient(config.uri);
     this.db = this.client.db(config.databaseName);
+    this._chatDb = this.client.db(config.chatDatabaseName);
+  }
+
+  get chatDb(): Db {
+    return this._chatDb;
   }
 
   async connect() {
     try {
       await this.db.command({ ping: 1 });
-      log.info('connected to database');
     } catch (error) {
-      log.error({ err: error }, 'error connecting to database');
-      await this.close(); // Ensures that the client will close when you error
+      log.error({ err: error }, 'error connecting to social database');
+      await this.close();
       throw error;
     }
+    try {
+      await this._chatDb.command({ ping: 1 });
+    } catch (error) {
+      log.error({ err: error }, 'error connecting to chat database');
+      await this.close();
+      throw error;
+    }
+    log.info(
+      { socialDatabase: this.db.databaseName, chatDatabase: this._chatDb.databaseName },
+      'connected to mongodb databases'
+    );
   }
 
   async close() {
