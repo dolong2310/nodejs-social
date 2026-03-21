@@ -26,7 +26,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
   1. Running app opens both social and chat databases from documented env (`DATABASE_CHAT_NAME` + same cluster URI pattern as PROJECT.md).
   2. A client of the codebase can configure chat DB name from `.env` / example env without reading source to guess variable names.
   3. Chat collections can be bootstrapped or left empty without breaking social DB startup (chat boundary is real, not deferred).
-**Plans:** TBD
+**Plans:** [01-01-PLAN.md](phases/01-chat-database-foundation/01-01-PLAN.md)
 
 ### Phase 2: Friends graph & privacy
 **Goal:** Users manage mutual friendships and blocks with spam limits; legacy follower data and APIs are gone.
@@ -108,7 +108,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Chat database foundation | TBD | Not started | - |
+| 1. Chat database foundation | 01-01 | Not started | - |
 | 2. Friends graph & privacy | TBD | Not started | - |
 | 3. Posts, feed & engagement | TBD | Not started | - |
 | 4. Chat HTTP API | TBD | Not started | - |

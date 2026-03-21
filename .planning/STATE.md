@@ -9,7 +9,7 @@ last_activity: 2026-03-21 — ROADMAP.md and STATE.md initialized for brownfield
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 0
+  total_plans: 1
   completed_plans: 0
   percent: 0
 ---
@@ -29,9 +29,9 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-03-21)
 ## Current Position
 
 Phase: **1** of **7** (Chat database foundation)  
-Plan: — (plans TBD at `/gsd-plan-phase`)  
-Status: Ready to plan  
-Last activity: 2026-03-21 — ROADMAP.md and STATE.md initialized for brownfield v1 evolution
+Plan: [01-01-PLAN.md](phases/01-chat-database-foundation/01-01-PLAN.md)  
+Status: Planned — ready to execute  
+Last activity: 2026-03-21 — Phase 1 planned (env + dual Db + bootstrap)
 
 Progress: [░░░░░░░░░░] 0%
 
