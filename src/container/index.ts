@@ -12,6 +12,7 @@ import { IVideoHLSJobQueue } from '@/queue/queues/video-hls.queue';
 // Repositories
 import { BlockRepository } from '@/repositories/block.repository';
 import { BookmarkRepository, IBookmarkRepository } from '@/repositories/bookmark.repository';
+import { ILikeRepository, LikeRepository } from '@/repositories/like.repository';
 import { ConversationRepository, IConversationRepository } from '@/repositories/conversation.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
 import { FriendshipRepository } from '@/repositories/friendship.repository';
@@ -22,6 +23,7 @@ import { IUserRepository, UserRepository } from '@/repositories/user.repository'
 // Services
 import AuthService, { IAuthService } from '@/services/auth.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
+import LikesService, { ILikesService } from '@/services/likes.service';
 import ConversationsService, { IConversationsService } from '@/services/conversations.service';
 import FriendsService, { IFriendsService } from '@/services/friends.service';
 import BlocksService, { IBlocksService } from '@/services/blocks.service';
@@ -35,6 +37,7 @@ import UsersService, { IUsersService } from '@/services/users.service';
 // Controllers
 import AuthController, { IAuthController } from '@/controllers/auth.controller';
 import BookmarksController, { IBookmarksController } from '@/controllers/bookmarks.controller';
+import LikesController, { ILikesController } from '@/controllers/likes.controller';
 import ConversationsController, { IConversationsController } from '@/controllers/conversations.controller';
 import MediaController, { IMediaController } from '@/controllers/media.controller';
 import OAuthController, { IOAuthController } from '@/controllers/oauth.controller';
@@ -55,6 +58,7 @@ export interface IContainer {
   // Repositories
   getUserRepository(): IUserRepository;
   getBookmarkRepository(): IBookmarkRepository;
+  getLikeRepository(): ILikeRepository;
   getConversationRepository(): IConversationRepository;
   getMediaRepository(): IMediaRepository;
   getPostRepository(): IPostRepository;
@@ -65,6 +69,7 @@ export interface IContainer {
   getAuthService(): IAuthService;
   getUsersService(): IUsersService;
   getBookmarksService(): IBookmarksService;
+  getLikesService(): ILikesService;
   getConversationsService(): IConversationsService;
   getFriendsService(): IFriendsService;
   getBlocksService(): IBlocksService;
@@ -77,6 +82,7 @@ export interface IContainer {
   getAuthController(): IAuthController;
   getUsersController(): IUsersController;
   getBookmarksController(): IBookmarksController;
+  getLikesController(): ILikesController;
   getConversationsController(): IConversationsController;
   getMediaController(): IMediaController;
   getOAuthController(): IOAuthController;
@@ -102,6 +108,7 @@ export class Container implements IContainer {
   // Repositories
   private userRepository!: IUserRepository;
   private bookmarkRepository!: IBookmarkRepository;
+  private likeRepository!: ILikeRepository;
   private conversationRepository!: IConversationRepository;
   private friendshipRepository!: FriendshipRepository;
   private friendRequestRepository!: FriendRequestRepository;
@@ -120,6 +127,7 @@ export class Container implements IContainer {
   private authService!: IAuthService;
   private usersService!: IUsersService;
   private bookmarksService!: IBookmarksService;
+  private likesService!: ILikesService;
   private conversationsService!: IConversationsService;
   private friendsService!: IFriendsService;
   private blocksService!: IBlocksService;
@@ -132,6 +140,7 @@ export class Container implements IContainer {
   private authController!: IAuthController;
   private usersController!: IUsersController;
   private bookmarksController!: IBookmarksController;
+  private likesController!: ILikesController;
   private conversationsController!: IConversationsController;
   private mediaController!: IMediaController;
   private oauthController!: IOAuthController;
@@ -185,6 +194,7 @@ export class Container implements IContainer {
   private initializeRepositories(): void {
     this.userRepository = new UserRepository(this.db);
     this.bookmarkRepository = new BookmarkRepository(this.db);
+    this.likeRepository = new LikeRepository(this.db);
     this.conversationRepository = new ConversationRepository(this.db);
     this.friendshipRepository = new FriendshipRepository(this.db);
     this.friendRequestRepository = new FriendRequestRepository(this.db);
@@ -205,6 +215,7 @@ export class Container implements IContainer {
     this.authService = new AuthService(this.userRepository, this.tokenService, this.emailJobQueue, this.redis);
     this.usersService = new UsersService(this.userRepository, this.redis);
     this.bookmarksService = new BookmarksService(this.bookmarkRepository);
+    this.likesService = new LikesService(this.likeRepository);
     this.conversationsService = new ConversationsService(this.conversationRepository);
     this.friendsService = new FriendsService(
       this.friendshipRepository,
@@ -222,7 +233,7 @@ export class Container implements IContainer {
     );
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
-    this.postsService = new PostsService(this.postRepository, this.blockRepository);
+    this.postsService = new PostsService(this.postRepository, this.blockRepository, this.friendsService);
     this.searchService = new SearchService(this.searchRepository, this.friendsService, this.postsService, this.redis);
   }
 
@@ -230,6 +241,7 @@ export class Container implements IContainer {
     this.authController = new AuthController(this.authService, this.usersService);
     this.usersController = new UsersController(this.usersService);
     this.bookmarksController = new BookmarksController(this.bookmarksService);
+    this.likesController = new LikesController(this.likesService);
     this.conversationsController = new ConversationsController(this.conversationsService);
     this.mediaController = new MediaController(this.mediaService, this.s3Service);
     this.oauthController = new OAuthController(this.oauthService);
@@ -242,7 +254,12 @@ export class Container implements IContainer {
   private initializeValidations(): void {
     this.authValidation = new AuthValidation(this.tokenService);
     this.usersValidation = new UsersValidation(this.usersService);
-    this.postsValidation = new PostsValidation(this.postsService, this.usersService, this.friendsService);
+    this.postsValidation = new PostsValidation(
+      this.postsService,
+      this.usersService,
+      this.friendsService,
+      this.blockRepository
+    );
     this.searchValidation = new SearchValidation();
     this.friendsValidation = new FriendsValidation(this.usersValidation);
     this.blocksValidation = new BlocksValidation(this.usersValidation);
@@ -261,6 +278,10 @@ export class Container implements IContainer {
 
   public getBookmarkRepository(): IBookmarkRepository {
     return this.bookmarkRepository;
+  }
+
+  public getLikeRepository(): ILikeRepository {
+    return this.likeRepository;
   }
 
   public getConversationRepository(): IConversationRepository {
@@ -294,6 +315,10 @@ export class Container implements IContainer {
 
   public getBookmarksService(): IBookmarksService {
     return this.bookmarksService;
+  }
+
+  public getLikesService(): ILikesService {
+    return this.likesService;
   }
 
   public getConversationsService(): IConversationsService {
@@ -335,6 +360,10 @@ export class Container implements IContainer {
 
   public getBookmarksController(): IBookmarksController {
     return this.bookmarksController;
+  }
+
+  public getLikesController(): ILikesController {
+    return this.likesController;
   }
 
   public getConversationsController(): IConversationsController {

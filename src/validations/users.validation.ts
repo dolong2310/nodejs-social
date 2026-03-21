@@ -63,6 +63,10 @@ export const imageSchema: ParamSchema = {
 export interface IUsersValidation {
   updateMeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   userVerifiedValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  /** After `protect` or inside `optionalAuth` when a token exists: load `req.user` without requiring verified (still bans missing users). */
+  attachAuthenticatedUserAllowUnverified: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  /** Use after `attachAuthenticatedUserAllowUnverified`; 403 if user is unverified (likes, bookmarks, etc.). */
+  forbidUnverifiedEngagement: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   userIdValidation: (
     key: string,
     location: Location
@@ -183,6 +187,34 @@ class UsersValidation implements IUsersValidation {
     }
     req.user = user;
     syncLogContextFromUser(req);
+    next();
+  };
+
+  attachAuthenticatedUserAllowUnverified = async (req: Request, _res: Response, next: NextFunction) => {
+    const userId: string | undefined = req.tokenPayload?.userId;
+    if (!userId) {
+      throw new AuthFailureError();
+    }
+    const user = await this.usersService.findUserById(userId);
+    if (!user) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+    }
+    if (user.verificationStatus === EUserVerificationStatus.BANNED) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+    }
+    req.user = user;
+    syncLogContextFromUser(req);
+    next();
+  };
+
+  forbidUnverifiedEngagement = async (req: Request, _res: Response, next: NextFunction) => {
+    const user = req.user;
+    if (!user) {
+      throw new AuthFailureError();
+    }
+    if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ENGAGEMENT_REQUIRES_VERIFIED_ACCOUNT);
+    }
     next();
   };
 

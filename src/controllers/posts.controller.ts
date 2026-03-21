@@ -74,7 +74,7 @@ class PostsController extends BaseController implements IPostsController {
 
   getPostDetail = async (req: Request<GetPostDetailParamsDTO>, res: Response) => {
     const { postId } = req.params;
-    const userId = this.getUserId(req);
+    const userId = this.getUserId(req, { optional: true });
     const post = req.postDetail as PostDetailResponseDTO;
 
     const updatedViews = await this.postsService.increaseViews({ postId, userId });
@@ -94,7 +94,7 @@ class PostsController extends BaseController implements IPostsController {
   getPostsType = async (req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response) => {
     const { postId, type } = req.params;
     const { page, limit } = req.query;
-    const userId = this.getUserId(req);
+    const userId = this.getUserId(req, { optional: true });
 
     const { posts, totalPosts } = await this.postsService.getPostsType({
       userId,

@@ -84,6 +84,11 @@ export const VALIDATION_ERROR_MESSAGE = {
   ONLY_OWNER_CAN_VIEW_POSTS: 'Only owner can view posts',
   ONLY_FRIENDS_CAN_VIEW_POSTS: 'Only friends can view posts',
   ONLY_OWNER_CAN_UPDATE_POST_SETTINGS: 'Only the post author can update audience or comment settings',
+  CANNOT_VIEW_POST_BLOCKED: 'You cannot view this post because of a block between you and the author',
+  ENGAGEMENT_REQUIRES_VERIFIED_ACCOUNT: 'Verify your account to like, bookmark, or comment',
+  CANNOT_ENGAGE_POST_BLOCKED: 'You cannot interact with this post because of a block between you and the author',
+  CANNOT_ENGAGE_WITH_INACCESSIBLE_POST: 'You cannot interact with this post',
+  STRANGER_COMMENTS_NOT_ALLOWED_ON_THIS_POST: 'The author does not allow comments from users who are not friends',
 
   // Bookmark errors
   POST_ID_IS_REQUIRED: 'Post ID is required',

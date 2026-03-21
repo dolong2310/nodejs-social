@@ -1,8 +1,8 @@
 /*
- * This file defines the bookmarks routes for creating bookmark, deleting bookmark.
+ * Likes routes — same engagement gates as bookmarks (verified + visibility + block).
  */
 
-import { IBookmarksController } from '@/controllers/bookmarks.controller';
+import { ILikesController } from '@/controllers/likes.controller';
 import { protect } from '@/middlewares/auth.middleware';
 import { appLimiter } from '@/middlewares/limiter.middleware';
 import { BaseRoute } from '@/routes/base.route';
@@ -10,8 +10,8 @@ import { asyncHandler } from '@/utils/handler.util';
 import { IPostsValidation } from '@/validations/posts.validation';
 import { IUsersValidation } from '@/validations/users.validation';
 
-export class BookmarksRoute extends BaseRoute {
-  private bookmarksController!: IBookmarksController;
+export class LikesRoute extends BaseRoute {
+  private likesController!: ILikesController;
   private usersValidation!: IUsersValidation;
   private postsValidation!: IPostsValidation;
 
@@ -20,8 +20,7 @@ export class BookmarksRoute extends BaseRoute {
   }
 
   protected initializeRoutes(): void {
-    // Initialize the controller here, after the container is available
-    this.bookmarksController = this.container.getBookmarksController();
+    this.likesController = this.container.getLikesController();
     this.usersValidation = this.container.getUsersValidation();
     this.postsValidation = this.container.getPostsValidation();
 
@@ -33,7 +32,7 @@ export class BookmarksRoute extends BaseRoute {
       this.usersValidation.forbidUnverifiedEngagement,
       this.postsValidation.postIdValidation('postId', 'body'),
       this.postsValidation.audienceValidation,
-      asyncHandler(this.bookmarksController.createBookmark)
+      asyncHandler(this.likesController.createLike)
     );
     this.router.delete(
       '/posts/:postId',
@@ -43,12 +42,12 @@ export class BookmarksRoute extends BaseRoute {
       this.usersValidation.forbidUnverifiedEngagement,
       this.postsValidation.postIdValidation('postId', 'params'),
       this.postsValidation.audienceValidation,
-      asyncHandler(this.bookmarksController.deleteBookmark)
+      asyncHandler(this.likesController.deleteLike)
     );
   }
 }
 
 export default () => {
-  const bookmarksRoute = new BookmarksRoute();
-  return bookmarksRoute.getRouter();
+  const likesRoute = new LikesRoute();
+  return likesRoute.getRouter();
 };

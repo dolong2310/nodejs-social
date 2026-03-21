@@ -29,7 +29,7 @@ export class PostsRoute extends BaseRoute {
     this.router.get(
       '/',
       postsLimiter,
-      optionalAuth(this.usersValidation.userVerifiedValidation),
+      optionalAuth(this.usersValidation.attachAuthenticatedUserAllowUnverified),
       validatePaginationQuery,
       asyncHandler(this.postsController.getNewFeeds)
     );
@@ -53,7 +53,7 @@ export class PostsRoute extends BaseRoute {
     this.router.get(
       '/:type/:postId',
       postsLimiter,
-      optionalAuth(this.usersValidation.userVerifiedValidation),
+      optionalAuth(this.usersValidation.attachAuthenticatedUserAllowUnverified),
       this.postsValidation.postIdValidation('postId', 'params'),
       this.postsValidation.audienceValidation,
       this.postsValidation.postTypeValidation,

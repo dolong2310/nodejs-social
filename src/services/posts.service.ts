@@ -7,6 +7,7 @@ import {
   PatchPostRequestDTO
 } from '@/dtos/requests/post.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
+import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
@@ -14,6 +15,7 @@ import { IBlockRepository } from '@/repositories/block.repository';
 import { IPostRepository } from '@/repositories/post.repository';
 import { ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
+import { IFriendsService } from '@/services/friends.service';
 import { ObjectId } from 'mongodb';
 
 export interface IPostsService {
@@ -47,7 +49,8 @@ export interface IPostsService {
 class PostsService extends BaseService implements IPostsService {
   constructor(
     private readonly postRepository: IPostRepository,
-    private readonly blockRepository: IBlockRepository
+    private readonly blockRepository: IBlockRepository,
+    private readonly friendsService: IFriendsService
   ) {
     super();
   }
@@ -123,6 +126,10 @@ class PostsService extends BaseService implements IPostsService {
   }
 
   async createPost({ userId, body }: { userId: string; body: CreatePostRequestDTO }): Promise<IPost> {
+    if (body.type !== EPostType.POST) {
+      await this.assertThreadedEngagementAllowed(userId, body);
+    }
+
     const { hashtags: hashtagsBody } = body;
 
     const hashtags = (await this.findAndUpsertHashtags(hashtagsBody)).filter((h) => h !== null);
@@ -155,6 +162,62 @@ class PostsService extends BaseService implements IPostsService {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
     }
     return updated;
+  }
+
+  private async assertThreadedEngagementAllowed(viewerId: string, body: CreatePostRequestDTO): Promise<void> {
+    const parentId = body.parentId;
+    if (!parentId) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+    }
+    const parent = await this.postRepository.findPostById(parentId);
+    if (!parent) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+    }
+    if (await this.blockRepository.isBlockedEitherWay(new ObjectId(viewerId), parent.userId)) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_POST_BLOCKED);
+    }
+    await this.assertViewerCanSeeParentForEngagement(viewerId, parent);
+
+    const ownerId = parent.userId.toString();
+    const isOwner = viewerId === ownerId;
+    const isFriend = await this.friendsService.isFriendOf(viewerId, ownerId);
+    const isMention = parent.mentions.map((m) => m.toString()).includes(viewerId);
+    const isStranger = !isOwner && !isFriend && !isMention;
+    const audienceStr = parent.audience as string;
+    const isPublic = audienceStr === EPostAudience.PUBLIC;
+    if (!isPublic || !isStranger) {
+      return;
+    }
+    const allowStrangerEngagement = parent.allowStrangerComments ?? true;
+    if (
+      !allowStrangerEngagement &&
+      [EPostType.COMMENT, EPostType.REPOST, EPostType.QUOTE].includes(body.type)
+    ) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.STRANGER_COMMENTS_NOT_ALLOWED_ON_THIS_POST);
+    }
+  }
+
+  private async assertViewerCanSeeParentForEngagement(viewerId: string, parent: IPost): Promise<void> {
+    const ownerId = parent.userId.toString();
+    if (viewerId === ownerId) {
+      return;
+    }
+    const audienceStr = parent.audience as string;
+    const isPublic = audienceStr === EPostAudience.PUBLIC;
+    const isFriendsOnly =
+      audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
+    const isOnlyMe = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
+    const isMention = parent.mentions.map((m) => m.toString()).includes(viewerId);
+    const isFriend = await this.friendsService.isFriendOf(viewerId, ownerId);
+    if (isOnlyMe) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_WITH_INACCESSIBLE_POST);
+    }
+    if (isFriendsOnly && !isFriend && !isMention) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_WITH_INACCESSIBLE_POST);
+    }
+    if (!isPublic && !isFriendsOnly) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_WITH_INACCESSIBLE_POST);
+    }
   }
 
   async updatePostsViews<T extends PostDetailResponseDTO | PostNewFeedResponseDTO>({

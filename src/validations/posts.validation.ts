@@ -4,6 +4,7 @@ import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
+import { IBlockRepository } from '@/repositories/block.repository';
 import { AuthFailureError, BadRequestError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
@@ -15,6 +16,7 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema, Location, Meta } from 'express-validator';
 import { isEmpty } from 'lodash-es';
+import { ObjectId } from 'mongodb';
 
 export interface IPostsValidation {
   createPostValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
@@ -31,7 +33,8 @@ class PostsValidation implements IPostsValidation {
   constructor(
     private readonly postsService: IPostsService,
     private readonly usersService: IUsersService,
-    private readonly friendsService: IFriendsService
+    private readonly friendsService: IFriendsService,
+    private readonly blockRepository: IBlockRepository
   ) {}
 
   createPostValidation = validate(
@@ -224,6 +227,13 @@ class PostsValidation implements IPostsValidation {
   ): Promise<void> => {
     const userId = req.tokenPayload?.userId;
     const post = req.postDetail as PostDetailResponseDTO;
+
+    if (userId) {
+      const blocked = await this.blockRepository.isBlockedEitherWay(new ObjectId(userId), post.userId);
+      if (blocked) {
+        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_POST_BLOCKED);
+      }
+    }
 
     const audienceStr = post.audience as string;
     const isPublicAudience = audienceStr === EPostAudience.PUBLIC;

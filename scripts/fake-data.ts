@@ -15,7 +15,6 @@ import { IPost } from '../src/models/schemas/post.schema.js';
 import UserSchema from '../src/models/schemas/user.schema.js';
 import { normalizeFriendshipPair } from '../src/repositories/friendship.repository.js';
 import { PostRepository } from '../src/repositories/post.repository.js';
-import PostsService from '../src/services/posts.service.js';
 import TokenService from '../src/services/token.service.js';
 import { hashPassword } from '../src/utils/password.util.js';
 
@@ -197,7 +196,7 @@ const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
   console.log('Creating posts...');
   console.log('Counting...');
 
-  const postsService = new PostsService(new PostRepository(db));
+  const postRepository = new PostRepository(db);
 
   let count = 0;
   const parentPostIds: string[] = []; // danh sách _id các post gốc (type = POST)
@@ -208,7 +207,9 @@ const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
       for (let i = 0; i < POST_PER_USER; i++) {
         const body = createRandomPostBody(userIds, parentPostIds);
 
-        const newPost = await postsService.createPost({ userId, body });
+        const hashtags = (await postRepository.findAndUpsertHashtags(body.hashtags)).filter((h) => h !== null);
+        const hashtagIds = hashtags.map((hashtag) => hashtag._id);
+        const newPost = await postRepository.createPost({ userId, body: { ...body, hashtags: hashtagIds } });
 
         // Nếu là post gốc thì lưu lại _id để làm parent cho các post con sau này
         if (newPost.type === EPostType.POST && newPost._id) {

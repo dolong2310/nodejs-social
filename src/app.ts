@@ -9,6 +9,7 @@ import { errorHandler } from '@/middlewares/error.middleware';
 import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
+import likesRouter from '@/routes/likes.route';
 import conversationsRouter from '@/routes/conversations.route';
 import friendsRouter from '@/routes/friends.route';
 import blocksRouter from '@/routes/blocks.route';
@@ -92,6 +93,7 @@ function setupRoutes(): Router {
   router.use('/static', staticRouter());
   router.use('/posts', postsRouter());
   router.use('/bookmarks', bookmarksRouter());
+  router.use('/likes', likesRouter());
   router.use('/search', searchRouter());
   router.use('/conversations', conversationsRouter());
   router.use('/friends', friendsRouter());

@@ -1,6 +1,7 @@
 import { logger } from '@/logger';
 import { IBlock } from '@/models/schemas/block.schema';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
+import { ILike } from '@/models/schemas/like.schema';
 import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
 import { IFriendship } from '@/models/schemas/friendship.schema';
@@ -153,6 +154,13 @@ class DatabaseService implements IDatabaseService {
     ]);
   }
 
+  async createLikesIndex() {
+    await Promise.all([
+      this.likes.createIndex({ userId: 1, postId: 1 }, { unique: true }),
+      this.likes.createIndex({ postId: 1 })
+    ]);
+  }
+
   async createConversationsIndex() {
     // For findConversations / countConversations which filter by senderId+receiverId in both directions
     await this.conversations.createIndex({ senderId: 1, receiverId: 1 });
@@ -189,6 +197,7 @@ class DatabaseService implements IDatabaseService {
       this.createPostsAdditionalIndexes(),
       this.createSearchPostsAudienceMediaIndex(),
       this.createBookmarksIndex(),
+      this.createLikesIndex(),
       this.createConversationsIndex(),
       this.createHashtagsIndex()
     ]);
@@ -228,6 +237,10 @@ class DatabaseService implements IDatabaseService {
 
   get bookmarks(): Collection<IBookmark> {
     return this.db.collection<IBookmark>('bookmarks');
+  }
+
+  get likes(): Collection<ILike> {
+    return this.db.collection<ILike>('likes');
   }
 
   get conversations(): Collection<IConversation> {
