@@ -11,8 +11,10 @@ tags:
     description: Quản lý bài viết, feed, comments
   - name: bookmarks
     description: Quản lý bookmark bài viết
-  - name: followers
-    description: Quản lý follow/unfollow người dùng
+  - name: friends
+    description: Kết bạn — lời mời, chấp nhận/từ chối, danh sách bạn, hủy kết bạn
+  - name: blocks
+    description: Chặn / bỏ chặn — tự động gỡ bạn và xóa lời mời liên quan
   - name: search
     description: Tìm kiếm bài viết, người dùng
   - name: conversations

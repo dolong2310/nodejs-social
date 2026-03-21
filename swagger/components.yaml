@@ -518,23 +518,93 @@ components:
           hasNext: true
           hasPrev: false
 
-    # Follower schemas
-    FollowUserRequest:
+    # Friends & blocks schemas
+    FriendUserSummary:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/MongoId'
+        name:
+          type: string
+        username:
+          type: string
+        avatar:
+          type: string
+    FriendsUsersPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FriendUserSummary'
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                totalItems:
+                  type: integer
+                  example: 3
+                totalPages:
+                  type: integer
+                  example: 1
+                hasNext:
+                  type: boolean
+                  example: false
+                hasPrev:
+                  type: boolean
+                  example: false
+    SendFriendRequestBody:
+      type: object
+      required: [toUserId]
+      properties:
+        toUserId:
+          $ref: '#/components/schemas/MongoId'
+          description: User nhận lời mời
+      example:
+        toUserId: "507f1f77bcf86cd799439012"
+    FriendRequestRow:
+      type: object
+      properties:
+        fromUserId:
+          $ref: '#/components/schemas/MongoId'
+        toUserId:
+          $ref: '#/components/schemas/MongoId'
+        createdAt:
+          type: string
+          format: date-time
+    FriendRequestCreatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/FriendRequestRow'
+    BlockUserBody:
       type: object
       required: [userId]
       properties:
         userId:
           $ref: '#/components/schemas/MongoId'
-          description: ID người dùng cần follow
+          description: User bị chặn
       example:
         userId: "507f1f77bcf86cd799439012"
-    FollowResponse:
+    BlockCreatedResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
-      example:
-        message: "Follow user successfully"
-        statusCode: 200
-        data: {}
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                userId:
+                  $ref: '#/components/schemas/MongoId'
 
     # Bookmark schemas
     BookmarkResponse:

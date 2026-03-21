@@ -421,7 +421,7 @@ paths:
     get:
       tags: [posts]
       summary: Lấy new feed
-      description: Bearer token tùy chọn — có token (user đã verify) thì feed cá nhân hóa theo follow; không có token thì dùng feed khách.
+      description: Bearer token tùy chọn — có token (user đã verify) thì feed cá nhân hóa theo bạn bè; không có token thì dùng feed khách.
       operationId: getNewFeeds
       parameters:
         - name: page
@@ -597,28 +597,58 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # ==================== FOLLOWERS ====================
-  /followers:
+  # ==================== FRIENDS ====================
+  /friends:
+    get:
+      tags: [friends]
+      summary: Danh sách bạn bè
+      operationId: listFriends
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/requests:
     post:
-      tags: [followers]
-      summary: Follow người dùng
-      operationId: followUser
+      tags: [friends]
+      summary: Gửi lời mời kết bạn
+      operationId: sendFriendRequest
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FollowUserRequest'
+              $ref: '#/components/schemas/SendFriendRequestBody'
       responses:
-        '200':
-          description: Follow thành công hoặc đã follow từ trước
+        '201':
+          description: Đã gửi lời mời
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FollowResponse'
+                $ref: '#/components/schemas/FriendRequestCreatedResponse'
         '400':
-          description: Không thể follow chính mình
+          description: Dữ liệu không hợp lệ
           content:
             application/json:
               schema:
@@ -629,11 +659,194 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /followers/{userId}:
+        '403':
+          description: Bị chặn hoặc không được phép
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Đã là bạn hoặc đã có lời mời chờ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt giới hạn 100 lời mời gửi đi mỗi ngày theo lịch UTC (D-07)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/requests/incoming:
+    get:
+      tags: [friends]
+      summary: Lời mời đến
+      operationId: listIncomingFriendRequests
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/requests/outgoing:
+    get:
+      tags: [friends]
+      summary: Lời mời đã gửi
+      operationId: listOutgoingFriendRequests
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/requests/{fromUserId}/accept:
+    post:
+      tags: [friends]
+      summary: Chấp nhận lời mời
+      operationId: acceptFriendRequest
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: fromUserId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Bị chặn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không có lời mời chờ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/requests/{fromUserId}/decline:
+    post:
+      tags: [friends]
+      summary: Từ chối lời mời
+      operationId: declineFriendRequest
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: fromUserId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không có lời mời chờ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/requests/outgoing/{toUserId}:
     delete:
-      tags: [followers]
-      summary: Unfollow người dùng
-      operationId: unfollowUser
+      tags: [friends]
+      summary: Thu hồi lời mời đã gửi
+      operationId: revokeOutgoingFriendRequest
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: toUserId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không có lời mời chờ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /friends/{userId}:
+    delete:
+      tags: [friends]
+      summary: Hủy kết bạn
+      operationId: unfriendUser
       security: [{ bearerAuth: [] }]
       parameters:
         - name: userId
@@ -643,13 +856,124 @@ paths:
             $ref: '#/components/schemas/MongoId'
       responses:
         '200':
-          description: Unfollow thành công hoặc chưa follow
+          description: Thành công
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FollowResponse'
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không phải bạn bè
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== BLOCKS ====================
+  /blocks:
+    get:
+      tags: [blocks]
+      summary: Danh sách user đã chặn
+      operationId: listBlockedUsers
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags: [blocks]
+      summary: Chặn user (xóa bạn bè + lời mời liên quan)
+      operationId: blockUser
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockUserBody'
+      responses:
+        '201':
+          description: Đã chặn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockCreatedResponse'
+        '400':
+          description: Không thể chặn chính mình
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Đã tồn tại block giữa hai user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /blocks/{userId}:
+    delete:
+      tags: [blocks]
+      summary: Bỏ chặn user
+      operationId: unblockUser
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không có block active
           content:
             application/json:
               schema:

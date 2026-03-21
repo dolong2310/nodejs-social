@@ -4,6 +4,8 @@
 # Users: getMe | updateMe | getUserProfile
 # googleLogin | uploadImage | uploadVideo | uploadVideoHLS | getVideoStatus
 # getNewFeeds | createPost | getPostDetail | getPostsType
-# createBookmark | deleteBookmark | followUser (POST /followers) | unfollowUser (DELETE /followers/{userId}) | search
+# createBookmark | deleteBookmark | search
+# Friends: listFriends | sendFriendRequest | listIncomingFriendRequests | listOutgoingFriendRequests | acceptFriendRequest | declineFriendRequest | revokeOutgoingFriendRequest | unfriendUser
+# Blocks: listBlockedUsers | blockUser | unblockUser
 # createConversation | getConversations
 # getStaticImage | getStaticVideoStream | getStaticVideoHLSMaster | getStaticVideoHLSSegment
