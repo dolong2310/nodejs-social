@@ -24,6 +24,7 @@ import AuthService, { IAuthService } from '@/services/auth.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
 import ConversationsService, { IConversationsService } from '@/services/conversations.service';
 import FriendsService, { IFriendsService } from '@/services/friends.service';
+import BlocksService, { IBlocksService } from '@/services/blocks.service';
 import MediaService, { IMediaService } from '@/services/media.service';
 import OAuthService, { IOAuthService } from '@/services/oauth.service';
 import PostsService, { IPostsService } from '@/services/posts.service';
@@ -41,12 +42,14 @@ import PostsController, { IPostsController } from '@/controllers/posts.controlle
 import SearchController, { ISearchController } from '@/controllers/search.controller';
 import UsersController, { IUsersController } from '@/controllers/users.controller';
 import FriendsController, { IFriendsController } from '@/controllers/friends.controller';
+import BlocksController, { IBlocksController } from '@/controllers/blocks.controller';
 // Validations
 import AuthValidation, { IAuthValidation } from '@/validations/auth.validation';
 import PostsValidation, { IPostsValidation } from '@/validations/posts.validation';
 import SearchValidation, { ISearchValidation } from '@/validations/search.validation';
 import UsersValidation, { IUsersValidation } from '@/validations/users.validation';
 import FriendsValidation, { IFriendsValidation } from '@/validations/friends.validation';
+import BlocksValidation, { IBlocksValidation } from '@/validations/blocks.validation';
 
 export interface IContainer {
   // Repositories
@@ -64,6 +67,7 @@ export interface IContainer {
   getBookmarksService(): IBookmarksService;
   getConversationsService(): IConversationsService;
   getFriendsService(): IFriendsService;
+  getBlocksService(): IBlocksService;
   getMediaService(): IMediaService;
   getOAuthService(): IOAuthService;
   getPostsService(): IPostsService;
@@ -79,6 +83,7 @@ export interface IContainer {
   getPostsController(): IPostsController;
   getSearchController(): ISearchController;
   getFriendsController(): IFriendsController;
+  getBlocksController(): IBlocksController;
 
   // Validations
   getAuthValidation(): IAuthValidation;
@@ -86,6 +91,7 @@ export interface IContainer {
   getPostsValidation(): IPostsValidation;
   getSearchValidation(): ISearchValidation;
   getFriendsValidation(): IFriendsValidation;
+  getBlocksValidation(): IBlocksValidation;
 }
 
 export class Container implements IContainer {
@@ -116,6 +122,7 @@ export class Container implements IContainer {
   private bookmarksService!: IBookmarksService;
   private conversationsService!: IConversationsService;
   private friendsService!: IFriendsService;
+  private blocksService!: IBlocksService;
   private mediaService!: IMediaService;
   private oauthService!: IOAuthService;
   private postsService!: IPostsService;
@@ -131,6 +138,7 @@ export class Container implements IContainer {
   private postsController!: IPostsController;
   private searchController!: ISearchController;
   private friendsController!: IFriendsController;
+  private blocksController!: IBlocksController;
 
   // Validations
   private authValidation!: IAuthValidation;
@@ -138,6 +146,7 @@ export class Container implements IContainer {
   private postsValidation!: IPostsValidation;
   private searchValidation!: ISearchValidation;
   private friendsValidation!: IFriendsValidation;
+  private blocksValidation!: IBlocksValidation;
 
   // Queues
   private emailJobQueue!: IEmailJobQueue;
@@ -204,6 +213,13 @@ export class Container implements IContainer {
       this.redis,
       this.userRepository
     );
+    this.blocksService = new BlocksService(
+      this.blockRepository,
+      this.friendshipRepository,
+      this.friendRequestRepository,
+      this.friendsService,
+      this.userRepository
+    );
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
     this.postsService = new PostsService(this.postRepository);
@@ -220,6 +236,7 @@ export class Container implements IContainer {
     this.postsController = new PostsController(this.postsService, this.friendsService);
     this.searchController = new SearchController(this.searchService);
     this.friendsController = new FriendsController(this.friendsService);
+    this.blocksController = new BlocksController(this.blocksService);
   }
 
   private initializeValidations(): void {
@@ -228,6 +245,7 @@ export class Container implements IContainer {
     this.postsValidation = new PostsValidation(this.postsService, this.usersService, this.friendsService);
     this.searchValidation = new SearchValidation();
     this.friendsValidation = new FriendsValidation(this.usersValidation);
+    this.blocksValidation = new BlocksValidation(this.usersValidation);
   }
 
   private initializeQueues(): void {
@@ -286,6 +304,10 @@ export class Container implements IContainer {
     return this.friendsService;
   }
 
+  public getBlocksService(): IBlocksService {
+    return this.blocksService;
+  }
+
   public getMediaService(): IMediaService {
     return this.mediaService;
   }
@@ -339,6 +361,10 @@ export class Container implements IContainer {
     return this.friendsController;
   }
 
+  public getBlocksController(): IBlocksController {
+    return this.blocksController;
+  }
+
   // Validations
   public getAuthValidation(): IAuthValidation {
     return this.authValidation;
@@ -358,6 +384,10 @@ export class Container implements IContainer {
 
   public getFriendsValidation(): IFriendsValidation {
     return this.friendsValidation;
+  }
+
+  public getBlocksValidation(): IBlocksValidation {
+    return this.blocksValidation;
   }
 }
 

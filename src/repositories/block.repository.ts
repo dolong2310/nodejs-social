@@ -6,6 +6,14 @@ import BlockSchema from '@/models/schemas/block.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 
+export interface IBlockRepository {
+  isBlockedEitherWay(a: ObjectId, b: ObjectId): Promise<boolean>;
+  listUserIdsBlockedInEitherDirection(viewerId: ObjectId): Promise<ObjectId[]>;
+  createBlock(blockerId: ObjectId, blockedId: ObjectId): Promise<void>;
+  deleteBlock(blockerId: ObjectId, blockedId: ObjectId): Promise<number>;
+  listBlockedUserIdsForBlocker(blockerId: ObjectId): Promise<ObjectId[]>;
+}
+
 function dedupeObjectIds(ids: ObjectId[]): ObjectId[] {
   const seen = new Set<string>();
   const out: ObjectId[] = [];
@@ -19,7 +27,7 @@ function dedupeObjectIds(ids: ObjectId[]): ObjectId[] {
   return out;
 }
 
-export class BlockRepository extends BaseRepository {
+export class BlockRepository extends BaseRepository implements IBlockRepository {
   async isBlockedEitherWay(a: ObjectId, b: ObjectId): Promise<boolean> {
     const doc = await this.db.blocks.findOne(
       {
@@ -49,8 +57,9 @@ export class BlockRepository extends BaseRepository {
     await this.db.blocks.insertOne(doc);
   }
 
-  async deleteBlock(blockerId: ObjectId, blockedId: ObjectId): Promise<void> {
-    await this.db.blocks.deleteOne({ blockerId, blockedId });
+  async deleteBlock(blockerId: ObjectId, blockedId: ObjectId): Promise<number> {
+    const result = await this.db.blocks.deleteOne({ blockerId, blockedId });
+    return result.deletedCount;
   }
 
   async listBlockedUserIdsForBlocker(blockerId: ObjectId): Promise<ObjectId[]> {

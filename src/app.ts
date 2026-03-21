@@ -11,6 +11,7 @@ import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
 import conversationsRouter from '@/routes/conversations.route';
 import friendsRouter from '@/routes/friends.route';
+import blocksRouter from '@/routes/blocks.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
 import postsRouter from '@/routes/posts.route';
@@ -94,6 +95,7 @@ function setupRoutes(): Router {
   router.use('/search', searchRouter());
   router.use('/conversations', conversationsRouter());
   router.use('/friends', friendsRouter());
+  router.use('/blocks', blocksRouter());
   router.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 
   return router;

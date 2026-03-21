@@ -62,6 +62,9 @@ export const VALIDATION_ERROR_MESSAGE = {
   NO_FRIENDSHIP_WITH_USER: 'You are not friends with this user',
   FRIEND_ACTION_BLOCKED: 'Cannot perform this action because of a block between users',
   FRIEND_REQUEST_DAILY_LIMIT_EXCEEDED: 'Daily limit for outgoing friend requests reached (100 per UTC day)',
+  CANNOT_BLOCK_YOURSELF: 'You cannot block yourself',
+  BLOCK_ALREADY_EXISTS: 'A block already exists between you and this user',
+  NO_ACTIVE_BLOCK: 'No active block found for this user',
 
   // Post errors
   INVALID_POST_TYPE: 'Invalid post type',
