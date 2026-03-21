@@ -14,19 +14,20 @@ import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { AnyBulkWriteOperation, FindOneAndUpdateOptions, ObjectId, UpdateResult } from 'mongodb';
 
-/** Legacy `audience` strings stored before phase 3; keep matching until data is migrated. */
-const AUDIENCE_FRIENDS_ONLY = ['friends-only', 'followers'] as const;
-const AUDIENCE_ONLY_ME = ['only-me', 'only_me'] as const;
-
 export interface IPostRepository {
   findById(id: string): Promise<PostDetailResponseDTO>;
   findPosts(payload: {
     userId: string;
     followedUserIds: ObjectId[];
+    blockedAuthorIds: ObjectId[];
     page: number;
     limit: number;
   }): Promise<PostNewFeedResponseDTO[]>;
-  countPosts(payload: { userId: string; followedUserIds: ObjectId[] }): Promise<number>;
+  countPosts(payload: {
+    userId: string;
+    followedUserIds: ObjectId[];
+    blockedAuthorIds: ObjectId[];
+  }): Promise<number>;
   findGuestPosts(payload: { page: number; limit: number }): Promise<PostNewFeedResponseDTO[]>;
   countGuestPosts(): Promise<number>;
   findPostsType(payload: {
@@ -189,50 +190,39 @@ export class PostRepository extends BaseRepository implements IPostRepository {
   async findPosts({
     userId,
     followedUserIds,
+    blockedAuthorIds,
     page,
     limit
   }: {
     userId: string;
     followedUserIds: ObjectId[];
+    blockedAuthorIds: ObjectId[];
     page: number;
     limit: number;
   }): Promise<PostNewFeedResponseDTO[]> {
-    /**
-     * Bộ lọc (filter) này nhằm lấy các bài post hiển thị cho user:
-     * - Nếu user chưa follow ai (followedUserIds là mảng rỗng),
-     *   chỉ hiện các bài public, hoặc bài của chính user đó (bất kể audience gì, kể cả only_me).
-     * - Nếu user đã follow ai đó:
-     *   - Hiện các post của những người mình đang follow:
-     *     + audience là PUBLIC hoặc FOLLOWERS.
-     *     + audience là ONLY_ME thì chỉ lấy bài của chính mình (khi userId trùng với người đang đăng nhập).
-     */
-    let match: Record<string, unknown>;
+    const viewerOid = new ObjectId(userId);
+    const blocked = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
+    const friendIds = followedUserIds.filter((id) => !id.equals(viewerOid));
 
-    if (!followedUserIds || followedUserIds.length === 0) {
-      match = {
-        $or: [{ audience: EPostAudience.PUBLIC }, { userId: new ObjectId(userId) }]
-      };
-    } else {
-      match = {
-        userId: {
-          $in: followedUserIds
+    /**
+     * Authenticated home feed (FEED-01, FEED-02, BLCK-02):
+     * - All eligible `public` posts (any author except blocked), plus
+     * - Viewer’s own posts (any audience), plus
+     * - Mutual friends’ `friends-only` posts (authors in friendIds, not blocked).
+     */
+    const match: Record<string, unknown> = {
+      $or: [
+        {
+          audience: EPostAudience.PUBLIC,
+          userId: { $nin: blocked }
         },
-        $or: [
-          { audience: EPostAudience.PUBLIC },
-          { audience: { $in: [...AUDIENCE_FRIENDS_ONLY] } },
-          {
-            $and: [
-              { audience: { $in: [...AUDIENCE_ONLY_ME] } },
-              {
-                userId: {
-                  $eq: new ObjectId(userId)
-                }
-              }
-            ]
-          }
-        ]
-      };
-    }
+        { userId: viewerOid },
+        {
+          audience: EPostAudience.FRIENDS_ONLY,
+          userId: { $in: friendIds, $nin: blocked }
+        }
+      ]
+    };
 
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
@@ -245,25 +235,32 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     return posts;
   }
 
-  async countPosts({ userId, followedUserIds }: { userId: string; followedUserIds: ObjectId[] }): Promise<number> {
-    let match: Record<string, unknown>;
+  async countPosts({
+    userId,
+    followedUserIds,
+    blockedAuthorIds
+  }: {
+    userId: string;
+    followedUserIds: ObjectId[];
+    blockedAuthorIds: ObjectId[];
+  }): Promise<number> {
+    const viewerOid = new ObjectId(userId);
+    const blocked = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
+    const friendIds = followedUserIds.filter((id) => !id.equals(viewerOid));
 
-    if (!followedUserIds || followedUserIds.length === 0) {
-      match = {
-        $or: [{ audience: EPostAudience.PUBLIC }, { userId: new ObjectId(userId) }]
-      };
-    } else {
-      match = {
-        userId: { $in: followedUserIds },
-        $or: [
-          { audience: EPostAudience.PUBLIC },
-          { audience: { $in: [...AUDIENCE_FRIENDS_ONLY] } },
-          {
-            $and: [{ audience: { $in: [...AUDIENCE_ONLY_ME] } }, { userId: { $eq: new ObjectId(userId) } }]
-          }
-        ]
-      };
-    }
+    const match: Record<string, unknown> = {
+      $or: [
+        {
+          audience: EPostAudience.PUBLIC,
+          userId: { $nin: blocked }
+        },
+        { userId: viewerOid },
+        {
+          audience: EPostAudience.FRIENDS_ONLY,
+          userId: { $in: friendIds, $nin: blocked }
+        }
+      ]
+    };
 
     return this.count(this.db.posts, match);
   }

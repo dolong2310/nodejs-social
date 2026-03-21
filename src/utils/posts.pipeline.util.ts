@@ -16,6 +16,7 @@ export const buildBasePostPipeline = ({
 
   if (match) {
     pipeline.push({ $match: match });
+    pipeline.push({ $sort: { createdAt: -1 } });
   }
 
   if (typeof skip === 'number') {

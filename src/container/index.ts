@@ -222,7 +222,7 @@ export class Container implements IContainer {
     );
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
-    this.postsService = new PostsService(this.postRepository);
+    this.postsService = new PostsService(this.postRepository, this.blockRepository);
     this.searchService = new SearchService(this.searchRepository, this.friendsService, this.postsService, this.redis);
   }
 

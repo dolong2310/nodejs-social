@@ -10,6 +10,7 @@ import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { IBlockRepository } from '@/repositories/block.repository';
 import { IPostRepository } from '@/repositories/post.repository';
 import { ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
@@ -44,7 +45,10 @@ export interface IPostsService {
 }
 
 class PostsService extends BaseService implements IPostsService {
-  constructor(private readonly postRepository: IPostRepository) {
+  constructor(
+    private readonly postRepository: IPostRepository,
+    private readonly blockRepository: IBlockRepository
+  ) {
     super();
   }
 
@@ -53,13 +57,15 @@ class PostsService extends BaseService implements IPostsService {
   }
 
   async getNewFeeds({ userId, followedUserIds, page, limit }: GetNewFeedsPayloadDTO) {
+    const blockedAuthorIds = await this.blockRepository.listUserIdsBlockedInEitherDirection(new ObjectId(userId));
     const postsPromise = this.postRepository.findPosts({
       userId,
       followedUserIds,
+      blockedAuthorIds,
       page: Number(page),
       limit: Number(limit)
     });
-    const totalPostsPromise = this.postRepository.countPosts({ userId, followedUserIds });
+    const totalPostsPromise = this.postRepository.countPosts({ userId, followedUserIds, blockedAuthorIds });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     const updatedPosts = await this.updatePostsViews<PostNewFeedResponseDTO>({ posts });
