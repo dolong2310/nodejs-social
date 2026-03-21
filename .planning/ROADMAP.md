@@ -39,7 +39,12 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
   4. User can unfriend; user can block another user (auto-unfriends if needed); either party can unblock without dead-end UX.
   5. If either user blocks the other, neither sees the other’s posts in any read path, including `public` posts.
   6. Legacy follower APIs and follower persistence are removed (drop/no migration), per product decision.
-**Plans:** TBD
+**Plans:** 3/3 plans (execute order: 02-01 → 02-02 → 02-03; waves 1–3). *Note:* Success criterion **#5** (hide posts when blocked) is enforced end-to-end in **Phase 3** feed/read paths; Phase 2 delivers block data + `BlockRepository` helpers (BLCK-02) per `02-CONTEXT.md` D-16.
+
+Plans:
+- [ ] 02-01-PLAN.md — Graph collections/indexes, repos (incl. BLCK-02 queries), remove followers stack, `FriendsService` read path + posts/search rewire
+- [ ] 02-02-PLAN.md — `/api/friends` REST (FRND-01…06), UTC daily cap, D-12 block guard on requests
+- [ ] 02-03-PLAN.md — `/api/blocks` (BLCK-01, BLCK-03, D-14), Swagger + fake-data, INFR-02 grep completion
 
 ### Phase 3: Posts, feed & engagement
 **Goal:** Posts respect visibility and stranger-comment rules; the home feed merges public and friends-only content chronologically; engagement matches the same rules everywhere.
@@ -109,7 +114,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Chat database foundation | 01-01 | Complete    | 2026-03-21 |
-| 2. Friends graph & privacy | TBD | Not started | - |
+| 2. Friends graph & privacy | 02-01 … 02-03 | Not started | - |
 | 3. Posts, feed & engagement | TBD | Not started | - |
 | 4. Chat HTTP API | TBD | Not started | - |
 | 5. Notifications inbox | TBD | Not started | - |
