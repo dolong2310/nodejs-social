@@ -54,10 +54,16 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Each post supports `public` | `friends-only` | `only-me`; new posts default to `public` with stranger comments allowed by default.
   2. Author can set or change visibility and the stranger-comment flag on create/update according to API rules.
-  3. Authenticated user’s feed includes eligible public posts system-wide (policy-aligned) plus friends’ posts they’re allowed to see, sorted by `createdAt` descending (no ranking in v1).
+  3. **Guest** home feed (no auth) returns **only** `public` posts. **Authenticated** user’s feed includes eligible **public** posts system-wide (policy-aligned, excluding blocked authors per BLCK-02) plus friends’ **`friends-only`** posts they’re allowed to see, sorted by `createdAt` descending (no ranking in v1).
   4. Strangers who can see a `public` post may like and bookmark; they may comment only when the stranger-comment flag allows it.
   5. For `friends-only` and `only-me`, only the intended audience can view or interact (consistent with block rules).
-**Plans:** TBD
+**Plans:** 4 plans (see list below)
+
+Plans:
+- [ ] 03-01-PLAN.md — Audience literals, `allowStrangerComments`, create + owner PATCH (POST-01…03)
+- [ ] 03-02-PLAN.md — Merged feed + `createdAt` desc + BLCK-02 for authenticated feed; guest public-only (FEED-01, FEED-02, BLCK-02)
+- [ ] 03-03-PLAN.md — Read path auth tiers, engagement matrix, likes, bookmarks, threaded creates (ENGA-01…03, BLCK-02)
+- [ ] 03-04-PLAN.md — Search alignment, fake-data, minimal Swagger (POST-01, FEED-01, BLCK-02)
 
 ### Phase 4: Chat HTTP API
 **Goal:** Users message only friends via REST-backed conversations (direct and groups), with history and read semantics; experimental conversations are replaced.
@@ -116,7 +122,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Chat database foundation | 01-01 | Complete    | 2026-03-21 |
 | 2. Friends graph & privacy | 02-01 … 02-04 | Complete    | 2026-03-21 |
-| 3. Posts, feed & engagement | TBD | Not started | - |
+| 3. Posts, feed & engagement | 03-01 … 03-04 (planned) | Not started | - |
 | 4. Chat HTTP API | TBD | Not started | - |
 | 5. Notifications inbox | TBD | Not started | - |
 | 6. Realtime (Socket.IO) | TBD | Not started | - |
