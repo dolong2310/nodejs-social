@@ -19,19 +19,18 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 - ✓ API Express 5 dưới prefix `/api` với layering **route → middleware/validation → controller → service → repository** — existing
 - ✓ MongoDB (native driver), Redis, BullMQ workers, graceful shutdown — existing
 - ✓ Auth: JWT + bcrypt, Google OAuth bridge; cookie-parser, CORS — existing
-- ✓ Users, posts, bookmarks, **followers** (sẽ bị thay thế), search, media (S3), email (SES), static/video pipeline — existing
+- ✓ Users, posts, bookmarks, search, media (S3), email (SES), static/video pipeline — existing
 - ✓ Socket.IO gắn chung `HttpServer` với Express; auth handshake — existing (luồng message hiện tại mang tính thử nghiệm)
 - ✓ OpenAPI/Swagger tại `/api/docs`, logging Pino — existing
 - ✓ Route `/api/conversations` + service/repository/collection `conversations` trên **DB chính** — existing nhưng **coi là thử nghiệm**, sẽ thay bằng nghiệp vụ chat mới
 - ✓ **Phase 1 — INFR-01 / INFR-03:** Hai database Mongo trên **cùng cluster** (social + chat), một `MongoClient`, hai `Db`; biến bắt buộc `DATABASE_CHAT_NAME` trong `envConfig` + `.env.example`; ping kép khi `connect()`, fail-fast nếu chat DB lỗi; getter `chatDb` cho phase sau.
+- ✓ **Phase 2 — INFR-02, FRND-01…06, BLCK-01…03:** Mutual friends graph (`friendships`, `friendRequests`, `blocks`), REST `/api/friends` và `/api/blocks`, giới hạn **~100** friend request gửi đi / user / **ngày UTC**, unfriend, block/unblock (D-14: unfriend + xóa request khi block). Legacy followers **đã gỡ** khỏi code và Mongo wiring. Posts/search/validation dùng **`FriendsService`** (bạn hai chiều) thay followers. **Ẩn post khi đã block** trên read path feed — **Phase 3** (helpers `BlockRepository` đã có).
 
 ### Active
 
 **Social graph & hồ sơ**
 
-- [ ] **Thay toàn bộ luồng followers bằng friends:** request → accept / decline / revoke; danh sách bạn; **bỏ dữ liệu follow cũ** (drop, không migration).
-- [ ] **Giới hạn ~100 friend request gửi đi / user / ngày** (chống spam).
-- [ ] **Unfriend** và **Block** (API v1): block ⇒ **hai bên không còn thấy post của nhau** (kể cả public), và **auto unfriend**.
+- [ ] *(Phase 3)* **Ẩn post lẫn nhau khi block** trên mọi read path (kể cả `public`) — dùng block list + feed/query.
 
 **Bài viết & feed**
 
@@ -83,11 +82,11 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Friends thay followers + drop data cũ | Đồng bộ social graph với chat (chỉ bạn mới chat); đơn giản hóa migration | — Pending |
+| Friends thay followers + drop data cũ | Đồng bộ social graph với chat (chỉ bạn mới chat); đơn giản hóa migration | Phase 2: API + DB graph; follower code removed |
 | Chat DB riêng `DATABASE_CHAT_NAME` | Tách bounded context, backup/scale độc lập; cùng cluster | Phase 1: kết nối + env; schema/index Phase 4 |
 | Notifications: DB + REST + socket emit | Inbox đáng tin + realtime; vượt mức PingMe | — Pending |
 | Post defaults: public + stranger comments allowed | Giảm ma sát UX; user chỉnh từng bài | — Pending |
-| Block ẩn post lẫn nhau + unfriend | Rõ ràng về quyền riêng tư | — Pending |
+| Block ẩn post lẫn nhau + unfriend | Rõ ràng về quyền riêng tư | Phase 2: block API + side effects; feed ẩn post → Phase 3 |
 | Không DM trước khi bạn | Giảm spam/abuse | — Pending |
 | Replace socket + conversations thử nghiệm | Loại bỏ luồng test; align production chat | — Pending |
 
@@ -112,4 +111,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-03-21 after Phase 1 transition (chat DB foundation shipped)*
+*Last updated: 2026-03-21 after Phase 2 complete (friends graph & privacy; block feed filtering in Phase 3)*
