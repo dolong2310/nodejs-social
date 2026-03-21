@@ -22,6 +22,7 @@ export interface ISearchRepository {
     page: number;
     limit: number;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    blockedAuthorIds?: ObjectId[];
   }): Promise<PostDetailResponseDTO[]>;
   countPosts(payload: {
     userId?: string;
@@ -29,6 +30,7 @@ export interface ISearchRepository {
     type?: ESearchType;
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    blockedAuthorIds?: ObjectId[];
   }): Promise<number>;
   findUsers(payload: {
     userId?: string;
@@ -59,6 +61,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     page: number;
     limit: number;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    blockedAuthorIds?: ObjectId[];
   }): Promise<PostDetailResponseDTO[]> {
     const match = await this._getPostMatch(payload);
     const pipelineGetNewFeeds = buildBasePostPipeline({
@@ -78,6 +81,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     type?: ESearchType;
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    blockedAuthorIds?: ObjectId[];
   }): Promise<number> {
     const match = await this._getPostMatch(payload);
     return this.count(this.db.posts, match);
@@ -133,64 +137,74 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     type,
     peopleFollow,
     userId,
-    findFollowedUserIds
+    findFollowedUserIds,
+    blockedAuthorIds
   }: {
     userId?: string;
     query: string;
     type?: ESearchType;
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    blockedAuthorIds?: ObjectId[];
   }) {
-    const match: Record<string, unknown> = {
-      audience: EPostAudience.PUBLIC
-    };
+    const andClauses: Record<string, unknown>[] = [];
 
     if (query) {
-      match['$text'] = {
-        $search: query
-      };
+      andClauses.push({
+        $text: {
+          $search: query
+        }
+      });
     }
 
-    // Filter media type
     if (type) {
       if ([ESearchType.VIDEO, ESearchType.VIDEO_HLS].includes(type)) {
-        match['media.type'] = { $in: [EMediaType.VIDEO, EMediaType.VIDEO_HLS] };
+        andClauses.push({ 'media.type': { $in: [EMediaType.VIDEO, EMediaType.VIDEO_HLS] } });
       } else if (type === ESearchType.IMAGE) {
-        match['media.type'] = type;
+        andClauses.push({ 'media.type': type });
       }
     }
 
-    // Filter audience by people follow
-    if (peopleFollow && userId) {
-      if ([ESearchPeopleFollow.FOLLOWING, ESearchPeopleFollow.NOT_FOLLOWING].includes(peopleFollow)) {
-        const followedUserIds = await findFollowedUserIds(userId);
-
-        match['userId'] =
-          peopleFollow === ESearchPeopleFollow.FOLLOWING ? { $in: followedUserIds } : { $nin: followedUserIds };
-      } else if (peopleFollow === ESearchPeopleFollow.ONLY_ME) {
-        match['userId'] = { $eq: new ObjectId(userId) };
-      }
-    }
-
-    // Filter audience by user id
     if (userId) {
-      delete match.audience;
-      match['$or'] = [
-        { audience: EPostAudience.PUBLIC },
-        { audience: { $in: ['friends-only', 'followers'] } },
-        {
-          $and: [
-            { audience: { $in: ['only-me', 'only_me'] } },
-            {
-              userId: {
-                $eq: new ObjectId(userId)
-              }
-            }
-          ]
+      const viewerOid = new ObjectId(userId);
+      const blocked = (blockedAuthorIds ?? []).filter((id) => !id.equals(viewerOid));
+      const friendIds = (await findFollowedUserIds(userId)).filter((id) => !id.equals(viewerOid));
+
+      andClauses.push({
+        $or: [
+          {
+            audience: EPostAudience.PUBLIC,
+            userId: { $nin: blocked }
+          },
+          { userId: viewerOid },
+          {
+            audience: EPostAudience.FRIENDS_ONLY,
+            userId: { $in: friendIds, $nin: blocked }
+          }
+        ]
+      });
+
+      if (peopleFollow) {
+        if ([ESearchPeopleFollow.FOLLOWING, ESearchPeopleFollow.NOT_FOLLOWING].includes(peopleFollow)) {
+          const followedUserIds = await findFollowedUserIds(userId);
+          andClauses.push({
+            userId:
+              peopleFollow === ESearchPeopleFollow.FOLLOWING
+                ? { $in: followedUserIds }
+                : { $nin: followedUserIds }
+          });
+        } else if (peopleFollow === ESearchPeopleFollow.ONLY_ME) {
+          andClauses.push({ userId: { $eq: viewerOid } });
         }
-      ];
+      }
+    } else {
+      andClauses.push({ audience: EPostAudience.PUBLIC });
     }
-    return match;
+
+    if (andClauses.length === 1) {
+      return andClauses[0] as Record<string, unknown>;
+    }
+    return { $and: andClauses };
   }
 
   private async _getUserMatch({

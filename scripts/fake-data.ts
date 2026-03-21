@@ -45,7 +45,7 @@ const createRandomUserBody = (): RegisterRequestDTO => {
 
 const createRandomPostBody = (mentionedUserIds: string[], parentPostIds: string[]): CreatePostRequestDTO => {
   // 1. type phải là 1 trong 4 giá trị: post, repost, comment, quote.
-  // 2. audience phải là 1 trong 3 giá trị: public, friends (enum followers), only_me.
+  // 2. audience: public | friends-only | only-me (phase 3 literals).
   // 3.1. nếu type là repost thì content phải là '' (string rỗng).
   // 3.2. nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng.
   // 4.1. nếu type là repost, comment, quote thì parentId phải là postId của bài viết cha.

@@ -301,7 +301,7 @@ components:
     # Post schemas
     CreatePostRequest:
       type: object
-      required: [type, audience, content, parentId, hashtags, mentions, media]
+      required: [type, audience, allowStrangerComments, content, parentId, hashtags, mentions, media]
       properties:
         type:
           type: string
@@ -309,8 +309,12 @@ components:
           example: "post"
         audience:
           type: string
-          enum: [public, followers, only_me]
+          enum: [public, friends-only, only-me]
           example: "public"
+        allowStrangerComments:
+          type: boolean
+          description: Khi audience là public, cho phép người không phải bạn bè bình luận (và tương tự repost/quote theo API).
+          example: true
         content:
           type: string
           example: "Hello world! Đây là bài viết đầu tiên của tôi #nodejs #javascript"
@@ -340,6 +344,7 @@ components:
       example:
         type: "post"
         audience: "public"
+        allowStrangerComments: true
         content: "Hello world! Đây là bài viết đầu tiên #nodejs #javascript"
         parentId: null
         hashtags: ["nodejs", "javascript"]
@@ -347,6 +352,18 @@ components:
         media:
           - url: "https://cdn.example.com/images/abc123.jpg"
             type: "image"
+    PatchPostRequest:
+      type: object
+      required: [audience, allowStrangerComments]
+      properties:
+        audience:
+          type: string
+          enum: [public, friends-only, only-me]
+        allowStrangerComments:
+          type: boolean
+      example:
+        audience: "friends-only"
+        allowStrangerComments: false
     MediaItem:
       type: object
       properties:
@@ -373,7 +390,9 @@ components:
           enum: [post, repost, comment, quote]
         audience:
           type: string
-          enum: [public, followers, only_me]
+          enum: [public, friends-only, only-me]
+        allowStrangerComments:
+          type: boolean
         content:
           type: string
         parentId:
@@ -405,6 +424,7 @@ components:
         userId: "507f1f77bcf86cd799439011"
         type: "post"
         audience: "public"
+        allowStrangerComments: true
         content: "Hello world! Đây là bài viết đầu tiên #nodejs"
         parentId: null
         hashtags: []
@@ -636,6 +656,25 @@ components:
           description: ID bài viết cần bookmark
       example:
         postId: "507f1f77bcf86cd799439013"
+    CreateLikeRequest:
+      type: object
+      required: [postId]
+      properties:
+        postId:
+          $ref: '#/components/schemas/MongoId'
+          description: ID bài viết cần like
+      example:
+        postId: "507f1f77bcf86cd799439013"
+    LikeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BookmarkResponse'
+    LikeSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/LikeResponse'
 
     # Conversation schemas
     CreateConversationRequest:

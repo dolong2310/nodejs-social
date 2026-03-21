@@ -421,7 +421,7 @@ paths:
     get:
       tags: [posts]
       summary: Lấy new feed
-      description: Bearer token tùy chọn — có token (user đã verify) thì feed cá nhân hóa theo bạn bè; không có token thì dùng feed khách.
+      description: Bearer tùy chọn — có token thì feed merged (public + bạn bè + bài của mình), có block filter; không token thì chỉ public. User chưa verify vẫn đọc được khi gửi token.
       operationId: getNewFeeds
       parameters:
         - name: page
@@ -471,7 +471,7 @@ paths:
       tags: [posts]
       summary: Lấy chi tiết bài viết
       operationId: getPostDetail
-      security: [{ bearerAuth: [] }]
+      description: Bearer tùy chọn; khách chỉ xem public.
       parameters:
         - name: postId
           in: path
@@ -486,13 +486,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/PostDetailSuccessResponse'
         '401':
-          description: Thiếu hoặc token không hợp lệ
+          description: Token không hợp lệ (khi gửi Authorization)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không đủ quyền xem (audience, block, v.v.)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Không tìm thấy bài viết hoặc user (token)
+          description: Không tìm thấy bài viết
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags: [posts]
+      summary: Chủ bài cập nhật audience và allowStrangerComments
+      operationId: patchPost
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPostRequest'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostSuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải chủ bài hoặc chưa verify
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy bài viết
           content:
             application/json:
               schema:
@@ -502,7 +550,7 @@ paths:
       tags: [posts]
       summary: Lấy danh sách bài viết theo loại (comments, quotes, reposts)
       operationId: getPostsType
-      security: [{ bearerAuth: [] }]
+      description: Bearer tùy chọn; quyền xem theo audience của bài cha.
       parameters:
         - name: type
           in: path
@@ -533,7 +581,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/PostsPaginatedResponse'
         '401':
-          description: Thiếu hoặc token không hợp lệ
+          description: Token không hợp lệ (khi gửi Authorization)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không đủ quyền xem bài cha
           content:
             application/json:
               schema:
@@ -586,6 +640,65 @@ paths:
       responses:
         '200':
           description: Xóa bookmark thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== LIKES ====================
+  /likes:
+    post:
+      tags: [likes]
+      summary: Thích bài viết
+      operationId: createLike
+      security: [{ bearerAuth: [] }]
+      description: Cần tài khoản đã verify; áp dụng cùng quy tắc hiển thị bài như bookmark.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLikeRequest'
+      responses:
+        '201':
+          description: Like thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LikeSuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Chưa verify hoặc không được xem bài
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /likes/posts/{postId}:
+    delete:
+      tags: [likes]
+      summary: Bỏ like bài viết
+      operationId: deleteLike
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bỏ like thành công
           content:
             application/json:
               schema:

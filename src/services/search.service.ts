@@ -4,10 +4,12 @@ import type { IRedisService } from '@/database/redis/redis.service';
 import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
 import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
+import { IBlockRepository } from '@/repositories/block.repository';
 import { ISearchRepository } from '@/repositories/search.repository';
 import { BaseService } from '@/services/base.service';
 import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
+import { ObjectId } from 'mongodb';
 
 export interface ISearchService {
   searchPosts(
@@ -30,6 +32,7 @@ class SearchService extends BaseService implements ISearchService {
     private readonly searchRepository: ISearchRepository,
     private readonly friendsService: IFriendsService,
     private readonly postsService: IPostsService,
+    private readonly blockRepository: IBlockRepository,
     private readonly redis: IRedisService
   ) {
     super();
@@ -45,6 +48,10 @@ class SearchService extends BaseService implements ISearchService {
   }: SearchQueryDTO & {
     userId?: string;
   }): Promise<[PostDetailResponseDTO[], number]> {
+    const blockedAuthorIds = userId
+      ? await this.blockRepository.listUserIdsBlockedInEitherDirection(new ObjectId(userId))
+      : undefined;
+
     const postsPromise = this.searchRepository.findPosts({
       userId,
       query,
@@ -52,7 +59,8 @@ class SearchService extends BaseService implements ISearchService {
       peopleFollow: people_follow,
       page: Number(page),
       limit: Number(limit),
-      findFollowedUserIds: this.friendsService.findFollowedUserIds
+      findFollowedUserIds: this.friendsService.findFollowedUserIds,
+      blockedAuthorIds
     });
 
     const totalPostsPromise = this.searchRepository.countPosts({
@@ -60,7 +68,8 @@ class SearchService extends BaseService implements ISearchService {
       query,
       type,
       peopleFollow: people_follow,
-      findFollowedUserIds: this.friendsService.findFollowedUserIds
+      findFollowedUserIds: this.friendsService.findFollowedUserIds,
+      blockedAuthorIds
     });
 
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
