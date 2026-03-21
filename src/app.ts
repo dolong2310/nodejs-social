@@ -4,6 +4,7 @@ import { Container } from '@/container';
 import { DatabaseInstance } from '@/database/mongodb';
 import { RedisInstance } from '@/database/redis';
 import { httpLogger, logger } from '@/logger';
+import { bindRequestLogContextMiddleware } from '@/logger/request-context';
 import { errorHandler } from '@/middlewares/error.middleware';
 import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
@@ -64,6 +65,7 @@ function createExpressApp(): Express {
   const app = express();
 
   app.use(httpLogger);
+  app.use(bindRequestLogContextMiddleware);
   app.use(helmet());
   app.use(express.json());
   app.use(cookieParser());

@@ -1,7 +1,17 @@
 import { config, isDevelopment } from '@/config';
+import { getRequestLogContext } from './request-context';
 import { randomUUID } from 'node:crypto';
 import pino, { type Logger, type LoggerOptions } from 'pino';
 import pinoHttp from 'pino-http';
+
+function logContextMixin(): Record<string, string> {
+  const ctx = getRequestLogContext();
+  if (!ctx) return {};
+  const out: Record<string, string> = {};
+  if (ctx.requestId) out.reqId = ctx.requestId;
+  if (ctx.userId) out.userId = ctx.userId;
+  return out;
+}
 
 const redactPaths = [
   'req.headers.authorization',
@@ -15,6 +25,7 @@ const redactPaths = [
 
 const baseOptions: LoggerOptions = {
   level: config.logs.level,
+  mixin: logContextMixin,
   redact: { paths: redactPaths, remove: true },
   serializers: {
     err: pino.stdSerializers.err
@@ -37,7 +48,10 @@ function createRootLogger(): Logger {
     });
   }
 
-  return pino(baseOptions);
+  return pino({
+    ...baseOptions,
+    timestamp: pino.stdTimeFunctions.isoTime
+  });
 }
 
 export const logger = createRootLogger();

@@ -1,3 +1,4 @@
+import { syncLogContextFromAuth } from '@/logger/request-context';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { AuthFailureError, ForbiddenError } from '@/responses/error.response';
 import TokenService from '@/services/token.service';
@@ -20,6 +21,7 @@ export const protect = (req: Request, _res: Response, next: NextFunction): void 
   }
 
   req.tokenPayload = _verifyAccessToken(token);
+  syncLogContextFromAuth(req);
   next();
 };
 
@@ -33,6 +35,7 @@ export const protectIfHasBearerToken = (req: Request, _res: Response, next: Next
 
   const token = authHeader.split(' ')[1];
   req.tokenPayload = _verifyAccessToken(token);
+  syncLogContextFromAuth(req);
   next();
 };
 
@@ -48,6 +51,7 @@ export const optionalAuth = (
 
     const token = authHeader.split(' ')[1];
     req.tokenPayload = _verifyAccessToken(token);
+    syncLogContextFromAuth(req);
     handler(req, _res, next);
   };
 };

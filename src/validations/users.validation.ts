@@ -1,4 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { syncLogContextFromUser } from '@/logger/request-context';
 import { USERNAME_REGEX } from '@/constants/regex.constant';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import {
@@ -181,6 +182,7 @@ class UsersValidation implements IUsersValidation {
       throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
     }
     req.user = user;
+    syncLogContextFromUser(req);
     next();
   };
 
