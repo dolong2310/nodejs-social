@@ -28,20 +28,20 @@
 
 ### Posts — visibility & defaults
 
-- [ ] **POST-01**: Mỗi post có **visibility**: `public` | `friends-only` | `only-me`.
-- [ ] **POST-02**: Post mới mặc định **public** và field **cho phép người lạ comment** mặc định **true**.
-- [ ] **POST-03**: User có thể set/đổi visibility và flag cho phép người lạ comment khi tạo/sửa post (theo rule nghiệp vụ hiện có của API post).
+- [x] **POST-01**: Mỗi post có **visibility**: `public` | `friends-only` | `only-me`.
+- [x] **POST-02**: Post mới mặc định **public** và field **cho phép người lạ comment** mặc định **true**.
+- [x] **POST-03**: User có thể set/đổi visibility và flag cho phép người lạ comment khi tạo/sửa post (theo rule nghiệp vụ hiện có của API post).
 
 ### Feed
 
-- [ ] **FEED-01**: Feed gồm bài **public** (toàn hệ phù hợp policy) **và** bài từ **bạn bè** (theo visibility).
-- [ ] **FEED-02**: Sắp xếp feed theo **`createdAt` giảm dần**; **không** rank phức tạp trong v1.
+- [x] **FEED-01**: Feed gồm bài **public** (toàn hệ phù hợp policy) **và** bài từ **bạn bè** (theo visibility).
+- [x] **FEED-02**: Sắp xếp feed theo **`createdAt` giảm dần**; **không** rank phức tạp trong v1.
 
 ### Engagement (like, comment, bookmark)
 
-- [ ] **ENGA-01**: Người xem chỉ thấy/tương tác post khi **được phép theo visibility và block** (stranger = chưa kết bạn).
-- [ ] **ENGA-02**: Với post **public**: người lạ được **like** và **bookmark** nếu xem được; **comment** chỉ khi flag “cho phép người lạ comment” = true.
-- [ ] **ENGA-03**: Với post **friends-only** / **only-me**: chỉ audience hợp lệ mới xem/tương tác (theo rule đã thống nhất).
+- [x] **ENGA-01**: Người xem chỉ thấy/tương tác post khi **được phép theo visibility và block** (stranger = chưa kết bạn).
+- [x] **ENGA-02**: Với post **public**: người lạ được **like** và **bookmark** nếu xem được; **comment** chỉ khi flag “cho phép người lạ comment” = true.
+- [x] **ENGA-03**: Với post **friends-only** / **only-me**: chỉ audience hợp lệ mới xem/tương tác (theo rule đã thống nhất).
 
 ### Chat (HTTP) — chat database
 
@@ -109,14 +109,14 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 | BLCK-01 | Phase 2 | Complete |
 | BLCK-02 | Phase 2 | Complete |
 | BLCK-03 | Phase 2 | Complete |
-| POST-01 | Phase 3 | Pending |
-| POST-02 | Phase 3 | Pending |
-| POST-03 | Phase 3 | Pending |
-| FEED-01 | Phase 3 | Pending |
-| FEED-02 | Phase 3 | Pending |
-| ENGA-01 | Phase 3 | Pending |
-| ENGA-02 | Phase 3 | Pending |
-| ENGA-03 | Phase 3 | Pending |
+| POST-01 | Phase 3 | Complete |
+| POST-02 | Phase 3 | Complete |
+| POST-03 | Phase 3 | Complete |
+| FEED-01 | Phase 3 | Complete |
+| FEED-02 | Phase 3 | Complete |
+| ENGA-01 | Phase 3 | Complete |
+| ENGA-02 | Phase 3 | Complete |
+| ENGA-03 | Phase 3 | Complete |
 | CHAT-01 | Phase 4 | Pending |
 | CHAT-02 | Phase 4 | Pending |
 | CHAT-03 | Phase 4 | Pending |

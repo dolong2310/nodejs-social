@@ -10,7 +10,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 
 - [x] **Phase 1: Chat database foundation** — Second Mongo `Db`, env wiring, and documented configuration for `DATABASE_CHAT_NAME`
 - [x] **Phase 2: Friends graph & privacy** — Remove legacy followers; mutual friends, requests, unfriend, block/unblock, daily request cap (completed 2026-03-21)
-- [ ] **Phase 3: Posts, feed & engagement** — Per-post visibility, merged feed, likes/comments/bookmarks under one permission matrix
+- [x] **Phase 3: Posts, feed & engagement** — Per-post visibility, merged feed, likes/comments/bookmarks under one permission matrix (completed 2026-03-21)
 - [ ] **Phase 4: Chat HTTP API** — Friend-gated direct and group conversations, messages, read state, S3 media; replace `/api/conversations`
 - [ ] **Phase 5: Notifications inbox** — DB + REST list/mark-read, v1 types, hooks from graph and chat, emit-after-persist
 - [ ] **Phase 6: Realtime (Socket.IO)** — Replace chat socket flow; JWT identity, rooms, online presence, persist-then-emit via shared services
@@ -57,13 +57,13 @@ Plans:
   3. **Guest** home feed (no auth) returns **only** `public` posts. **Authenticated** user’s feed includes eligible **public** posts system-wide (policy-aligned, excluding blocked authors per BLCK-02) plus friends’ **`friends-only`** posts they’re allowed to see, sorted by `createdAt` descending (no ranking in v1).
   4. Strangers who can see a `public` post may like and bookmark; they may comment only when the stranger-comment flag allows it.
   5. For `friends-only` and `only-me`, only the intended audience can view or interact (consistent with block rules).
-**Plans:** 4 plans (see list below)
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 03-01-PLAN.md — Audience literals, `allowStrangerComments`, create + owner PATCH (POST-01…03)
-- [ ] 03-02-PLAN.md — Merged feed + `createdAt` desc + BLCK-02 for authenticated feed; guest public-only (FEED-01, FEED-02, BLCK-02)
-- [ ] 03-03-PLAN.md — Read path auth tiers, engagement matrix, likes, bookmarks, threaded creates (ENGA-01…03, BLCK-02)
-- [ ] 03-04-PLAN.md — Search alignment, fake-data, minimal Swagger (POST-01, FEED-01, BLCK-02); **wave 4** after 03-03 so OpenAPI matches likes/PATCH
+- [x] 03-01-PLAN.md — Audience literals, `allowStrangerComments`, create + owner PATCH (POST-01…03)
+- [x] 03-02-PLAN.md — Merged feed + `createdAt` desc + BLCK-02 for authenticated feed; guest public-only (FEED-01, FEED-02, BLCK-02)
+- [x] 03-03-PLAN.md — Read path auth tiers, engagement matrix, likes, bookmarks, threaded creates (ENGA-01…03, BLCK-02)
+- [x] 03-04-PLAN.md — Search alignment, fake-data, minimal Swagger (POST-01, FEED-01, BLCK-02); **wave 4** after 03-03 so OpenAPI matches likes/PATCH
 
 ### Phase 4: Chat HTTP API
 **Goal:** Users message only friends via REST-backed conversations (direct and groups), with history and read semantics; experimental conversations are replaced.
@@ -122,7 +122,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Chat database foundation | 01-01 | Complete    | 2026-03-21 |
 | 2. Friends graph & privacy | 02-01 … 02-04 | Complete    | 2026-03-21 |
-| 3. Posts, feed & engagement | 03-01 … 03-04 (planned) | Not started | - |
+| 3. Posts, feed & engagement | 4/4 | Complete    | 2026-03-21 |
 | 4. Chat HTTP API | TBD | Not started | - |
 | 5. Notifications inbox | TBD | Not started | - |
 | 6. Realtime (Socket.IO) | TBD | Not started | - |
