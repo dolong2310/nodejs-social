@@ -51,9 +51,6 @@ export const VALIDATION_ERROR_MESSAGE = {
     'Username must be 4 to 15 characters long and contain only letters, numbers and underscores',
   USERNAME_ALREADY_EXISTS: 'Username already exists',
 
-  // Follow errors
-  YOU_CANNOT_FOLLOW_YOURSELF: 'You cannot follow yourself',
-
   // Friends graph
   CANNOT_SEND_FRIEND_REQUEST_TO_YOURSELF: 'You cannot send a friend request to yourself',
   ALREADY_FRIENDS: 'You are already friends with this user',
@@ -84,7 +81,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',
   MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items',
   ONLY_OWNER_CAN_VIEW_POSTS: 'Only owner can view posts',
-  ONLY_FOLLOWERS_CAN_VIEW_POSTS: 'Only friends can view posts',
+  ONLY_FRIENDS_CAN_VIEW_POSTS: 'Only friends can view posts',
 
   // Bookmark errors
   POST_ID_IS_REQUIRED: 'Post ID is required',

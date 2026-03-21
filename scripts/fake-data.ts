@@ -10,9 +10,10 @@ import { EMediaType } from '../src/enums/media.enum.js';
 import { EPostAudience, EPostType } from '../src/enums/posts.enum.js';
 import { ETokenType } from '../src/enums/token.enum.js';
 import { EUserVerificationStatus } from '../src/enums/users.enum.js';
-import FollowerSchema from '../src/models/schemas/follower.schema.js';
+import FriendshipSchema from '../src/models/schemas/friendship.schema.js';
 import { IPost } from '../src/models/schemas/post.schema.js';
 import UserSchema from '../src/models/schemas/user.schema.js';
+import { normalizeFriendshipPair } from '../src/repositories/friendship.repository.js';
 import { PostRepository } from '../src/repositories/post.repository.js';
 import PostsService from '../src/services/posts.service.js';
 import TokenService from '../src/services/token.service.js';
@@ -45,7 +46,7 @@ const createRandomUserBody = (): RegisterRequestDTO => {
 
 const createRandomPostBody = (mentionedUserIds: string[], parentPostIds: string[]): CreatePostRequestDTO => {
   // 1. type phải là 1 trong 4 giá trị: post, repost, comment, quote.
-  // 2. audience phải là 1 trong 3 giá trị: public, followers, only_me.
+  // 2. audience phải là 1 trong 3 giá trị: public, friends (enum followers), only_me.
   // 3.1. nếu type là repost thì content phải là '' (string rỗng).
   // 3.2. nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng.
   // 4.1. nếu type là repost, comment, quote thì parentId phải là postId của bài viết cha.
@@ -163,21 +164,32 @@ const insertMultipleUsers = async (userBodies: RegisterRequestDTO[]): Promise<Ob
   return createdUsers;
 };
 
-const followMultipleUsers = async (userId: ObjectId, followedUserIds: ObjectId[]) => {
-  console.log('Start following users...');
-  const followedUsers = await Promise.all(
-    followedUserIds.map((followedUserId) => {
-      console.log(`Following user ${followedUserId}`);
-      return db.followers.insertOne(
-        new FollowerSchema({
-          userId,
-          followedUserId
+/** Seed undirected friendship edges between `viewerId` and distinct other users (normalized pair). */
+const seedFriendshipsForViewer = async (viewerId: ObjectId, candidatePeerIds: ObjectId[]) => {
+  const seen = new Set<string>();
+  const peers = candidatePeerIds.filter((peerId) => {
+    if (peerId.equals(viewerId)) return false;
+    const k = peerId.toHexString();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  console.log('Seeding friendships for viewer...');
+  const results = await Promise.all(
+    peers.map((peerId) => {
+      const { userIdLow, userIdHigh } = normalizeFriendshipPair(viewerId, peerId);
+      console.log(`Friendship edge ${userIdLow.toHexString()} — ${userIdHigh.toHexString()}`);
+      return db.friendships.insertOne(
+        new FriendshipSchema({
+          userIdLow,
+          userIdHigh,
+          createdAt: new Date()
         })
       );
     })
-  ).catch();
-  console.log(`Followed ${followedUsers.length} users`);
-  return followedUsers;
+  ).catch(() => []);
+  console.log(`Inserted ${results.length} friendship rows`);
+  return results;
 };
 
 const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
@@ -216,12 +228,12 @@ const insertMultiplePosts = async (userIds: string[]): Promise<IPost[]> => {
 const main = async () => {
   const userBodies: RegisterRequestDTO[] = faker.helpers.multiple(createRandomUserBody, { count: USER_COUNT });
   const userIds = await insertMultipleUsers(userBodies).catch();
-  // random follow users với số lượng từ 0 đến 1000
-  const followedUserIds = faker.helpers.multiple(() => faker.helpers.arrayElement(userIds), {
+  // random friend edges from MYID với số lượng candidate từ 0 đến 1000 (deduped trong seedFriendshipsForViewer)
+  const candidatePeerIds = faker.helpers.multiple(() => faker.helpers.arrayElement(userIds), {
     count: faker.number.int({ min: 0, max: 1000 })
   });
   await Promise.all([
-    followMultipleUsers(new ObjectId(MYID), followedUserIds),
+    seedFriendshipsForViewer(new ObjectId(MYID), candidatePeerIds),
     insertMultiplePosts(userIds.map((userId) => userId.toString()))
   ]).catch();
   console.log(`\x1b[32mDone\x1b[0m`);

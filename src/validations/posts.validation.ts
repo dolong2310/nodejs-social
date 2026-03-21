@@ -233,7 +233,7 @@ class PostsValidation implements IPostsValidation {
     // kiểm tra bài post có audience friends-only (enum FOLLOWERS) thì chỉ bạn bè hoặc owner hoặc mentions mới được xem
     if (post.audience === EPostAudience.FOLLOWERS) {
       if (!isFriend && !isOwner && !isMention) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_FOLLOWERS_CAN_VIEW_POSTS);
+        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_FRIENDS_CAN_VIEW_POSTS);
       }
     }
 
