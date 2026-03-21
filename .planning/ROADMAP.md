@@ -50,7 +50,7 @@ Plans:
 ### Phase 3: Posts, feed & engagement
 **Goal:** Posts respect visibility and stranger-comment rules; the home feed merges public and friends-only content chronologically; engagement matches the same rules everywhere.
 **Depends on:** Phase 2 (friends + block semantics)
-**Requirements:** POST-01, POST-02, POST-03, FEED-01, FEED-02, ENGA-01, ENGA-02, ENGA-03
+**Requirements:** POST-01, POST-02, POST-03, FEED-01, FEED-02, ENGA-01, ENGA-02, ENGA-03, BLCK-02
 **Success Criteria** (what must be TRUE):
   1. Each post supports `public` | `friends-only` | `only-me`; new posts default to `public` with stranger comments allowed by default.
   2. Author can set or change visibility and the stranger-comment flag on create/update according to API rules.
@@ -63,7 +63,7 @@ Plans:
 - [ ] 03-01-PLAN.md — Audience literals, `allowStrangerComments`, create + owner PATCH (POST-01…03)
 - [ ] 03-02-PLAN.md — Merged feed + `createdAt` desc + BLCK-02 for authenticated feed; guest public-only (FEED-01, FEED-02, BLCK-02)
 - [ ] 03-03-PLAN.md — Read path auth tiers, engagement matrix, likes, bookmarks, threaded creates (ENGA-01…03, BLCK-02)
-- [ ] 03-04-PLAN.md — Search alignment, fake-data, minimal Swagger (POST-01, FEED-01, BLCK-02)
+- [ ] 03-04-PLAN.md — Search alignment, fake-data, minimal Swagger (POST-01, FEED-01, BLCK-02); **wave 4** after 03-03 so OpenAPI matches likes/PATCH
 
 ### Phase 4: Chat HTTP API
 **Goal:** Users message only friends via REST-backed conversations (direct and groups), with history and read semantics; experimental conversations are replaced.
