@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 2 planned (4 execute plans + research + validation)
-last_updated: "2026-03-21T18:00:00.000Z"
-last_activity: 2026-03-21 — Phase 2 plan-phase complete
+status: unknown
+stopped_at: Completed 02-friends-graph-privacy-01-PLAN.md
+last_updated: "2026-03-21T16:36:14.343Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 5
-  completed_plans: 1
-  percent: 14
+  completed_plans: 2
 ---
 
 # Project State
@@ -22,18 +20,14 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-03-21)
 
 **Core value:** Trusted friends, feed and engagement with correct permissions, stable 1:1 and group chat with history and notifications—one unified API aligned with the existing TypeScript/Express stack.
 
-**Current focus:** Phase 2 — Friends graph & privacy (planned; ready to execute)
+**Current focus:** Phase 2 — Friends graph & privacy
 
 **Roadmap:** [.planning/ROADMAP.md](ROADMAP.md)
 
 ## Current Position
 
-Phase: **2** of **7** (Friends graph & privacy)  
-Plan: **4** execute plans (02-01 … 02-04)  
-Status: Ready to execute  
-Last activity: 2026-03-21 — Phase 2 planned
-
-Progress: [█░░░░░░░░░] ~14%
+Phase: 2 (Friends graph & privacy) — EXECUTING
+Plan: 2 of 4
 
 ## Performance Metrics
 
@@ -44,6 +38,7 @@ Progress: [█░░░░░░░░░] ~14%
 | — | — | — | — |
 
 *Update after each plan completion.*
+| Phase 02-friends-graph-privacy P01 | 1 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -52,6 +47,9 @@ Progress: [█░░░░░░░░░] ~14%
 - **Phase 1:** `DATABASE_CHAT_NAME` bắt buộc; một `MongoClient`, hai `Db`, ping kép + fail-fast; `chatDb` expose cho phase sau.
 
 Full log: PROJECT.md → Key Decisions. HTTP-first chat, notifications on social DB, persist-then-emit.
+
+- [Phase 02]: Keep followers collection until 02-02 per 02-01 plan (avoid mid-phase build break).
+- [Phase 02]: initializeIndexes change is additive only; GitNexus CRITICAL risk noted for bootstrap blast radius.
 
 ### Pending Todos
 
@@ -63,6 +61,6 @@ None yet. See `.planning/codebase/CONCERNS.md` for targets phased into work (esp
 
 ## Session Continuity
 
-Last session: 2026-03-21T18:00:00.000Z
-Stopped at: Phase 2 plan-phase complete
-Resume file: .planning/phases/02-friends-graph-privacy/02-01-PLAN.md
+Last session: 2026-03-21T16:36:08.267Z
+Stopped at: Completed 02-friends-graph-privacy-01-PLAN.md
+Resume file: None
