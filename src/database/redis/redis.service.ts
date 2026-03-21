@@ -13,6 +13,8 @@ export interface IRedisService {
    * Cache-Aside: trả về cached value nếu tồn tại, ngược lại gọi fn() -> cache -> return.
    */
   getOrSet<T>(key: string, fn: () => Promise<T>, ttlSeconds: number): Promise<T>;
+
+  sendRawCommand(...args: string[]): Promise<unknown>;
 }
 
 class RedisService implements IRedisService {
@@ -62,6 +64,14 @@ class RedisService implements IRedisService {
     const value = await fn();
     await this.set(key, value, ttlSeconds);
     return value;
+  }
+
+  async sendRawCommand(...args: string[]): Promise<unknown> {
+    if (args.length === 0) {
+      throw new Error('Redis command missing');
+    }
+    const [command, ...rest] = args;
+    return this.client.call(command, ...rest);
   }
 }
 

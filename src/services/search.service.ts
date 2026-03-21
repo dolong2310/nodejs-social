@@ -1,3 +1,6 @@
+import { config } from '@/config';
+import { CACHE_KEYS } from '@/constants/cache.constant';
+import type { IRedisService } from '@/database/redis/redis.service';
 import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
 import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
@@ -25,7 +28,8 @@ class SearchService extends BaseService implements ISearchService {
   constructor(
     private readonly searchRepository: ISearchRepository,
     private readonly followersService: IFollowersService,
-    private readonly postsService: IPostsService
+    private readonly postsService: IPostsService,
+    private readonly redis: IRedisService
   ) {
     super();
   }
@@ -74,24 +78,40 @@ class SearchService extends BaseService implements ISearchService {
   }: SearchQueryDTO & {
     userId?: string;
   }): Promise<[IUser[], number]> {
-    const usersPromise = this.searchRepository.findUsers({
+    const ttl = config.searchCache.ttlSeconds;
+
+    const load = async (): Promise<[IUser[], number]> => {
+      const usersPromise = this.searchRepository.findUsers({
+        userId,
+        query,
+        peopleFollow: people_follow,
+        page: Number(page),
+        limit: Number(limit),
+        findFollowedUserIds: this.followersService.findFollowedUserIds
+      });
+
+      const totalUsersPromise = this.searchRepository.countUsers({
+        userId,
+        query,
+        peopleFollow: people_follow,
+        findFollowedUserIds: this.followersService.findFollowedUserIds
+      });
+      return Promise.all([usersPromise, totalUsersPromise]);
+    };
+
+    if (ttl <= 0) {
+      return load();
+    }
+
+    const key = CACHE_KEYS.searchUsers({
       userId,
       query,
-      peopleFollow: people_follow,
-      page: Number(page),
-      limit: Number(limit),
-      findFollowedUserIds: this.followersService.findFollowedUserIds
+      people_follow,
+      page,
+      limit
     });
 
-    const totalUsersPromise = this.searchRepository.countUsers({
-      userId,
-      query,
-      peopleFollow: people_follow,
-      findFollowedUserIds: this.followersService.findFollowedUserIds
-    });
-    const [users, totalUsers] = await Promise.all([usersPromise, totalUsersPromise]);
-
-    return [users, totalUsers];
+    return this.redis.getOrSet(key, load, ttl);
   }
 }
 

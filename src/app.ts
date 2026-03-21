@@ -26,6 +26,7 @@ import express, { Express, Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { Server as HttpServer } from 'http';
+import { RedisStore, type RedisReply } from 'rate-limit-redis';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
@@ -44,6 +45,13 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
   }
 
   if (appConfig.rateLimitOptions) {
+    if (config.rateLimit.enabled) {
+      // Lưu bộ đếm trên Redis thay vì RAM process — cần khi nhiều instance hoặc restart không mất counter.
+      appConfig.rateLimitOptions.store = new RedisStore({
+        sendCommand: (...args: string[]) => redisService.sendRawCommand(...args) as Promise<RedisReply>
+      });
+    }
+
     app.use(rateLimit(appConfig.rateLimitOptions));
   }
 

@@ -56,6 +56,7 @@ export interface IContainer {
   getSearchRepository(): ISearchRepository;
 
   // Services
+  getTokenService(): ITokenService;
   getAuthService(): IAuthService;
   getUsersService(): IUsersService;
   getBookmarksService(): IBookmarksService;
@@ -192,7 +193,7 @@ export class Container implements IContainer {
     this.mediaService = new MediaService(this.mediaRepository, this.s3Service, this.videoHLSJobQueue);
     this.oauthService = new OAuthService(this.authService, this.usersService);
     this.postsService = new PostsService(this.postRepository);
-    this.searchService = new SearchService(this.searchRepository, this.followersService, this.postsService);
+    this.searchService = new SearchService(this.searchRepository, this.followersService, this.postsService, this.redis);
   }
 
   private initializeControllers(): void {
@@ -250,6 +251,10 @@ export class Container implements IContainer {
   }
 
   // Services
+  public getTokenService(): ITokenService {
+    return this.tokenService;
+  }
+
   public getAuthService(): IAuthService {
     return this.authService;
   }

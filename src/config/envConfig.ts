@@ -56,7 +56,15 @@ const ENV_KEYS = [
   'REDIS_HOST',
   'REDIS_PORT',
   'REDIS_PASSWORD',
-  'REDIS_DB'
+  'REDIS_DB',
+
+  // Rate Limit
+  'RATE_LIMIT_ENABLED',
+  'RATE_LIMIT_WINDOW_MS',
+  'RATE_LIMIT_MAX',
+
+  // Cache
+  'SEARCH_CACHE_TTL_SECONDS'
 ] as const;
 
 type EnvKey = (typeof ENV_KEYS)[number];

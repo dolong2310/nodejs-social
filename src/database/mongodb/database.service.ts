@@ -116,6 +116,13 @@ class DatabaseService implements IDatabaseService {
     await this.hashtags.createIndex({ name: 1 }, { unique: true });
   }
 
+  /** Search posts: filters on audience + media.type (video / image) combine often in $match. */
+  async createSearchPostsAudienceMediaIndex() {
+    const name = 'audience_1_media.type_1';
+    if (await this.posts.indexExists([name])) return;
+    await this.posts.createIndex({ audience: 1, 'media.type': 1 }, { name });
+  }
+
   async createUsersSearchIndex() {
     const isIndexExists = await this.users.indexExists(['name_1_username_1_email_1']);
     if (isIndexExists) return;
@@ -131,6 +138,7 @@ class DatabaseService implements IDatabaseService {
       this.createFollowersIndex(),
       this.createPostsIndex(),
       this.createPostsAdditionalIndexes(),
+      this.createSearchPostsAudienceMediaIndex(),
       this.createBookmarksIndex(),
       this.createConversationsIndex(),
       this.createHashtagsIndex()

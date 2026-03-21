@@ -65,30 +65,37 @@ export interface ITokenService {
 class TokenService implements ITokenService {
   constructor() {}
 
-  private signTokenSync(params: TokenSignParams, config: SignOptions): string {
+  private signTokenSync(params: TokenSignParams, tokenConfig: SignOptions): string {
     // Add a uuid for uniqueness
     const { userId, type, exp } = params;
     const payload: Record<string, string | number> = { uuid: uuidv4(), userId, type };
     if (typeof exp === 'number') payload.exp = exp;
 
     const options: jwt.SignOptions = {
-      algorithm: config.algorithm
+      algorithm: tokenConfig.algorithm
     };
-    if (!exp && config.expiresIn) options.expiresIn = config.expiresIn;
+    if (!exp && tokenConfig.expiresIn) options.expiresIn = tokenConfig.expiresIn;
 
-    return jwt.sign(payload, config.secret, options);
+    return jwt.sign(payload, tokenConfig.secret, options);
   }
 
-  private signToken(params: TokenSignParams, config: SignOptions): Promise<string> {
-    return Promise.resolve(this.signTokenSync(params, config));
+  private signToken(params: TokenSignParams, tokenConfig: SignOptions): Promise<string> {
+    return Promise.resolve(this.signTokenSync(params, tokenConfig));
   }
 
-  private verifyTokenSync<T>(token: string, secret: string | Secret): T {
-    return jwt.verify(token, secret) as T;
+  private verifyTokenSync<T>(token: string, tokenConfig: SignOptions): T {
+    const algorithms = tokenConfig.algorithm ? [tokenConfig.algorithm] : undefined;
+    return jwt.verify(token, tokenConfig.secret, algorithms ? { algorithms } : {}) as T;
   }
 
-  private verifyToken<T>(token: string, secret: string | Secret): Promise<T> {
-    return Promise.resolve(this.verifyTokenSync<T>(token, secret));
+  private verifyToken<T>(token: string, tokenConfig: SignOptions): Promise<T> {
+    const algorithms = tokenConfig.algorithm ? [tokenConfig.algorithm] : undefined;
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, tokenConfig.secret, algorithms ? { algorithms } : {}, (err, decoded) => {
+        if (err) reject(err);
+        else resolve(decoded as T);
+      });
+    });
   }
 
   // Access Token
@@ -99,10 +106,10 @@ class TokenService implements ITokenService {
     return this.signTokenSync({ userId, type }, TOKEN_CONFIG[ETokenType.ACCESS_TOKEN]);
   }
   verifyAccessToken(token: string): Promise<TokenPayload> {
-    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.ACCESS_TOKEN].secret);
+    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.ACCESS_TOKEN]);
   }
   verifyAccessTokenSync(token: string): TokenPayload {
-    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.ACCESS_TOKEN].secret);
+    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.ACCESS_TOKEN]);
   }
 
   // Refresh Token
@@ -113,10 +120,10 @@ class TokenService implements ITokenService {
     return this.signTokenSync({ userId, type, exp }, TOKEN_CONFIG[ETokenType.REFRESH_TOKEN]);
   }
   verifyRefreshToken(token: string): Promise<TokenPayload> {
-    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.REFRESH_TOKEN].secret);
+    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.REFRESH_TOKEN]);
   }
   verifyRefreshTokenSync(token: string): TokenPayload {
-    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.REFRESH_TOKEN].secret);
+    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.REFRESH_TOKEN]);
   }
 
   // Email Verification Token
@@ -127,10 +134,10 @@ class TokenService implements ITokenService {
     return this.signTokenSync({ userId, type }, TOKEN_CONFIG[ETokenType.EMAIL_VERIFICATION_TOKEN]);
   }
   verifyEmailVerificationToken(token: string): Promise<TokenPayload> {
-    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.EMAIL_VERIFICATION_TOKEN].secret);
+    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.EMAIL_VERIFICATION_TOKEN]);
   }
   verifyEmailVerificationTokenSync(token: string): TokenPayload {
-    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.EMAIL_VERIFICATION_TOKEN].secret);
+    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.EMAIL_VERIFICATION_TOKEN]);
   }
 
   // Forgot Password Token
@@ -141,10 +148,10 @@ class TokenService implements ITokenService {
     return this.signTokenSync({ userId, type }, TOKEN_CONFIG[ETokenType.FORGOT_PASSWORD_TOKEN]);
   }
   verifyForgotPasswordToken(token: string): Promise<TokenPayload> {
-    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.FORGOT_PASSWORD_TOKEN].secret);
+    return this.verifyToken<TokenPayload>(token, TOKEN_CONFIG[ETokenType.FORGOT_PASSWORD_TOKEN]);
   }
   verifyForgotPasswordTokenSync(token: string): TokenPayload {
-    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.FORGOT_PASSWORD_TOKEN].secret);
+    return this.verifyTokenSync<TokenPayload>(token, TOKEN_CONFIG[ETokenType.FORGOT_PASSWORD_TOKEN]);
   }
 }
 

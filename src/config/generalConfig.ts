@@ -41,5 +41,18 @@ export const config = {
 
   api: {
     prefix: '/api'
+  },
+
+  searchCache: {
+    ttlSeconds: Math.max(0, parseInt(envConfig.SEARCH_CACHE_TTL_SECONDS ?? '0', 10))
+  },
+
+  rateLimit: {
+    enabled: (isProduction && envConfig.RATE_LIMIT_ENABLED !== '0') || envConfig.RATE_LIMIT_ENABLED === '1',
+    windowMs: parseInt(envConfig.RATE_LIMIT_WINDOW_MS ?? '900000', 10),
+    limit: parseInt(envConfig.RATE_LIMIT_MAX ?? '100', 10),
+    standardHeaders: 'draft-8' as const, // Trả về header chuẩn rate limit (bản draft-8 của IETF) cho client.
+    legacyHeaders: false, // Tắt header kiểu cũ X-RateLimit-*.
+    ipv6Subnet: 56 // Gom IPv6 theo subnet /64-style để tránh một máy tạo quá nhiều “client” khác nhau (theo doc express-rate-limit).
   }
 };
