@@ -40,11 +40,13 @@ import OAuthController, { IOAuthController } from '@/controllers/oauth.controlle
 import PostsController, { IPostsController } from '@/controllers/posts.controller';
 import SearchController, { ISearchController } from '@/controllers/search.controller';
 import UsersController, { IUsersController } from '@/controllers/users.controller';
+import FriendsController, { IFriendsController } from '@/controllers/friends.controller';
 // Validations
 import AuthValidation, { IAuthValidation } from '@/validations/auth.validation';
 import PostsValidation, { IPostsValidation } from '@/validations/posts.validation';
 import SearchValidation, { ISearchValidation } from '@/validations/search.validation';
 import UsersValidation, { IUsersValidation } from '@/validations/users.validation';
+import FriendsValidation, { IFriendsValidation } from '@/validations/friends.validation';
 
 export interface IContainer {
   // Repositories
@@ -76,12 +78,14 @@ export interface IContainer {
   getOAuthController(): IOAuthController;
   getPostsController(): IPostsController;
   getSearchController(): ISearchController;
+  getFriendsController(): IFriendsController;
 
   // Validations
   getAuthValidation(): IAuthValidation;
   getUsersValidation(): IUsersValidation;
   getPostsValidation(): IPostsValidation;
   getSearchValidation(): ISearchValidation;
+  getFriendsValidation(): IFriendsValidation;
 }
 
 export class Container implements IContainer {
@@ -126,12 +130,14 @@ export class Container implements IContainer {
   private oauthController!: IOAuthController;
   private postsController!: IPostsController;
   private searchController!: ISearchController;
+  private friendsController!: IFriendsController;
 
   // Validations
   private authValidation!: IAuthValidation;
   private usersValidation!: IUsersValidation;
   private postsValidation!: IPostsValidation;
   private searchValidation!: ISearchValidation;
+  private friendsValidation!: IFriendsValidation;
 
   // Queues
   private emailJobQueue!: IEmailJobQueue;
@@ -207,6 +213,7 @@ export class Container implements IContainer {
     this.oauthController = new OAuthController(this.oauthService);
     this.postsController = new PostsController(this.postsService, this.friendsService);
     this.searchController = new SearchController(this.searchService);
+    this.friendsController = new FriendsController(this.friendsService);
   }
 
   private initializeValidations(): void {
@@ -214,6 +221,7 @@ export class Container implements IContainer {
     this.usersValidation = new UsersValidation(this.usersService);
     this.postsValidation = new PostsValidation(this.postsService, this.usersService, this.friendsService);
     this.searchValidation = new SearchValidation();
+    this.friendsValidation = new FriendsValidation(this.usersValidation);
   }
 
   private initializeQueues(): void {
@@ -321,6 +329,10 @@ export class Container implements IContainer {
     return this.searchController;
   }
 
+  public getFriendsController(): IFriendsController {
+    return this.friendsController;
+  }
+
   // Validations
   public getAuthValidation(): IAuthValidation {
     return this.authValidation;
@@ -336,6 +348,10 @@ export class Container implements IContainer {
 
   public getSearchValidation(): ISearchValidation {
     return this.searchValidation;
+  }
+
+  public getFriendsValidation(): IFriendsValidation {
+    return this.friendsValidation;
   }
 }
 
