@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 1 plan 01-01 executed
-last_updated: "2026-03-21T12:00:00.000Z"
-last_activity: 2026-03-21 — Phase 1: dual Mongo Db + DATABASE_CHAT_NAME
+status: planning
+stopped_at: Phase 1 complete — ready to plan Phase 2
+last_updated: "2026-03-21T20:00:00.000Z"
+last_activity: 2026-03-21 — Transition: Phase 1 → Phase 2
 progress:
   total_phases: 7
   completed_phases: 1
@@ -22,16 +22,16 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-03-21)
 
 **Core value:** Trusted friends, feed and engagement with correct permissions, stable 1:1 and group chat with history and notifications—one unified API aligned with the existing TypeScript/Express stack.
 
-**Current focus:** Phase 2 — Friends graph & privacy (Phase 1 code landed; có thể `/gsd-verify-work` hoặc `/gsd-transition` khi bạn xác nhận UAT)
+**Current focus:** Phase 2 — Friends graph & privacy (sẵn sàng discuss/plan)
 
 **Roadmap:** [.planning/ROADMAP.md](ROADMAP.md)
 
 ## Current Position
 
-Phase: **2** of **7** (tiếp theo sau khi chốt Phase 1)  
-Plan: [01-01-SUMMARY.md](phases/01-chat-database-foundation/01-01-SUMMARY.md)  
-Status: Phase 1 đã thực thi — chờ verify/transition nếu dùng GSD đầy đủ  
-Last activity: 2026-03-21 — Execute Phase 1 (INFR-01, INFR-03)
+Phase: **2** of **7** (Friends graph & privacy)  
+Plan: Not started  
+Status: Ready to plan  
+Last activity: 2026-03-21 — Phase 1 closed (UAT + transition)
 
 Progress: [█░░░░░░░░░] ~14%
 
@@ -49,7 +49,9 @@ Progress: [█░░░░░░░░░] ~14%
 
 ### Decisions
 
-Full log: PROJECT.md → Key Decisions. For execution, prefer dual Mongo `Db` on one client, HTTP-first chat, notifications on social DB, persist-then-emit.
+- **Phase 1:** `DATABASE_CHAT_NAME` bắt buộc; một `MongoClient`, hai `Db`, ping kép + fail-fast; `chatDb` expose cho phase sau.
+
+Full log: PROJECT.md → Key Decisions. HTTP-first chat, notifications on social DB, persist-then-emit.
 
 ### Pending Todos
 
@@ -61,6 +63,6 @@ None yet. See `.planning/codebase/CONCERNS.md` for targets phased into work (esp
 
 ## Session Continuity
 
-Last session: 2026-03-21T16:00:27.999Z
-Stopped at: Phase 1 context gathered (recommend)
-Resume file: .planning/phases/01-chat-database-foundation/01-CONTEXT.md
+Last session: 2026-03-21T20:00:00.000Z  
+Stopped at: Phase 1 complete; roadmap/state synced — bắt đầu Phase 2 khi cần  
+Resume file: None

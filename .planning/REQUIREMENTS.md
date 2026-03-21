@@ -97,9 +97,9 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFR-01 | Phase 1 | Pending |
+| INFR-01 | Phase 1 | Complete |
 | INFR-02 | Phase 2 | Pending |
-| INFR-03 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Complete |
 | FRND-01 | Phase 2 | Pending |
 | FRND-02 | Phase 2 | Pending |
 | FRND-03 | Phase 2 | Pending |

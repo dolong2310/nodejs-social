@@ -23,6 +23,7 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 - ✓ Socket.IO gắn chung `HttpServer` với Express; auth handshake — existing (luồng message hiện tại mang tính thử nghiệm)
 - ✓ OpenAPI/Swagger tại `/api/docs`, logging Pino — existing
 - ✓ Route `/api/conversations` + service/repository/collection `conversations` trên **DB chính** — existing nhưng **coi là thử nghiệm**, sẽ thay bằng nghiệp vụ chat mới
+- ✓ **Phase 1 — INFR-01 / INFR-03:** Hai database Mongo trên **cùng cluster** (social + chat), một `MongoClient`, hai `Db`; biến bắt buộc `DATABASE_CHAT_NAME` trong `envConfig` + `.env.example`; ping kép khi `connect()`, fail-fast nếu chat DB lỗi; getter `chatDb` cho phase sau.
 
 ### Active
 
@@ -69,7 +70,7 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 
 - **Tham chiếu hành vi chat:** `/Users/dolong/Documents/ReactJS/pingme/backend` (socket rooms, friend/message flow) — **chỉ tham khảo**, contract REST/event có thể khác; **notifications** PingMe gần như chỉ socket, còn dự án này v1 có **DB + REST + socket**.
 - Codebase map: `.planning/codebase/*`.
-- Env bổ sung: **`DATABASE_CHAT_NAME`** (cùng `DATABASE_URI` hoặc URI cluster hiện tại, khác tên DB).
+- Env: **`DATABASE_CHAT_NAME`** đã wired trong app (Phase 1); staging/prod cần set giống pattern `.env.example`.
 
 ## Constraints
 
@@ -83,7 +84,7 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Friends thay followers + drop data cũ | Đồng bộ social graph với chat (chỉ bạn mới chat); đơn giản hóa migration | — Pending |
-| Chat DB riêng `DATABASE_CHAT_NAME` | Tách bounded context, backup/scale độc lập; cùng cluster | — Pending |
+| Chat DB riêng `DATABASE_CHAT_NAME` | Tách bounded context, backup/scale độc lập; cùng cluster | Phase 1: kết nối + env; schema/index Phase 4 |
 | Notifications: DB + REST + socket emit | Inbox đáng tin + realtime; vượt mức PingMe | — Pending |
 | Post defaults: public + stranger comments allowed | Giảm ma sát UX; user chỉnh từng bài | — Pending |
 | Block ẩn post lẫn nhau + unfriend | Rõ ràng về quyền riêng tư | — Pending |
@@ -111,4 +112,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-03-21 after initialization (Create PROJECT.md)*
+*Last updated: 2026-03-21 after Phase 1 transition (chat DB foundation shipped)*
