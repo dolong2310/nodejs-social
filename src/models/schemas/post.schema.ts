@@ -7,6 +7,8 @@ export interface IPost {
   userId: ObjectId;
   type: EPostType;
   audience: EPostAudience;
+  /** When missing on legacy documents, treat as true at read time (see aggregations / constructor). */
+  allowStrangerComments: boolean;
   content: string;
   parentId: ObjectId | null;
   hashtags: ObjectId[];
@@ -23,6 +25,7 @@ class PostSchema {
   public userId: ObjectId;
   public type: EPostType;
   public audience: EPostAudience;
+  public allowStrangerComments: boolean;
   public content: string;
   public parentId: ObjectId | null;
   public hashtags: ObjectId[];
@@ -38,6 +41,7 @@ class PostSchema {
     userId,
     type,
     audience,
+    allowStrangerComments,
     content,
     parentId,
     hashtags,
@@ -47,13 +51,15 @@ class PostSchema {
     userViews,
     createdAt,
     updatedAt
-  }: Omit<IPost, '_id'> & { _id?: ObjectId }) {
+  }: Omit<IPost, '_id'> & { _id?: ObjectId; allowStrangerComments?: boolean }) {
     const date = new Date();
 
     this._id = _id ?? new ObjectId();
     this.userId = userId;
     this.type = type;
     this.audience = audience;
+    // Legacy docs without this field: default open comments from strangers on public posts.
+    this.allowStrangerComments = allowStrangerComments ?? true;
     this.content = content;
     this.parentId = parentId;
     this.hashtags = hashtags;
@@ -78,6 +84,7 @@ export default PostSchema;
 //       "userId",
 //       "type",
 //       "audience",
+//       "allowStrangerComments",
 //       "content",
 //       "parentId",
 //       "hashtags",
@@ -104,8 +111,12 @@ export default PostSchema;
 //       },
 //       "audience": {
 //         "bsonType": "string",
-//         "enum": ["public", "followers", "only_me"],
-//         "description": "'audience' must be one of the following values: 'public', 'followers', 'only_me'"
+//         "enum": ["public", "friends-only", "only-me"],
+//         "description": "'audience' must be one of: 'public', 'friends-only', 'only-me'"
+//       },
+//       "allowStrangerComments": {
+//         "bsonType": "bool",
+//         "description": "If true, non-friends who can see the post may comment (when audience allows)."
 //       },
 //       "content": {
 //         "bsonType": "string",

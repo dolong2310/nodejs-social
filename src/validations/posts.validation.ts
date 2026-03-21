@@ -1,5 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { CreatePostRequestDTO, GetPostDetailParamsDTO } from '@/dtos/requests/post.request.dto';
+import { CreatePostRequestDTO, GetPostDetailParamsDTO, PatchPostRequestDTO } from '@/dtos/requests/post.request.dto';
 import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
@@ -23,6 +23,7 @@ export interface IPostsValidation {
     location: Location
   ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   audienceValidation: RequestHandler<GetPostDetailParamsDTO, object, object, Query, Record<string, unknown>>;
+  patchPostValidation: RequestHandler<GetPostDetailParamsDTO, object, PatchPostRequestDTO, Query, Record<string, unknown>>;
   postTypeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
@@ -44,13 +45,17 @@ class PostsValidation implements IPostsValidation {
           },
           trim: true
         },
-        // audience phải là 1 trong 3 giá trị: public, friends-only (enum FOLLOWERS), only_me
         audience: {
           isIn: {
-            options: [[EPostAudience.PUBLIC, EPostAudience.FOLLOWERS, EPostAudience.ONLY_ME]],
+            options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
           },
           trim: true
+        },
+        allowStrangerComments: {
+          isBoolean: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
+          }
         },
         // nếu type là repost thì content phải là '' (string rỗng)
         // nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng
@@ -156,6 +161,26 @@ class PostsValidation implements IPostsValidation {
     )
   );
 
+  patchPostValidation = validate(
+    checkSchema(
+      {
+        audience: {
+          isIn: {
+            options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
+          },
+          trim: true
+        },
+        allowStrangerComments: {
+          isBoolean: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
+          }
+        }
+      },
+      ['body']
+    )
+  );
+
   postIdValidation = (key: string, location: Location) => {
     return validate(
       checkSchema(
@@ -200,10 +225,16 @@ class PostsValidation implements IPostsValidation {
     const userId = req.tokenPayload?.userId;
     const post = req.postDetail as PostDetailResponseDTO;
 
+    const audienceStr = post.audience as string;
+    const isPublicAudience = audienceStr === EPostAudience.PUBLIC;
+    const isFriendsOnlyAudience =
+      audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
+    const isOnlyMeAudience = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
+
     // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"
     const isGuestUser = !userId;
     if (isGuestUser) {
-      if (post.audience !== EPostAudience.PUBLIC) {
+      if (!isPublicAudience) {
         throw new AuthFailureError();
       }
     }
@@ -224,14 +255,14 @@ class PostsValidation implements IPostsValidation {
     }
 
     // kiểm tra bài post có chế độ "only me" thì chỉ user owner mới được xem bài post
-    if (post.audience === EPostAudience.ONLY_ME) {
+    if (isOnlyMeAudience) {
       if (!isOwner) {
         throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_VIEW_POSTS);
       }
     }
 
-    // kiểm tra bài post có audience friends-only (enum FOLLOWERS) thì chỉ bạn bè hoặc owner hoặc mentions mới được xem
-    if (post.audience === EPostAudience.FOLLOWERS) {
+    // friends-only (legacy DB: "followers") — chỉ bạn bè, owner, hoặc mentions
+    if (isFriendsOnlyAudience) {
       if (!isFriend && !isOwner && !isMention) {
         throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_FRIENDS_CAN_VIEW_POSTS);
       }

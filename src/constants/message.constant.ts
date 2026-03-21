@@ -66,6 +66,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   // Post errors
   INVALID_POST_TYPE: 'Invalid post type',
   INVALID_POST_AUDIENCE: 'Invalid post audience',
+  ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN: 'allowStrangerComments must be a boolean',
   CONTENT_IS_REQUIRED: 'Content is required',
   CONTENT_MUST_BE_A_STRING: 'Content must be a string',
   CONTENT_MUST_BE_EMPTY_STRING: 'Content must be empty string',
@@ -82,6 +83,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items',
   ONLY_OWNER_CAN_VIEW_POSTS: 'Only owner can view posts',
   ONLY_FRIENDS_CAN_VIEW_POSTS: 'Only friends can view posts',
+  ONLY_OWNER_CAN_UPDATE_POST_SETTINGS: 'Only the post author can update audience or comment settings',
 
   // Bookmark errors
   POST_ID_IS_REQUIRED: 'Post ID is required',

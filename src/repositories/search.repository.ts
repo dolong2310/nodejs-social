@@ -177,10 +177,10 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       delete match.audience;
       match['$or'] = [
         { audience: EPostAudience.PUBLIC },
-        { audience: EPostAudience.FOLLOWERS },
+        { audience: { $in: ['friends-only', 'followers'] } },
         {
           $and: [
-            { audience: EPostAudience.ONLY_ME },
+            { audience: { $in: ['only-me', 'only_me'] } },
             {
               userId: {
                 $eq: new ObjectId(userId)

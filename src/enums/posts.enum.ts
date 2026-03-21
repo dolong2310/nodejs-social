@@ -7,6 +7,6 @@ export enum EPostType {
 
 export enum EPostAudience {
   PUBLIC = 'public',
-  FOLLOWERS = 'followers',
-  ONLY_ME = 'only_me'
+  FRIENDS_ONLY = 'friends-only',
+  ONLY_ME = 'only-me'
 }

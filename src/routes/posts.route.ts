@@ -3,7 +3,7 @@
  */
 
 import { IPostsController } from '@/controllers/posts.controller';
-import { optionalAuth } from '@/middlewares/auth.middleware';
+import { optionalAuth, protect } from '@/middlewares/auth.middleware';
 import { validatePaginationQuery } from '@/middlewares/common.middleware';
 import { postsLimiter } from '@/middlewares/limiter.middleware';
 import { BaseRoute } from '@/routes/base.route';
@@ -33,6 +33,15 @@ export class PostsRoute extends BaseRoute {
       validatePaginationQuery,
       asyncHandler(this.postsController.getNewFeeds)
     );
+    this.router.patch(
+      '/:postId',
+      postsLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.postsValidation.postIdValidation('postId', 'params'),
+      this.postsValidation.patchPostValidation,
+      asyncHandler(this.postsController.patchPost)
+    );
     this.router.get(
       '/:postId',
       postsLimiter,
@@ -54,7 +63,8 @@ export class PostsRoute extends BaseRoute {
     this.router.post(
       '/',
       postsLimiter,
-      optionalAuth(this.usersValidation.userVerifiedValidation),
+      protect,
+      this.usersValidation.userVerifiedValidation,
       this.postsValidation.createPostValidation,
       asyncHandler(this.postsController.createPost)
     );

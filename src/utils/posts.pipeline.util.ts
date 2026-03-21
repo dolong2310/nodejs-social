@@ -75,6 +75,7 @@ export const buildBasePostPipeline = ({
     },
     {
       $addFields: {
+        allowStrangerComments: { $ifNull: ['$allowStrangerComments', true] },
         mentions: {
           $map: {
             input: '$mentions',

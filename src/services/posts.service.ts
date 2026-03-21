@@ -3,13 +3,17 @@ import {
   CreatePostRequestDTO,
   GetNewFeedsPayloadDTO,
   GetPostDetailParamsDTO,
-  GetPostsParamsDTO
+  GetPostsParamsDTO,
+  PatchPostRequestDTO
 } from '@/dtos/requests/post.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { IPostRepository } from '@/repositories/post.repository';
+import { ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
+import { ObjectId } from 'mongodb';
 
 export interface IPostsService {
   findPostDetail(postId: string): Promise<PostDetailResponseDTO | null>;
@@ -29,6 +33,7 @@ export interface IPostsService {
     }
   ): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null>;
   createPost(payload: { userId: string; body: CreatePostRequestDTO }): Promise<IPost>;
+  patchPostByOwner(payload: { userId: string; postId: string; body: PatchPostRequestDTO }): Promise<IPost>;
   updatePostsViews<T extends PostDetailResponseDTO | PostNewFeedResponseDTO>({
     posts,
     userId
@@ -118,6 +123,32 @@ class PostsService extends BaseService implements IPostsService {
     const hashtagIds = hashtags.map((hashtag) => hashtag._id);
     const newPost = await this.postRepository.createPost({ userId, body: { ...body, hashtags: hashtagIds } });
     return newPost;
+  }
+
+  async patchPostByOwner({
+    userId,
+    postId,
+    body
+  }: {
+    userId: string;
+    postId: string;
+    body: PatchPostRequestDTO;
+  }): Promise<IPost> {
+    const existing = await this.postRepository.findPostById(postId);
+    if (!existing) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+    }
+    if (!existing.userId.equals(new ObjectId(userId))) {
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_UPDATE_POST_SETTINGS);
+    }
+    const updated = await this.postRepository.updatePostAudienceAndStrangerComments(postId, userId, {
+      audience: body.audience,
+      allowStrangerComments: body.allowStrangerComments
+    });
+    if (!updated) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+    }
+    return updated;
   }
 
   async updatePostsViews<T extends PostDetailResponseDTO | PostNewFeedResponseDTO>({

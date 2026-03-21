@@ -1,6 +1,11 @@
 import { BaseController } from '@/controllers/base.controller';
 import { PaginationQueryDTO } from '@/dtos/requests/common.request.dto';
-import { CreatePostRequestDTO, GetPostDetailParamsDTO, GetPostsParamsDTO } from '@/dtos/requests/post.request.dto';
+import {
+  CreatePostRequestDTO,
+  GetPostDetailParamsDTO,
+  GetPostsParamsDTO,
+  PatchPostRequestDTO
+} from '@/dtos/requests/post.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IPost } from '@/models/schemas/post.schema';
 import { Created } from '@/responses/success.response';
@@ -14,6 +19,7 @@ export interface IPostsController {
   getPostDetail(req: Request<GetPostDetailParamsDTO>, res: Response): Promise<void>;
   getPostsType(req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
   createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response): Promise<void>;
+  patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response): Promise<void>;
 }
 
 class PostsController extends BaseController implements IPostsController {
@@ -124,6 +130,24 @@ class PostsController extends BaseController implements IPostsController {
       instance: Created,
       data: post,
       message: 'Create post successfully'
+    });
+  };
+
+  patchPost = async (req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response) => {
+    const userId = this.getUserId(req);
+    const { postId } = req.params;
+    const dto = new PatchPostRequestDTO(req.body);
+
+    const post = await this.postsService.patchPostByOwner({
+      userId,
+      postId,
+      body: dto
+    });
+
+    this.sendResponse<IPost>({
+      res,
+      data: post,
+      message: 'Post updated successfully'
     });
   };
 }

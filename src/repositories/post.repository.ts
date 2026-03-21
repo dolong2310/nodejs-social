@@ -14,6 +14,10 @@ import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { AnyBulkWriteOperation, FindOneAndUpdateOptions, ObjectId, UpdateResult } from 'mongodb';
 
+/** Legacy `audience` strings stored before phase 3; keep matching until data is migrated. */
+const AUDIENCE_FRIENDS_ONLY = ['friends-only', 'followers'] as const;
+const AUDIENCE_ONLY_ME = ['only-me', 'only_me'] as const;
+
 export interface IPostRepository {
   findById(id: string): Promise<PostDetailResponseDTO>;
   findPosts(payload: {
@@ -41,6 +45,11 @@ export interface IPostRepository {
     userId: string;
     body: Omit<CreatePostRequestDTO, 'hashtags'> & { hashtags: ObjectId[] };
   }): Promise<IPost>;
+  updatePostAudienceAndStrangerComments(
+    postId: string,
+    ownerUserId: string,
+    patch: { audience: EPostAudience; allowStrangerComments: boolean }
+  ): Promise<IPost | null>;
   updatePosts(payload: {
     posts: PostDetailResponseDTO[] | PostNewFeedResponseDTO[];
     userId?: string;
@@ -59,6 +68,11 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       {
         $match: {
           _id: new ObjectId(id)
+        }
+      },
+      {
+        $addFields: {
+          allowStrangerComments: { $ifNull: ['$allowStrangerComments', true] }
         }
       },
       {
@@ -205,10 +219,10 @@ export class PostRepository extends BaseRepository implements IPostRepository {
         },
         $or: [
           { audience: EPostAudience.PUBLIC },
-          { audience: EPostAudience.FOLLOWERS },
+          { audience: { $in: [...AUDIENCE_FRIENDS_ONLY] } },
           {
             $and: [
-              { audience: EPostAudience.ONLY_ME },
+              { audience: { $in: [...AUDIENCE_ONLY_ME] } },
               {
                 userId: {
                   $eq: new ObjectId(userId)
@@ -243,9 +257,9 @@ export class PostRepository extends BaseRepository implements IPostRepository {
         userId: { $in: followedUserIds },
         $or: [
           { audience: EPostAudience.PUBLIC },
-          { audience: EPostAudience.FOLLOWERS },
+          { audience: { $in: [...AUDIENCE_FRIENDS_ONLY] } },
           {
-            $and: [{ audience: EPostAudience.ONLY_ME }, { userId: { $eq: new ObjectId(userId) } }]
+            $and: [{ audience: { $in: [...AUDIENCE_ONLY_ME] } }, { userId: { $eq: new ObjectId(userId) } }]
           }
         ]
       };
@@ -337,12 +351,13 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     userId: string;
     body: Omit<CreatePostRequestDTO, 'hashtags'> & { hashtags: ObjectId[] };
   }): Promise<IPost> {
-    const { type, audience, content, parentId, hashtags, mentions, media } = body;
+    const { type, audience, allowStrangerComments, content, parentId, hashtags, mentions, media } = body;
 
     const newPost = new PostSchema({
       userId: new ObjectId(userId),
       type,
       audience,
+      allowStrangerComments,
       content,
       parentId: parentId ? new ObjectId(parentId) : null,
       hashtags,
@@ -354,6 +369,25 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     await this.db.posts.insertOne(newPost);
 
     return newPost;
+  }
+
+  async updatePostAudienceAndStrangerComments(
+    postId: string,
+    ownerUserId: string,
+    patch: { audience: EPostAudience; allowStrangerComments: boolean }
+  ): Promise<IPost | null> {
+    const updated = await this.db.posts.findOneAndUpdate(
+      { _id: new ObjectId(postId), userId: new ObjectId(ownerUserId) },
+      {
+        $set: {
+          audience: patch.audience,
+          allowStrangerComments: patch.allowStrangerComments,
+          updatedAt: new Date()
+        }
+      },
+      { returnDocument: 'after' }
+    );
+    return updated;
   }
 
   updatePosts({

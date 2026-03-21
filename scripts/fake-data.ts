@@ -63,10 +63,10 @@ const createRandomPostBody = (mentionedUserIds: string[], parentPostIds: string[
 
   const randomType = faker.helpers.arrayElement(typePool);
 
-  // 2. random audience
+  // 2. random audience (phase 3 literals)
   const randomAudience = faker.helpers.arrayElement([
     EPostAudience.PUBLIC,
-    EPostAudience.FOLLOWERS,
+    EPostAudience.FRIENDS_ONLY,
     EPostAudience.ONLY_ME
   ]);
 
@@ -114,6 +114,7 @@ const createRandomPostBody = (mentionedUserIds: string[], parentPostIds: string[
   const post: CreatePostRequestDTO = {
     type: randomType,
     audience: randomAudience,
+    allowStrangerComments: faker.datatype.boolean({ probability: 0.7 }),
     content,
     parentId,
     hashtags: randomHashtags,
