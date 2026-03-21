@@ -97,46 +97,46 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFR-01 | — | Pending |
-| INFR-02 | — | Pending |
-| INFR-03 | — | Pending |
-| FRND-01 | — | Pending |
-| FRND-02 | — | Pending |
-| FRND-03 | — | Pending |
-| FRND-04 | — | Pending |
-| FRND-05 | — | Pending |
-| FRND-06 | — | Pending |
-| BLCK-01 | — | Pending |
-| BLCK-02 | — | Pending |
-| BLCK-03 | — | Pending |
-| POST-01 | — | Pending |
-| POST-02 | — | Pending |
-| POST-03 | — | Pending |
-| FEED-01 | — | Pending |
-| FEED-02 | — | Pending |
-| ENGA-01 | — | Pending |
-| ENGA-02 | — | Pending |
-| ENGA-03 | — | Pending |
-| CHAT-01 | — | Pending |
-| CHAT-02 | — | Pending |
-| CHAT-03 | — | Pending |
-| CHAT-04 | — | Pending |
-| SOCK-01 | — | Pending |
-| SOCK-02 | — | Pending |
-| SOCK-03 | — | Pending |
-| NOTF-01 | — | Pending |
-| NOTF-02 | — | Pending |
-| NOTF-03 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
+| INFR-01 | Phase 1 | Pending |
+| INFR-02 | Phase 2 | Pending |
+| INFR-03 | Phase 1 | Pending |
+| FRND-01 | Phase 2 | Pending |
+| FRND-02 | Phase 2 | Pending |
+| FRND-03 | Phase 2 | Pending |
+| FRND-04 | Phase 2 | Pending |
+| FRND-05 | Phase 2 | Pending |
+| FRND-06 | Phase 2 | Pending |
+| BLCK-01 | Phase 2 | Pending |
+| BLCK-02 | Phase 2 | Pending |
+| BLCK-03 | Phase 2 | Pending |
+| POST-01 | Phase 3 | Pending |
+| POST-02 | Phase 3 | Pending |
+| POST-03 | Phase 3 | Pending |
+| FEED-01 | Phase 3 | Pending |
+| FEED-02 | Phase 3 | Pending |
+| ENGA-01 | Phase 3 | Pending |
+| ENGA-02 | Phase 3 | Pending |
+| ENGA-03 | Phase 3 | Pending |
+| CHAT-01 | Phase 4 | Pending |
+| CHAT-02 | Phase 4 | Pending |
+| CHAT-03 | Phase 4 | Pending |
+| CHAT-04 | Phase 4 | Pending |
+| SOCK-01 | Phase 6 | Pending |
+| SOCK-02 | Phase 6 | Pending |
+| SOCK-03 | Phase 6 | Pending |
+| NOTF-01 | Phase 5 | Pending |
+| NOTF-02 | Phase 5 | Pending |
+| NOTF-03 | Phase 5 | Pending |
+| QUAL-01 | Phase 7 | Pending |
+| QUAL-02 | Phase 7 | Pending |
 
 **Coverage:**
 
-- v1 requirements: **34** total
-- Mapped to phases: **0** (chờ ROADMAP)
-- Unmapped: **34**
+- v1 requirements: **32** total
+- Mapped to phases: **32**
+- Unmapped: **0**
 
 ---
 
 *Requirements defined: 2026-03-21*  
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after ROADMAP traceability (32 v1 requirements mapped to 7 phases)*
