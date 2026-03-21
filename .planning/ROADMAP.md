@@ -115,7 +115,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Chat database foundation | 01-01 | Complete    | 2026-03-21 |
-| 2. Friends graph & privacy | 1/4 (02-01 done) | Complete    | 2026-03-21 |
+| 2. Friends graph & privacy | 02-01 … 02-04 | Complete    | 2026-03-21 |
 | 3. Posts, feed & engagement | TBD | Not started | - |
 | 4. Chat HTTP API | TBD | Not started | - |
 | 5. Notifications inbox | TBD | Not started | - |
