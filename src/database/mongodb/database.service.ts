@@ -5,6 +5,7 @@ import { IChat } from '@/models/schemas/chat.schema';
 import { IChatMember } from '@/models/schemas/chatMember.schema';
 import { IChatMessage } from '@/models/schemas/chatMessage.schema';
 import { ILike } from '@/models/schemas/like.schema';
+import { INotification } from '@/models/schemas/notification.schema';
 import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
 import { IFriendship } from '@/models/schemas/friendship.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
@@ -12,7 +13,7 @@ import { IPost } from '@/models/schemas/post.schema';
 import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
-import { Collection, Db, MongoClient } from 'mongodb';
+import { Collection, Db, Document, MongoClient } from 'mongodb';
 
 const log = logger.child({ module: 'mongodb' });
 
@@ -27,6 +28,7 @@ export interface IDatabaseService {
   createFriendRequestIndexes(): Promise<void>;
   createBlockIndexes(): Promise<void>;
   createPostsIndex(): Promise<void>;
+  createNotificationIndexes(): Promise<void>;
   initializeChatIndexes(): Promise<void>;
 }
 
@@ -73,8 +75,19 @@ class DatabaseService implements IDatabaseService {
     await this.client.close();
   }
 
+  /** `indexExists` throws NamespaceNotFound (26) when the collection has never been created. */
+  private async indexExistsSafe<T extends Document>(collection: Collection<T>, indexNames: string[]): Promise<boolean> {
+    try {
+      return await collection.indexExists(indexNames);
+    } catch (error: unknown) {
+      const code = (error as { code?: number })?.code;
+      if (code === 26) return false;
+      throw error;
+    }
+  }
+
   async createUsersIndex() {
-    const isIndexExists = await this.users.indexExists(['email_1_password_1', 'username_1', 'email_1']);
+    const isIndexExists = await this.indexExistsSafe(this.users, ['email_1_password_1', 'username_1', 'email_1']);
     if (isIndexExists) return;
     await Promise.all([
       this.users.createIndex({ email: 1, password: 1 }),
@@ -84,7 +97,7 @@ class DatabaseService implements IDatabaseService {
   }
 
   async createRefreshTokensIndex() {
-    const isIndexExists = await this.refreshTokens.indexExists(['token_1', 'exp_1']);
+    const isIndexExists = await this.indexExistsSafe(this.refreshTokens, ['token_1', 'exp_1']);
     if (isIndexExists) return;
     await Promise.all([
       this.refreshTokens.createIndex({ token: 1 }),
@@ -93,13 +106,13 @@ class DatabaseService implements IDatabaseService {
   }
 
   async createVideoStatusesIndex() {
-    const isIndexExists = await this.videoStatuses.indexExists(['name_1']);
+    const isIndexExists = await this.indexExistsSafe(this.videoStatuses, ['name_1']);
     if (isIndexExists) return;
     await this.videoStatuses.createIndex({ name: 1 });
   }
 
   async createFriendshipIndexes() {
-    const isIndexExists = await this.friendships.indexExists(['userIdLow_1_userIdHigh_1']);
+    const isIndexExists = await this.indexExistsSafe(this.friendships, ['userIdLow_1_userIdHigh_1']);
     if (isIndexExists) return;
     await Promise.all([
       this.friendships.createIndex({ userIdLow: 1, userIdHigh: 1 }, { unique: true }),
@@ -109,7 +122,7 @@ class DatabaseService implements IDatabaseService {
   }
 
   async createFriendRequestIndexes() {
-    const isIndexExists = await this.friendRequests.indexExists(['fromUserId_1_toUserId_1']);
+    const isIndexExists = await this.indexExistsSafe(this.friendRequests, ['fromUserId_1_toUserId_1']);
     if (isIndexExists) return;
     await Promise.all([
       this.friendRequests.createIndex({ fromUserId: 1, toUserId: 1 }, { unique: true }),
@@ -121,7 +134,7 @@ class DatabaseService implements IDatabaseService {
   }
 
   async createBlockIndexes() {
-    const isIndexExists = await this.blocks.indexExists(['blockerId_1_blockedId_1']);
+    const isIndexExists = await this.indexExistsSafe(this.blocks, ['blockerId_1_blockedId_1']);
     if (isIndexExists) return;
     await Promise.all([
       this.blocks.createIndex({ blockerId: 1, blockedId: 1 }, { unique: true }),
@@ -131,7 +144,7 @@ class DatabaseService implements IDatabaseService {
   }
 
   async createPostsIndex() {
-    const isIndexExists = await this.posts.indexExists(['content_text']);
+    const isIndexExists = await this.indexExistsSafe(this.posts, ['content_text']);
     if (isIndexExists) return;
     await this.posts.createIndex({ content: 'text' }, { default_language: 'none' });
   }
@@ -172,12 +185,12 @@ class DatabaseService implements IDatabaseService {
   /** Search posts: filters on audience + media.type (video / image) combine often in $match. */
   async createSearchPostsAudienceMediaIndex() {
     const name = 'audience_1_media.type_1';
-    if (await this.posts.indexExists([name])) return;
+    if (await this.indexExistsSafe(this.posts, [name])) return;
     await this.posts.createIndex({ audience: 1, 'media.type': 1 }, { name });
   }
 
   async createUsersSearchIndex() {
-    const isIndexExists = await this.users.indexExists(['name_1_username_1_email_1']);
+    const isIndexExists = await this.indexExistsSafe(this.users, ['name_1_username_1_email_1']);
     if (isIndexExists) return;
     await this.users.createIndex({ name: 'text', username: 'text', email: 'text' }, { default_language: 'none' });
   }
@@ -196,8 +209,17 @@ class DatabaseService implements IDatabaseService {
       this.createSearchPostsAudienceMediaIndex(),
       this.createBookmarksIndex(),
       this.createLikesIndex(),
-      this.createHashtagsIndex()
+      this.createHashtagsIndex(),
+      this.createNotificationIndexes()
     ]);
+  }
+
+  async createNotificationIndexes() {
+    const col = this.notifications;
+    const listIdx = 'recipientId_1_createdAt_-1__id_-1';
+    if (!(await this.indexExistsSafe(col, [listIdx]))) {
+      await col.createIndex({ recipientId: 1, createdAt: -1, _id: -1 }, { name: listIdx });
+    }
   }
 
   /** Chat DB — idempotent indexes (Phase 4). */
@@ -212,14 +234,14 @@ class DatabaseService implements IDatabaseService {
   private async _ensureChatChatsIndexes(): Promise<void> {
     const col = this.chatChats;
     const directPair = 'userIdLow_1_userIdHigh_1';
-    if (!(await col.indexExists([directPair]))) {
+    if (!(await this.indexExistsSafe(col, [directPair]))) {
       await col.createIndex(
         { userIdLow: 1, userIdHigh: 1 },
         { unique: true, partialFilterExpression: { type: 'direct' } }
       );
     }
     const updated = 'updatedAt_-1';
-    if (!(await col.indexExists([updated]))) {
+    if (!(await this.indexExistsSafe(col, [updated]))) {
       await col.createIndex({ updatedAt: -1 });
     }
   }
@@ -227,11 +249,11 @@ class DatabaseService implements IDatabaseService {
   private async _ensureChatMembersIndexes(): Promise<void> {
     const col = this.chatMembers;
     const uniq = 'chatId_1_userId_1';
-    if (!(await col.indexExists([uniq]))) {
+    if (!(await this.indexExistsSafe(col, [uniq]))) {
       await col.createIndex({ chatId: 1, userId: 1 }, { unique: true });
     }
     const byUser = 'userId_1_chatId_1';
-    if (!(await col.indexExists([byUser]))) {
+    if (!(await this.indexExistsSafe(col, [byUser]))) {
       await col.createIndex({ userId: 1, chatId: 1 });
     }
   }
@@ -239,7 +261,7 @@ class DatabaseService implements IDatabaseService {
   private async _ensureChatMessagesIndexes(): Promise<void> {
     const col = this.chatMessages;
     const history = 'chatId_1_createdAt_-1__id_-1';
-    if (!(await col.indexExists([history]))) {
+    if (!(await this.indexExistsSafe(col, [history]))) {
       await col.createIndex({ chatId: 1, createdAt: -1, _id: -1 }, { name: history });
     }
   }
@@ -282,6 +304,10 @@ class DatabaseService implements IDatabaseService {
 
   get likes(): Collection<ILike> {
     return this.db.collection<ILike>('likes');
+  }
+
+  get notifications(): Collection<INotification> {
+    return this.db.collection<INotification>('notifications');
   }
 
   get chatChats(): Collection<IChat> {
