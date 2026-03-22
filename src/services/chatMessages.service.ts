@@ -6,6 +6,7 @@ import {
   toChatMessageDto
 } from '@/dtos/responses/chatMessage.response.dto';
 import { EChatType, IChat } from '@/models/schemas/chat.schema';
+import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
 import { INotificationsService } from '@/services/notifications.service';
 import { IChatAttachment } from '@/models/schemas/chatMessage.schema';
 import { IBlockRepository } from '@/repositories/block.repository';
@@ -29,9 +30,12 @@ export interface IChatMessagesService {
     cursor?: string
   ): Promise<ChatMessagesPageResponseDTO>;
   markRead(userId: string, chatId: string, body: MarkChatReadBodyDTO): Promise<void>;
+  bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void;
 }
 
 class ChatMessagesService extends BaseService implements IChatMessagesService {
+  private realtimeChatEmitter: IRealtimeChatEmitter | null = null;
+
   constructor(
     private readonly chatRepository: IChatRepository,
     private readonly chatMemberRepository: IChatMemberRepository,
@@ -40,6 +44,10 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     private readonly notificationsService: INotificationsService
   ) {
     super();
+  }
+
+  public bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void {
+    this.realtimeChatEmitter = emitter;
   }
 
   private directPeer(chat: IChat, viewer: ObjectId): ObjectId {
@@ -97,6 +105,13 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     await this.chatMessageRepository.insertMessage(msg);
     await this.chatRepository.touchUpdatedAt(cid, msg.createdAt);
 
+    const dto = toChatMessageDto(msg);
+    const membersForRealtime = await this.chatMemberRepository.listMembers(cid);
+    const memberHexes = membersForRealtime.map((m) => m.userId.toHexString());
+    if (this.realtimeChatEmitter) {
+      this.realtimeChatEmitter.emitMessageCreated(chatId, memberHexes, dto);
+    }
+
     const recipientIds: string[] = [];
     if (chat.type === EChatType.DIRECT) {
       const peer = this.directPeer(chat, viewerOid);
@@ -115,7 +130,7 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
       await this.notificationsService.recordNewMessage(msg, userId, recipientIds);
     }
 
-    return toChatMessageDto(msg);
+    return dto;
   }
 
   async listMessages(
@@ -174,7 +189,19 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     }
 
     const at = msg.createdAt;
-    await this.chatMemberRepository.updateReadState(cid, viewerOid, messageId, at);
+    const updated = await this.chatMemberRepository.updateReadState(cid, viewerOid, messageId, at);
+    if (!updated) {
+      return;
+    }
+
+    if (this.realtimeChatEmitter) {
+      const membersForRealtime = await this.chatMemberRepository.listMembers(cid);
+      const memberHexes = membersForRealtime.map((m) => m.userId.toHexString());
+      this.realtimeChatEmitter.emitReadUpdated(chatId, memberHexes, userId, {
+        lastReadMessageId: messageId.toHexString(),
+        lastReadAt: at.toISOString()
+      });
+    }
   }
 }
 

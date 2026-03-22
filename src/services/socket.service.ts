@@ -1,27 +1,59 @@
 import { envConfig } from '@/config';
+import {
+  SOCKET_CLIENT_CHAT_SUBSCRIBE,
+  SOCKET_CLIENT_CHAT_TYPING,
+  SOCKET_CLIENT_CHAT_UNSUBSCRIBE,
+  SOCKET_ROOM_CHAT_PREFIX,
+  SOCKET_SERVER_CHAT_MESSAGE_NEW,
+  SOCKET_SERVER_CHAT_READ_UPDATED,
+  SOCKET_SERVER_PRESENCE_CHAT,
+  SOCKET_SERVER_PRESENCE_USER,
+  chatRoom,
+  userRoom
+} from '@/constants/socket.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { ChatMessageResponseDTO } from '@/dtos/responses/chatMessage.response.dto';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
+import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
+import { IChatMemberRepository } from '@/repositories/chatMember.repository';
+import { IFriendshipRepository } from '@/repositories/friendship.repository';
 import { AuthFailureError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import TokenService, { ITokenService } from '@/services/token.service';
 import { IUsersService } from '@/services/users.service';
 import { TokenPayload } from '@/types/token.type';
 import { Server as HttpServer } from 'http';
+import { ObjectId } from 'mongodb';
 import { ExtendedError, Server, Socket } from 'socket.io';
 
-export interface ISocketService {
+export interface ISocketService extends IRealtimeChatEmitter {
   run(): void;
   emitToUser(userId: string, event: string, data: unknown): void;
+}
+
+const TYPING_THROTTLE_MS = 2000;
+
+function parseObjectIdHex(hex: string): ObjectId | null {
+  if (!hex || typeof hex !== 'string' || !ObjectId.isValid(hex)) {
+    return null;
+  }
+  try {
+    return new ObjectId(hex);
+  } catch {
+    return null;
+  }
 }
 
 class SocketService implements ISocketService {
   private io: Server;
   private readonly tokenService: ITokenService;
-  private users: Map<string, string> = new Map();
+  private readonly typingLastEmit = new Map<string, number>();
 
   constructor(
     httpServer: HttpServer,
-    private readonly usersService: IUsersService
+    private readonly usersService: IUsersService,
+    private readonly chatMemberRepository: IChatMemberRepository,
+    private readonly friendshipRepository: IFriendshipRepository
   ) {
     this.io = new Server(httpServer, {
       cors: {
@@ -38,12 +70,54 @@ class SocketService implements ISocketService {
     this.io.on('connection', this.onConnection.bind(this));
   }
 
-  /** Deliver personal events (e.g. Phase 5 `notification:new`) to an online user. */
+  /** Deliver personal events (e.g. Phase 5 `notification:new`) to all tabs in `user:<userId>`. */
   public emitToUser(userId: string, event: string, data: unknown): void {
-    const socketId = this.users.get(userId);
-    if (socketId) {
-      this.io.to(socketId).emit(event, data);
+    this.io.to(userRoom(userId)).emit(event, data);
+  }
+
+  public emitMessageCreated(
+    chatIdHex: string,
+    memberUserIdHexes: string[],
+    message: ChatMessageResponseDTO
+  ): void {
+    const rooms = [chatRoom(chatIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
+    this.io.to(rooms).emit(SOCKET_SERVER_CHAT_MESSAGE_NEW, { message });
+  }
+
+  public emitReadUpdated(
+    chatIdHex: string,
+    memberUserIdHexes: string[],
+    viewerUserIdHex: string,
+    payload: { lastReadMessageId: string; lastReadAt: string }
+  ): void {
+    const rooms = [chatRoom(chatIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
+    this.io.to(rooms).emit(SOCKET_SERVER_CHAT_READ_UPDATED, {
+      chatId: chatIdHex,
+      userId: viewerUserIdHex,
+      lastReadMessageId: payload.lastReadMessageId,
+      lastReadAt: payload.lastReadAt
+    });
+  }
+
+  private async emitChatPresenceAggregate(chatIdHex: string): Promise<void> {
+    const cid = parseObjectIdHex(chatIdHex);
+    if (!cid) return;
+
+    const members = await this.chatMemberRepository.listMembers(cid);
+    let anyMemberOnline = false;
+    for (const m of members) {
+      const hex = m.userId.toHexString();
+      const sockets = await this.io.in(userRoom(hex)).fetchSockets();
+      if (sockets.length > 0) {
+        anyMemberOnline = true;
+        break;
+      }
     }
+
+    this.io.to(chatRoom(chatIdHex)).emit(SOCKET_SERVER_PRESENCE_CHAT, {
+      conversationId: chatIdHex,
+      anyMemberOnline
+    });
   }
 
   private async initMiddleware(socket: Socket, next: (err?: ExtendedError) => void) {
@@ -84,12 +158,27 @@ class SocketService implements ISocketService {
 
   private onConnection(socket: Socket) {
     const { userId } = socket.handshake.auth.decoded as TokenPayload;
-    this.users.set(userId, socket.id);
+    const viewerOid = new ObjectId(userId);
+
+    socket.join(userRoom(userId));
+
+    void (async () => {
+      try {
+        const friends = await this.friendshipRepository.findFriendUserIdsForUser(viewerOid);
+        for (const f of friends) {
+          this.io.to(userRoom(f.toHexString())).emit(SOCKET_SERVER_PRESENCE_USER, {
+            userId,
+            online: true
+          });
+        }
+      } catch {
+        /* presence best-effort */
+      }
+    })();
 
     socket.use(async (_packet, next) => {
       try {
         const { accessToken } = socket.handshake.auth;
-        // TODO: spit check + decoded token
         if (!accessToken) {
           throw new AuthFailureError();
         }
@@ -99,6 +188,8 @@ class SocketService implements ISocketService {
           throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
         }
 
+        socket.handshake.auth.decoded = decoded;
+        socket.handshake.auth.accessToken = accessToken;
         next();
       } catch {
         next(new Error('Unauthorized'));
@@ -111,27 +202,85 @@ class SocketService implements ISocketService {
       }
     });
 
-    socket.on('disconnect', () => {
-      this.users.delete(userId);
+    socket.on(SOCKET_CLIENT_CHAT_SUBSCRIBE, async (data: { conversationId?: string }) => {
+      const raw = data?.conversationId;
+      if (!raw || typeof raw !== 'string') return;
+      const cid = parseObjectIdHex(raw);
+      if (!cid) return;
+
+      const m = await this.chatMemberRepository.findMembership(cid, viewerOid);
+      if (!m) return;
+
+      socket.join(chatRoom(raw));
+      void this.emitChatPresenceAggregate(raw);
     });
 
-    // Phase 6: realtime — dùng REST `/api/chats` (Phase 4) để persistence; Socket chỉ delivery.
-    socket.on('sendMessage', async (data: { senderId: string; receiverId: string; content: string }) => {
-      const { senderId, receiverId, content } = data;
-      const toSocketId = this.users.get(receiverId);
+    socket.on(SOCKET_CLIENT_CHAT_UNSUBSCRIBE, (data: { conversationId?: string }) => {
+      const raw = data?.conversationId;
+      if (!raw || typeof raw !== 'string') return;
+      const cid = parseObjectIdHex(raw);
+      if (!cid) return;
 
-      // emit message to frontend
-      if (toSocketId) {
-        socket.to(toSocketId).emit('receiveMessage', { senderId, receiverId, content });
+      void (async () => {
+        const m = await this.chatMemberRepository.findMembership(cid, viewerOid);
+        if (!m) return;
+        socket.leave(chatRoom(raw));
+      })();
+    });
+
+    socket.on(SOCKET_CLIENT_CHAT_TYPING, async (data: { conversationId?: string; typing?: boolean }) => {
+      const raw = data?.conversationId;
+      if (!raw || typeof raw !== 'string') return;
+      if (typeof data?.typing !== 'boolean') return;
+      const typing = data.typing;
+
+      const cid = parseObjectIdHex(raw);
+      if (!cid) return;
+
+      const m = await this.chatMemberRepository.findMembership(cid, viewerOid);
+      if (!m) return;
+
+      if (typing) {
+        const key = `${userId}:${raw}`;
+        const now = Date.now();
+        const last = this.typingLastEmit.get(key) ?? 0;
+        if (now - last < TYPING_THROTTLE_MS) {
+          return;
+        }
+        this.typingLastEmit.set(key, now);
       }
 
-      // Phase 6: persist qua ChatMessagesService / REST, không dùng social `conversations` (đã gỡ).
-      // await chatMessagesService.sendMessage({
-      //   senderId,
-      //   receiverId,
-      //   content,
-      //   lastMessage: content
-      // });
+      this.io.to(chatRoom(raw)).emit(SOCKET_CLIENT_CHAT_TYPING, {
+        conversationId: raw,
+        userId,
+        typing
+      });
+    });
+
+    socket.on('disconnect', () => {
+      void (async () => {
+        try {
+          const remaining = await this.io.in(userRoom(userId)).fetchSockets();
+          if (remaining.length === 0) {
+            const friends = await this.friendshipRepository.findFriendUserIdsForUser(viewerOid);
+            for (const f of friends) {
+              this.io.to(userRoom(f.toHexString())).emit(SOCKET_SERVER_PRESENCE_USER, {
+                userId,
+                online: false
+              });
+            }
+          }
+
+          for (const room of socket.rooms) {
+            if (room.startsWith(SOCKET_ROOM_CHAT_PREFIX)) {
+              const chatHex = room.slice(SOCKET_ROOM_CHAT_PREFIX.length);
+              await this.emitChatPresenceAggregate(chatHex);
+            }
+          }
+        } catch {
+          /* best-effort */
+        }
+      })();
     });
   }
 }

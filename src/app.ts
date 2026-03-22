@@ -64,8 +64,14 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
   }
 
   const container = Container.getOrSet(databaseService, redisService);
-  const socket = new SocketService(httpServer, container.getUsersService());
+  const socket = new SocketService(
+    httpServer,
+    container.getUsersService(),
+    container.getChatMemberRepository(),
+    container.getFriendshipRepository()
+  );
   container.bindNotificationsSocket(socket);
+  container.bindRealtimeChatEmitter(socket);
   socket.run();
 
   app.use(config.api.prefix, setupRoutes());

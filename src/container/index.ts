@@ -14,12 +14,12 @@ import { BlockRepository } from '@/repositories/block.repository';
 import { BookmarkRepository, IBookmarkRepository } from '@/repositories/bookmark.repository';
 import { ILikeRepository, LikeRepository } from '@/repositories/like.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
-import { FriendshipRepository } from '@/repositories/friendship.repository';
+import { FriendshipRepository, IFriendshipRepository } from '@/repositories/friendship.repository';
 import { IMediaRepository, MediaRepository } from '@/repositories/media.repository';
 import { IPostRepository, PostRepository } from '@/repositories/post.repository';
 import { ISearchRepository, SearchRepository } from '@/repositories/search.repository';
 import { IUserRepository, UserRepository } from '@/repositories/user.repository';
-import { ChatMemberRepository } from '@/repositories/chatMember.repository';
+import { ChatMemberRepository, IChatMemberRepository } from '@/repositories/chatMember.repository';
 import { ChatMessageRepository } from '@/repositories/chatMessage.repository';
 import { ChatRepository } from '@/repositories/chat.repository';
 import { NotificationRepository } from '@/repositories/notification.repository';
@@ -29,6 +29,7 @@ import BookmarksService, { IBookmarksService } from '@/services/bookmarks.servic
 import LikesService, { ILikesService } from '@/services/likes.service';
 import FriendsService, { IFriendsService } from '@/services/friends.service';
 import BlocksService, { IBlocksService } from '@/services/blocks.service';
+import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
 import ChatMessagesService, { IChatMessagesService } from '@/services/chatMessages.service';
 import ChatsService, { IChatsService } from '@/services/chats.service';
 import NotificationsService, { INotificationsService, ISocketUserEmitter } from '@/services/notifications.service';
@@ -113,7 +114,11 @@ export interface IContainer {
   getChatsValidation(): IChatsValidation;
   getNotificationsValidation(): INotificationsValidation;
 
+  getChatMemberRepository(): IChatMemberRepository;
+  getFriendshipRepository(): IFriendshipRepository;
+
   bindNotificationsSocket(emitter: ISocketUserEmitter | null): void;
+  bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void;
 }
 
 export class Container implements IContainer {
@@ -412,6 +417,18 @@ export class Container implements IContainer {
 
   public bindNotificationsSocket(emitter: ISocketUserEmitter | null): void {
     this.notificationsService.bindSocketEmitter(emitter);
+  }
+
+  public getChatMemberRepository(): IChatMemberRepository {
+    return this.chatMemberRepository;
+  }
+
+  public getFriendshipRepository(): IFriendshipRepository {
+    return this.friendshipRepository;
+  }
+
+  public bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void {
+    this.chatMessagesService.bindRealtimeChatEmitter(emitter);
   }
 
   // Controllers
