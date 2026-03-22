@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 4 context gathered
+stopped_at: Phase 4 planned (5 plans, 5 waves)
 last_updated: "2026-03-22T09:02:08.966Z"
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 9
+  total_plans: 14
   completed_plans: 9
 ---
 
@@ -20,14 +20,14 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-03-21)
 
 **Core value:** Trusted friends, feed and engagement with correct permissions, stable 1:1 and group chat with history and notifications—one unified API aligned with the existing TypeScript/Express stack.
 
-**Current focus:** Phase 4 — Chat HTTP API (context gathered; planning next)
+**Current focus:** Phase 4 — Chat HTTP API (execute wave 1: 04-01-PLAN.md)
 
 **Roadmap:** [.planning/ROADMAP.md](ROADMAP.md)
 
 ## Current Position
 
 Phase: 4
-Plan: Not started
+Plan: 04-01-PLAN.md (wave 1 of 5)
 
 ## Performance Metrics
 
@@ -71,4 +71,4 @@ None yet. See `.planning/codebase/CONCERNS.md` for targets phased into work (esp
 
 Last session: 2026-03-22T09:02:08.963Z
 Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-chat-http-api/04-CONTEXT.md
+Resume file: .planning/phases/04-chat-http-api/04-01-PLAN.md

@@ -74,7 +74,14 @@ Plans:
   2. User can create a group chat with multiple friends (groups of two members allowed); membership rules match agreed product constraints.
   3. API replaces the experimental `/api/conversations` flow: list/create conversations, send messages, paginated/cursor history, mark read when appropriate (e.g. last message from others).
   4. Chat attachments use S3 and existing auth patterns (no Cloudinary).
-**Plans:** TBD
+**Plans:** 5 plans (waves 1–5)
+
+Plans:
+- [ ] 04-01-PLAN.md — Read paths BLCK/D-11 unknown user + profile block (D-10); REQUIREMENTS sync
+- [ ] 04-02-PLAN.md — Chat DB schemas, `chatDb` collections, `initializeChatIndexes`, app bootstrap
+- [ ] 04-03-PLAN.md — Repos + REST: direct/group, members, roles, invite/kick/transfer (CHAT-01, CHAT-02)
+- [ ] 04-04-PLAN.md — Messages send/list cursor, mark-read, server sender id (CHAT-03)
+- [ ] 04-05-PLAN.md — S3 attachments 5MB/file, remove experimental conversations, Swagger + fake-data (CHAT-04)
 
 ### Phase 5: Notifications inbox
 **Goal:** Users have a durable in-app notification inbox with REST; creating a row optionally pushes in realtime after persist.
@@ -123,7 +130,7 @@ Plans:
 | 1. Chat database foundation | 01-01 | Complete    | 2026-03-21 |
 | 2. Friends graph & privacy | 02-01 … 02-04 | Complete    | 2026-03-21 |
 | 3. Posts, feed & engagement | 4/4 | Complete    | 2026-03-21 |
-| 4. Chat HTTP API | TBD | Not started | - |
+| 4. Chat HTTP API | 04-01 … 04-05 | Not started | - |
 | 5. Notifications inbox | TBD | Not started | - |
 | 6. Realtime (Socket.IO) | TBD | Not started | - |
 | 7. Quality hardening & tests | TBD | Not started | - |
