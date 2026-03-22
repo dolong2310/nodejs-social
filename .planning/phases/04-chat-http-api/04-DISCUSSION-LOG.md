@@ -25,13 +25,13 @@
 |--------|-----------|
 | Mời thêm | Mọi thành viên mời được; người được mời = bạn của **người mời** và **creator** |
 | Rời nhóm | Có |
-| Kick | Admin kick manager + member; manager kick member |
+| Kick | Admin kick manager + member; manager **chỉ** kick member (**không** kick manager khác) |
 | Admin | Creator = admin đầu; quyền cao nhất; kick; hạ manager → member; chuyển admin |
 | Manager | Sửa tên/ảnh/settings (cùng admin); kick member |
 | Member | Không sửa metadata nhóm |
 | Settings nhóm mở rộng | Mới nghĩ, chưa plan — defer |
 
-**Notes:** Sau chuyển admin, role admin cũ → mặc định manager trong CONTEXT (discretion).
+**Notes:** Sau chuyển admin, admin cũ → **manager** (đã xác nhận).
 
 ---
 
@@ -44,7 +44,7 @@
 | B xem user info / post A | Không như bình thường |
 | Post A mà B đã tương tác | Vẫn hiện; danh tính A → **unknown user** |
 
-**Notes:** Cần align với BLCK-02 Phase 3 — ghi trong CONTEXT là mở / cần xác nhận.
+**Notes:** User xác nhận **toàn bộ read paths**; cập nhật BLCK-02 / docs Phase 3 khi implement (xem D-11 trong CONTEXT).
 
 ---
 
@@ -54,7 +54,7 @@
 |----------|-----------|
 | Mark read | PATCH rõ ràng |
 | History | Cursor pagination |
-| Media | Ảnh + file, 5MB (v1), S3/auth giống post |
+| Media | Ảnh + file; **5MB tối đa mỗi file** gửi kèm (v1), S3/auth giống post |
 
 ---
 
@@ -64,6 +64,15 @@
 
 ---
 
+## Follow-up A–D (2026-03-22)
+
+| ID | Câu hỏi | Trả lời |
+|----|---------|---------|
+| A | Phạm vi “unknown user” vs BLCK-02 | **Toàn bộ read paths** |
+| B | Admin cũ sau khi trao quyền | **Manager** |
+| C | 5MB là gì | **Mỗi file** user gửi (ảnh hoặc file) |
+| D | Manager kick manager? | **Không**; chỉ **admin** kick manager |
+
 ## Claude's Discretion (từ CONTEXT)
 
-- Role admin cũ sau transfer; schema/cursor/HTTP chi tiết; “unknown user” shape API.
+- Schema/cursor/HTTP chi tiết; shape API “unknown user” cho client.

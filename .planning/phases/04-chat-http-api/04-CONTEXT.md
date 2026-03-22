@@ -2,12 +2,12 @@
 
 **Gathered:** 2026-03-22  
 **Status:** Ready for planning  
-**Source:** Thảo luận tiếng Việt — user trả lời trực tiếp các vùng 1–4 + ghi nhận tính năng lưu backlog.
+**Source:** Thảo luận tiếng Việt — user trả lời các vùng 1–4; bổ sung A–D 2026-03-22 (read paths, admin→manager, 5MB/file, kick).
 
 <domain>
 ## Phase Boundary
 
-API HTTP chat trên **MongoDB chat** (`DATABASE_CHAT_NAME`): hội thoại **1-1** và **nhóm**, **tin nhắn**, **lịch sử có cursor**, **đánh dấu đã đọc** (PATCH rõ ràng), **đính kèm S3** (ảnh + file, giới hạn 5MB v1). **Thay thế** luồng thử nghiệm `/api/conversations` và persistence trên DB social. **Không** gồm realtime Socket.IO (Phase 6), **không** gồm inbox notification đầy đủ (Phase 5). **Reaction / sửa / xóa tin** — **ngoài scope** phase này (xem `<deferred>`).
+API HTTP chat trên **MongoDB chat** (`DATABASE_CHAT_NAME`): hội thoại **1-1** và **nhóm**, **tin nhắn**, **lịch sử có cursor**, **đánh dấu đã đọc** (PATCH rõ ràng), **đính kèm S3** (ảnh + file; **tối đa 5MB / file** gửi kèm mỗi lần v1). **Thay thế** luồng thử nghiệm `/api/conversations` và persistence trên DB social. **Không** gồm realtime Socket.IO (Phase 6), **không** gồm inbox notification đầy đủ (Phase 5). **Reaction / sửa / xóa tin** — **ngoài scope** phase này (xem `<deferred>`).
 
 </domain>
 
@@ -22,9 +22,9 @@ API HTTP chat trên **MongoDB chat** (`DATABASE_CHAT_NAME`): hội thoại **1-1
 
 - **D-02:** Sau khi nhóm được tạo, **mọi thành viên** đều có thể **mời thêm** người khác, với điều kiện: người được mời phải là **bạn của người mời** và **đồng thời là bạn của người tạo nhóm (creator)**.
 - **D-03:** Thành viên có thể **rời nhóm** (self-leave).
-- **D-04:** Có **kick**: **admin** kick được **manager** và **member**; **manager** kick được **member** (manager không kick admin; không kick manager trừ khi sau này có rule bổ sung — mặc định chỉ admin quản lý manager).
-- **D-05:** **Hai role điều hành** ngoài member thường: **`admin`** và **`manager`**. **Admin** quyền cao nhất: kick bất kỳ (manager + member), **hạ manager xuống member**, **chuyển quyền admin** cho thành viên khác. **Creator** mặc định là **admin** đầu tiên.
-- **D-06:** **Chuyển admin:** admin có thể trao quyền admin cho thành viên khác; **vai trò của admin cũ sau khi chuyển** — để **Claude's discretion** mặc định **→ manager** (có thể chỉnh nếu user xác nhận khác).
+- **D-04:** Có **kick**: **admin** kick được **manager** và **member**; **manager** **chỉ** kick được **member** — **manager không kick manager khác**, **không kick admin** (chỉ admin xử lý manager).
+- **D-05:** **Hai role điều hành** ngoài member thường: **`admin`** và **`manager`**. **Admin** quyền cao nhất: kick manager + member, **hạ manager xuống member**, **chuyển quyền admin** cho thành viên khác. **Creator** mặc định là **admin** đầu tiên.
+- **D-06:** **Chuyển admin:** admin có thể trao quyền admin cho thành viên khác; **admin cũ thành `manager`** (đã xác nhận, không còn mở discretion).
 - **D-07:** **Ảnh nhóm, tên nhóm** và các **settings nhóm** trong tương lai: chỉ **admin** và **manager** được **sửa**; **member** không sửa được. (Chi tiết settings mở rộng chưa có plan — defer tới phase/backlog khi có spec.)
 
 ### 3. Chặn (block) và chat / hiển thị profile & post
@@ -32,19 +32,18 @@ API HTTP chat trên **MongoDB chat** (`DATABASE_CHAT_NAME`): hội thoại **1-1
 - **D-08:** Khi **A chặn B** (theo graph block hiện có): **không tương tác chat** — **không gửi** tin mới; không mở thêm quyền tương tác xã hội mới giữa hai phía.
 - **D-09:** **Phía bị chặn (B)** vẫn có thể **xem lại lịch sử chat** đã có với A (read-only history — không mở rộng tương tác mới).
 - **D-10:** B **không** xem được **thông tin user / profile / post** của A như người dùng bình thường (theo ý user: cách hiển thị cụ thể do planner + khớp API hiện có).
-- **D-11 (cần thống nhất với Phase 3 — BLCK-02):** Với các **bài post của A mà B đã từng tương tác**: vẫn **hiển thị** nội dung tương tác đó nhưng **danh tính A** hiển thị dạng **unknown user** (không còn hiển thị profile A cho B). **Mâu thuẫn tiềm ẩn:** `03-CONTEXT` / BLCK-02 hiện orient “không thấy post của nhau trên read path”. **Planner + product:** hoặc **sửa đặc tả BLCK-02** theo D-11, hoặc giới hạn D-11 chỉ vào **màn hình/context cụ thể** (ví dụ chỉ thread comment) — **cần user xác nhận một dòng** trước khi implement post paths.
+- **D-11 (bổ sung BLCK-02 — đã xác nhận phạm vi):** Trên **toàn bộ read paths** (feed, chi tiết bài, search, thread comment, v.v.): với **bài post của A mà B đã từng tương tác** (và ngữ cảnh tương tự user đã mô tả), nội dung **vẫn hiển thị** nhưng **danh tính A** (đối với B khi có block) hiển thị dạng **unknown user**, không còn profile/link thật tới A. **Planner** cập nhật `REQUIREMENTS.md` / mô tả BLCK-02 và tài liệu Phase 3 khi triển khai để **đồng bộ** với quyết định này (thay cho diễn giải “ẩn hoàn toàn post của nhau” nếu đang conflict).
 
 ### 4. Đã đọc, lịch sử, media (CHAT-04)
 
 - **D-12:** **Mark-read:** endpoint **PATCH** (hoặc tương đương) **rõ ràng**, không chỉ dựa vào side-effect mơ hồ.
 - **D-13:** **Lịch sử tin nhắn:** phân trang kiểu **cursor** (không bắt buộc offset/skip là primary).
-- **D-14:** **Đính kèm:** gồm **ảnh và file**; giới hạn **5MB mỗi file** v1 (sau có thể đổi config). **Tái sử dụng** flow **S3 + auth** giống **bài post** (presigned / pattern hiện có trong codebase).
+- **D-14:** **Đính kèm:** gồm **ảnh và file**; khi user gửi tin có kèm file/ảnh thì **mỗi file** được gửi **tối đa 5MB** v1 (không phải tổng nhiều file trong một message trừ khi sau này đổi spec). **Tái sử dụng** flow **S3 + auth** giống **bài post** (presigned / pattern hiện có trong codebase).
 
 ### Claude's Discretion
 
 - Chi tiết path REST, tên field DTO, mã HTTP từng lỗi — miễn khớp D-01…D-14 và friends/block checks.
 - Schema collection/index Mongo chat, shape `lastRead`, cursor encoding.
-- Sau **chuyển admin**, role admin cũ nếu không quy định khác → mặc định **manager** (D-06).
 - Cách triển khai “unknown user” trên FE không thuộc backend-only phase nhưng API nên trả cờ/placeholder thống nhất cho client mới.
 
 </decisions>
@@ -72,7 +71,7 @@ API HTTP chat trên **MongoDB chat** (`DATABASE_CHAT_NAME`): hội thoại **1-1
 
 - `.planning/phases/01-chat-database-foundation/01-CONTEXT.md` — Chat DB, fail-fast, không schema ở Phase 1.
 - `.planning/phases/02-friends-graph-privacy/02-CONTEXT.md` — Friends + blocks; D-12…D-16.
-- `.planning/phases/03-posts-feed-engagement/03-CONTEXT.md` — BLCK-02, 403, visibility — **đối chiếu với D-11**.
+- `.planning/phases/03-posts-feed-engagement/03-CONTEXT.md` — BLCK-02, 403, visibility — **cần chỉnh mô tả read path** cho khớp **D-11** (unknown user trên toàn bộ read paths khi đã tương tác).
 
 ### Risks / alignment
 
