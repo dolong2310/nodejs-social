@@ -10,7 +10,7 @@ import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
 import likesRouter from '@/routes/likes.route';
-import conversationsRouter from '@/routes/conversations.route';
+import chatsRouter from '@/routes/chats.route';
 import friendsRouter from '@/routes/friends.route';
 import blocksRouter from '@/routes/blocks.route';
 import mediaRouter from '@/routes/media.route';
@@ -35,7 +35,12 @@ import swaggerUi from 'swagger-ui-express';
 export async function createApp(httpServer: HttpServer, appConfig: AppConfig): Promise<Express> {
   const databaseService = DatabaseInstance.init(appConfig.database);
   const redisService = RedisInstance.init(appConfig.redis);
-  await Promise.all([databaseService.connect(), databaseService.initializeIndexes(), redisService.connect()]);
+  await Promise.all([
+    databaseService.connect(),
+    databaseService.initializeIndexes(),
+    databaseService.initializeChatIndexes(),
+    redisService.connect()
+  ]);
 
   QueueService.init(appConfig.redis); // WARN: QueueService must be initialized before Container — Container.initializeQueues() calls QueueService.get()
 
@@ -95,7 +100,7 @@ function setupRoutes(): Router {
   router.use('/bookmarks', bookmarksRouter());
   router.use('/likes', likesRouter());
   router.use('/search', searchRouter());
-  router.use('/conversations', conversationsRouter());
+  router.use('/chats', chatsRouter());
   router.use('/friends', friendsRouter());
   router.use('/blocks', blocksRouter());
   router.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));

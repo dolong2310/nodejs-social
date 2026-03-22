@@ -11,7 +11,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 - [x] **Phase 1: Chat database foundation** — Second Mongo `Db`, env wiring, and documented configuration for `DATABASE_CHAT_NAME`
 - [x] **Phase 2: Friends graph & privacy** — Remove legacy followers; mutual friends, requests, unfriend, block/unblock, daily request cap (completed 2026-03-21)
 - [x] **Phase 3: Posts, feed & engagement** — Per-post visibility, merged feed, likes/comments/bookmarks under one permission matrix (completed 2026-03-21)
-- [ ] **Phase 4: Chat HTTP API** — Friend-gated direct and group conversations, messages, read state, S3 media; replace `/api/conversations`
+- [x] **Phase 4: Chat HTTP API** — Friend-gated direct and group conversations, messages, read state, S3 media; replace `/api/conversations` (completed 2026-03-22)
 - [ ] **Phase 5: Notifications inbox** — DB + REST list/mark-read, v1 types, hooks from graph and chat, emit-after-persist
 - [ ] **Phase 6: Realtime (Socket.IO)** — Replace chat socket flow; JWT identity, rooms, online presence, persist-then-emit via shared services
 - [ ] **Phase 7: Quality hardening & tests** — Close CONCERNS gaps on implemented paths; test runner + smoke/integration coverage
@@ -74,14 +74,14 @@ Plans:
   2. User can create a group chat with multiple friends (groups of two members allowed); membership rules match agreed product constraints.
   3. API replaces the experimental `/api/conversations` flow: list/create conversations, send messages, paginated/cursor history, mark read when appropriate (e.g. last message from others).
   4. Chat attachments use S3 and existing auth patterns (no Cloudinary).
-**Plans:** 5 plans (waves 1–5)
+**Plans:** 5/5 plans complete
 
 Plans:
-- [ ] 04-01-PLAN.md — Read paths BLCK/D-11 unknown user + profile block (D-10); REQUIREMENTS sync
-- [ ] 04-02-PLAN.md — Chat DB schemas, `chatDb` collections, `initializeChatIndexes`, app bootstrap
-- [ ] 04-03-PLAN.md — Repos + REST: direct/group, members, roles, invite/kick/transfer (CHAT-01, CHAT-02)
-- [ ] 04-04-PLAN.md — Messages send/list cursor, mark-read, server sender id (CHAT-03)
-- [ ] 04-05-PLAN.md — S3 attachments 5MB/file, remove experimental conversations, Swagger + fake-data (CHAT-04)
+- [x] 04-01-PLAN.md — Read paths BLCK/D-11 unknown user + profile block (D-10); REQUIREMENTS sync
+- [x] 04-02-PLAN.md — Chat DB schemas, `chatDb` collections, `initializeChatIndexes`, app bootstrap
+- [x] 04-03-PLAN.md — Repos + REST: direct/group, members, roles, invite/kick/transfer (CHAT-01, CHAT-02)
+- [x] 04-04-PLAN.md — Messages send/list cursor, mark-read, server sender id (CHAT-03)
+- [x] 04-05-PLAN.md — S3 attachments 5MB/file, remove experimental conversations, Swagger + fake-data (CHAT-04)
 
 ### Phase 5: Notifications inbox
 **Goal:** Users have a durable in-app notification inbox with REST; creating a row optionally pushes in realtime after persist.

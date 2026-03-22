@@ -110,6 +110,23 @@ export const VALIDATION_ERROR_MESSAGE = {
   // Conversation errors
   INVALID_RECEIVER_ID: 'Invalid receiver ID',
 
+  // Chat (Phase 4 — chat DB)
+  CHAT_NOT_FOUND: 'Chat not found',
+  CHAT_NOT_MEMBER: 'You are not a member of this chat',
+  CHAT_PEER_NOT_FRIEND: 'You can only start a direct chat with a friend',
+  CHAT_PEER_BLOCKED: 'Cannot use this chat due to a block between participants',
+  CHAT_INVITE_NOT_FRIEND_OF_BOTH: 'Invited user must be friends with you and with the group creator',
+  CHAT_CANNOT_KICK: 'You cannot remove this member',
+  CHAT_ROLE_FORBIDDEN: 'This role change is not allowed',
+  CHAT_GROUP_NEEDS_MEMBER: 'Group must include at least one other member',
+  CHAT_INVALID_PEER: 'Invalid peer user',
+  CHAT_MESSAGE_FORBIDDEN: 'You cannot send messages in this chat',
+  CHAT_MESSAGE_EMPTY: 'Message must include non-empty text and/or attachments',
+  CHAT_ATTACHMENT_TOO_LARGE: 'Each attachment must be 5MB or less',
+  CHAT_INVALID_CURSOR: 'Invalid cursor',
+  CHAT_USER_ALREADY_IN_CHAT: 'User is already a member of this chat',
+  CHAT_DIRECT_NO_KICK: 'Kick is not supported in direct chats',
+
   // Media errors
   VIDEO_NOT_FOUND: 'Video not found'
 } as const;

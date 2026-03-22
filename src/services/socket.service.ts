@@ -106,7 +106,7 @@ class SocketService implements ISocketService {
       this.users.delete(userId);
     });
 
-    // TODO: Tách ra Rest API để tạo conversation
+    // Phase 6: realtime — dùng REST `/api/chats` (Phase 4) để persistence; Socket chỉ delivery.
     socket.on('sendMessage', async (data: { senderId: string; receiverId: string; content: string }) => {
       const { senderId, receiverId, content } = data;
       const toSocketId = this.users.get(receiverId);
@@ -116,8 +116,8 @@ class SocketService implements ISocketService {
         socket.to(toSocketId).emit('receiveMessage', { senderId, receiverId, content });
       }
 
-      // TODO: create conversation database
-      // await conversationsService.createConversation({
+      // Phase 6: persist qua ChatMessagesService / REST, không dùng social `conversations` (đã gỡ).
+      // await chatMessagesService.sendMessage({
       //   senderId,
       //   receiverId,
       //   content,

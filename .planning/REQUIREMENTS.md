@@ -45,10 +45,10 @@
 
 ### Chat (HTTP) — chat database
 
-- [ ] **CHAT-01**: Chỉ **bạn bè** mới mở được **hội thoại trực tiếp** (không DM người lạ).
-- [ ] **CHAT-02**: User có thể tạo **nhóm chat** với nhiều bạn; **cho phép nhóm 2 người**; thành viên phải là bạn của người tạo (theo rule đã thống nhất).
-- [ ] **CHAT-03**: API **tin nhắn** và **hội thoại** thay thế luồng `/api/conversations` thử nghiệm: tạo/liệt kê hội thoại, gửi tin, đọc lịch sử có phân trang/cursor, đánh dấu đã xem khi có tin nhắn cuối từ người khác.
-- [ ] **CHAT-04**: Upload ảnh/file chat (nếu v1 có) dùng **S3** và auth hiện tại — **không** Cloudinary.
+- [x] **CHAT-01**: Chỉ **bạn bè** mới mở được **hội thoại trực tiếp** (không DM người lạ).
+- [x] **CHAT-02**: User có thể tạo **nhóm chat** với nhiều bạn; **cho phép nhóm 2 người**; thành viên phải là bạn của người tạo (theo rule đã thống nhất).
+- [x] **CHAT-03**: API **tin nhắn** và **hội thoại** thay thế luồng `/api/conversations` thử nghiệm: tạo/liệt kê hội thoại, gửi tin, đọc lịch sử có phân trang/cursor, đánh dấu đã xem khi có tin nhắn cuối từ người khác.
+- [x] **CHAT-04**: Đính kèm tin nhắn: metadata **S3 key/mime/size** trên message; **5MB/file** server-side; upload file qua flow **media/S3 hiện có** rồi gửi `attachments[]` trong POST message — **không** Cloudinary.
 
 ### Realtime (Socket.IO)
 
@@ -117,10 +117,10 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 | ENGA-01 | Phase 3 | Complete |
 | ENGA-02 | Phase 3 | Complete |
 | ENGA-03 | Phase 3 | Complete |
-| CHAT-01 | Phase 4 | Pending |
-| CHAT-02 | Phase 4 | Pending |
-| CHAT-03 | Phase 4 | Pending |
-| CHAT-04 | Phase 4 | Pending |
+| CHAT-01 | Phase 4 | Complete |
+| CHAT-02 | Phase 4 | Complete |
+| CHAT-03 | Phase 4 | Complete |
+| CHAT-04 | Phase 4 | Complete |
 | SOCK-01 | Phase 6 | Pending |
 | SOCK-02 | Phase 6 | Pending |
 | SOCK-03 | Phase 6 | Pending |

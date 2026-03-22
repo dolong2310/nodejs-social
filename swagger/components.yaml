@@ -676,105 +676,109 @@ components:
             data:
               $ref: '#/components/schemas/LikeResponse'
 
-    # Conversation schemas
-    CreateConversationRequest:
-      type: object
-      required: [receiverId, content]
-      properties:
-        receiverId:
-          $ref: '#/components/schemas/MongoId'
-        content:
-          type: string
-          example: "Xin chào! Bạn có rảnh không?"
-      example:
-        receiverId: "507f1f77bcf86cd799439012"
-        content: "Xin chào! Bạn có rảnh không?"
-    ConversationResponse:
+    # Chat (Phase 4 — `DATABASE_CHAT_NAME`)
+    ChatAttachment:
       type: object
       properties:
-        _id:
-          $ref: '#/components/schemas/MongoId'
-        senderId:
-          $ref: '#/components/schemas/MongoId'
-        receiverId:
-          $ref: '#/components/schemas/MongoId'
-        content:
+        key: { type: string }
+        mime: { type: string }
+        size: { type: integer }
+        url: { type: string }
+    ChatMessage:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/MongoId' }
+        chatId: { $ref: '#/components/schemas/MongoId' }
+        senderId: { $ref: '#/components/schemas/MongoId' }
+        text: { type: string }
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatAttachment'
+        createdAt: { type: string, format: date-time }
+    ChatListPayload:
+      type: object
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatSummary'
+        nextCursor:
           type: string
-        lastMessage:
+          nullable: true
+    ChatMessagesPagePayload:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        nextCursor:
           type: string
-        lastMessageAt:
-          type: string
-          format: date-time
-          description: ISO 8601 format
-          example: "2024-03-17T11:00:00.000Z"
-        createdAt:
-          type: string
-          format: date-time
-          description: ISO 8601 format
-          example: "2024-03-17T11:00:00.000Z"
-      example:
-        _id: "507f1f77bcf86cd799439014"
-        senderId: "507f1f77bcf86cd799439011"
-        receiverId: "507f1f77bcf86cd799439012"
-        content: "Xin chào! Bạn có rảnh không?"
-        lastMessage: "Xin chào! Bạn có rảnh không?"
-        lastMessageAt: "2024-03-17T11:00:00.000Z"
-        createdAt: "2024-03-17T11:00:00.000Z"
-    ConversationSuccessResponse:
+          nullable: true
+    ChatMemberRow:
+      type: object
+      properties:
+        userId: { $ref: '#/components/schemas/MongoId' }
+        role: { type: string, enum: [admin, manager, member] }
+        joinedAt: { type: string, format: date-time }
+        lastReadMessageId: { $ref: '#/components/schemas/MongoId' }
+        lastReadAt: { type: string, format: date-time }
+    ChatSummary:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/MongoId' }
+        type: { type: string, enum: [direct, group] }
+        createdBy: { $ref: '#/components/schemas/MongoId' }
+        name: { type: string }
+        avatarMediaId: { $ref: '#/components/schemas/MongoId' }
+        peerUserId: { $ref: '#/components/schemas/MongoId' }
+        updatedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+    ChatDetail:
+      allOf:
+        - $ref: '#/components/schemas/ChatSummary'
+        - type: object
+          properties:
+            members:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChatMemberRow'
+    ChatSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
         - type: object
           properties:
             data:
-              $ref: '#/components/schemas/ConversationResponse'
-    ConversationsPaginatedResponse:
+              $ref: '#/components/schemas/ChatSummary'
+    ChatDetailSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ConversationResponse'
-                page:
-                  type: integer
-                  example: 1
-                limit:
-                  type: integer
-                  example: 10
-                totalItems:
-                  type: integer
-                  example: 50
-                totalPages:
-                  type: integer
-                  example: 5
-                hasNext:
-                  type: boolean
-                  example: true
-                hasPrev:
-                  type: boolean
-                  example: false
-      example:
-        message: "Get conversations successfully"
-        statusCode: 200
-        data:
-          data:
-            - _id: "507f1f77bcf86cd799439014"
-              senderId: "507f1f77bcf86cd799439011"
-              receiverId: "507f1f77bcf86cd799439012"
-              content: "Xin chào! Bạn có rảnh không?"
-              lastMessage: "Xin chào! Bạn có rảnh không?"
-              lastMessageAt: "2024-03-17T11:00:00.000Z"
-              createdAt: "2024-03-17T11:00:00.000Z"
-          page: 1
-          limit: 10
-          totalItems: 50
-          totalPages: 5
-          hasNext: true
-          hasPrev: false
+              $ref: '#/components/schemas/ChatDetail'
+    ChatListSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ChatListPayload'
+    ChatMessageSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ChatMessage'
+    ChatMessagesPageSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ChatMessagesPagePayload'
 
     # Media schemas
     MediaUploadResponse:

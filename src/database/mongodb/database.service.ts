@@ -1,8 +1,10 @@
 import { logger } from '@/logger';
 import { IBlock } from '@/models/schemas/block.schema';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
+import { IChat } from '@/models/schemas/chat.schema';
+import { IChatMember } from '@/models/schemas/chatMember.schema';
+import { IChatMessage } from '@/models/schemas/chatMessage.schema';
 import { ILike } from '@/models/schemas/like.schema';
-import { IConversation } from '@/models/schemas/conversation.schema';
 import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
 import { IFriendship } from '@/models/schemas/friendship.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
@@ -25,6 +27,7 @@ export interface IDatabaseService {
   createFriendRequestIndexes(): Promise<void>;
   createBlockIndexes(): Promise<void>;
   createPostsIndex(): Promise<void>;
+  initializeChatIndexes(): Promise<void>;
 }
 
 class DatabaseService implements IDatabaseService {
@@ -161,11 +164,6 @@ class DatabaseService implements IDatabaseService {
     ]);
   }
 
-  async createConversationsIndex() {
-    // For findConversations / countConversations which filter by senderId+receiverId in both directions
-    await this.conversations.createIndex({ senderId: 1, receiverId: 1 });
-  }
-
   async createHashtagsIndex() {
     // For findAndUpsertHashtags upsert filter and find-by-name queries
     await this.hashtags.createIndex({ name: 1 }, { unique: true });
@@ -198,9 +196,52 @@ class DatabaseService implements IDatabaseService {
       this.createSearchPostsAudienceMediaIndex(),
       this.createBookmarksIndex(),
       this.createLikesIndex(),
-      this.createConversationsIndex(),
       this.createHashtagsIndex()
     ]);
+  }
+
+  /** Chat DB — idempotent indexes (Phase 4). */
+  async initializeChatIndexes(): Promise<void> {
+    await Promise.all([
+      this._ensureChatChatsIndexes(),
+      this._ensureChatMembersIndexes(),
+      this._ensureChatMessagesIndexes()
+    ]);
+  }
+
+  private async _ensureChatChatsIndexes(): Promise<void> {
+    const col = this.chatChats;
+    const directPair = 'userIdLow_1_userIdHigh_1';
+    if (!(await col.indexExists([directPair]))) {
+      await col.createIndex(
+        { userIdLow: 1, userIdHigh: 1 },
+        { unique: true, partialFilterExpression: { type: 'direct' } }
+      );
+    }
+    const updated = 'updatedAt_-1';
+    if (!(await col.indexExists([updated]))) {
+      await col.createIndex({ updatedAt: -1 });
+    }
+  }
+
+  private async _ensureChatMembersIndexes(): Promise<void> {
+    const col = this.chatMembers;
+    const uniq = 'chatId_1_userId_1';
+    if (!(await col.indexExists([uniq]))) {
+      await col.createIndex({ chatId: 1, userId: 1 }, { unique: true });
+    }
+    const byUser = 'userId_1_chatId_1';
+    if (!(await col.indexExists([byUser]))) {
+      await col.createIndex({ userId: 1, chatId: 1 });
+    }
+  }
+
+  private async _ensureChatMessagesIndexes(): Promise<void> {
+    const col = this.chatMessages;
+    const history = 'chatId_1_createdAt_-1__id_-1';
+    if (!(await col.indexExists([history]))) {
+      await col.createIndex({ chatId: 1, createdAt: -1, _id: -1 }, { name: history });
+    }
   }
 
   get users(): Collection<IUser> {
@@ -243,8 +284,16 @@ class DatabaseService implements IDatabaseService {
     return this.db.collection<ILike>('likes');
   }
 
-  get conversations(): Collection<IConversation> {
-    return this.db.collection<IConversation>('conversations');
+  get chatChats(): Collection<IChat> {
+    return this._chatDb.collection<IChat>('chats');
+  }
+
+  get chatMembers(): Collection<IChatMember> {
+    return this._chatDb.collection<IChatMember>('chatMembers');
+  }
+
+  get chatMessages(): Collection<IChatMessage> {
+    return this._chatDb.collection<IChatMessage>('messages');
   }
 }
 

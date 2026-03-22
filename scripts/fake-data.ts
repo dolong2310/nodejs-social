@@ -1,4 +1,6 @@
 // npx tsx scripts/fake-data.ts --env=development
+//
+// Chat (Phase 4): seed social users/friends như hiện tại; tạo hội thoại/tin qua REST `POST /api/chats/direct` (sau khi đã verify token) hoặc mở rộng script với `db.initializeChatIndexes()` + collections `chats` / `chatMembers` / `messages`.
 
 import { faker } from '@faker-js/faker';
 import { ObjectId } from 'mongodb';
