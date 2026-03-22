@@ -58,9 +58,9 @@
 
 ### Notifications
 
-- [ ] **NOTF-01**: Lưu **notification** trên DB (social DB), có REST: **list** (phân trang), **đánh dấu đã đọc** (từng item hoặc batch — tối thiểu cho v1).
-- [ ] **NOTF-02**: Các type v1 tối thiểu: `friend_request`, `friend_accepted`, `new_message`, `added_to_group`; schema **mở rộng** được.
-- [ ] **NOTF-03**: Khi tạo notification, **emit Socket.IO** tới user nhận đồng bộ với inbox.
+- [x] **NOTF-01**: Lưu **notification** trên DB (social DB), có REST: **list** (phân trang), **đánh dấu đã đọc** (từng item hoặc batch — tối thiểu cho v1).
+- [x] **NOTF-02**: Các type v1 tối thiểu: `friend_request`, `friend_accepted`, `new_message`, `added_to_group`; schema **mở rộng** được.
+- [x] **NOTF-03**: Khi tạo notification, **emit Socket.IO** tới user nhận đồng bộ với inbox.
 
 ### Quality & testing
 
@@ -124,9 +124,9 @@ Which phases cover which requirements — cập nhật khi `ROADMAP.md` được
 | SOCK-01 | Phase 6 | Pending |
 | SOCK-02 | Phase 6 | Pending |
 | SOCK-03 | Phase 6 | Pending |
-| NOTF-01 | Phase 5 | Pending |
-| NOTF-02 | Phase 5 | Pending |
-| NOTF-03 | Phase 5 | Pending |
+| NOTF-01 | Phase 5 | Complete |
+| NOTF-02 | Phase 5 | Complete |
+| NOTF-03 | Phase 5 | Complete |
 | QUAL-01 | Phase 7 | Pending |
 | QUAL-02 | Phase 7 | Pending |
 

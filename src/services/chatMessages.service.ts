@@ -6,6 +6,7 @@ import {
   toChatMessageDto
 } from '@/dtos/responses/chatMessage.response.dto';
 import { EChatType, IChat } from '@/models/schemas/chat.schema';
+import { INotificationsService } from '@/services/notifications.service';
 import { IChatAttachment } from '@/models/schemas/chatMessage.schema';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { IChatMemberRepository } from '@/repositories/chatMember.repository';
@@ -35,7 +36,8 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     private readonly chatRepository: IChatRepository,
     private readonly chatMemberRepository: IChatMemberRepository,
     private readonly chatMessageRepository: IChatMessageRepository,
-    private readonly blockRepository: IBlockRepository
+    private readonly blockRepository: IBlockRepository,
+    private readonly notificationsService: INotificationsService
   ) {
     super();
   }
@@ -94,6 +96,25 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     const msg = ChatMessageRepository.newOutgoingMessage(cid, viewerOid, text || undefined, attachments);
     await this.chatMessageRepository.insertMessage(msg);
     await this.chatRepository.touchUpdatedAt(cid, msg.createdAt);
+
+    const recipientIds: string[] = [];
+    if (chat.type === EChatType.DIRECT) {
+      const peer = this.directPeer(chat, viewerOid);
+      if (!(await this.blockRepository.isBlockedEitherWay(viewerOid, peer))) {
+        recipientIds.push(peer.toHexString());
+      }
+    } else {
+      const members = await this.chatMemberRepository.listMembers(cid);
+      for (const m of members) {
+        if (m.userId.equals(viewerOid)) continue;
+        if (await this.blockRepository.isBlockedEitherWay(viewerOid, m.userId)) continue;
+        recipientIds.push(m.userId.toHexString());
+      }
+    }
+    if (recipientIds.length > 0) {
+      await this.notificationsService.recordNewMessage(msg, userId, recipientIds);
+    }
+
     return toChatMessageDto(msg);
   }
 

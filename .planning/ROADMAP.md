@@ -12,7 +12,7 @@ Evolve the existing TypeScript/Express social backend by splitting chat persiste
 - [x] **Phase 2: Friends graph & privacy** — Remove legacy followers; mutual friends, requests, unfriend, block/unblock, daily request cap (completed 2026-03-21)
 - [x] **Phase 3: Posts, feed & engagement** — Per-post visibility, merged feed, likes/comments/bookmarks under one permission matrix (completed 2026-03-21)
 - [x] **Phase 4: Chat HTTP API** — Friend-gated direct and group conversations, messages, read state, S3 media; replace `/api/conversations` (completed 2026-03-22)
-- [ ] **Phase 5: Notifications inbox** — DB + REST list/mark-read, v1 types, hooks from graph and chat, emit-after-persist
+- [x] **Phase 5: Notifications inbox** — DB + REST list/mark-read, v1 types, hooks from graph and chat, emit-after-persist (implemented 2026-03-23)
 - [ ] **Phase 6: Realtime (Socket.IO)** — Replace chat socket flow; JWT identity, rooms, online presence, persist-then-emit via shared services
 - [ ] **Phase 7: Quality hardening & tests** — Close CONCERNS gaps on implemented paths; test runner + smoke/integration coverage
 
@@ -91,7 +91,12 @@ Plans:
   1. User can list notifications with pagination and mark items read (single or batch—minimum viable for v1).
   2. System supports extensible schema with v1 types: `friend_request`, `friend_accepted`, `new_message`, `added_to_group`.
   3. When a notification is created, the server emits a Socket.IO event to the recipient’s user channel after the DB write succeeds (inbox remains source of truth).
-**Plans:** TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 05-01-PLAN.md — Schema, indexes, repo, service (list cursor, unreadOnly, mark read, trim, block filter list)
+- [x] 05-02-PLAN.md — REST + Swagger + container mount `/notifications`
+- [x] 05-03-PLAN.md — Socket `notification:new`, hooks friends + chat messages + group invite
 
 ### Phase 6: Realtime (Socket.IO)
 **Goal:** Realtime chat and personal channels align with HTTP: authenticated identity from JWT, correct rooms, no emit-before-persist for durable events.
@@ -130,8 +135,8 @@ Plans:
 | 1. Chat database foundation | 01-01 | Complete    | 2026-03-21 |
 | 2. Friends graph & privacy | 02-01 … 02-04 | Complete    | 2026-03-21 |
 | 3. Posts, feed & engagement | 4/4 | Complete    | 2026-03-21 |
-| 4. Chat HTTP API | 04-01 … 04-05 | Not started | - |
-| 5. Notifications inbox | TBD | Not started | - |
+| 4. Chat HTTP API | 04-01 … 04-05 | Complete    | 2026-03-22 |
+| 5. Notifications inbox | 05-01 … 05-03 | Complete    | 2026-03-23 |
 | 6. Realtime (Socket.IO) | TBD | Not started | - |
 | 7. Quality hardening & tests | TBD | Not started | - |
 

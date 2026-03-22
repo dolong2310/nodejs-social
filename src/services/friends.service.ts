@@ -14,6 +14,7 @@ import { FriendRequestRepository } from '@/repositories/friendRequest.repository
 import type { IFriendshipRepository } from '@/repositories/friendship.repository';
 import { IUserRepository } from '@/repositories/user.repository';
 import { BaseService } from '@/services/base.service';
+import { INotificationsService } from '@/services/notifications.service';
 import {
   BadRequestError,
   ConflictRequestError,
@@ -65,7 +66,8 @@ class FriendsService extends BaseService implements IFriendsService {
     private readonly friendRequestRepository: FriendRequestRepository,
     private readonly blockRepository: BlockRepository,
     private readonly redisService: IRedisService,
-    private readonly userRepository: IUserRepository
+    private readonly userRepository: IUserRepository,
+    private readonly notificationsService: INotificationsService
   ) {
     super();
   }
@@ -162,6 +164,7 @@ class FriendsService extends BaseService implements IFriendsService {
     try {
       const created = await this.friendRequestRepository.insertPendingRequest(fromOid, toOid);
       await this.invalidateFriendCache(myUserId);
+      await this.notificationsService.recordFriendRequest(toUserId, myUserId);
       return created;
     } catch (e) {
       if (e instanceof MongoServerError && e.code === 11000) {
@@ -201,6 +204,7 @@ class FriendsService extends BaseService implements IFriendsService {
 
     await this.friendRequestRepository.deleteDirectedRequest(fromOid, myOid);
     await this.invalidateBoth(myUserId, fromUserId);
+    await this.notificationsService.recordFriendAccepted(fromUserId, myUserId);
   }
 
   async declineIncomingRequest(myUserId: string, fromUserId: string): Promise<void> {

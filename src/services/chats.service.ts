@@ -26,6 +26,7 @@ import {
 } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
 import { IFriendsService } from '@/services/friends.service';
+import { INotificationsService } from '@/services/notifications.service';
 import { decodeChatListCursor, encodeChatListCursor } from '@/utils/chat-cursor.util';
 import { MongoServerError, ObjectId } from 'mongodb';
 
@@ -56,7 +57,8 @@ class ChatsService extends BaseService implements IChatsService {
     private readonly chatRepository: IChatRepository,
     private readonly chatMemberRepository: IChatMemberRepository,
     private readonly friendsService: IFriendsService,
-    private readonly blockRepository: IBlockRepository
+    private readonly blockRepository: IBlockRepository,
+    private readonly notificationsService: INotificationsService
   ) {
     super();
   }
@@ -273,6 +275,8 @@ class ChatsService extends BaseService implements IChatsService {
       ChatMemberRepository.newMember(cid, inviteeOid, EChatMemberRole.MEMBER)
     );
     await this.chatRepository.touchUpdatedAt(cid);
+
+    await this.notificationsService.recordAddedToGroup(body.userId, userId, chat);
 
     return this.getChatDetail(userId, chatId);
   }

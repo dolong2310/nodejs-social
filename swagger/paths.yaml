@@ -1426,6 +1426,86 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChatDetailSuccessResponse'
 
+  # ==================== NOTIFICATIONS ====================
+  /notifications:
+    get:
+      tags: [notifications]
+      summary: Danh sách thông báo (cursor, optional unreadOnly)
+      operationId: listNotifications
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: unreadOnly
+          in: query
+          description: 'true | false — lọc chỉ chưa đọc'
+          schema: { type: string, enum: ['true', 'false', '1', '0'] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsPageSuccessResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /notifications/read:
+    patch:
+      tags: [notifications]
+      summary: Đánh dấu đã đọc (batch hoặc tất cả)
+      operationId: markNotificationsRead
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items: { $ref: '#/components/schemas/MongoId' }
+                  description: Bỏ trống hoặc không gửi = mark all
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /notifications/{notificationId}/read:
+    patch:
+      tags: [notifications]
+      summary: Đánh dấu một thông báo đã đọc
+      operationId: markOneNotificationRead
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/MongoId' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # ==================== STATIC ====================
   /static/images/{filename}:
     get:

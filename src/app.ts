@@ -12,6 +12,7 @@ import bookmarksRouter from '@/routes/bookmarks.route';
 import likesRouter from '@/routes/likes.route';
 import chatsRouter from '@/routes/chats.route';
 import friendsRouter from '@/routes/friends.route';
+import notificationsRouter from '@/routes/notifications.route';
 import blocksRouter from '@/routes/blocks.route';
 import mediaRouter from '@/routes/media.route';
 import oauthRouter from '@/routes/oauth.route';
@@ -64,6 +65,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
 
   const container = Container.getOrSet(databaseService, redisService);
   const socket = new SocketService(httpServer, container.getUsersService());
+  container.bindNotificationsSocket(socket);
   socket.run();
 
   app.use(config.api.prefix, setupRoutes());
@@ -103,6 +105,7 @@ function setupRoutes(): Router {
   router.use('/chats', chatsRouter());
   router.use('/friends', friendsRouter());
   router.use('/blocks', blocksRouter());
+  router.use('/notifications', notificationsRouter());
   router.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
 
   return router;

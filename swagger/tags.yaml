@@ -21,5 +21,7 @@ tags:
     description: Tìm kiếm bài viết, người dùng
   - name: chats
     description: Chat HTTP (Mongo chat DB) — direct/group, tin nhắn, đã đọc
+  - name: notifications
+    description: Hộp thông báo in-app (social DB) — list cursor, đánh dấu đã đọc
   - name: static
     description: Phục vụ file tĩnh (ảnh, video)

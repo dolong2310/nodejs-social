@@ -886,6 +886,74 @@ components:
           hasNext: true
           hasPrev: false
 
+    NotificationActor:
+      type: object
+      required: [userId, displayName]
+      properties:
+        userId: { $ref: '#/components/schemas/MongoId' }
+        displayName: { type: string }
+        avatar: { type: string }
+    NotificationPayloadFriendRequest:
+      type: object
+      required: [fromUserId]
+      properties:
+        fromUserId: { $ref: '#/components/schemas/MongoId' }
+    NotificationPayloadFriendAccepted:
+      type: object
+      required: [friendUserId]
+      properties:
+        friendUserId: { $ref: '#/components/schemas/MongoId' }
+    NotificationPayloadNewMessage:
+      type: object
+      required: [chatId, messageId, previewKind]
+      properties:
+        chatId: { $ref: '#/components/schemas/MongoId' }
+        messageId: { $ref: '#/components/schemas/MongoId' }
+        previewText: { type: string }
+        previewKind: { type: string, enum: [text, attachment, mixed] }
+    NotificationPayloadAddedToGroup:
+      type: object
+      required: [chatId]
+      properties:
+        chatId: { $ref: '#/components/schemas/MongoId' }
+        chatName: { type: string }
+    NotificationListItem:
+      type: object
+      required: [_id, read, createdAt, type, summary, actor, payload]
+      properties:
+        _id: { $ref: '#/components/schemas/MongoId' }
+        read: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        type:
+          type: string
+          enum: [friend_request, friend_accepted, new_message, added_to_group]
+        summary: { type: string }
+        actor: { $ref: '#/components/schemas/NotificationActor' }
+        payload:
+          description: Shape phụ thuộc field `type` (client switch theo type)
+          oneOf:
+            - $ref: '#/components/schemas/NotificationPayloadFriendRequest'
+            - $ref: '#/components/schemas/NotificationPayloadFriendAccepted'
+            - $ref: '#/components/schemas/NotificationPayloadNewMessage'
+            - $ref: '#/components/schemas/NotificationPayloadAddedToGroup'
+    NotificationsPageData:
+      type: object
+      required: [notifications, nextCursor]
+      properties:
+        notifications:
+          type: array
+          items: { $ref: '#/components/schemas/NotificationListItem' }
+        nextCursor:
+          type: string
+          nullable: true
+    NotificationsPageSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/NotificationsPageData'
+
     # Error schema (deprecated - use ErrorResponse)
     Error:
       $ref: '#/components/schemas/ErrorResponse'

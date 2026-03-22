@@ -11,6 +11,7 @@ import { ExtendedError, Server, Socket } from 'socket.io';
 
 export interface ISocketService {
   run(): void;
+  emitToUser(userId: string, event: string, data: unknown): void;
 }
 
 class SocketService implements ISocketService {
@@ -35,6 +36,14 @@ class SocketService implements ISocketService {
   public run() {
     this.io.use(this.initMiddleware.bind(this));
     this.io.on('connection', this.onConnection.bind(this));
+  }
+
+  /** Deliver personal events (e.g. Phase 5 `notification:new`) to an online user. */
+  public emitToUser(userId: string, event: string, data: unknown): void {
+    const socketId = this.users.get(userId);
+    if (socketId) {
+      this.io.to(socketId).emit(event, data);
+    }
   }
 
   private async initMiddleware(socket: Socket, next: (err?: ExtendedError) => void) {

@@ -22,6 +22,7 @@ import { IUserRepository, UserRepository } from '@/repositories/user.repository'
 import { ChatMemberRepository } from '@/repositories/chatMember.repository';
 import { ChatMessageRepository } from '@/repositories/chatMessage.repository';
 import { ChatRepository } from '@/repositories/chat.repository';
+import { NotificationRepository } from '@/repositories/notification.repository';
 // Services
 import AuthService, { IAuthService } from '@/services/auth.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
@@ -30,6 +31,7 @@ import FriendsService, { IFriendsService } from '@/services/friends.service';
 import BlocksService, { IBlocksService } from '@/services/blocks.service';
 import ChatMessagesService, { IChatMessagesService } from '@/services/chatMessages.service';
 import ChatsService, { IChatsService } from '@/services/chats.service';
+import NotificationsService, { INotificationsService, ISocketUserEmitter } from '@/services/notifications.service';
 import MediaService, { IMediaService } from '@/services/media.service';
 import OAuthService, { IOAuthService } from '@/services/oauth.service';
 import PostsService, { IPostsService } from '@/services/posts.service';
@@ -50,6 +52,7 @@ import FriendsController, { IFriendsController } from '@/controllers/friends.con
 import BlocksController, { IBlocksController } from '@/controllers/blocks.controller';
 import ChatMessagesController, { IChatMessagesController } from '@/controllers/chatMessages.controller';
 import ChatsController, { IChatsController } from '@/controllers/chats.controller';
+import NotificationsController, { INotificationsController } from '@/controllers/notifications.controller';
 // Validations
 import AuthValidation, { IAuthValidation } from '@/validations/auth.validation';
 import PostsValidation, { IPostsValidation } from '@/validations/posts.validation';
@@ -58,6 +61,7 @@ import UsersValidation, { IUsersValidation } from '@/validations/users.validatio
 import FriendsValidation, { IFriendsValidation } from '@/validations/friends.validation';
 import BlocksValidation, { IBlocksValidation } from '@/validations/blocks.validation';
 import ChatsValidation, { IChatsValidation } from '@/validations/chats.validation';
+import NotificationsValidation, { INotificationsValidation } from '@/validations/notifications.validation';
 
 export interface IContainer {
   // Repositories
@@ -82,6 +86,7 @@ export interface IContainer {
   getSearchService(): ISearchService;
   getChatsService(): IChatsService;
   getChatMessagesService(): IChatMessagesService;
+  getNotificationsService(): INotificationsService;
 
   // Controllers
   getAuthController(): IAuthController;
@@ -96,6 +101,7 @@ export interface IContainer {
   getBlocksController(): IBlocksController;
   getChatsController(): IChatsController;
   getChatMessagesController(): IChatMessagesController;
+  getNotificationsController(): INotificationsController;
 
   // Validations
   getAuthValidation(): IAuthValidation;
@@ -105,6 +111,9 @@ export interface IContainer {
   getFriendsValidation(): IFriendsValidation;
   getBlocksValidation(): IBlocksValidation;
   getChatsValidation(): IChatsValidation;
+  getNotificationsValidation(): INotificationsValidation;
+
+  bindNotificationsSocket(emitter: ISocketUserEmitter | null): void;
 }
 
 export class Container implements IContainer {
@@ -125,6 +134,7 @@ export class Container implements IContainer {
   private chatRepository!: ChatRepository;
   private chatMemberRepository!: ChatMemberRepository;
   private chatMessageRepository!: ChatMessageRepository;
+  private notificationRepository!: NotificationRepository;
 
   // Common Services
   private tokenService!: ITokenService;
@@ -145,6 +155,7 @@ export class Container implements IContainer {
   private searchService!: ISearchService;
   private chatsService!: IChatsService;
   private chatMessagesService!: IChatMessagesService;
+  private notificationsService!: INotificationsService;
 
   // Controllers
   private authController!: IAuthController;
@@ -159,6 +170,7 @@ export class Container implements IContainer {
   private blocksController!: IBlocksController;
   private chatsController!: IChatsController;
   private chatMessagesController!: IChatMessagesController;
+  private notificationsController!: INotificationsController;
 
   // Validations
   private authValidation!: IAuthValidation;
@@ -168,6 +180,7 @@ export class Container implements IContainer {
   private friendsValidation!: IFriendsValidation;
   private blocksValidation!: IBlocksValidation;
   private chatsValidation!: IChatsValidation;
+  private notificationsValidation!: INotificationsValidation;
 
   // Queues
   private emailJobQueue!: IEmailJobQueue;
@@ -216,6 +229,7 @@ export class Container implements IContainer {
     this.chatRepository = new ChatRepository(this.db);
     this.chatMemberRepository = new ChatMemberRepository(this.db);
     this.chatMessageRepository = new ChatMessageRepository(this.db);
+    this.notificationRepository = new NotificationRepository(this.db);
   }
 
   private initializeServices(): void {
@@ -230,12 +244,18 @@ export class Container implements IContainer {
     this.usersService = new UsersService(this.userRepository, this.redis);
     this.bookmarksService = new BookmarksService(this.bookmarkRepository);
     this.likesService = new LikesService(this.likeRepository);
+    this.notificationsService = new NotificationsService(
+      this.notificationRepository,
+      this.userRepository,
+      this.blockRepository
+    );
     this.friendsService = new FriendsService(
       this.friendshipRepository,
       this.friendRequestRepository,
       this.blockRepository,
       this.redis,
-      this.userRepository
+      this.userRepository,
+      this.notificationsService
     );
     this.blocksService = new BlocksService(
       this.blockRepository,
@@ -258,13 +278,15 @@ export class Container implements IContainer {
       this.chatRepository,
       this.chatMemberRepository,
       this.friendsService,
-      this.blockRepository
+      this.blockRepository,
+      this.notificationsService
     );
     this.chatMessagesService = new ChatMessagesService(
       this.chatRepository,
       this.chatMemberRepository,
       this.chatMessageRepository,
-      this.blockRepository
+      this.blockRepository,
+      this.notificationsService
     );
   }
 
@@ -281,6 +303,7 @@ export class Container implements IContainer {
     this.blocksController = new BlocksController(this.blocksService);
     this.chatsController = new ChatsController(this.chatsService);
     this.chatMessagesController = new ChatMessagesController(this.chatMessagesService);
+    this.notificationsController = new NotificationsController(this.notificationsService);
   }
 
   private initializeValidations(): void {
@@ -296,6 +319,7 @@ export class Container implements IContainer {
     this.friendsValidation = new FriendsValidation(this.usersValidation);
     this.blocksValidation = new BlocksValidation(this.usersValidation);
     this.chatsValidation = new ChatsValidation(this.usersValidation);
+    this.notificationsValidation = new NotificationsValidation(this.usersValidation);
   }
 
   private initializeQueues(): void {
@@ -382,6 +406,14 @@ export class Container implements IContainer {
     return this.chatMessagesService;
   }
 
+  public getNotificationsService(): INotificationsService {
+    return this.notificationsService;
+  }
+
+  public bindNotificationsSocket(emitter: ISocketUserEmitter | null): void {
+    this.notificationsService.bindSocketEmitter(emitter);
+  }
+
   // Controllers
   public getAuthController(): IAuthController {
     return this.authController;
@@ -431,6 +463,10 @@ export class Container implements IContainer {
     return this.chatMessagesController;
   }
 
+  public getNotificationsController(): INotificationsController {
+    return this.notificationsController;
+  }
+
   // Validations
   public getAuthValidation(): IAuthValidation {
     return this.authValidation;
@@ -458,6 +494,10 @@ export class Container implements IContainer {
 
   public getChatsValidation(): IChatsValidation {
     return this.chatsValidation;
+  }
+
+  public getNotificationsValidation(): INotificationsValidation {
+    return this.notificationsValidation;
   }
 }
 
