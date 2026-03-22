@@ -28,6 +28,31 @@ export const protect = async (req: Request, _res: Response, next: NextFunction):
   }
 };
 
+/**
+ * Like `protect` (cookie or Bearer) but allows unauthenticated requests — sets `tokenPayload` when a valid token is present.
+ * Used for routes that are public but apply extra rules when the viewer is logged in (e.g. profile + block list).
+ */
+export const optionalProtect = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  let token = req.cookies.accessToken;
+
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      next();
+      return;
+    }
+    token = authHeader.split(' ')[1];
+  }
+
+  try {
+    req.tokenPayload = await _verifyAccessToken(token);
+    syncLogContextFromAuth(req);
+  } catch {
+    // Invalid/expired token on an optional-auth route: treat as guest (no tokenPayload).
+  }
+  next();
+};
+
 export const protectIfHasBearerToken = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

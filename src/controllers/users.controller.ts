@@ -2,10 +2,12 @@ import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
 import { GetUserProfileParamsDTO, UpdateMeBodyDTO, UpdateMeRequestDTO } from '@/dtos/requests/user.request.dto';
 import { UserResponseDTO } from '@/dtos/responses/user.response.dto';
-import { NotFoundError } from '@/responses/error.response';
+import { IBlockRepository } from '@/repositories/block.repository';
+import { ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { IUsersService } from '@/services/users.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
+import { ObjectId } from 'mongodb';
 
 export interface IUsersController {
   getMe(req: Request, res: Response): Promise<void>;
@@ -14,7 +16,10 @@ export interface IUsersController {
 }
 
 class UsersController extends BaseController implements IUsersController {
-  constructor(private readonly usersService: IUsersService) {
+  constructor(
+    private readonly usersService: IUsersService,
+    private readonly blockRepository: IBlockRepository
+  ) {
     super();
   }
 
@@ -58,6 +63,14 @@ class UsersController extends BaseController implements IUsersController {
 
     if (!user) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+    }
+
+    const viewerId = this.getUserId(req, { optional: true });
+    if (viewerId) {
+      const blocked = await this.blockRepository.isBlockedEitherWay(new ObjectId(viewerId), new ObjectId(user._id));
+      if (blocked) {
+        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_USER_PROFILE_BLOCKED);
+      }
     }
 
     this.sendResponse<UserResponseDTO>({

@@ -23,7 +23,7 @@
 ### Block
 
 - [x] **BLCK-01**: User có thể **chặn** user khác; chặn ⇒ **tự động hủy kết bạn** nếu đang là bạn.
-- [x] **BLCK-02**: Khi A chặn B (hoặc ngược lại), **cả hai không còn thấy post của nhau** trong mọi luồng đọc (kể cả post `public`).
+- [x] **BLCK-02**: Khi A chặn B (hoặc ngược lại), **cả hai không còn thấy post của nhau** trong mọi luồng đọc (kể cả post `public`), **trừ** khi viewer **đã từng có engagement** trên **post đó** (like, bookmark, hoặc đã comment trên post đó): khi đó nội dung post/thread vẫn có thể đọc được nhưng **danh tính author** (và payload user gắn author) được **redact** thành **unknown user** (Phase 4 / 04-CONTEXT D-11). **Profile** user đối phương khi có block hai chiều: **403** (D-10).
 - [x] **BLCK-03**: User có thể **bỏ chặn** (nếu v1 có endpoint; nếu không thì ghi vào Out of Scope — mặc định v1 **có** bỏ chặn để tránh dead-end).
 
 ### Posts — visibility & defaults

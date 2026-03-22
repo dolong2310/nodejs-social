@@ -3,7 +3,7 @@
  */
 
 import { IUsersController } from '@/controllers/users.controller';
-import { protect } from '@/middlewares/auth.middleware';
+import { optionalProtect, protect } from '@/middlewares/auth.middleware';
 import { filterBodyMiddleware } from '@/middlewares/common.middleware';
 import { appLimiter } from '@/middlewares/limiter.middleware';
 import { UpdateMeRequestDTO } from '@/dtos/requests/user.request.dto';
@@ -33,7 +33,7 @@ export class UsersRoute extends BaseRoute {
       this.usersValidation.updateMeValidation,
       asyncHandler(this.usersController.updateMe)
     );
-    this.router.get('/:username', appLimiter, asyncHandler(this.usersController.getUserProfile));
+    this.router.get('/:username', appLimiter, optionalProtect, asyncHandler(this.usersController.getUserProfile));
   }
 }
 

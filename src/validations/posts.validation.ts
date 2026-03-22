@@ -10,6 +10,7 @@ import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
 import { IUsersService } from '@/services/users.service';
 import { IMedia } from '@/types/media.type';
+import { redactPostDetailBlockedAuthor } from '@/utils/block-redaction.util';
 import { isValidMongoId } from '@/utils/common.util';
 import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
@@ -228,13 +229,6 @@ class PostsValidation implements IPostsValidation {
     const userId = req.tokenPayload?.userId;
     const post = req.postDetail as PostDetailResponseDTO;
 
-    if (userId) {
-      const blocked = await this.blockRepository.isBlockedEitherWay(new ObjectId(userId), post.userId);
-      if (blocked) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_POST_BLOCKED);
-      }
-    }
-
     const audienceStr = post.audience as string;
     const isPublicAudience = audienceStr === EPostAudience.PUBLIC;
     const isFriendsOnlyAudience =
@@ -278,7 +272,18 @@ class PostsValidation implements IPostsValidation {
       }
     }
 
-    // bài post có chế độ "public" thì mọi người đều được xem bài post => không cần kiểm tra
+    // BLCK-02 / D-11: block hai chiều — mặc định 403; nếu viewer đã engage với post này thì cho xem và redact author.
+    if (userId) {
+      const blocked = await this.blockRepository.isBlockedEitherWay(new ObjectId(userId), post.userId);
+      if (blocked) {
+        const engaged = await this.postsService.hasViewerEngagedWithPost(userId, post._id.toString());
+        if (!engaged) {
+          throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_POST_BLOCKED);
+        }
+        redactPostDetailBlockedAuthor(post);
+      }
+    }
+
     next();
   };
 

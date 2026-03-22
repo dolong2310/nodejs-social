@@ -11,6 +11,7 @@ import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils/block-redaction.util';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { IPostRepository } from '@/repositories/post.repository';
 import { ForbiddenError, NotFoundError } from '@/responses/error.response';
@@ -44,6 +45,10 @@ export interface IPostsService {
     posts: T[];
     userId?: string;
   }): Promise<T[]>;
+  /** Like, bookmark, or comment on the given post (BLCK-02 / D-11). */
+  hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean>;
+  /** Post ids to include in feed/search when author is blocked but viewer had prior engagement (D-11). */
+  getExtraVisiblePostIdsForBlockedEngagement(userId: string, blockedAuthorIds: ObjectId[]): Promise<ObjectId[]>;
 }
 
 class PostsService extends BaseService implements IPostsService {
@@ -60,16 +65,35 @@ class PostsService extends BaseService implements IPostsService {
   }
 
   async getNewFeeds({ userId, followedUserIds, page, limit }: GetNewFeedsPayloadDTO) {
-    const blockedAuthorIds = await this.blockRepository.listUserIdsBlockedInEitherDirection(new ObjectId(userId));
+    const viewerOid = new ObjectId(userId);
+    const blockedAuthorIds = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerOid);
+    const blockedForEngagement = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
+    const extraVisiblePostIds =
+      blockedForEngagement.length > 0
+        ? await this.postRepository.findPostIdsWhereViewerEngagedWithAuthors(viewerOid, blockedForEngagement)
+        : [];
     const postsPromise = this.postRepository.findPosts({
       userId,
       followedUserIds,
       blockedAuthorIds,
+      extraVisiblePostIds: extraVisiblePostIds.length > 0 ? extraVisiblePostIds : undefined,
       page: Number(page),
       limit: Number(limit)
     });
-    const totalPostsPromise = this.postRepository.countPosts({ userId, followedUserIds, blockedAuthorIds });
+    const totalPostsPromise = this.postRepository.countPosts({
+      userId,
+      followedUserIds,
+      blockedAuthorIds,
+      extraVisiblePostIds: extraVisiblePostIds.length > 0 ? extraVisiblePostIds : undefined
+    });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
+
+    const blockedHex = new Set(blockedForEngagement.map((b) => b.toHexString()));
+    for (const post of posts) {
+      if (blockedHex.has(post.author._id.toHexString())) {
+        redactNewFeedAuthor(post);
+      }
+    }
 
     const updatedPosts = await this.updatePostsViews<PostNewFeedResponseDTO>({ posts });
 
@@ -100,9 +124,41 @@ class PostsService extends BaseService implements IPostsService {
     const totalPostsPromise = this.postRepository.countPostsType({ postId, type });
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
+    if (userId) {
+      const viewerOid = new ObjectId(userId);
+      const blockedIds = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerOid);
+      if (blockedIds.length > 0) {
+        const engaged = await this.postRepository.hasViewerEngagedWithPost(viewerOid, new ObjectId(postId));
+        if (engaged) {
+          const blockedHex = new Set(blockedIds.map((b) => b.toHexString()));
+          for (const p of posts) {
+            if (blockedHex.has(p.userId.toHexString())) {
+              redactPostRowAuthorForBlock(p);
+            }
+          }
+        }
+      }
+    }
+
     const updatedPosts = await this.updatePostsViews<PostDetailResponseDTO>({ posts, userId });
 
     return { posts: updatedPosts, totalPosts };
+  }
+
+  hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean> {
+    return this.postRepository.hasViewerEngagedWithPost(new ObjectId(viewerId), new ObjectId(postId));
+  }
+
+  async getExtraVisiblePostIdsForBlockedEngagement(
+    userId: string,
+    blockedAuthorIds: ObjectId[]
+  ): Promise<ObjectId[]> {
+    const viewerOid = new ObjectId(userId);
+    const authors = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
+    if (authors.length === 0) {
+      return [];
+    }
+    return this.postRepository.findPostIdsWhereViewerEngagedWithAuthors(viewerOid, authors);
   }
 
   findPostById(postId: string): Promise<IPost | null> {

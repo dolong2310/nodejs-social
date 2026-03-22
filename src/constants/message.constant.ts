@@ -31,6 +31,8 @@ export const VALIDATION_ERROR_MESSAGE = {
   // User errors
   INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password',
   USER_NOT_FOUND: 'User not found',
+  /** D-10: viewer cannot load full profile of a user they are in a two-way block with (when authenticated). */
+  CANNOT_VIEW_USER_PROFILE_BLOCKED: 'Cannot view this profile due to a block between accounts',
   USER_ALREADY_VERIFIED: 'User already verified',
   USER_NOT_VERIFIED_YET: 'User not verified yet',
   USER_IS_BANNED: 'User is banned',

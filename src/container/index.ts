@@ -245,7 +245,7 @@ export class Container implements IContainer {
 
   private initializeControllers(): void {
     this.authController = new AuthController(this.authService, this.usersService);
-    this.usersController = new UsersController(this.usersService);
+    this.usersController = new UsersController(this.usersService, this.blockRepository);
     this.bookmarksController = new BookmarksController(this.bookmarksService);
     this.likesController = new LikesController(this.likesService);
     this.conversationsController = new ConversationsController(this.conversationsService);

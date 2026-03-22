@@ -2,8 +2,9 @@ import { config } from '@/config';
 import { CACHE_KEYS } from '@/constants/cache.constant';
 import type { IRedisService } from '@/database/redis/redis.service';
 import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
-import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
+import { redactNewFeedAuthor } from '@/utils/block-redaction.util';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { ISearchRepository } from '@/repositories/search.repository';
 import { BaseService } from '@/services/base.service';
@@ -52,6 +53,12 @@ class SearchService extends BaseService implements ISearchService {
       ? await this.blockRepository.listUserIdsBlockedInEitherDirection(new ObjectId(userId))
       : undefined;
 
+    const extraVisiblePostIds =
+      userId && blockedAuthorIds && blockedAuthorIds.length > 0
+        ? await this.postsService.getExtraVisiblePostIdsForBlockedEngagement(userId, blockedAuthorIds)
+        : [];
+    const extraIdsArg = extraVisiblePostIds.length > 0 ? extraVisiblePostIds : undefined;
+
     const postsPromise = this.searchRepository.findPosts({
       userId,
       query,
@@ -60,7 +67,8 @@ class SearchService extends BaseService implements ISearchService {
       page: Number(page),
       limit: Number(limit),
       findFollowedUserIds: this.friendsService.findFollowedUserIds,
-      blockedAuthorIds
+      blockedAuthorIds,
+      extraVisiblePostIds: extraIdsArg
     });
 
     const totalPostsPromise = this.searchRepository.countPosts({
@@ -69,10 +77,24 @@ class SearchService extends BaseService implements ISearchService {
       type,
       peopleFollow: people_follow,
       findFollowedUserIds: this.friendsService.findFollowedUserIds,
-      blockedAuthorIds
+      blockedAuthorIds,
+      extraVisiblePostIds: extraIdsArg
     });
 
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
+
+    if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
+      const viewerOid = new ObjectId(userId);
+      const blockedHex = new Set(
+        blockedAuthorIds.filter((id) => !id.equals(viewerOid)).map((b) => b.toHexString())
+      );
+      for (const p of posts) {
+        const row = p as PostDetailResponseDTO & { author?: { _id: ObjectId } };
+        if (row.author && blockedHex.has(row.author._id.toHexString())) {
+          redactNewFeedAuthor(row as unknown as PostNewFeedResponseDTO);
+        }
+      }
+    }
 
     const updatedPosts = await this.postsService.updatePostsViews<PostDetailResponseDTO>({ posts, userId });
 

@@ -23,6 +23,7 @@ export interface ISearchRepository {
     limit: number;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
+    extraVisiblePostIds?: ObjectId[];
   }): Promise<PostDetailResponseDTO[]>;
   countPosts(payload: {
     userId?: string;
@@ -31,6 +32,7 @@ export interface ISearchRepository {
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
+    extraVisiblePostIds?: ObjectId[];
   }): Promise<number>;
   findUsers(payload: {
     userId?: string;
@@ -62,6 +64,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     limit: number;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
+    extraVisiblePostIds?: ObjectId[];
   }): Promise<PostDetailResponseDTO[]> {
     const match = await this._getPostMatch(payload);
     const pipelineGetNewFeeds = buildBasePostPipeline({
@@ -82,6 +85,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
+    extraVisiblePostIds?: ObjectId[];
   }): Promise<number> {
     const match = await this._getPostMatch(payload);
     return this.count(this.db.posts, match);
@@ -138,7 +142,8 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     peopleFollow,
     userId,
     findFollowedUserIds,
-    blockedAuthorIds
+    blockedAuthorIds,
+    extraVisiblePostIds
   }: {
     userId?: string;
     query: string;
@@ -146,6 +151,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     peopleFollow?: ESearchPeopleFollow;
     findFollowedUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
+    extraVisiblePostIds?: ObjectId[];
   }) {
     const andClauses: Record<string, unknown>[] = [];
 
@@ -170,19 +176,21 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       const blocked = (blockedAuthorIds ?? []).filter((id) => !id.equals(viewerOid));
       const friendIds = (await findFollowedUserIds(userId)).filter((id) => !id.equals(viewerOid));
 
-      andClauses.push({
-        $or: [
-          {
-            audience: EPostAudience.PUBLIC,
-            userId: { $nin: blocked }
-          },
-          { userId: viewerOid },
-          {
-            audience: EPostAudience.FRIENDS_ONLY,
-            userId: { $in: friendIds, $nin: blocked }
-          }
-        ]
-      });
+      const orVisibility: Record<string, unknown>[] = [
+        {
+          audience: EPostAudience.PUBLIC,
+          userId: { $nin: blocked }
+        },
+        { userId: viewerOid },
+        {
+          audience: EPostAudience.FRIENDS_ONLY,
+          userId: { $in: friendIds, $nin: blocked }
+        }
+      ];
+      if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
+        orVisibility.push({ _id: { $in: extraVisiblePostIds } });
+      }
+      andClauses.push({ $or: orVisibility });
 
       if (peopleFollow) {
         if ([ESearchPeopleFollow.FOLLOWING, ESearchPeopleFollow.NOT_FOLLOWING].includes(peopleFollow)) {
