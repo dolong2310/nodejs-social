@@ -140,3 +140,19 @@
 ---
 
 *Concerns audit: 2026-03-21*
+
+## Resolved / verified (Phase 7 — QUAL-01)
+
+**Date:** 2026-03-23  
+**Evidence:** [.planning/phases/07-quality-hardening-tests/07-VERIFICATION.md](.planning/phases/07-quality-hardening-tests/07-VERIFICATION.md)
+
+**CI automation:** deferred per D-07 (local `npm test` only for this phase).
+
+| Concern (reference) | Status | Phase / date | Evidence |
+|---------------------|--------|--------------|----------|
+| P0 — Missing automated test suite | verified closed | Phase 7 / 2026-03-23 | `npm test`; `tests/integration/smoke.integration.test.ts`; `tests/integration/socket.chat-subscribe.test.ts` |
+| P1 — Socket message flow bypasses persistence (`conversations.route` / socket send) | superseded | Phase 7 / 2026-03-23 | HTTP-first `/api/chats` + `ChatMessagesService`; `SocketService` emits via `IRealtimeChatEmitter` after DB write; see [07-VERIFICATION.md](.planning/phases/07-quality-hardening-tests/07-VERIFICATION.md) |
+| Tech debt — socket `sendMessage` TODO / client `senderId` | superseded / verified absent | Phase 7 / 2026-03-23 | No `sendMessage` / `senderId` in `src/services/socket.service.ts`; checklist in [07-VERIFICATION.md](.planning/phases/07-quality-hardening-tests/07-VERIFICATION.md) |
+| Security — derive socket identity from JWT | verified | Phase 7 / 2026-03-23 | Handshake + per-packet token check; `tests/integration/socket.chat-subscribe.test.ts` |
+| P1 — Boot single-point failure | unchanged — out of QUAL-01 scope | — | QUAL-01 narrows to socket identity + persist/emit on shipped chat/notification paths; startup hardening remains backlog |
+

@@ -2,7 +2,8 @@ import dotenv from 'dotenv';
 import argv from 'minimist';
 
 const envArgs = argv(process.argv.slice(2));
-const envMode = envArgs.env;
+/** Vitest sets `VITEST`; avoid passing `--env` on the same argv as the Vitest CLI (unknown option). */
+const envMode = envArgs.env ?? (process.env.VITEST ? 'development' : undefined);
 
 export const isDevelopment = envMode === 'development';
 export const isStaging = envMode === 'staging';

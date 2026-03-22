@@ -26,6 +26,7 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 - ✓ **Phase 1 — INFR-01 / INFR-03:** Hai database Mongo trên **cùng cluster** (social + chat), một `MongoClient`, hai `Db`; biến bắt buộc `DATABASE_CHAT_NAME` trong `envConfig` + `.env.example`; ping kép khi `connect()`, fail-fast nếu chat DB lỗi; getter `chatDb` cho phase sau.
 - ✓ **Phase 2 — INFR-02, FRND-01…06, BLCK-01…03:** Mutual friends graph (`friendships`, `friendRequests`, `blocks`), REST `/api/friends` và `/api/blocks`, giới hạn **~100** friend request gửi đi / user / **ngày UTC**, unfriend, block/unblock (D-14: unfriend + xóa request khi block). Legacy followers **đã gỡ** khỏi code và Mongo wiring. Posts/search/validation dùng **`FriendsService`** (bạn hai chiều) thay followers.
 - ✓ **Phase 3 — POST-*, FEED-*, ENGA-*, BLCK-02 (read/engagement):** Audience literals `public` \| `friends-only` \| `only-me`; `allowStrangerComments` trên create + owner PATCH; feed merged (public + friends-only từ bạn + mọi bài của mình) với **BLCK-02** loại author bị block; guest feed chỉ public; sort `createdAt` desc; đọc GET posts cho phép user **chưa verify**; like/bookmark/comment/repost/quote qua rule block + visibility + stranger flag; **`GET /api/search` posts** cùng logic block + visibility; **`/api/likes`** + collection `likes`.
+- ✓ **Phase 7 — QUAL-01, QUAL-02:** Vitest + `npm test`; smoke HTTP (auth verify-email, friends, chat text); socket JWT + `chat:subscribe` + `presence:chat`; `07-VERIFICATION.md` + bảng Resolved trong `CONCERNS.md` (phạm vi socket identity + persist/emit trên path đã ship). CI tự động **ngoài** DoD phase 7 (D-07).
 
 ### Active
 
@@ -44,8 +45,7 @@ Các khả năng **đã có trong codebase** (brownfield) — tham chiếu `.pla
 
 **Chất lượng & an toàn**
 
-- [ ] Sửa các rủi ro đã ghi trong `.planning/codebase/CONCERNS.md` trên đường đi (đặc biệt: **không tin `senderId` từ client**; persist trước khi emit; kiểm tra participant/group).
-- [ ] Bổ sung **tests** theo roadmap (hiện chưa có test runner trong `package.json`).
+- (đã chuyển xuống Validated — Phase 7)
 
 ### Out of Scope
 
@@ -101,4 +101,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-03-22 after Phase 3 complete (posts, feed & engagement; block filtering on feed, detail, search; likes API)*
+*Last updated: 2026-03-23 after Phase 7 complete (Vitest integration tests, QUAL-01 verification doc + CONCERNS Resolved section)*
