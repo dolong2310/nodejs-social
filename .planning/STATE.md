@@ -20,7 +20,7 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-03-21)
 
 **Core value:** Trusted friends, feed and engagement with correct permissions, stable 1:1 and group chat with history and notifications—one unified API aligned with the existing TypeScript/Express stack.
 
-**Current focus:** Phase 3 — Posts, feed & engagement
+**Current focus:** Phase 4 — Chat HTTP API (context gathered; planning next)
 
 **Roadmap:** [.planning/ROADMAP.md](ROADMAP.md)
 
