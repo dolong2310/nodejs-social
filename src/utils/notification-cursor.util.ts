@@ -1,9 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 export function encodeNotificationCursor(createdAt: Date, id: ObjectId): string {
-  return Buffer.from(JSON.stringify({ t: createdAt.getTime(), i: id.toHexString() }), 'utf8').toString(
-    'base64url'
-  );
+  return Buffer.from(JSON.stringify({ t: createdAt.getTime(), i: id.toHexString() }), 'utf8').toString('base64url');
 }
 
 export function decodeNotificationCursor(raw: string): { createdAt: Date; _id: ObjectId } {

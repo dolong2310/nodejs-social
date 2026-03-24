@@ -4,9 +4,7 @@
 
 import { IUsersController } from '@/controllers/users.controller';
 import { optionalProtect, protect } from '@/middlewares/auth.middleware';
-import { filterBodyMiddleware } from '@/middlewares/common.middleware';
 import { appLimiter } from '@/middlewares/limiter.middleware';
-import { UpdateMeRequestDTO } from '@/dtos/requests/user.request.dto';
 import { BaseRoute } from '@/routes/base.route';
 import { asyncHandler } from '@/utils/handler.util';
 import { IUsersValidation } from '@/validations/users.validation';

@@ -16,14 +16,9 @@ import {
 import { EChatType, IChat } from '@/models/schemas/chat.schema';
 import { EChatMemberRole, IChatMember } from '@/models/schemas/chatMember.schema';
 import { IBlockRepository } from '@/repositories/block.repository';
-import { ChatMemberRepository, IChatMemberRepository } from '@/repositories/chatMember.repository';
 import { ChatRepository, IChatRepository } from '@/repositories/chat.repository';
-import {
-  BadRequestError,
-  ConflictRequestError,
-  ForbiddenError,
-  NotFoundError
-} from '@/responses/error.response';
+import { ChatMemberRepository, IChatMemberRepository } from '@/repositories/chatMember.repository';
+import { BadRequestError, ConflictRequestError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
 import { IFriendsService } from '@/services/friends.service';
 import { INotificationsService } from '@/services/notifications.service';
@@ -133,7 +128,9 @@ class ChatsService extends BaseService implements IChatsService {
 
   async createGroup(userId: string, body: CreateGroupChatBodyDTO): Promise<ChatSummaryResponseDTO> {
     const creatorOid = new ObjectId(userId);
-    const memberOids = [...new Set(body.memberIds.map((id) => new ObjectId(id)))].filter((id) => !id.equals(creatorOid));
+    const memberOids = [...new Set(body.memberIds.map((id) => new ObjectId(id)))].filter(
+      (id) => !id.equals(creatorOid)
+    );
 
     if (memberOids.length < 1) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CHAT_GROUP_NEEDS_MEMBER);
@@ -210,9 +207,7 @@ class ChatsService extends BaseService implements IChatsService {
     const chat = await this.loadChat(cid);
     const members = await this.chatMemberRepository.listMembers(cid);
     const base =
-      chat.type === EChatType.DIRECT
-        ? toChatSummary(chat, this.directPeer(chat, viewerOid))
-        : toChatSummary(chat);
+      chat.type === EChatType.DIRECT ? toChatSummary(chat, this.directPeer(chat, viewerOid)) : toChatSummary(chat);
     return {
       ...base,
       members: members.map(toMemberRow)
@@ -241,9 +236,7 @@ class ChatsService extends BaseService implements IChatsService {
 
     const updated = await this.chatRepository.updateChat(cid, patch);
     const chat = updated ?? (await this.loadChat(cid));
-    return chat.type === EChatType.DIRECT
-      ? toChatSummary(chat, this.directPeer(chat, viewerOid))
-      : toChatSummary(chat);
+    return chat.type === EChatType.DIRECT ? toChatSummary(chat, this.directPeer(chat, viewerOid)) : toChatSummary(chat);
   }
 
   async inviteMember(userId: string, chatId: string, body: InviteChatMemberBodyDTO): Promise<ChatDetailResponseDTO> {

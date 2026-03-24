@@ -13,10 +13,7 @@ class LikesService extends BaseService implements ILikesService {
     super();
   }
 
-  async likePost({
-    userId,
-    postId
-  }: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO | null> {
+  async likePost({ userId, postId }: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO | null> {
     const result = await this.likeRepository.findOneAndUpdate({ userId, postId });
     return result ? new CreateLikeResponseDTO(result) : null;
   }

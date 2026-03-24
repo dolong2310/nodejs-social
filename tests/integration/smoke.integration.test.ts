@@ -50,14 +50,8 @@ describe('integration smoke (auth + friends + chat HTTP)', () => {
     expect(userDocA?.emailVerificationToken).toBeTruthy();
     expect(userDocB?.emailVerificationToken).toBeTruthy();
 
-    await agent
-      .post('/api/auth/verify-email')
-      .send({ token: userDocA!.emailVerificationToken })
-      .expect(200);
-    await agent
-      .post('/api/auth/verify-email')
-      .send({ token: userDocB!.emailVerificationToken })
-      .expect(200);
+    await agent.post('/api/auth/verify-email').send({ token: userDocA!.emailVerificationToken }).expect(200);
+    await agent.post('/api/auth/verify-email').send({ token: userDocB!.emailVerificationToken }).expect(200);
 
     const loginA = await agent.post('/api/auth/login').send({ email: emailA, password }).expect(200);
     const loginB = await agent.post('/api/auth/login').send({ email: emailB, password }).expect(200);
@@ -65,10 +59,7 @@ describe('integration smoke (auth + friends + chat HTTP)', () => {
     const accessA = (loginA.body as { data: { accessToken: string } }).data.accessToken;
     const accessB = (loginB.body as { data: { accessToken: string } }).data.accessToken;
 
-    await agent
-      .get('/api/users/me')
-      .set('Authorization', `Bearer ${accessA}`)
-      .expect(200);
+    await agent.get('/api/users/me').set('Authorization', `Bearer ${accessA}`).expect(200);
 
     await agent
       .post('/api/friends/requests')
@@ -76,10 +67,7 @@ describe('integration smoke (auth + friends + chat HTTP)', () => {
       .send({ toUserId: idB })
       .expect(201);
 
-    await agent
-      .post(`/api/friends/requests/${idA}/accept`)
-      .set('Authorization', `Bearer ${accessB}`)
-      .expect(200);
+    await agent.post(`/api/friends/requests/${idA}/accept`).set('Authorization', `Bearer ${accessB}`).expect(200);
 
     const directRes = await agent
       .post('/api/chats/direct')

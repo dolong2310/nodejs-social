@@ -4,17 +4,15 @@
  * local timezone and not per-user local timezones.
  */
 
-import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { IRedisService } from '@/database/redis/redis.service';
-import { IUser } from '@/models/schemas/user.schema';
 import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
+import { IUser } from '@/models/schemas/user.schema';
 import { BlockRepository } from '@/repositories/block.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
 import type { IFriendshipRepository } from '@/repositories/friendship.repository';
 import { IUserRepository } from '@/repositories/user.repository';
-import { BaseService } from '@/services/base.service';
-import { INotificationsService } from '@/services/notifications.service';
 import {
   BadRequestError,
   ConflictRequestError,
@@ -22,6 +20,8 @@ import {
   NotFoundError,
   TooManyRequestsError
 } from '@/responses/error.response';
+import { BaseService } from '@/services/base.service';
+import { INotificationsService } from '@/services/notifications.service';
 import { MongoServerError, ObjectId } from 'mongodb';
 
 /** User fields returned in friend / pending-request lists. */
@@ -41,11 +41,7 @@ export interface IFriendsService {
   declineIncomingRequest(myUserId: string, fromUserId: string): Promise<void>;
   revokeOutgoingRequest(myUserId: string, toUserId: string): Promise<void>;
   unfriend(myUserId: string, otherUserId: string): Promise<void>;
-  listFriends(
-    myUserId: string,
-    page: string,
-    limit: string
-  ): Promise<{ users: FriendUserRow[]; total: number }>;
+  listFriends(myUserId: string, page: string, limit: string): Promise<{ users: FriendUserRow[]; total: number }>;
   listIncomingRequests(
     myUserId: string,
     page: string,
@@ -237,11 +233,7 @@ class FriendsService extends BaseService implements IFriendsService {
     await this.invalidateBoth(myUserId, otherUserId);
   }
 
-  async listFriends(
-    myUserId: string,
-    page: string,
-    limit: string
-  ): Promise<{ users: FriendUserRow[]; total: number }> {
+  async listFriends(myUserId: string, page: string, limit: string): Promise<{ users: FriendUserRow[]; total: number }> {
     const myOid = new ObjectId(myUserId);
     const friendOids = await this.friendshipRepository.findFriendUserIdsForUser(myOid);
     const sorted = [...friendOids].sort((a, b) => Buffer.compare(a.id, b.id));

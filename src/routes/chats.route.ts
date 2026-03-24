@@ -2,8 +2,8 @@
  * Phase 4 — Chat HTTP API (`/api/chats`). Uses chat DB collections; verified users only (same as friends).
  */
 
-import ChatMessagesController, { IChatMessagesController } from '@/controllers/chatMessages.controller';
-import ChatsController, { IChatsController } from '@/controllers/chats.controller';
+import { IChatMessagesController } from '@/controllers/chatMessages.controller';
+import { IChatsController } from '@/controllers/chats.controller';
 import { protect } from '@/middlewares/auth.middleware';
 import { appLimiter } from '@/middlewares/limiter.middleware';
 import { BaseRoute } from '@/routes/base.route';
@@ -26,9 +26,23 @@ export class ChatsRoute extends BaseRoute {
     const v = this.usersValidation.userVerifiedValidation;
     const cv = this.chatsValidation;
 
-    this.router.post('/direct', appLimiter, protect, v, cv.peerUserIdBody, asyncHandler(this.chatsController.createDirect));
+    this.router.post(
+      '/direct',
+      appLimiter,
+      protect,
+      v,
+      cv.peerUserIdBody,
+      asyncHandler(this.chatsController.createDirect)
+    );
 
-    this.router.post('/groups', appLimiter, protect, v, cv.createGroupBody, asyncHandler(this.chatsController.createGroup));
+    this.router.post(
+      '/groups',
+      appLimiter,
+      protect,
+      v,
+      cv.createGroupBody,
+      asyncHandler(this.chatsController.createGroup)
+    );
 
     this.router.get('/', appLimiter, protect, v, cv.listChatsQuery, asyncHandler(this.chatsController.listChats));
 
@@ -84,7 +98,14 @@ export class ChatsRoute extends BaseRoute {
       asyncHandler(this.chatsController.inviteMember)
     );
 
-    this.router.delete('/:chatId/members/me', appLimiter, protect, v, cv.chatIdParam, asyncHandler(this.chatsController.leaveChat));
+    this.router.delete(
+      '/:chatId/members/me',
+      appLimiter,
+      protect,
+      v,
+      cv.chatIdParam,
+      asyncHandler(this.chatsController.leaveChat)
+    );
 
     this.router.delete(
       '/:chatId/members/:userId',

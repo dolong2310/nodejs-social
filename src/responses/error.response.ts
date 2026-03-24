@@ -9,9 +9,9 @@ import { HTTP_STATUS } from '@/constants/httpStatus.constant';
  */
 export class ErrorResponse extends Error {
   statusCode: number;
-  errors: Record<string, any>;
+  errors: Record<string, unknown>;
 
-  constructor(message: string, statusCode: number, errors: Record<string, any> = {}) {
+  constructor(message: string, statusCode: number, errors: Record<string, unknown> = {}) {
     super(message);
     this.errors = errors;
     this.statusCode = statusCode;
@@ -29,7 +29,7 @@ export class ConflictRequestError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.CONFLICT,
     statusCode: number = HTTP_STATUS.CONFLICT,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -44,7 +44,7 @@ export class BadRequestError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.BAD_REQUEST,
     statusCode: number = HTTP_STATUS.BAD_REQUEST,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -59,7 +59,7 @@ export class AuthFailureError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.UNAUTHORIZED,
     statusCode: number = HTTP_STATUS.UNAUTHORIZED,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -74,7 +74,7 @@ export class NotFoundError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.NOT_FOUND,
     statusCode: number = HTTP_STATUS.NOT_FOUND,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -89,7 +89,7 @@ export class ForbiddenError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.FORBIDDEN,
     statusCode: number = HTTP_STATUS.FORBIDDEN,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -104,7 +104,7 @@ export class InternalServerError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
     statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -119,7 +119,7 @@ export class BadGatewayError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.BAD_GATEWAY,
     statusCode: number = HTTP_STATUS.BAD_GATEWAY,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -134,7 +134,7 @@ export class ServiceUnavailableError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.SERVICE_UNAVAILABLE,
     statusCode: number = HTTP_STATUS.SERVICE_UNAVAILABLE,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -149,7 +149,7 @@ export class UnprocessableEntityError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.UNPROCESSABLE_ENTITY,
     statusCode: number = HTTP_STATUS.UNPROCESSABLE_ENTITY,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }
@@ -164,7 +164,7 @@ export class TooManyRequestsError extends ErrorResponse {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.TOO_MANY_REQUESTS,
     statusCode: number = HTTP_STATUS.TOO_MANY_REQUESTS,
-    errors: Record<string, any> = {}
+    errors: Record<string, unknown> = {}
   ) {
     super(message, statusCode, errors);
   }

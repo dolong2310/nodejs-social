@@ -4,12 +4,12 @@ import type { IRedisService } from '@/database/redis/redis.service';
 import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { IUser } from '@/models/schemas/user.schema';
-import { redactNewFeedAuthor } from '@/utils/block-redaction.util';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { ISearchRepository } from '@/repositories/search.repository';
 import { BaseService } from '@/services/base.service';
 import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';
+import { redactNewFeedAuthor } from '@/utils/block-redaction.util';
 import { ObjectId } from 'mongodb';
 
 export interface ISearchService {
@@ -85,9 +85,7 @@ class SearchService extends BaseService implements ISearchService {
 
     if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
       const viewerOid = new ObjectId(userId);
-      const blockedHex = new Set(
-        blockedAuthorIds.filter((id) => !id.equals(viewerOid)).map((b) => b.toHexString())
-      );
+      const blockedHex = new Set(blockedAuthorIds.filter((id) => !id.equals(viewerOid)).map((b) => b.toHexString()));
       for (const p of posts) {
         const row = p as PostDetailResponseDTO & { author?: { _id: ObjectId } };
         if (row.author && blockedHex.has(row.author._id.toHexString())) {

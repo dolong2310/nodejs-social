@@ -29,10 +29,7 @@ export interface IChatsController {
   inviteMember(req: Request<ChatIdParams, object, InviteChatMemberBodyDTO>, res: Response): Promise<void>;
   leaveChat(req: Request<ChatIdParams>, res: Response): Promise<void>;
   kickMember(req: Request<ChatMemberParams>, res: Response): Promise<void>;
-  patchMemberRole(
-    req: Request<ChatMemberParams, object, PatchChatMemberRoleBodyDTO>,
-    res: Response
-  ): Promise<void>;
+  patchMemberRole(req: Request<ChatMemberParams, object, PatchChatMemberRoleBodyDTO>, res: Response): Promise<void>;
   transferAdmin(req: Request<ChatIdParams, object, TransferChatAdminBodyDTO>, res: Response): Promise<void>;
 }
 

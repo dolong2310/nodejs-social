@@ -17,10 +17,7 @@ export interface IFriendshipRepository {
  * Map two user ids to canonical storage order (D-04).
  * Ordering uses BSON ObjectId byte order (`Buffer.compare(a.id, b.id)`), not string `localeCompare`.
  */
-export function normalizeFriendshipPair(
-  a: ObjectId,
-  b: ObjectId
-): { userIdLow: ObjectId; userIdHigh: ObjectId } {
+export function normalizeFriendshipPair(a: ObjectId, b: ObjectId): { userIdLow: ObjectId; userIdHigh: ObjectId } {
   const cmp = Buffer.compare(a.id, b.id);
   if (cmp === 0) {
     throw new Error('friendship pair requires two distinct user ids');

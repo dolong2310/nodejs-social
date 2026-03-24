@@ -110,7 +110,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   // Conversation errors
   INVALID_RECEIVER_ID: 'Invalid receiver ID',
 
-  // Chat (Phase 4 — chat DB)
+  // Chat errors
   CHAT_NOT_FOUND: 'Chat not found',
   CHAT_NOT_MEMBER: 'You are not a member of this chat',
   CHAT_PEER_NOT_FRIEND: 'You can only start a direct chat with a friend',

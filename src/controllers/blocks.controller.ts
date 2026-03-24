@@ -1,6 +1,6 @@
 import { BaseController } from '@/controllers/base.controller';
-import { PaginationQueryDTO } from '@/dtos/requests/common.request.dto';
 import { BlockUserBodyDTO, UnblockUserParamsDTO } from '@/dtos/requests/blocks.request.dto';
+import { PaginationQueryDTO } from '@/dtos/requests/common.request.dto';
 import { BlockCreatedResponseDTO } from '@/dtos/responses/blocks.response.dto';
 import { FriendUserSummaryResponseDTO } from '@/dtos/responses/friends.response.dto';
 import { Created } from '@/responses/success.response';

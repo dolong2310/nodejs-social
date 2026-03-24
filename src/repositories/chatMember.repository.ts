@@ -46,11 +46,7 @@ export class ChatMemberRepository extends BaseRepository implements IChatMemberR
   }
 
   async updateRole(chatId: ObjectId, userId: ObjectId, role: EChatMemberRole): Promise<IChatMember | null> {
-    return this.db.chatMembers.findOneAndUpdate(
-      { chatId, userId },
-      { $set: { role } },
-      { returnDocument: 'after' }
-    );
+    return this.db.chatMembers.findOneAndUpdate({ chatId, userId }, { $set: { role } }, { returnDocument: 'after' });
   }
 
   async updateReadState(

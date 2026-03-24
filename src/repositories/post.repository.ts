@@ -80,18 +80,12 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     const [like, bookmark, comment] = await Promise.all([
       this.db.likes.findOne({ userId: viewerId, postId }, { projection: { _id: 1 } }),
       this.db.bookmarks.findOne({ userId: viewerId, postId }, { projection: { _id: 1 } }),
-      this.db.posts.findOne(
-        { userId: viewerId, parentId: postId, type: EPostType.COMMENT },
-        { projection: { _id: 1 } }
-      )
+      this.db.posts.findOne({ userId: viewerId, parentId: postId, type: EPostType.COMMENT }, { projection: { _id: 1 } })
     ]);
     return like !== null || bookmark !== null || comment !== null;
   }
 
-  async findPostIdsWhereViewerEngagedWithAuthors(
-    viewerId: ObjectId,
-    authorIds: ObjectId[]
-  ): Promise<ObjectId[]> {
+  async findPostIdsWhereViewerEngagedWithAuthors(viewerId: ObjectId, authorIds: ObjectId[]): Promise<ObjectId[]> {
     if (authorIds.length === 0) {
       return [];
     }

@@ -67,10 +67,7 @@ export class FriendRequestRepository extends BaseRepository {
     });
   }
 
-  findPendingByDirectedPair(
-    fromUserId: ObjectId,
-    toUserId: ObjectId
-  ): Promise<IFriendRequest | null> {
+  findPendingByDirectedPair(fromUserId: ObjectId, toUserId: ObjectId): Promise<IFriendRequest | null> {
     return this.db.friendRequests.findOne({ fromUserId, toUserId });
   }
 }

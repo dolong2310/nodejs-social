@@ -4,7 +4,6 @@ import {
   IFriendRequestNotificationPayload,
   INewMessageNotificationPayload,
   INotification,
-  INotificationPayload,
   NotificationType
 } from '@/models/schemas/notification.schema';
 

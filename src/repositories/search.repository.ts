@@ -197,9 +197,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
           const followedUserIds = await findFollowedUserIds(userId);
           andClauses.push({
             userId:
-              peopleFollow === ESearchPeopleFollow.FOLLOWING
-                ? { $in: followedUserIds }
-                : { $nin: followedUserIds }
+              peopleFollow === ESearchPeopleFollow.FOLLOWING ? { $in: followedUserIds } : { $nin: followedUserIds }
           });
         } else if (peopleFollow === ESearchPeopleFollow.ONLY_ME) {
           andClauses.push({ userId: { $eq: viewerOid } });

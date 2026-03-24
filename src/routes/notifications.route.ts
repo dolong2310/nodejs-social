@@ -2,7 +2,7 @@
  * In-app notifications inbox (Phase 5) — social DB, list + mark read.
  */
 
-import NotificationsController, { INotificationsController } from '@/controllers/notifications.controller';
+import { INotificationsController } from '@/controllers/notifications.controller';
 import { protect } from '@/middlewares/auth.middleware';
 import { appLimiter } from '@/middlewares/limiter.middleware';
 import { BaseRoute } from '@/routes/base.route';

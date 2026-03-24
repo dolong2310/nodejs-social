@@ -18,12 +18,7 @@ class FriendshipSchema {
   public userIdHigh: ObjectId;
   public createdAt?: Date;
 
-  constructor({
-    _id,
-    userIdLow,
-    userIdHigh,
-    createdAt
-  }: Omit<IFriendship, '_id'> & { _id?: ObjectId }) {
+  constructor({ _id, userIdLow, userIdHigh, createdAt }: Omit<IFriendship, '_id'> & { _id?: ObjectId }) {
     this._id = _id ?? new ObjectId();
     this.userIdLow = userIdLow;
     this.userIdHigh = userIdHigh;

@@ -1,8 +1,5 @@
 import { envConfig } from '@/config';
-import {
-  SOCKET_CLIENT_CHAT_SUBSCRIBE,
-  SOCKET_SERVER_PRESENCE_CHAT
-} from '@/constants/socket.constant';
+import { SOCKET_CLIENT_CHAT_SUBSCRIBE, SOCKET_SERVER_PRESENCE_CHAT } from '@/constants/socket.constant';
 import { DatabaseInstance, startIntegrationHttpServer } from '../helpers/integration-app';
 import { io as ioc } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
@@ -71,14 +68,8 @@ describe('socket chat:subscribe + presence:chat', () => {
     const t = Date.now();
     const agent = request.agent(httpServer);
 
-    const { userId: idC, accessToken: tokenC } = await registerVerifyLogin(
-      agent,
-      `sock-c-${t}@test.local`
-    );
-    const { userId: idD, accessToken: tokenD } = await registerVerifyLogin(
-      agent,
-      `sock-d-${t}@test.local`
-    );
+    const { userId: idC, accessToken: tokenC } = await registerVerifyLogin(agent, `sock-c-${t}@test.local`);
+    const { userId: idD, accessToken: tokenD } = await registerVerifyLogin(agent, `sock-d-${t}@test.local`);
     const { accessToken: tokenE } = await registerVerifyLogin(agent, `sock-e-${t}@test.local`);
 
     await agent
@@ -86,10 +77,7 @@ describe('socket chat:subscribe + presence:chat', () => {
       .set('Authorization', `Bearer ${tokenC}`)
       .send({ toUserId: idD })
       .expect(201);
-    await agent
-      .post(`/api/friends/requests/${idC}/accept`)
-      .set('Authorization', `Bearer ${tokenD}`)
-      .expect(200);
+    await agent.post(`/api/friends/requests/${idC}/accept`).set('Authorization', `Bearer ${tokenD}`).expect(200);
 
     const directRes = await agent
       .post('/api/chats/direct')

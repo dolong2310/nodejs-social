@@ -1,9 +1,9 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
-import { dateOfBirthSchema, nameSchema } from '@/validations/users.validation';
 import { AuthFailureError, BadRequestError, ForbiddenError } from '@/responses/error.response';
 import { ITokenService } from '@/services/token.service';
 import { validate } from '@/utils/validation.util';
+import { dateOfBirthSchema, nameSchema } from '@/validations/users.validation';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema, ParamSchema } from 'express-validator';

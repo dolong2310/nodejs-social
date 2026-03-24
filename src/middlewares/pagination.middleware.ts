@@ -3,7 +3,7 @@
  * This middleware extracts pagination parameters from the request and provides a method to fetch paginated results from a MongoDB model.
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import 'express-serve-static-core';
 
 declare module 'express-serve-static-core' {

@@ -1,9 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 export function encodeChatListCursor(updatedAt: Date, chatId: ObjectId): string {
-  return Buffer.from(JSON.stringify({ u: updatedAt.getTime(), c: chatId.toHexString() }), 'utf8').toString(
-    'base64url'
-  );
+  return Buffer.from(JSON.stringify({ u: updatedAt.getTime(), c: chatId.toHexString() }), 'utf8').toString('base64url');
 }
 
 export function decodeChatListCursor(raw: string): { updatedAt: Date; chatId: ObjectId } {
@@ -12,9 +10,7 @@ export function decodeChatListCursor(raw: string): { updatedAt: Date; chatId: Ob
 }
 
 export function encodeMessageCursor(createdAt: Date, id: ObjectId): string {
-  return Buffer.from(JSON.stringify({ t: createdAt.getTime(), i: id.toHexString() }), 'utf8').toString(
-    'base64url'
-  );
+  return Buffer.from(JSON.stringify({ t: createdAt.getTime(), i: id.toHexString() }), 'utf8').toString('base64url');
 }
 
 export function decodeMessageCursor(raw: string): { createdAt: Date; _id: ObjectId } {

@@ -1,7 +1,7 @@
 import ChatSchema, { EChatType, IChat } from '@/models/schemas/chat.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { normalizeFriendshipPair } from '@/repositories/friendship.repository';
-import { Filter, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
 export interface IChatRepository {
   findById(chatId: ObjectId): Promise<IChat | null>;

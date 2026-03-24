@@ -26,7 +26,13 @@ export interface IPostsValidation {
     location: Location
   ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   audienceValidation: RequestHandler<GetPostDetailParamsDTO, object, object, Query, Record<string, unknown>>;
-  patchPostValidation: RequestHandler<GetPostDetailParamsDTO, object, PatchPostRequestDTO, Query, Record<string, unknown>>;
+  patchPostValidation: RequestHandler<
+    GetPostDetailParamsDTO,
+    object,
+    PatchPostRequestDTO,
+    Query,
+    Record<string, unknown>
+  >;
   postTypeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
@@ -231,8 +237,7 @@ class PostsValidation implements IPostsValidation {
 
     const audienceStr = post.audience as string;
     const isPublicAudience = audienceStr === EPostAudience.PUBLIC;
-    const isFriendsOnlyAudience =
-      audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
+    const isFriendsOnlyAudience = audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
     const isOnlyMeAudience = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
 
     // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"

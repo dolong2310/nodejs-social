@@ -1,8 +1,8 @@
 import { config, isDevelopment } from '@/config';
-import { getRequestLogContext } from './request-context';
 import { randomUUID } from 'node:crypto';
 import pino, { type Logger, type LoggerOptions } from 'pino';
 import pinoHttp from 'pino-http';
+import { getRequestLogContext } from './request-context';
 
 function logContextMixin(): Record<string, string> {
   const ctx = getRequestLogContext();

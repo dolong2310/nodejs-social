@@ -1,7 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
-import { ETokenType } from '@/enums/token.enum';
-import { EUserVerificationStatus } from '@/enums/users.enum';
 import {
   ChangePasswordRequestDTO,
   ForgotPasswordRequestDTO,
@@ -23,6 +21,8 @@ import {
   ResetPasswordResponseDTO,
   VerifyEmailResponseDTO
 } from '@/dtos/responses/auth.response.dto';
+import { ETokenType } from '@/enums/token.enum';
+import { EUserVerificationStatus } from '@/enums/users.enum';
 import { AuthFailureError, BadRequestError, NotFoundError } from '@/responses/error.response';
 import { Created } from '@/responses/success.response';
 import { IAuthService } from '@/services/auth.service';

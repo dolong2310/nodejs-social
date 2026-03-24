@@ -75,11 +75,7 @@ async function fetchList(accessToken: string, qs: string): Promise<{ status: num
   return { status: res.status, body };
 }
 
-async function patchJson(
-  accessToken: string,
-  path: string,
-  body: unknown
-): Promise<{ status: number; json: unknown }> {
+async function patchJson(accessToken: string, path: string, body: unknown): Promise<{ status: number; json: unknown }> {
   const res = await fetch(`${baseUrl}/api/notifications${path}`, {
     method: 'PATCH',
     headers: {
@@ -114,10 +110,7 @@ function assertNotifPayloadContract(n: NotifItem) {
   }
 }
 
-async function waitForSocketNotification(
-  accessToken: string,
-  timeoutMs: number
-): Promise<{ socketPayload: unknown }> {
+async function waitForSocketNotification(accessToken: string, timeoutMs: number): Promise<{ socketPayload: unknown }> {
   return new Promise((resolve, reject) => {
     const socket = io(baseUrl, {
       auth: { Authorization: `Bearer ${accessToken}` },
@@ -159,7 +152,7 @@ async function main() {
   let accessToken: string;
   let deleteRecipient = false;
   let senderId: ObjectId | null = null;
-  let senderToken: string | null = null;
+  let senderToken: string | null;
   let blockPeerId: ObjectId | null = null;
 
   const existingEmail = process.env.UAT_SMOKE_EMAIL?.trim();
@@ -173,7 +166,7 @@ async function main() {
     });
     const loginJson = (await loginRes.json()) as { data?: { accessToken: string } };
     if (!loginRes.ok) throw new Error(`login ${loginRes.status}: ${JSON.stringify(loginJson)}`);
-    accessToken = loginJson.data?.accessToken!;
+    accessToken = loginJson.data!.accessToken;
     recipientId = new ObjectId(decodeUserIdFromAccessToken(accessToken));
     await users.updateOne(
       { _id: recipientId },

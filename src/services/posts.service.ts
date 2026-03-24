@@ -1,3 +1,4 @@
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { PaginationQueryDTO } from '@/dtos/requests/common.request.dto';
 import {
   CreatePostRequestDTO,
@@ -10,13 +11,12 @@ import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
 import { IPost } from '@/models/schemas/post.schema';
-import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils/block-redaction.util';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { IPostRepository } from '@/repositories/post.repository';
 import { ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
 import { IFriendsService } from '@/services/friends.service';
+import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils/block-redaction.util';
 import { ObjectId } from 'mongodb';
 
 export interface IPostsService {
@@ -149,10 +149,7 @@ class PostsService extends BaseService implements IPostsService {
     return this.postRepository.hasViewerEngagedWithPost(new ObjectId(viewerId), new ObjectId(postId));
   }
 
-  async getExtraVisiblePostIdsForBlockedEngagement(
-    userId: string,
-    blockedAuthorIds: ObjectId[]
-  ): Promise<ObjectId[]> {
+  async getExtraVisiblePostIdsForBlockedEngagement(userId: string, blockedAuthorIds: ObjectId[]): Promise<ObjectId[]> {
     const viewerOid = new ObjectId(userId);
     const authors = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
     if (authors.length === 0) {
@@ -245,10 +242,7 @@ class PostsService extends BaseService implements IPostsService {
       return;
     }
     const allowStrangerEngagement = parent.allowStrangerComments ?? true;
-    if (
-      !allowStrangerEngagement &&
-      [EPostType.COMMENT, EPostType.REPOST, EPostType.QUOTE].includes(body.type)
-    ) {
+    if (!allowStrangerEngagement && [EPostType.COMMENT, EPostType.REPOST, EPostType.QUOTE].includes(body.type)) {
       throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.STRANGER_COMMENTS_NOT_ALLOWED_ON_THIS_POST);
     }
   }
@@ -260,8 +254,7 @@ class PostsService extends BaseService implements IPostsService {
     }
     const audienceStr = parent.audience as string;
     const isPublic = audienceStr === EPostAudience.PUBLIC;
-    const isFriendsOnly =
-      audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
+    const isFriendsOnly = audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
     const isOnlyMe = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
     const isMention = parent.mentions.map((m) => m.toString()).includes(viewerId);
     const isFriend = await this.friendsService.isFriendOf(viewerId, ownerId);

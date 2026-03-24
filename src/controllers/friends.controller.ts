@@ -64,10 +64,7 @@ class FriendsController extends BaseController implements IFriendsController {
     });
   };
 
-  sendFriendRequest = async (
-    req: Request<ParamsDictionary, object, SendFriendRequestBodyDTO>,
-    res: Response
-  ) => {
+  sendFriendRequest = async (req: Request<ParamsDictionary, object, SendFriendRequestBodyDTO>, res: Response) => {
     const userId = this.getUserId(req);
     const dto = new SendFriendRequestBodyDTO(req.body);
     const created = await this.friendsService.sendFriendRequest(userId, dto.toUserId);

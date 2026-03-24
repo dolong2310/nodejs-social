@@ -4,11 +4,7 @@ import type { IBlockRepository } from '@/repositories/block.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
 import type { IFriendshipRepository } from '@/repositories/friendship.repository';
 import { IUserRepository } from '@/repositories/user.repository';
-import {
-  BadRequestError,
-  ConflictRequestError,
-  NotFoundError
-} from '@/responses/error.response';
+import { BadRequestError, ConflictRequestError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
 import type { FriendUserRow, IFriendsService } from '@/services/friends.service';
 import { MongoServerError, ObjectId } from 'mongodb';

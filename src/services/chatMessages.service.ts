@@ -6,15 +6,15 @@ import {
   toChatMessageDto
 } from '@/dtos/responses/chatMessage.response.dto';
 import { EChatType, IChat } from '@/models/schemas/chat.schema';
-import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
-import { INotificationsService } from '@/services/notifications.service';
 import { IChatAttachment } from '@/models/schemas/chatMessage.schema';
+import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
 import { IBlockRepository } from '@/repositories/block.repository';
-import { IChatMemberRepository } from '@/repositories/chatMember.repository';
 import { IChatRepository } from '@/repositories/chat.repository';
+import { IChatMemberRepository } from '@/repositories/chatMember.repository';
 import { ChatMessageRepository, IChatMessageRepository } from '@/repositories/chatMessage.repository';
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
+import { INotificationsService } from '@/services/notifications.service';
 import { decodeMessageCursor, encodeMessageCursor } from '@/utils/chat-cursor.util';
 import { ObjectId } from 'mongodb';
 
@@ -23,12 +23,7 @@ export const CHAT_ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024;
 
 export interface IChatMessagesService {
   sendMessage(userId: string, chatId: string, body: SendChatMessageBodyDTO): Promise<ChatMessageResponseDTO>;
-  listMessages(
-    userId: string,
-    chatId: string,
-    limit: number,
-    cursor?: string
-  ): Promise<ChatMessagesPageResponseDTO>;
+  listMessages(userId: string, chatId: string, limit: number, cursor?: string): Promise<ChatMessagesPageResponseDTO>;
   markRead(userId: string, chatId: string, body: MarkChatReadBodyDTO): Promise<void>;
   bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void;
 }

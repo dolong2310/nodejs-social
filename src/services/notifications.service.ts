@@ -1,9 +1,9 @@
-import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants/notification.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants/notification.constant';
 import { NotificationsPageDTO, toNotificationListItem } from '@/dtos/responses/notification.response.dto';
 import { IChat } from '@/models/schemas/chat.schema';
 import { IChatMessage } from '@/models/schemas/chatMessage.schema';
-import {
+import NotificationSchema, {
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
   IFriendRequestNotificationPayload,
@@ -11,7 +11,6 @@ import {
   INotification,
   NewMessagePreviewKind
 } from '@/models/schemas/notification.schema';
-import NotificationSchema from '@/models/schemas/notification.schema';
 import { IUser } from '@/models/schemas/user.schema';
 import { BlockRepository } from '@/repositories/block.repository';
 import { INotificationRepository } from '@/repositories/notification.repository';
@@ -27,12 +26,7 @@ export interface ISocketUserEmitter {
 
 export interface INotificationsService {
   bindSocketEmitter(emitter: ISocketUserEmitter | null): void;
-  listForViewer(
-    viewerId: string,
-    limit: number,
-    cursor?: string,
-    unreadOnly?: boolean
-  ): Promise<NotificationsPageDTO>;
+  listForViewer(viewerId: string, limit: number, cursor?: string, unreadOnly?: boolean): Promise<NotificationsPageDTO>;
   markRead(viewerId: string, ids?: string[]): Promise<void>;
   markSingleRead(viewerId: string, notificationId: string): Promise<void>;
   recordFriendRequest(recipientUserId: string, fromUserId: string): Promise<void>;

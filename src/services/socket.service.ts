@@ -1,4 +1,5 @@
-import { envConfig } from '@/config';
+import { getCorsAllowedOrigins } from '@/config';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import {
   SOCKET_CLIENT_CHAT_SUBSCRIBE,
   SOCKET_CLIENT_CHAT_TYPING,
@@ -11,7 +12,6 @@ import {
   chatRoom,
   userRoom
 } from '@/constants/socket.constant';
-import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ChatMessageResponseDTO } from '@/dtos/responses/chatMessage.response.dto';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
@@ -57,7 +57,7 @@ class SocketService implements ISocketService {
   ) {
     this.io = new Server(httpServer, {
       cors: {
-        origin: envConfig.FRONTEND_URL,
+        origin: getCorsAllowedOrigins(),
         credentials: true
       }
     });
@@ -75,11 +75,7 @@ class SocketService implements ISocketService {
     this.io.to(userRoom(userId)).emit(event, data);
   }
 
-  public emitMessageCreated(
-    chatIdHex: string,
-    memberUserIdHexes: string[],
-    message: ChatMessageResponseDTO
-  ): void {
+  public emitMessageCreated(chatIdHex: string, memberUserIdHexes: string[], message: ChatMessageResponseDTO): void {
     const rooms = [chatRoom(chatIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
     this.io.to(rooms).emit(SOCKET_SERVER_CHAT_MESSAGE_NEW, { message });
   }

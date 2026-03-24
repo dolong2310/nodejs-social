@@ -34,11 +34,7 @@ export class ChatMessageRepository extends BaseRepository implements IChatMessag
         { createdAt: before.createdAt, _id: { $lt: before._id } }
       ];
     }
-    return this.db.chatMessages
-      .find(filter)
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(limit)
-      .toArray();
+    return this.db.chatMessages.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit).toArray();
   }
 
   static newOutgoingMessage(

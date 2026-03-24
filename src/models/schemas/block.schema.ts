@@ -14,12 +14,7 @@ class BlockSchema {
   public blockedId: ObjectId;
   public createdAt?: Date;
 
-  constructor({
-    _id,
-    blockerId,
-    blockedId,
-    createdAt
-  }: Omit<IBlock, '_id'> & { _id?: ObjectId }) {
+  constructor({ _id, blockerId, blockedId, createdAt }: Omit<IBlock, '_id'> & { _id?: ObjectId }) {
     this._id = _id ?? new ObjectId();
     this.blockerId = blockerId;
     this.blockedId = blockedId;

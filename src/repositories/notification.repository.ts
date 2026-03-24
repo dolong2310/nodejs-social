@@ -49,11 +49,7 @@ export class NotificationRepository extends BaseRepository implements INotificat
         { createdAt: before.createdAt, _id: { $lt: before._id } }
       ];
     }
-    return this.db.notifications
-      .find(filter)
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(limit)
-      .toArray();
+    return this.db.notifications.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit).toArray();
   }
 
   async markReadByIds(recipientId: ObjectId, ids: ObjectId[]): Promise<number> {

@@ -14,12 +14,7 @@ class FriendRequestSchema {
   public toUserId: ObjectId;
   public createdAt?: Date;
 
-  constructor({
-    _id,
-    fromUserId,
-    toUserId,
-    createdAt
-  }: Omit<IFriendRequest, '_id'> & { _id?: ObjectId }) {
+  constructor({ _id, fromUserId, toUserId, createdAt }: Omit<IFriendRequest, '_id'> & { _id?: ObjectId }) {
     this._id = _id ?? new ObjectId();
     this.fromUserId = fromUserId;
     this.toUserId = toUserId;

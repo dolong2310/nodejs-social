@@ -1,7 +1,7 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { syncLogContextFromUser } from '@/logger/request-context';
 import { USERNAME_REGEX } from '@/constants/regex.constant';
 import { EUserVerificationStatus } from '@/enums/users.enum';
+import { syncLogContextFromUser } from '@/logger/request-context';
 import {
   AuthFailureError,
   BadRequestError,
@@ -64,7 +64,13 @@ export interface IUsersValidation {
   updateMeValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   userVerifiedValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   /** After `protect` or inside `optionalAuth` when a token exists: load `req.user` without requiring verified (still bans missing users). */
-  attachAuthenticatedUserAllowUnverified: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  attachAuthenticatedUserAllowUnverified: RequestHandler<
+    ParamsDictionary,
+    object,
+    object,
+    Query,
+    Record<string, unknown>
+  >;
   /** Use after `attachAuthenticatedUserAllowUnverified`; 403 if user is unverified (likes, bookmarks, etc.). */
   forbidUnverifiedEngagement: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   userIdValidation: (

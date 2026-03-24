@@ -4,7 +4,6 @@ import { MarkChatReadBodyDTO, SendChatMessageBodyDTO } from '@/dtos/requests/cha
 import { Created } from '@/responses/success.response';
 import { IChatMessagesService } from '@/services/chatMessages.service';
 import { Request, Response } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IChatMessagesController {
   sendMessage(req: Request<ChatIdParams, object, SendChatMessageBodyDTO>, res: Response): Promise<void>;
