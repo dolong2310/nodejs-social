@@ -1,5 +1,5 @@
 /*
- * In-app notifications inbox (Phase 5) — social DB, list + mark read.
+ * social DB, list + mark read.
  */
 
 import { INotificationsController } from '@/controllers/notifications.controller';
@@ -24,17 +24,21 @@ export class NotificationsRoute extends BaseRoute {
     this.usersValidation = this.container.getUsersValidation();
     this.notificationsValidation = this.container.getNotificationsValidation();
 
-    const v = this.usersValidation.userVerifiedValidation;
-    const nv = this.notificationsValidation;
-
-    this.router.get('/', appLimiter, protect, v, nv.listQuery, asyncHandler(this.notificationsController.list));
+    this.router.get(
+      '/',
+      appLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.notificationsValidation.listQuery,
+      asyncHandler(this.notificationsController.list)
+    );
 
     this.router.patch(
       '/read',
       appLimiter,
       protect,
-      v,
-      nv.markReadBody,
+      this.usersValidation.userVerifiedValidation,
+      this.notificationsValidation.markReadBody,
       asyncHandler(this.notificationsController.markRead)
     );
 
@@ -42,8 +46,8 @@ export class NotificationsRoute extends BaseRoute {
       '/:notificationId/read',
       appLimiter,
       protect,
-      v,
-      nv.notificationIdParam,
+      this.usersValidation.userVerifiedValidation,
+      this.notificationsValidation.notificationIdParam,
       asyncHandler(this.notificationsController.markOneRead)
     );
   }

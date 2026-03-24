@@ -1,5 +1,7 @@
 import { BaseController } from '@/controllers/base.controller';
 import {
+  ChatIdParams,
+  ChatMemberParams,
   CreateDirectChatBodyDTO,
   CreateGroupChatBodyDTO,
   InviteChatMemberBodyDTO,
@@ -11,14 +13,6 @@ import { Created } from '@/responses/success.response';
 import { IChatsService } from '@/services/chats.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-
-export interface ChatIdParams extends ParamsDictionary {
-  chatId: string;
-}
-
-export interface ChatMemberParams extends ChatIdParams {
-  userId: string;
-}
 
 export interface IChatsController {
   createDirect(req: Request<ParamsDictionary, object, CreateDirectChatBodyDTO>, res: Response): Promise<void>;

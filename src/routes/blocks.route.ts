@@ -1,5 +1,5 @@
 /*
- * Block / unblock / list blocked users (BLCK-01, BLCK-03).
+ * Block / unblock / list blocked users.
  */
 
 import { IBlocksController } from '@/controllers/blocks.controller';

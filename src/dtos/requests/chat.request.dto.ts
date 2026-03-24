@@ -1,4 +1,13 @@
 import { EChatMemberRole } from '@/models/schemas/chatMember.schema';
+import { ParamsDictionary } from 'express-serve-static-core';
+
+export interface ChatIdParams extends ParamsDictionary {
+  chatId: string;
+}
+
+export interface ChatMemberParams extends ChatIdParams {
+  userId: string;
+}
 
 export class CreateDirectChatBodyDTO {
   peerUserId: string;

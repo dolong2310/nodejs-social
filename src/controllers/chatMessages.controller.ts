@@ -1,5 +1,5 @@
 import { BaseController } from '@/controllers/base.controller';
-import { ChatIdParams } from '@/controllers/chats.controller';
+import { ChatIdParams } from '@/dtos/requests/chat.request.dto';
 import { MarkChatReadBodyDTO, SendChatMessageBodyDTO } from '@/dtos/requests/chatMessage.request.dto';
 import { Created } from '@/responses/success.response';
 import { IChatMessagesService } from '@/services/chatMessages.service';

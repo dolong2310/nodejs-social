@@ -1,5 +1,5 @@
 /*
- * Phase 4 — Chat HTTP API (`/api/chats`). Uses chat DB collections; verified users only (same as friends).
+ * Chat direct / group / messages / read / get / patch / invite / leave / kick / patch role / transfer admin.
  */
 
 import { IChatMessagesController } from '@/controllers/chatMessages.controller';
@@ -23,15 +23,12 @@ export class ChatsRoute extends BaseRoute {
     this.usersValidation = this.container.getUsersValidation();
     this.chatsValidation = this.container.getChatsValidation();
 
-    const v = this.usersValidation.userVerifiedValidation;
-    const cv = this.chatsValidation;
-
     this.router.post(
       '/direct',
       appLimiter,
       protect,
-      v,
-      cv.peerUserIdBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.peerUserIdBody,
       asyncHandler(this.chatsController.createDirect)
     );
 
@@ -39,20 +36,27 @@ export class ChatsRoute extends BaseRoute {
       '/groups',
       appLimiter,
       protect,
-      v,
-      cv.createGroupBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.createGroupBody,
       asyncHandler(this.chatsController.createGroup)
     );
 
-    this.router.get('/', appLimiter, protect, v, cv.listChatsQuery, asyncHandler(this.chatsController.listChats));
+    this.router.get(
+      '/',
+      appLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.listChatsQuery,
+      asyncHandler(this.chatsController.listChats)
+    );
 
     this.router.get(
       '/:chatId/messages',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.listMessagesQuery,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.listMessagesQuery,
       asyncHandler(this.chatMessagesController.listMessages)
     );
 
@@ -60,9 +64,9 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/messages',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.sendMessageBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.sendMessageBody,
       asyncHandler(this.chatMessagesController.sendMessage)
     );
 
@@ -70,21 +74,28 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/read',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.markReadBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.markReadBody,
       asyncHandler(this.chatMessagesController.markRead)
     );
 
-    this.router.get('/:chatId', appLimiter, protect, v, cv.chatIdParam, asyncHandler(this.chatsController.getChat));
+    this.router.get(
+      '/:chatId',
+      appLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      asyncHandler(this.chatsController.getChat)
+    );
 
     this.router.patch(
       '/:chatId',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.patchChatBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.patchChatBody,
       asyncHandler(this.chatsController.patchChat)
     );
 
@@ -92,9 +103,9 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/members',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.inviteUserIdBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.inviteUserIdBody,
       asyncHandler(this.chatsController.inviteMember)
     );
 
@@ -102,8 +113,8 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/members/me',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
       asyncHandler(this.chatsController.leaveChat)
     );
 
@@ -111,9 +122,9 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/members/:userId',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.kickTargetUserIdParam,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.kickTargetUserIdParam,
       asyncHandler(this.chatsController.kickMember)
     );
 
@@ -121,10 +132,10 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/members/:userId/role',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.kickTargetUserIdParam,
-      cv.patchMemberRoleBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.kickTargetUserIdParam,
+      this.chatsValidation.patchMemberRoleBody,
       asyncHandler(this.chatsController.patchMemberRole)
     );
 
@@ -132,9 +143,9 @@ export class ChatsRoute extends BaseRoute {
       '/:chatId/admin/transfer',
       appLimiter,
       protect,
-      v,
-      cv.chatIdParam,
-      cv.newAdminUserIdBody,
+      this.usersValidation.userVerifiedValidation,
+      this.chatsValidation.chatIdParam,
+      this.chatsValidation.newAdminUserIdBody,
       asyncHandler(this.chatsController.transferAdmin)
     );
   }
