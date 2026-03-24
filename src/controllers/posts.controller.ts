@@ -39,11 +39,11 @@ class PostsController extends BaseController implements IPostsController {
 
     if (userId) {
       // Same DTO field name as before; values are mutual friend ids from friendships collection.
-      const followedUserIds = await this.friendsService.findFollowedUserIds(userId);
+      const friendUserIds = await this.friendsService.findFriendUserIds(userId);
 
       const results = await this.postsService.getNewFeeds({
         userId,
-        followedUserIds,
+        friendUserIds,
         page,
         limit
       });

@@ -57,7 +57,7 @@
 
 ## Executive summary
 
-Phase 2 is a **brownfield replacement** of the asymmetric `followers` graph with **symmetric friendships**, **directed pending requests**, and **blocks** on the **existing social MongoDB database** (same `DatabaseService` / native driver pattern as today). The current codebase already centralizes the follower graph in a small set of modules (`FollowersRoute`, `FollowersService`, `FollowerRepository`, `followers` collection, Redis cache key `followers:${userId}`) but **threads** `IFollowersService` into **posts** (feed + audience validation) and **search** (`people_follow` filters). Those call sites must switch to a **`IFriendsService`** (or renamed equivalent) that exposes **friend IDs for “who I am connected to”** and **“is this user my friend?”** so Phase 3 can extend the same service with visibility rules without another rip-out.
+Phase 2 is a **brownfield replacement** of the asymmetric `followers` graph with **symmetric friendships**, **directed pending requests**, and **blocks** on the **existing social MongoDB database** (same `DatabaseService` / native driver pattern as today). The current codebase already centralizes the follower graph in a small set of modules (`FollowersRoute`, `FollowersService`, `FollowerRepository`, `followers` collection, Redis cache key `followers:${userId}`) but **threaded** `IFollowersService` into **posts** (feed + audience validation) and **search** (legacy `people_follow` filters, now query **`people`** / `ESearchPeople`). Those call sites switch to **`IFriendsService`** (or renamed equivalent) that exposes **friend IDs for “who I am connected to”** and **“is this user my friend?”** so Phase 3 can extend the same service with visibility rules without another rip-out.
 
 **Primary recommendation:** Implement **`friendships`**, **`friendRequests`**, and **`blocks`** collections with the **unique indexes** from CONTEXT, add **`/api/friends`** and **`/api/blocks`**, delete **`/api/followers`** and follower modules, and add **`BlockRepository` methods for symmetric block checks** (see BLCK-02 hooks) even though post filtering waits for Phase 3.
 
@@ -69,7 +69,7 @@ Phase 2 is a **brownfield replacement** of the asymmetric `followers` graph with
 |-------|------|------|
 | Route | `src/routes/followers.route.ts` | `POST /`, `DELETE /:userId` under `/api/followers` |
 | Controller | `src/controllers/followers.controller.ts` | Self-follow guard, idempotent messages |
-| Service | `src/services/followers.service.ts` | `findFollowedUserIds`, `findFollowerId`, Redis `CACHE_KEYS.followers` |
+| Service | `src/services/followers.service.ts` (removed) | was `findFollowedUserIds`, etc.; replaced by `FriendsService.findFriendUserIds`, `CACHE_KEYS.friends` |
 | Repository | `src/repositories/follower.repository.ts` | `followers` collection CRUD |
 | Schema | `src/models/schemas/follower.schema.ts` | `userId`, `followedUserId` |
 | DB | `src/database/mongodb/database.service.ts` | `get followers()`, `createFollowersIndex()` composite `{ userId, followedUserId }` |
@@ -80,9 +80,9 @@ Phase 2 is a **brownfield replacement** of the asymmetric `followers` graph with
 |----------|--------|----------------------|
 | `src/app.ts` | `router.use('/followers', followersRouter())` | Mount `friends` + `blocks` routers; remove followers |
 | `src/container/index.ts` | Wires follower repo/service/controller; injects into `SearchService`, `PostsController`, `PostsValidation` | Replace with friends + blocks wiring |
-| `src/controllers/posts.controller.ts` | `findFollowedUserIds` for `getNewFeeds` | Same shape: **list of friend `ObjectId`s** for feed query (`followedUserIds` param can be renamed in implementation for clarity) |
+| `src/controllers/posts.controller.ts` | `findFriendUserIds` for `getNewFeeds` | Pass **`friendUserIds`** (`ObjectId[]`) into posts service / repository |
 | `src/validations/posts.validation.ts` | `findFollowerId` for `audience === FOLLOWERS` gate | Replace with **friendship check** (symmetric); **enum/string `followers` in API** may remain until Phase 3 per deferred — but **logic** must use friendship graph |
-| `src/services/search.service.ts` + `src/repositories/search.repository.ts` | `findFollowedUserIds` for `people_follow` FOLLOWING / NOT_FOLLOWING | Inject friends service; semantics = **friends**, not followers |
+| `src/services/search.service.ts` + `src/repositories/search.repository.ts` | `findFriendUserIds` + query `people` (`friends` / `not_friends` / `only_me`) | Mutual friends only — not legacy followers |
 | `src/constants/cache.constant.ts` | `followers: (userId) => \`followers:${userId}\`` | New key e.g. `friends:${userId}`; **invalidate** on accept/unfriend/block side-effects |
 | `swagger/paths.yaml`, `tags.yaml`, `components.yaml` | `/followers`, tags, audience enums | Replace docs with friends/blocks; audience enum change **can** stay for Phase 3 if CONTEXT defers enum rename |
 | `scripts/fake-data.ts` | `followMultipleUsers` inserts into `followers` | Seed **friendships** and/or **requests** instead |
@@ -297,7 +297,7 @@ src/models/schemas/block.schema.ts
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | `EPostAudience.FOLLOWERS` string remains until Phase 3 | Confusing naming but workable | Phase 2 **logic** uses friendship; rename enum/docs in Phase 3 |
-| Feed/search use `followedUserIds` naming | Technical debt | Rename to `friendUserIds` when touching those methods |
+| Feed uses `friendUserIds` | Done | Aligned with friends graph naming |
 | BLCK-02 not testable end-to-end in Phase 2 | REQ traceability gap | Add **repository-level** tests for `isBlockedEitherWay`; stub post pipeline TODO for Phase 3 |
 | Phase 4 chat will need friends + blocks | Rework if APIs hidden | Expose service methods on container for reuse |
 | Phase 5 notifications | Duplicate events if accept retries | Optional idempotency key on notification insert (deferred) |

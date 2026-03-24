@@ -487,7 +487,7 @@
 #           schema:
 #             type: string
 #             enum: [post, user, image, video, video-hls]
-#         - name: people_follow
+#         - name: people
 #           in: query
 #           schema:
 #             type: string

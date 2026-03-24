@@ -1,5 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { ESearchPeopleFollow, ESearchType } from '@/enums/search.enum';
+import { ESearchPeople, ESearchType } from '@/enums/search.enum';
 import { validate } from '@/utils/validation.util';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -32,10 +32,10 @@ class SearchValidation implements ISearchValidation {
           trim: true,
           optional: true
         },
-        people_follow: {
+        people: {
           isIn: {
-            options: [[ESearchPeopleFollow.FOLLOWING, ESearchPeopleFollow.NOT_FOLLOWING, ESearchPeopleFollow.ONLY_ME]],
-            errorMessage: VALIDATION_ERROR_MESSAGE.PEOPLE_FOLLOW_MUST_BE_ONE_OF_THE_FOLLOWING
+            options: [[ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS, ESearchPeople.ONLY_ME]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.PEOPLE_MUST_BE_ONE_OF_THE_FOLLOWING
           },
           trim: true,
           optional: true

@@ -33,7 +33,7 @@ export interface FriendUserRow {
 }
 
 export interface IFriendsService {
-  findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+  findFriendUserIds(userId: string): Promise<ObjectId[]>;
   isFriendOf(viewerUserId: string, otherUserId: string): Promise<boolean>;
   invalidateFriendCache(userId: string): Promise<void>;
   sendFriendRequest(myUserId: string, toUserId: string): Promise<IFriendRequest>;
@@ -96,7 +96,7 @@ class FriendsService extends BaseService implements IFriendsService {
     await Promise.all([this.invalidateFriendCache(userIdA), this.invalidateFriendCache(userIdB)]);
   }
 
-  async findFollowedUserIds(userId: string): Promise<ObjectId[]> {
+  async findFriendUserIds(userId: string): Promise<ObjectId[]> {
     const cached = await this.redisService.get<string[]>(CACHE_KEYS.friends(userId));
     if (cached !== null) {
       return cached.map((id) => new ObjectId(id));

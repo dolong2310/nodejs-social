@@ -64,7 +64,7 @@ class PostsService extends BaseService implements IPostsService {
     return this.postRepository.findById(postId);
   }
 
-  async getNewFeeds({ userId, followedUserIds, page, limit }: GetNewFeedsPayloadDTO) {
+  async getNewFeeds({ userId, friendUserIds, page, limit }: GetNewFeedsPayloadDTO) {
     const viewerOid = new ObjectId(userId);
     const blockedAuthorIds = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerOid);
     const blockedForEngagement = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
@@ -74,7 +74,7 @@ class PostsService extends BaseService implements IPostsService {
         : [];
     const postsPromise = this.postRepository.findPosts({
       userId,
-      followedUserIds,
+      friendUserIds,
       blockedAuthorIds,
       extraVisiblePostIds: extraVisiblePostIds.length > 0 ? extraVisiblePostIds : undefined,
       page: Number(page),
@@ -82,7 +82,7 @@ class PostsService extends BaseService implements IPostsService {
     });
     const totalPostsPromise = this.postRepository.countPosts({
       userId,
-      followedUserIds,
+      friendUserIds,
       blockedAuthorIds,
       extraVisiblePostIds: extraVisiblePostIds.length > 0 ? extraVisiblePostIds : undefined
     });

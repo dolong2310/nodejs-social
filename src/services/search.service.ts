@@ -16,18 +16,16 @@ export interface ISearchService {
   searchPosts(
     payload: SearchQueryDTO & {
       userId?: string;
-      peopleFollow?: string;
     }
   ): Promise<[PostDetailResponseDTO[], number]>;
   searchUsers(
     payload: SearchQueryDTO & {
       userId?: string;
-      peopleFollow?: string;
     }
   ): Promise<[IUser[], number]>;
 }
 
-/** Search uses `findFollowedUserIds` for people_follow filters — backed by mutual friends (FriendsService). */
+/** Search uses `findFriendUserIds` for `people` query filter (mutual friends via FriendsService). */
 class SearchService extends BaseService implements ISearchService {
   constructor(
     private readonly searchRepository: ISearchRepository,
@@ -43,7 +41,7 @@ class SearchService extends BaseService implements ISearchService {
     userId,
     query,
     type,
-    people_follow,
+    people,
     page,
     limit
   }: SearchQueryDTO & {
@@ -63,10 +61,10 @@ class SearchService extends BaseService implements ISearchService {
       userId,
       query,
       type,
-      peopleFollow: people_follow,
+      people,
       page: Number(page),
       limit: Number(limit),
-      findFollowedUserIds: this.friendsService.findFollowedUserIds,
+      findFriendUserIds: this.friendsService.findFriendUserIds,
       blockedAuthorIds,
       extraVisiblePostIds: extraIdsArg
     });
@@ -75,8 +73,8 @@ class SearchService extends BaseService implements ISearchService {
       userId,
       query,
       type,
-      peopleFollow: people_follow,
-      findFollowedUserIds: this.friendsService.findFollowedUserIds,
+      people,
+      findFriendUserIds: this.friendsService.findFriendUserIds,
       blockedAuthorIds,
       extraVisiblePostIds: extraIdsArg
     });
@@ -102,7 +100,7 @@ class SearchService extends BaseService implements ISearchService {
   async searchUsers({
     userId,
     query,
-    people_follow,
+    people,
     page,
     limit
   }: SearchQueryDTO & {
@@ -114,17 +112,17 @@ class SearchService extends BaseService implements ISearchService {
       const usersPromise = this.searchRepository.findUsers({
         userId,
         query,
-        peopleFollow: people_follow,
+        people,
         page: Number(page),
         limit: Number(limit),
-        findFollowedUserIds: this.friendsService.findFollowedUserIds
+        findFriendUserIds: this.friendsService.findFriendUserIds
       });
 
       const totalUsersPromise = this.searchRepository.countUsers({
         userId,
         query,
-        peopleFollow: people_follow,
-        findFollowedUserIds: this.friendsService.findFollowedUserIds
+        people,
+        findFriendUserIds: this.friendsService.findFriendUserIds
       });
       return Promise.all([usersPromise, totalUsersPromise]);
     };
@@ -136,7 +134,7 @@ class SearchService extends BaseService implements ISearchService {
     const key = CACHE_KEYS.searchUsers({
       userId,
       query,
-      people_follow,
+      people,
       page,
       limit
     });

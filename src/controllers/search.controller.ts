@@ -17,7 +17,7 @@ export class SearchController extends BaseController implements ISearchControlle
   }
 
   search = async (req: Request<ParamsDictionary, object, object, SearchQueryDTO>, res: Response) => {
-    const { query = '', type, people_follow, page = '1', limit = '10' } = req.query;
+    const { query = '', type, people, page = '1', limit = '10' } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
     const [results, totalItems] = await [
@@ -25,14 +25,15 @@ export class SearchController extends BaseController implements ISearchControlle
         userId,
         query,
         type,
-        peopleFollow: people_follow,
+        people,
         page,
         limit
       }),
       this.searchService.searchUsers({
         userId,
         query,
-        peopleFollow: people_follow,
+        type,
+        people,
         page,
         limit
       })

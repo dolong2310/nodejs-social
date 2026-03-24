@@ -20,7 +20,7 @@ tech-stack:
   added: []
   patterns:
     - "Cache-aside for friend id list: Redis `friends:${userId}` + FriendshipRepository on miss"
-    - "Keep `findFollowedUserIds` name at post/search boundaries to limit repository churn"
+    - "`findFriendUserIds` on `IFriendsService`; search uses `people` query + `ESearchPeople`"
 
 key-files:
   created:
@@ -46,7 +46,7 @@ key-files:
 
 key-decisions:
   - "Friend list cache uses key `friends:${userId}` and TTL constant `FRIENDS_GRAPH` (no `FOLLOWERS` export)."
-  - "Posts/search keep method name `findFollowedUserIds` while semantics are mutual friends from `friendships`."
+  - "Posts/search use `findFriendUserIds` and `friendUserIds` payload naming; mutual friends from `friendships`."
   - "FriendRequestRepository and BlockRepository are constructed in Container (not yet exposed via getters) for upcoming plans."
 
 patterns-established:
@@ -72,7 +72,7 @@ completed: 2026-03-21
 
 ## Accomplishments
 
-- Added `FriendsService` (`findFollowedUserIds`, `isFriendOf`, `invalidateFriendCache`) backed by `FriendshipRepository` and Redis.
+- Added `FriendsService` (`findFriendUserIds`, `isFriendOf`, `invalidateFriendCache`) backed by `FriendshipRepository` and Redis.
 - Replaced follower cache TTL/key with `FRIENDS_GRAPH` / `CACHE_KEYS.friends`.
 - Removed `followers` collection getter and `createFollowersIndex` from `DatabaseService`; unmounted followers router from `app.ts`.
 - Deleted follower route, controller, service, repository, schema, and DTOs; rewired Container with `FriendshipRepository`, `FriendRequestRepository`, `BlockRepository`, and `FriendsService`.

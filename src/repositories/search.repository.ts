@@ -7,7 +7,7 @@
 import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience } from '@/enums/posts.enum';
-import { ESearchPeopleFollow, ESearchType } from '@/enums/search.enum';
+import { ESearchPeople, ESearchType } from '@/enums/search.enum';
 import { IUser } from '@/models/user.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
@@ -18,10 +18,10 @@ export interface ISearchRepository {
     userId?: string;
     query: string;
     type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
+    people?: ESearchPeople;
     page: number;
     limit: number;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }): Promise<PostDetailResponseDTO[]>;
@@ -29,24 +29,24 @@ export interface ISearchRepository {
     userId?: string;
     query: string;
     type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    people?: ESearchPeople;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }): Promise<number>;
   findUsers(payload: {
     userId?: string;
     query: string;
-    peopleFollow?: ESearchPeopleFollow;
+    people?: ESearchPeople;
     page: number;
     limit: number;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
   }): Promise<IUser[]>;
   countUsers(payload: {
     userId?: string;
     query: string;
-    peopleFollow?: ESearchPeopleFollow;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    people?: ESearchPeople;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
   }): Promise<number>;
 }
 
@@ -59,10 +59,10 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     userId?: string;
     query: string;
     type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
+    people?: ESearchPeople;
     page: number;
     limit: number;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }): Promise<PostDetailResponseDTO[]> {
@@ -82,8 +82,8 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     userId?: string;
     query: string;
     type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    people?: ESearchPeople;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }): Promise<number> {
@@ -98,13 +98,13 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
   }: {
     userId?: string;
     query: string;
-    peopleFollow?: ESearchPeopleFollow;
+    people?: ESearchPeople;
     page: number;
     limit: number;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
   }): Promise<IUser[]> {
     // Tìm kiếm users theo query (tìm kiếm theo name, username, email)
-    // Nếu có userId (có nghĩa là đang login) thì có thể filter theo people follow, nếu không thì chỉ tìm tất cả users
+    // Nếu có userId (đang login) thì có thể filter theo `people`; không thì chỉ tìm tất cả users
 
     const match = await this._getUserMatch(payload);
 
@@ -128,8 +128,8 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
   async countUsers(payload: {
     userId?: string;
     query: string;
-    peopleFollow?: ESearchPeopleFollow;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    people?: ESearchPeople;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
   }): Promise<number> {
     const match = await this._getUserMatch(payload);
     const totalUsers = await this.db.users.countDocuments(match);
@@ -139,17 +139,17 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
   private async _getPostMatch({
     query,
     type,
-    peopleFollow,
+    people,
     userId,
-    findFollowedUserIds,
+    findFriendUserIds,
     blockedAuthorIds,
     extraVisiblePostIds
   }: {
     userId?: string;
     query: string;
     type?: ESearchType;
-    peopleFollow?: ESearchPeopleFollow;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    people?: ESearchPeople;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
     blockedAuthorIds?: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }) {
@@ -174,7 +174,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     if (userId) {
       const viewerOid = new ObjectId(userId);
       const blocked = (blockedAuthorIds ?? []).filter((id) => !id.equals(viewerOid));
-      const friendIds = (await findFollowedUserIds(userId)).filter((id) => !id.equals(viewerOid));
+      const friendIds = (await findFriendUserIds(userId)).filter((id) => !id.equals(viewerOid));
 
       const orVisibility: Record<string, unknown>[] = [
         {
@@ -192,14 +192,13 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       }
       andClauses.push({ $or: orVisibility });
 
-      if (peopleFollow) {
-        if ([ESearchPeopleFollow.FOLLOWING, ESearchPeopleFollow.NOT_FOLLOWING].includes(peopleFollow)) {
-          const followedUserIds = await findFollowedUserIds(userId);
+      if (people) {
+        if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
+          const friendUserIds = await findFriendUserIds(userId);
           andClauses.push({
-            userId:
-              peopleFollow === ESearchPeopleFollow.FOLLOWING ? { $in: followedUserIds } : { $nin: followedUserIds }
+            userId: people === ESearchPeople.FRIENDS ? { $in: friendUserIds } : { $nin: friendUserIds }
           });
-        } else if (peopleFollow === ESearchPeopleFollow.ONLY_ME) {
+        } else if (people === ESearchPeople.ONLY_ME) {
           andClauses.push({ userId: { $eq: viewerOid } });
         }
       }
@@ -216,13 +215,13 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
   private async _getUserMatch({
     userId,
     query,
-    peopleFollow,
-    findFollowedUserIds
+    people,
+    findFriendUserIds
   }: {
     userId?: string;
     query: string;
-    peopleFollow?: ESearchPeopleFollow;
-    findFollowedUserIds(userId: string): Promise<ObjectId[]>;
+    people?: ESearchPeople;
+    findFriendUserIds(userId: string): Promise<ObjectId[]>;
   }) {
     const match: Record<string, unknown> = {};
 
@@ -232,12 +231,11 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       };
     }
 
-    if (peopleFollow && userId) {
-      if ([ESearchPeopleFollow.FOLLOWING, ESearchPeopleFollow.NOT_FOLLOWING].includes(peopleFollow)) {
-        const followedUserIds = await findFollowedUserIds(userId);
-        match['_id'] =
-          peopleFollow === ESearchPeopleFollow.FOLLOWING ? { $in: followedUserIds } : { $nin: followedUserIds };
-      } else if (peopleFollow === ESearchPeopleFollow.ONLY_ME) {
+    if (people && userId) {
+      if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
+        const friendUserIds = await findFriendUserIds(userId);
+        match['_id'] = people === ESearchPeople.FRIENDS ? { $in: friendUserIds } : { $nin: friendUserIds };
+      } else if (people === ESearchPeople.ONLY_ME) {
         match['_id'] = { $eq: new ObjectId(userId) };
       }
     }

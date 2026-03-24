@@ -1110,11 +1110,11 @@ paths:
           schema:
             type: string
             enum: [post, user, image, video, video-hls]
-        - name: people_follow
+        - name: people
           in: query
           schema:
             type: string
-            enum: [following, not_following, only_me]
+            enum: [friends, not_friends, only_me]
         - name: page
           in: query
           schema:

@@ -27,7 +27,7 @@ export interface IPostRepository {
   findPostIdsWhereViewerEngagedWithAuthors(viewerId: ObjectId, authorIds: ObjectId[]): Promise<ObjectId[]>;
   findPosts(payload: {
     userId: string;
-    followedUserIds: ObjectId[];
+    friendUserIds: ObjectId[];
     blockedAuthorIds: ObjectId[];
     /** Extra posts to include (e.g. engaged-with-blocked-author); visibility still enforced by caller context. */
     extraVisiblePostIds?: ObjectId[];
@@ -36,7 +36,7 @@ export interface IPostRepository {
   }): Promise<PostNewFeedResponseDTO[]>;
   countPosts(payload: {
     userId: string;
-    followedUserIds: ObjectId[];
+    friendUserIds: ObjectId[];
     blockedAuthorIds: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }): Promise<number>;
@@ -285,14 +285,14 @@ export class PostRepository extends BaseRepository implements IPostRepository {
 
   async findPosts({
     userId,
-    followedUserIds,
+    friendUserIds,
     blockedAuthorIds,
     extraVisiblePostIds,
     page,
     limit
   }: {
     userId: string;
-    followedUserIds: ObjectId[];
+    friendUserIds: ObjectId[];
     blockedAuthorIds: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
     page: number;
@@ -300,7 +300,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
   }): Promise<PostNewFeedResponseDTO[]> {
     const viewerOid = new ObjectId(userId);
     const blocked = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
-    const friendIds = followedUserIds.filter((id) => !id.equals(viewerOid));
+    const friendIds = friendUserIds.filter((id) => !id.equals(viewerOid));
 
     /**
      * Authenticated home feed (FEED-01, FEED-02, BLCK-02):
@@ -338,18 +338,18 @@ export class PostRepository extends BaseRepository implements IPostRepository {
 
   async countPosts({
     userId,
-    followedUserIds,
+    friendUserIds,
     blockedAuthorIds,
     extraVisiblePostIds
   }: {
     userId: string;
-    followedUserIds: ObjectId[];
+    friendUserIds: ObjectId[];
     blockedAuthorIds: ObjectId[];
     extraVisiblePostIds?: ObjectId[];
   }): Promise<number> {
     const viewerOid = new ObjectId(userId);
     const blocked = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
-    const friendIds = followedUserIds.filter((id) => !id.equals(viewerOid));
+    const friendIds = friendUserIds.filter((id) => !id.equals(viewerOid));
 
     const orBranches: Record<string, unknown>[] = [
       {

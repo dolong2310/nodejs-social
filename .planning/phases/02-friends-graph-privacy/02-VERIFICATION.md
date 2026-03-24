@@ -51,8 +51,8 @@ score: 7/7
 | `friends.route.ts` | `FriendsController` → `FriendsService` | `BaseRoute` + container | ✓ WIRED |
 | `FriendsService` | `BlockRepository` | `isBlockedEitherWay` on send/accept | ✓ WIRED |
 | `BlocksService` | `FriendshipRepository` / `FriendRequestRepository` | `deleteFriendshipPair`, `deleteAllRequestsInvolvingUsers` on block | ✓ WIRED |
-| `posts.controller.ts` | `FriendsService` | `findFollowedUserIds` (mutual friends) | ✓ WIRED |
-| `search.service.ts` | `FriendsService` | `findFollowedUserIds` injected into search | ✓ WIRED |
+| `posts.controller.ts` | `FriendsService` | `findFriendUserIds` (mutual friends) | ✓ WIRED |
+| `search.service.ts` | `FriendsService` | `findFriendUserIds` injected into search | ✓ WIRED |
 | `posts.validation.ts` | `FriendsService` | `isFriendOf` for audience / access checks | ✓ WIRED |
 
 ### Requirements coverage (.planning/REQUIREMENTS.md)

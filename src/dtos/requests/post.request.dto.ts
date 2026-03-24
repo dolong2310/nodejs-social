@@ -57,7 +57,7 @@ export interface GetPostsParamsDTO extends ParamsDictionary {
 
 export interface GetNewFeedsPayloadDTO {
   userId: string;
-  followedUserIds: ObjectId[];
+  friendUserIds: ObjectId[];
   page: PaginationQueryDTO['page'];
   limit: PaginationQueryDTO['limit'];
 }
