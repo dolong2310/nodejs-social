@@ -19,7 +19,7 @@ const DEFAULT_DEV_CORS_ORIGINS = [
  * - Development mặc định: `FRONTEND_URL` + các origin local phổ biến
  */
 export function getCorsAllowedOrigins(): string[] {
-  const raw = process.env.CORS_ORIGINS;
+  const raw = envConfig.CORS_ORIGINS;
   if (raw !== undefined && raw.trim() !== '') {
     return raw
       .split(',')

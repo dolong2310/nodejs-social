@@ -3,6 +3,7 @@
  * It includes methods for validation error handling, error handling, sending responses, pagination, user ID retrieval, and cookie management.
  */
 
+import { isProduction } from '@/config';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { PaginationResponseDTO } from '@/dtos/responses/common.response.dto';
 import { NotFoundError } from '@/responses/error.response';
@@ -91,7 +92,7 @@ export abstract class BaseController {
   protected setCookie(res: Response, name: string, value: string, maxAge: number): void {
     res.cookie(name, value, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProduction,
       sameSite: 'strict',
       maxAge
     });

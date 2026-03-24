@@ -6,3 +6,4 @@ uploads/
 !.env.example
 .gitnexus
 my-docs/
+postman/

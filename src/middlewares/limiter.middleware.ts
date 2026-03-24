@@ -3,6 +3,7 @@
  * This middleware limits the number of requests to specific routes to prevent abuse.
  */
 
+import { isDevelopment } from '@/config';
 import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
 import { RATE_LIMIT_ERROR_MESSAGE } from '@/constants/message.constant';
@@ -37,14 +38,13 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
 // These limiters can be applied to authentication and note operations
 // They define the time window and maximum number of requests allowed
 /** Vitest integration smoke hits many auth endpoints from one IP in one run (>5); skip strict auth cap under test. */
-export const authLimiter =
-  process.env.VITEST === 'true'
-    ? skipRateLimitForTests
-    : createRateLimiter(
-        5 * 60 * 1000, // 5 minutes
-        5,
-        RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_AUTHENTICATION_ATTEMPTS
-      );
+export const authLimiter = isDevelopment
+  ? skipRateLimitForTests
+  : createRateLimiter(
+      5 * 60 * 1000, // 5 minutes
+      5,
+      RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_AUTHENTICATION_ATTEMPTS
+    );
 
 export const postsLimiter = createRateLimiter(
   5 * 60 * 1000, // 5 minutes
