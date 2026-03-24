@@ -2,6 +2,36 @@ import { envConfig, isDevelopment, isProduction } from '@/config/envConfig';
 import { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 
+/** Origins FE khi chạy local (Next + Vite monorepo). */
+const DEFAULT_DEV_CORS_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+] as const;
+
+/**
+ * Danh sách origin được phép (Express CORS + Socket.IO).
+ * - `CORS_ORIGINS` (tùy chọn): comma-separated, ví dụ `http://localhost:3001,http://localhost:5173`
+ * - Production mặc định: chỉ `FRONTEND_URL`
+ * - Development mặc định: `FRONTEND_URL` + các origin local phổ biến
+ */
+export function getCorsAllowedOrigins(): string[] {
+  const raw = process.env.CORS_ORIGINS;
+  if (raw !== undefined && raw.trim() !== '') {
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  if (isProduction) {
+    return [envConfig.FRONTEND_URL];
+  }
+  return [...new Set([envConfig.FRONTEND_URL, ...DEFAULT_DEV_CORS_ORIGINS])];
+}
+
 // General configs
 export const config = {
   port: parseInt(envConfig.PORT, 10),

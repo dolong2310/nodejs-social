@@ -1,5 +1,5 @@
 import { createApp } from '@/app';
-import { config, envConfig, isProduction } from '@/config';
+import { config, envConfig, getCorsAllowedOrigins } from '@/config';
 import { logger } from '@/logger';
 import { initUploadsFolder } from '@/utils/file.util';
 import { createServer } from 'http';
@@ -18,7 +18,7 @@ async function bootstrap() {
     },
     redis: config.redis,
     cors: {
-      origin: isProduction ? envConfig.FRONTEND_URL : '*',
+      origin: getCorsAllowedOrigins(),
       credentials: true
     },
     rateLimitOptions: {
