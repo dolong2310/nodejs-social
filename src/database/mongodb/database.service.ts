@@ -1,9 +1,9 @@
 import { logger } from '@/logger';
 import { IBlock } from '@/models/schemas/block.schema';
 import { IBookmark } from '@/models/schemas/bookmark.schema';
-import { IChat } from '@/models/schemas/chat.schema';
-import { IChatMember } from '@/models/schemas/chatMember.schema';
 import { IChatMessage } from '@/models/schemas/chatMessage.schema';
+import { IConversation } from '@/models/schemas/conversation.schema';
+import { IConversationMember } from '@/models/schemas/conversationMember.schema';
 import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
 import { IFriendship } from '@/models/schemas/friendship.schema';
 import { IHashtag } from '@/models/schemas/hashtag.schema';
@@ -29,7 +29,7 @@ export interface IDatabaseService {
   createBlockIndexes(): Promise<void>;
   createPostsIndex(): Promise<void>;
   createNotificationIndexes(): Promise<void>;
-  initializeChatIndexes(): Promise<void>;
+  initializeConversationIndexes(): Promise<void>;
 }
 
 class DatabaseService implements IDatabaseService {
@@ -222,17 +222,17 @@ class DatabaseService implements IDatabaseService {
     }
   }
 
-  /** Chat DB — idempotent indexes (Phase 4). */
-  async initializeChatIndexes(): Promise<void> {
+  /** Chat DB — idempotent indexes (Phase 4). Collection names unchanged: chats, chatMembers, messages. */
+  async initializeConversationIndexes(): Promise<void> {
     await Promise.all([
-      this._ensureChatChatsIndexes(),
-      this._ensureChatMembersIndexes(),
+      this._ensureConversationDocumentsIndexes(),
+      this._ensureConversationMembersIndexes(),
       this._ensureChatMessagesIndexes()
     ]);
   }
 
-  private async _ensureChatChatsIndexes(): Promise<void> {
-    const col = this.chatChats;
+  private async _ensureConversationDocumentsIndexes(): Promise<void> {
+    const col = this.conversations;
     const directPair = 'userIdLow_1_userIdHigh_1';
     if (!(await this.indexExistsSafe(col, [directPair]))) {
       await col.createIndex(
@@ -246,8 +246,8 @@ class DatabaseService implements IDatabaseService {
     }
   }
 
-  private async _ensureChatMembersIndexes(): Promise<void> {
-    const col = this.chatMembers;
+  private async _ensureConversationMembersIndexes(): Promise<void> {
+    const col = this.conversationMembers;
     const uniq = 'chatId_1_userId_1';
     if (!(await this.indexExistsSafe(col, [uniq]))) {
       await col.createIndex({ chatId: 1, userId: 1 }, { unique: true });
@@ -310,12 +310,12 @@ class DatabaseService implements IDatabaseService {
     return this.db.collection<INotification>('notifications');
   }
 
-  get chatChats(): Collection<IChat> {
-    return this._chatDb.collection<IChat>('chats');
+  get conversations(): Collection<IConversation> {
+    return this._chatDb.collection<IConversation>('chats');
   }
 
-  get chatMembers(): Collection<IChatMember> {
-    return this._chatDb.collection<IChatMember>('chatMembers');
+  get conversationMembers(): Collection<IConversationMember> {
+    return this._chatDb.collection<IConversationMember>('chatMembers');
   }
 
   get chatMessages(): Collection<IChatMessage> {

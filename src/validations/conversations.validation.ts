@@ -1,5 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { EChatMemberRole } from '@/models/schemas/chatMember.schema';
+import { EConversationMemberRole } from '@/models/schemas/conversationMember.schema';
 import { isValidMongoId } from '@/utils/common.util';
 import { validate } from '@/utils/validation.util';
 import { IUsersValidation } from '@/validations/users.validation';
@@ -7,25 +7,25 @@ import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
-export interface IChatsValidation {
-  chatIdParam: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IConversationsValidation {
+  conversationIdParam: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   peerUserIdBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   createGroupBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  patchChatBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  patchConversationBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   inviteUserIdBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   patchMemberRoleBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   newAdminUserIdBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   sendMessageBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   markReadBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  listChatsQuery: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  listConversationsQuery: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   listMessagesQuery: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   kickTargetUserIdParam: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
-const roleValues = [EChatMemberRole.MANAGER, EChatMemberRole.MEMBER];
+const roleValues = [EConversationMemberRole.MANAGER, EConversationMemberRole.MEMBER];
 
-class ChatsValidation implements IChatsValidation {
-  chatIdParam!: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+class ConversationsValidation implements IConversationsValidation {
+  conversationIdParam!: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   kickTargetUserIdParam!: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   peerUserIdBody!: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
   inviteUserIdBody!: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
@@ -39,7 +39,7 @@ class ChatsValidation implements IChatsValidation {
           isArray: { bail: true, errorMessage: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY },
           custom: {
             options: (v: unknown) => Array.isArray(v) && v.length >= 1,
-            errorMessage: VALIDATION_ERROR_MESSAGE.CHAT_GROUP_NEEDS_MEMBER
+            errorMessage: VALIDATION_ERROR_MESSAGE.CONVERSATION_GROUP_NEEDS_MEMBER
           }
         },
         'memberIds.*': {
@@ -55,7 +55,7 @@ class ChatsValidation implements IChatsValidation {
     )
   );
 
-  patchChatBody = validate(
+  patchConversationBody = validate(
     checkSchema(
       {
         name: { optional: true, isString: true, trim: true },
@@ -71,7 +71,7 @@ class ChatsValidation implements IChatsValidation {
         role: {
           isIn: {
             options: [roleValues],
-            errorMessage: VALIDATION_ERROR_MESSAGE.CHAT_ROLE_FORBIDDEN
+            errorMessage: VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN
           }
         }
       },
@@ -98,7 +98,7 @@ class ChatsValidation implements IChatsValidation {
     )
   );
 
-  listChatsQuery = validate(
+  listConversationsQuery = validate(
     checkSchema(
       {
         limit: { optional: true, isInt: { options: { min: 1, max: 100 } } },
@@ -119,7 +119,7 @@ class ChatsValidation implements IChatsValidation {
   );
 
   constructor(usersValidation: IUsersValidation) {
-    this.chatIdParam = usersValidation.userIdValidation('chatId', 'params');
+    this.conversationIdParam = usersValidation.userIdValidation('conversationId', 'params');
     this.kickTargetUserIdParam = usersValidation.userIdValidation('userId', 'params');
     this.peerUserIdBody = usersValidation.userIdValidation('peerUserId', 'body');
     this.inviteUserIdBody = usersValidation.userIdValidation('userId', 'body');
@@ -127,4 +127,4 @@ class ChatsValidation implements IChatsValidation {
   }
 }
 
-export default ChatsValidation;
+export default ConversationsValidation;

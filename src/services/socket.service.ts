@@ -16,7 +16,7 @@ import { ChatMessageResponseDTO } from '@/dtos/responses/chatMessage.response.dt
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
 import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
-import { IChatMemberRepository } from '@/repositories/chatMember.repository';
+import { IConversationMemberRepository } from '@/repositories/conversationMember.repository';
 import { IFriendshipRepository } from '@/repositories/friendship.repository';
 import { AuthFailureError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import TokenService, { ITokenService } from '@/services/token.service';
@@ -52,7 +52,7 @@ class SocketService implements ISocketService {
   constructor(
     httpServer: HttpServer,
     private readonly usersService: IUsersService,
-    private readonly chatMemberRepository: IChatMemberRepository,
+    private readonly conversationMemberRepository: IConversationMemberRepository,
     private readonly friendshipRepository: IFriendshipRepository
   ) {
     this.io = new Server(httpServer, {
@@ -75,20 +75,24 @@ class SocketService implements ISocketService {
     this.io.to(userRoom(userId)).emit(event, data);
   }
 
-  public emitMessageCreated(chatIdHex: string, memberUserIdHexes: string[], message: ChatMessageResponseDTO): void {
-    const rooms = [chatRoom(chatIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
+  public emitMessageCreated(
+    conversationIdHex: string,
+    memberUserIdHexes: string[],
+    message: ChatMessageResponseDTO
+  ): void {
+    const rooms = [chatRoom(conversationIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
     this.io.to(rooms).emit(SOCKET_SERVER_CHAT_MESSAGE_NEW, { message });
   }
 
   public emitReadUpdated(
-    chatIdHex: string,
+    conversationIdHex: string,
     memberUserIdHexes: string[],
     viewerUserIdHex: string,
     payload: { lastReadMessageId: string; lastReadAt: string }
   ): void {
-    const rooms = [chatRoom(chatIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
+    const rooms = [chatRoom(conversationIdHex), ...memberUserIdHexes.map((id) => userRoom(id))];
     this.io.to(rooms).emit(SOCKET_SERVER_CHAT_READ_UPDATED, {
-      chatId: chatIdHex,
+      conversationId: conversationIdHex,
       userId: viewerUserIdHex,
       lastReadMessageId: payload.lastReadMessageId,
       lastReadAt: payload.lastReadAt
@@ -99,7 +103,7 @@ class SocketService implements ISocketService {
     const cid = parseObjectIdHex(chatIdHex);
     if (!cid) return;
 
-    const members = await this.chatMemberRepository.listMembers(cid);
+    const members = await this.conversationMemberRepository.listMembers(cid);
     let anyMemberOnline = false;
     for (const m of members) {
       const hex = m.userId.toHexString();
@@ -204,7 +208,7 @@ class SocketService implements ISocketService {
       const cid = parseObjectIdHex(raw);
       if (!cid) return;
 
-      const m = await this.chatMemberRepository.findMembership(cid, viewerOid);
+      const m = await this.conversationMemberRepository.findMembership(cid, viewerOid);
       if (!m) return;
 
       socket.join(chatRoom(raw));
@@ -218,7 +222,7 @@ class SocketService implements ISocketService {
       if (!cid) return;
 
       void (async () => {
-        const m = await this.chatMemberRepository.findMembership(cid, viewerOid);
+        const m = await this.conversationMemberRepository.findMembership(cid, viewerOid);
         if (!m) return;
         socket.leave(chatRoom(raw));
       })();
@@ -233,7 +237,7 @@ class SocketService implements ISocketService {
       const cid = parseObjectIdHex(raw);
       if (!cid) return;
 
-      const m = await this.chatMemberRepository.findMembership(cid, viewerOid);
+      const m = await this.conversationMemberRepository.findMembership(cid, viewerOid);
       if (!m) return;
 
       if (typing) {

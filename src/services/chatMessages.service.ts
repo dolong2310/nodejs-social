@@ -5,26 +5,31 @@ import {
   ChatMessagesPageResponseDTO,
   toChatMessageDto
 } from '@/dtos/responses/chatMessage.response.dto';
-import { EChatType, IChat } from '@/models/schemas/chat.schema';
 import { IChatAttachment } from '@/models/schemas/chatMessage.schema';
+import { EConversationType, IConversation } from '@/models/schemas/conversation.schema';
 import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
 import { IBlockRepository } from '@/repositories/block.repository';
-import { IChatRepository } from '@/repositories/chat.repository';
-import { IChatMemberRepository } from '@/repositories/chatMember.repository';
 import { ChatMessageRepository, IChatMessageRepository } from '@/repositories/chatMessage.repository';
+import { IConversationRepository } from '@/repositories/conversation.repository';
+import { IConversationMemberRepository } from '@/repositories/conversationMember.repository';
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/responses/error.response';
 import { BaseService } from '@/services/base.service';
 import { INotificationsService } from '@/services/notifications.service';
-import { decodeMessageCursor, encodeMessageCursor } from '@/utils/chat-cursor.util';
+import { decodeMessageCursor, encodeMessageCursor } from '@/utils/conversation-cursor.util';
 import { ObjectId } from 'mongodb';
 
 /** Max attachment size per file (D-14) — 5 MiB */
 export const CHAT_ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024;
 
 export interface IChatMessagesService {
-  sendMessage(userId: string, chatId: string, body: SendChatMessageBodyDTO): Promise<ChatMessageResponseDTO>;
-  listMessages(userId: string, chatId: string, limit: number, cursor?: string): Promise<ChatMessagesPageResponseDTO>;
-  markRead(userId: string, chatId: string, body: MarkChatReadBodyDTO): Promise<void>;
+  sendMessage(userId: string, conversationId: string, body: SendChatMessageBodyDTO): Promise<ChatMessageResponseDTO>;
+  listMessages(
+    userId: string,
+    conversationId: string,
+    limit: number,
+    cursor?: string
+  ): Promise<ChatMessagesPageResponseDTO>;
+  markRead(userId: string, conversationId: string, body: MarkChatReadBodyDTO): Promise<void>;
   bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void;
 }
 
@@ -32,8 +37,8 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
   private realtimeChatEmitter: IRealtimeChatEmitter | null = null;
 
   constructor(
-    private readonly chatRepository: IChatRepository,
-    private readonly chatMemberRepository: IChatMemberRepository,
+    private readonly conversationRepository: IConversationRepository,
+    private readonly conversationMemberRepository: IConversationMemberRepository,
     private readonly chatMessageRepository: IChatMessageRepository,
     private readonly blockRepository: IBlockRepository,
     private readonly notificationsService: INotificationsService
@@ -45,17 +50,17 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     this.realtimeChatEmitter = emitter;
   }
 
-  private directPeer(chat: IChat, viewer: ObjectId): ObjectId {
-    if (chat.type !== EChatType.DIRECT || !chat.userIdLow || !chat.userIdHigh) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CHAT_NOT_FOUND);
+  private directPeer(conv: IConversation, viewer: ObjectId): ObjectId {
+    if (conv.type !== EConversationType.DIRECT || !conv.userIdLow || !conv.userIdHigh) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
     }
-    return chat.userIdLow.equals(viewer) ? chat.userIdHigh! : chat.userIdLow!;
+    return conv.userIdLow.equals(viewer) ? conv.userIdHigh! : conv.userIdLow!;
   }
 
-  private async assertMember(chatId: ObjectId, userId: ObjectId) {
-    const m = await this.chatMemberRepository.findMembership(chatId, userId);
+  private async assertMember(conversationId: ObjectId, userId: ObjectId) {
+    const m = await this.conversationMemberRepository.findMembership(conversationId, userId);
     if (!m) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CHAT_NOT_MEMBER);
+      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_MEMBER);
     }
     return m;
   }
@@ -69,24 +74,28 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     }
   }
 
-  private async assertCanSend(viewerOid: ObjectId, chat: IChat) {
-    if (chat.type === EChatType.DIRECT) {
-      const peer = this.directPeer(chat, viewerOid);
+  private async assertCanSend(viewerOid: ObjectId, conv: IConversation) {
+    if (conv.type === EConversationType.DIRECT) {
+      const peer = this.directPeer(conv, viewerOid);
       if (await this.blockRepository.isBlockedEitherWay(viewerOid, peer)) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CHAT_MESSAGE_FORBIDDEN);
+        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_MESSAGE_FORBIDDEN);
       }
     }
   }
 
-  async sendMessage(userId: string, chatId: string, body: SendChatMessageBodyDTO): Promise<ChatMessageResponseDTO> {
-    const cid = new ObjectId(chatId);
+  async sendMessage(
+    userId: string,
+    conversationId: string,
+    body: SendChatMessageBodyDTO
+  ): Promise<ChatMessageResponseDTO> {
+    const cid = new ObjectId(conversationId);
     const viewerOid = new ObjectId(userId);
     await this.assertMember(cid, viewerOid);
-    const chat = await this.chatRepository.findById(cid);
-    if (!chat) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CHAT_NOT_FOUND);
+    const conv = await this.conversationRepository.findById(cid);
+    if (!conv) {
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
     }
-    await this.assertCanSend(viewerOid, chat);
+    await this.assertCanSend(viewerOid, conv);
 
     const text = body.text?.trim();
     const attachments = body.attachments;
@@ -98,23 +107,23 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
 
     const msg = ChatMessageRepository.newOutgoingMessage(cid, viewerOid, text || undefined, attachments);
     await this.chatMessageRepository.insertMessage(msg);
-    await this.chatRepository.touchUpdatedAt(cid, msg.createdAt);
+    await this.conversationRepository.touchUpdatedAt(cid, msg.createdAt);
 
     const dto = toChatMessageDto(msg);
-    const membersForRealtime = await this.chatMemberRepository.listMembers(cid);
+    const membersForRealtime = await this.conversationMemberRepository.listMembers(cid);
     const memberHexes = membersForRealtime.map((m) => m.userId.toHexString());
     if (this.realtimeChatEmitter) {
-      this.realtimeChatEmitter.emitMessageCreated(chatId, memberHexes, dto);
+      this.realtimeChatEmitter.emitMessageCreated(conversationId, memberHexes, dto);
     }
 
     const recipientIds: string[] = [];
-    if (chat.type === EChatType.DIRECT) {
-      const peer = this.directPeer(chat, viewerOid);
+    if (conv.type === EConversationType.DIRECT) {
+      const peer = this.directPeer(conv, viewerOid);
       if (!(await this.blockRepository.isBlockedEitherWay(viewerOid, peer))) {
         recipientIds.push(peer.toHexString());
       }
     } else {
-      const members = await this.chatMemberRepository.listMembers(cid);
+      const members = await this.conversationMemberRepository.listMembers(cid);
       for (const m of members) {
         if (m.userId.equals(viewerOid)) continue;
         if (await this.blockRepository.isBlockedEitherWay(viewerOid, m.userId)) continue;
@@ -130,11 +139,11 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
 
   async listMessages(
     userId: string,
-    chatId: string,
+    conversationId: string,
     limit: number,
     cursor?: string
   ): Promise<ChatMessagesPageResponseDTO> {
-    const cid = new ObjectId(chatId);
+    const cid = new ObjectId(conversationId);
     const viewerOid = new ObjectId(userId);
     await this.assertMember(cid, viewerOid);
 
@@ -143,7 +152,7 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
       try {
         before = decodeMessageCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CHAT_INVALID_CURSOR);
+        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
       }
     }
 
@@ -162,8 +171,8 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
     };
   }
 
-  async markRead(userId: string, chatId: string, body: MarkChatReadBodyDTO): Promise<void> {
-    const cid = new ObjectId(chatId);
+  async markRead(userId: string, conversationId: string, body: MarkChatReadBodyDTO): Promise<void> {
+    const cid = new ObjectId(conversationId);
     const viewerOid = new ObjectId(userId);
     await this.assertMember(cid, viewerOid);
 
@@ -180,19 +189,19 @@ class ChatMessagesService extends BaseService implements IChatMessagesService {
 
     const msg = await this.chatMessageRepository.findById(messageId);
     if (!msg || !msg.chatId.equals(cid)) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CHAT_NOT_FOUND);
+      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
     }
 
     const at = msg.createdAt;
-    const updated = await this.chatMemberRepository.updateReadState(cid, viewerOid, messageId, at);
+    const updated = await this.conversationMemberRepository.updateReadState(cid, viewerOid, messageId, at);
     if (!updated) {
       return;
     }
 
     if (this.realtimeChatEmitter) {
-      const membersForRealtime = await this.chatMemberRepository.listMembers(cid);
+      const membersForRealtime = await this.conversationMemberRepository.listMembers(cid);
       const memberHexes = membersForRealtime.map((m) => m.userId.toHexString());
-      this.realtimeChatEmitter.emitReadUpdated(chatId, memberHexes, userId, {
+      this.realtimeChatEmitter.emitReadUpdated(conversationId, memberHexes, userId, {
         lastReadMessageId: messageId.toHexString(),
         lastReadAt: at.toISOString()
       });

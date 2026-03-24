@@ -1,13 +1,13 @@
 import { ObjectId } from 'mongodb';
 
-export enum EChatType {
+export enum EConversationType {
   DIRECT = 'direct',
   GROUP = 'group'
 }
 
-export interface IChat {
+export interface IConversation {
   _id: ObjectId;
-  type: EChatType;
+  type: EConversationType;
   createdBy: ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -18,9 +18,9 @@ export interface IChat {
   userIdHigh?: ObjectId;
 }
 
-class ChatSchema implements IChat {
+class ConversationSchema implements IConversation {
   public _id: ObjectId;
-  public type: EChatType;
+  public type: EConversationType;
   public createdBy: ObjectId;
   public createdAt: Date;
   public updatedAt: Date;
@@ -30,7 +30,7 @@ class ChatSchema implements IChat {
   public userIdHigh?: ObjectId;
 
   constructor(
-    data: Omit<IChat, '_id' | 'createdAt' | 'updatedAt'> & {
+    data: Omit<IConversation, '_id' | 'createdAt' | 'updatedAt'> & {
       _id?: ObjectId;
       createdAt?: Date;
       updatedAt?: Date;
@@ -49,4 +49,4 @@ class ChatSchema implements IChat {
   }
 }
 
-export default ChatSchema;
+export default ConversationSchema;

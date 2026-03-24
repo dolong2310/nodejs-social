@@ -1,32 +1,33 @@
 import { ObjectId } from 'mongodb';
 
-export enum EChatMemberRole {
+export enum EConversationMemberRole {
   ADMIN = 'admin',
   MANAGER = 'manager',
   MEMBER = 'member'
 }
 
-export interface IChatMember {
+export interface IConversationMember {
   _id: ObjectId;
+  /** Mongo field name — conversation id (stored as chatId in BSON). */
   chatId: ObjectId;
   userId: ObjectId;
-  role: EChatMemberRole;
+  role: EConversationMemberRole;
   joinedAt: Date;
   lastReadMessageId?: ObjectId | null;
   lastReadAt?: Date | null;
 }
 
-class ChatMemberSchema implements IChatMember {
+class ConversationMemberSchema implements IConversationMember {
   public _id: ObjectId;
   public chatId: ObjectId;
   public userId: ObjectId;
-  public role: EChatMemberRole;
+  public role: EConversationMemberRole;
   public joinedAt: Date;
   public lastReadMessageId?: ObjectId | null;
   public lastReadAt?: Date | null;
 
   constructor(
-    data: Omit<IChatMember, '_id' | 'joinedAt'> & {
+    data: Omit<IConversationMember, '_id' | 'joinedAt'> & {
       _id?: ObjectId;
       joinedAt?: Date;
     }
@@ -41,4 +42,4 @@ class ChatMemberSchema implements IChatMember {
   }
 }
 
-export default ChatMemberSchema;
+export default ConversationMemberSchema;

@@ -70,21 +70,21 @@ describe('integration smoke (auth + friends + chat HTTP)', () => {
     await agent.post(`/api/friends/requests/${idA}/accept`).set('Authorization', `Bearer ${accessB}`).expect(200);
 
     const directRes = await agent
-      .post('/api/chats/direct')
+      .post('/api/conversations/direct')
       .set('Authorization', `Bearer ${accessA}`)
       .send({ peerUserId: idB })
       .expect(201);
 
-    const chatId = (directRes.body as { data: { id: string } }).data.id;
+    const conversationId = (directRes.body as { data: { id: string } }).data.id;
 
     await agent
-      .post(`/api/chats/${chatId}/messages`)
+      .post(`/api/conversations/${conversationId}/messages`)
       .set('Authorization', `Bearer ${accessA}`)
       .send({ text: 'smoke hello' })
       .expect(201);
 
     const listRes = await agent
-      .get(`/api/chats/${chatId}/messages`)
+      .get(`/api/conversations/${conversationId}/messages`)
       .set('Authorization', `Bearer ${accessA}`)
       .expect(200);
 

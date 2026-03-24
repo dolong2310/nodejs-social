@@ -80,11 +80,11 @@ describe('socket chat:subscribe + presence:chat', () => {
     await agent.post(`/api/friends/requests/${idC}/accept`).set('Authorization', `Bearer ${tokenD}`).expect(200);
 
     const directRes = await agent
-      .post('/api/chats/direct')
+      .post('/api/conversations/direct')
       .set('Authorization', `Bearer ${tokenC}`)
       .send({ peerUserId: idD })
       .expect(201);
-    const chatId = (directRes.body as { data: { id: string } }).data.id;
+    const conversationId = (directRes.body as { data: { id: string } }).data.id;
 
     const socketC = connectSocket(baseUrl, tokenC);
 
@@ -110,9 +110,9 @@ describe('socket chat:subscribe + presence:chat', () => {
       });
     });
 
-    socketC.emit(SOCKET_CLIENT_CHAT_SUBSCRIBE, { conversationId: chatId });
+    socketC.emit(SOCKET_CLIENT_CHAT_SUBSCRIBE, { conversationId });
     const payload = (await presencePromise) as { conversationId?: string; anyMemberOnline?: boolean };
-    expect(payload.conversationId).toBe(chatId);
+    expect(payload.conversationId).toBe(conversationId);
 
     socketC.disconnect();
 
@@ -131,11 +131,11 @@ describe('socket chat:subscribe + presence:chat', () => {
 
     let sawPresenceForChat = false;
     socketE.on(SOCKET_SERVER_PRESENCE_CHAT, (p: { conversationId?: string }) => {
-      if (p?.conversationId === chatId) {
+      if (p?.conversationId === conversationId) {
         sawPresenceForChat = true;
       }
     });
-    socketE.emit(SOCKET_CLIENT_CHAT_SUBSCRIBE, { conversationId: chatId });
+    socketE.emit(SOCKET_CLIENT_CHAT_SUBSCRIBE, { conversationId });
     await new Promise((r) => setTimeout(r, 2000));
     expect(sawPresenceForChat).toBe(false);
     socketE.disconnect();

@@ -1,22 +1,22 @@
-import { EChatMemberRole } from '@/models/schemas/chatMember.schema';
+import { EConversationMemberRole } from '@/models/schemas/conversationMember.schema';
 import { ParamsDictionary } from 'express-serve-static-core';
 
-export interface ChatIdParams extends ParamsDictionary {
-  chatId: string;
+export interface ConversationIdParams extends ParamsDictionary {
+  conversationId: string;
 }
 
-export interface ChatMemberParams extends ChatIdParams {
+export interface ConversationMemberParams extends ConversationIdParams {
   userId: string;
 }
 
-export class CreateDirectChatBodyDTO {
+export class CreateDirectConversationBodyDTO {
   peerUserId: string;
   constructor(body: { peerUserId: string }) {
     this.peerUserId = body.peerUserId;
   }
 }
 
-export class CreateGroupChatBodyDTO {
+export class CreateGroupConversationBodyDTO {
   name?: string;
   memberIds: string[];
   constructor(body: { name?: string; memberIds: string[] }) {
@@ -25,7 +25,7 @@ export class CreateGroupChatBodyDTO {
   }
 }
 
-export class PatchChatBodyDTO {
+export class PatchConversationBodyDTO {
   name?: string;
   avatarMediaId?: string | null;
   constructor(body: { name?: string; avatarMediaId?: string | null }) {
@@ -34,21 +34,21 @@ export class PatchChatBodyDTO {
   }
 }
 
-export class InviteChatMemberBodyDTO {
+export class InviteConversationMemberBodyDTO {
   userId: string;
   constructor(body: { userId: string }) {
     this.userId = body.userId;
   }
 }
 
-export class PatchChatMemberRoleBodyDTO {
-  role: EChatMemberRole;
-  constructor(body: { role: EChatMemberRole }) {
+export class PatchConversationMemberRoleBodyDTO {
+  role: EConversationMemberRole;
+  constructor(body: { role: EConversationMemberRole }) {
     this.role = body.role;
   }
 }
 
-export class TransferChatAdminBodyDTO {
+export class TransferConversationAdminBodyDTO {
   newAdminUserId: string;
   constructor(body: { newAdminUserId: string }) {
     this.newAdminUserId = body.newAdminUserId;

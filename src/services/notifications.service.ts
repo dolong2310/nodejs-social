@@ -1,8 +1,8 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants/notification.constant';
 import { NotificationsPageDTO, toNotificationListItem } from '@/dtos/responses/notification.response.dto';
-import { IChat } from '@/models/schemas/chat.schema';
 import { IChatMessage } from '@/models/schemas/chatMessage.schema';
+import { IConversation } from '@/models/schemas/conversation.schema';
 import NotificationSchema, {
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
@@ -33,7 +33,7 @@ export interface INotificationsService {
   recordFriendAccepted(originalRequesterUserId: string, accepterUserId: string): Promise<void>;
   /** One row per recipient (D-09); caller supplies user ids excluding sender (chat service applies block D-13). */
   recordNewMessage(message: IChatMessage, senderUserId: string, recipientUserIds: string[]): Promise<void>;
-  recordAddedToGroup(inviteeUserId: string, inviterUserId: string, chat: IChat): Promise<void>;
+  recordAddedToGroup(inviteeUserId: string, inviterUserId: string, conv: IConversation): Promise<void>;
 }
 
 class NotificationsService extends BaseService implements INotificationsService {
@@ -149,11 +149,11 @@ class NotificationsService extends BaseService implements INotificationsService 
     }
   }
 
-  async recordAddedToGroup(inviteeUserId: string, inviterUserId: string, chat: IChat): Promise<void> {
+  async recordAddedToGroup(inviteeUserId: string, inviterUserId: string, conv: IConversation): Promise<void> {
     const actor = await this.buildActor(inviterUserId);
     const payload: IAddedToGroupNotificationPayload = {
-      chatId: chat._id.toHexString(),
-      chatName: chat.name
+      chatId: conv._id.toHexString(),
+      chatName: conv.name
     };
     const doc = new NotificationSchema({
       recipientId: new ObjectId(inviteeUserId),
@@ -179,7 +179,7 @@ class NotificationsService extends BaseService implements INotificationsService 
       try {
         before = decodeNotificationCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CHAT_INVALID_CURSOR);
+        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
       }
     }
 

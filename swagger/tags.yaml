@@ -19,8 +19,8 @@ tags:
     description: Chặn / bỏ chặn — tự động gỡ bạn và xóa lời mời liên quan
   - name: search
     description: Tìm kiếm bài viết, người dùng
-  - name: chats
-    description: Chat HTTP (Mongo chat DB) — direct/group, tin nhắn, đã đọc
+  - name: conversations
+    description: Conversations HTTP (Mongo chat DB) — direct/group, tin nhắn, đã đọc
   - name: notifications
     description: Hộp thông báo in-app (social DB) — list cursor, đánh dấu đã đọc
   - name: static

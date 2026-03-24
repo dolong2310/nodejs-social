@@ -1134,9 +1134,9 @@ paths:
                 $ref: '#/components/schemas/SearchPaginatedResponse'
 
   # ==================== CHATS (Phase 4) ====================
-  /chats/direct:
+  /conversations/direct:
     post:
-      tags: [chats]
+      tags: [conversations]
       summary: Mở hoặc tạo chat trực tiếp với bạn (peerUserId)
       operationId: createDirectChat
       security: [{ bearerAuth: [] }]
@@ -1156,9 +1156,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatSuccessResponse'
-  /chats/groups:
+  /conversations/groups:
     post:
-      tags: [chats]
+      tags: [conversations]
       summary: Tạo nhóm chat (creator = admin; memberIds là bạn của creator)
       operationId: createGroupChat
       security: [{ bearerAuth: [] }]
@@ -1180,9 +1180,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatSuccessResponse'
-  /chats:
+  /conversations:
     get:
-      tags: [chats]
+      tags: [conversations]
       summary: Danh sách hội thoại (cursor + limit)
       operationId: listChats
       security: [{ bearerAuth: [] }]
@@ -1199,14 +1199,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatListSuccessResponse'
-  /chats/{chatId}:
+  /conversations/{conversationId}:
     get:
-      tags: [chats]
+      tags: [conversations]
       summary: Chi tiết chat + members
       operationId: getChatDetail
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1217,12 +1217,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChatDetailSuccessResponse'
     patch:
-      tags: [chats]
+      tags: [conversations]
       summary: Đổi tên / avatar (admin hoặc manager)
       operationId: patchChat
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1240,14 +1240,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatSuccessResponse'
-  /chats/{chatId}/messages:
+  /conversations/{conversationId}/messages:
     get:
-      tags: [chats]
+      tags: [conversations]
       summary: Lịch sử tin nhắn (cursor, sort mới nhất trước)
       operationId: listChatMessages
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1264,12 +1264,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChatMessagesPageSuccessResponse'
     post:
-      tags: [chats]
+      tags: [conversations]
       summary: Gửi tin (text và/hoặc attachments; tối đa 5MB mỗi file)
       operationId: sendChatMessage
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1290,14 +1290,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatMessageSuccessResponse'
-  /chats/{chatId}/read:
+  /conversations/{conversationId}/read:
     patch:
-      tags: [chats]
+      tags: [conversations]
       summary: Đánh dấu đã đọc (lastReadMessageId tùy chọn — mặc định tin mới nhất)
       operationId: markChatRead
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1311,14 +1311,14 @@ paths:
       responses:
         '200':
           description: OK
-  /chats/{chatId}/members:
+  /conversations/{conversationId}/members:
     post:
-      tags: [chats]
+      tags: [conversations]
       summary: Mời thành viên (nhóm)
       operationId: inviteChatMember
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1337,28 +1337,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatDetailSuccessResponse'
-  /chats/{chatId}/members/me:
+  /conversations/{conversationId}/members/me:
     delete:
-      tags: [chats]
+      tags: [conversations]
       summary: Rời nhóm / chat
       operationId: leaveChat
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
       responses:
         '200':
           description: OK
-  /chats/{chatId}/members/{userId}:
+  /conversations/{conversationId}/members/{userId}:
     delete:
-      tags: [chats]
+      tags: [conversations]
       summary: Kick thành viên (theo quyền admin/manager)
       operationId: kickChatMember
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1369,14 +1369,14 @@ paths:
       responses:
         '200':
           description: OK
-  /chats/{chatId}/members/{userId}/role:
+  /conversations/{conversationId}/members/{userId}/role:
     patch:
-      tags: [chats]
+      tags: [conversations]
       summary: Đổi role manager ↔ member (chỉ admin)
       operationId: patchChatMemberRole
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }
@@ -1399,14 +1399,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatDetailSuccessResponse'
-  /chats/{chatId}/admin/transfer:
+  /conversations/{conversationId}/admin/transfer:
     post:
-      tags: [chats]
+      tags: [conversations]
       summary: Chuyển admin (admin cũ thành manager)
       operationId: transferChatAdmin
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: chatId
+        - name: conversationId
           in: path
           required: true
           schema: { $ref: '#/components/schemas/MongoId' }

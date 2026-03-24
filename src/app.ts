@@ -10,7 +10,7 @@ import { QueueService } from '@/queue';
 import authRouter from '@/routes/auth.route';
 import blocksRouter from '@/routes/blocks.route';
 import bookmarksRouter from '@/routes/bookmarks.route';
-import chatsRouter from '@/routes/chats.route';
+import conversationsRouter from '@/routes/conversations.route';
 import friendsRouter from '@/routes/friends.route';
 import likesRouter from '@/routes/likes.route';
 import mediaRouter from '@/routes/media.route';
@@ -39,7 +39,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
   await Promise.all([
     databaseService.connect(),
     databaseService.initializeIndexes(),
-    databaseService.initializeChatIndexes(),
+    databaseService.initializeConversationIndexes(),
     redisService.connect()
   ]);
 
@@ -67,7 +67,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
   const socket = new SocketService(
     httpServer,
     container.getUsersService(),
-    container.getChatMemberRepository(),
+    container.getConversationMemberRepository(),
     container.getFriendshipRepository()
   );
   container.bindNotificationsSocket(socket);
@@ -108,7 +108,7 @@ function setupRoutes(): Router {
   router.use('/bookmarks', bookmarksRouter());
   router.use('/likes', likesRouter());
   router.use('/search', searchRouter());
-  router.use('/chats', chatsRouter());
+  router.use('/conversations', conversationsRouter());
   router.use('/friends', friendsRouter());
   router.use('/blocks', blocksRouter());
   router.use('/notifications', notificationsRouter());

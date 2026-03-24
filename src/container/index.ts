@@ -12,9 +12,12 @@ import { IVideoHLSJobQueue } from '@/queue/queues/video-hls.queue';
 // Repositories
 import { BlockRepository } from '@/repositories/block.repository';
 import { BookmarkRepository, IBookmarkRepository } from '@/repositories/bookmark.repository';
-import { ChatRepository } from '@/repositories/chat.repository';
-import { ChatMemberRepository, IChatMemberRepository } from '@/repositories/chatMember.repository';
 import { ChatMessageRepository } from '@/repositories/chatMessage.repository';
+import { ConversationRepository } from '@/repositories/conversation.repository';
+import {
+  ConversationMemberRepository,
+  IConversationMemberRepository
+} from '@/repositories/conversationMember.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
 import { FriendshipRepository, IFriendshipRepository } from '@/repositories/friendship.repository';
 import { ILikeRepository, LikeRepository } from '@/repositories/like.repository';
@@ -29,7 +32,7 @@ import AuthService, { IAuthService } from '@/services/auth.service';
 import BlocksService, { IBlocksService } from '@/services/blocks.service';
 import BookmarksService, { IBookmarksService } from '@/services/bookmarks.service';
 import ChatMessagesService, { IChatMessagesService } from '@/services/chatMessages.service';
-import ChatsService, { IChatsService } from '@/services/chats.service';
+import ConversationsService, { IConversationsService } from '@/services/conversations.service';
 import FriendsService, { IFriendsService } from '@/services/friends.service';
 import LikesService, { ILikesService } from '@/services/likes.service';
 import MediaService, { IMediaService } from '@/services/media.service';
@@ -45,7 +48,7 @@ import AuthController, { IAuthController } from '@/controllers/auth.controller';
 import BlocksController, { IBlocksController } from '@/controllers/blocks.controller';
 import BookmarksController, { IBookmarksController } from '@/controllers/bookmarks.controller';
 import ChatMessagesController, { IChatMessagesController } from '@/controllers/chatMessages.controller';
-import ChatsController, { IChatsController } from '@/controllers/chats.controller';
+import ConversationsController, { IConversationsController } from '@/controllers/conversations.controller';
 import FriendsController, { IFriendsController } from '@/controllers/friends.controller';
 import LikesController, { ILikesController } from '@/controllers/likes.controller';
 import MediaController, { IMediaController } from '@/controllers/media.controller';
@@ -57,7 +60,7 @@ import UsersController, { IUsersController } from '@/controllers/users.controlle
 // Validations
 import AuthValidation, { IAuthValidation } from '@/validations/auth.validation';
 import BlocksValidation, { IBlocksValidation } from '@/validations/blocks.validation';
-import ChatsValidation, { IChatsValidation } from '@/validations/chats.validation';
+import ConversationsValidation, { IConversationsValidation } from '@/validations/conversations.validation';
 import FriendsValidation, { IFriendsValidation } from '@/validations/friends.validation';
 import NotificationsValidation, { INotificationsValidation } from '@/validations/notifications.validation';
 import PostsValidation, { IPostsValidation } from '@/validations/posts.validation';
@@ -72,9 +75,9 @@ export interface IContainer {
   getMediaRepository(): IMediaRepository;
   getPostRepository(): IPostRepository;
   getSearchRepository(): ISearchRepository;
-  getChatMemberRepository(): IChatMemberRepository;
+  getConversationMemberRepository(): IConversationMemberRepository;
   getFriendshipRepository(): IFriendshipRepository;
-  getChatRepository(): ChatRepository;
+  getConversationRepository(): ConversationRepository;
   getChatMessageRepository(): ChatMessageRepository;
   getNotificationRepository(): NotificationRepository;
   getFriendRequestRepository(): FriendRequestRepository;
@@ -92,7 +95,7 @@ export interface IContainer {
   getOAuthService(): IOAuthService;
   getPostsService(): IPostsService;
   getSearchService(): ISearchService;
-  getChatsService(): IChatsService;
+  getConversationsService(): IConversationsService;
   getChatMessagesService(): IChatMessagesService;
   getNotificationsService(): INotificationsService;
 
@@ -107,7 +110,7 @@ export interface IContainer {
   getSearchController(): ISearchController;
   getFriendsController(): IFriendsController;
   getBlocksController(): IBlocksController;
-  getChatsController(): IChatsController;
+  getConversationsController(): IConversationsController;
   getChatMessagesController(): IChatMessagesController;
   getNotificationsController(): INotificationsController;
 
@@ -118,7 +121,7 @@ export interface IContainer {
   getSearchValidation(): ISearchValidation;
   getFriendsValidation(): IFriendsValidation;
   getBlocksValidation(): IBlocksValidation;
-  getChatsValidation(): IChatsValidation;
+  getConversationsValidation(): IConversationsValidation;
   getNotificationsValidation(): INotificationsValidation;
 
   bindNotificationsSocket(emitter: ISocketUserEmitter | null): void;
@@ -140,8 +143,8 @@ export class Container implements IContainer {
   private mediaRepository!: IMediaRepository;
   private postRepository!: IPostRepository;
   private searchRepository!: ISearchRepository;
-  private chatRepository!: ChatRepository;
-  private chatMemberRepository!: ChatMemberRepository;
+  private conversationRepository!: ConversationRepository;
+  private conversationMemberRepository!: ConversationMemberRepository;
   private chatMessageRepository!: ChatMessageRepository;
   private notificationRepository!: NotificationRepository;
 
@@ -162,7 +165,7 @@ export class Container implements IContainer {
   private oauthService!: IOAuthService;
   private postsService!: IPostsService;
   private searchService!: ISearchService;
-  private chatsService!: IChatsService;
+  private conversationsService!: IConversationsService;
   private chatMessagesService!: IChatMessagesService;
   private notificationsService!: INotificationsService;
 
@@ -177,7 +180,7 @@ export class Container implements IContainer {
   private searchController!: ISearchController;
   private friendsController!: IFriendsController;
   private blocksController!: IBlocksController;
-  private chatsController!: IChatsController;
+  private conversationsController!: IConversationsController;
   private chatMessagesController!: IChatMessagesController;
   private notificationsController!: INotificationsController;
 
@@ -188,7 +191,7 @@ export class Container implements IContainer {
   private searchValidation!: ISearchValidation;
   private friendsValidation!: IFriendsValidation;
   private blocksValidation!: IBlocksValidation;
-  private chatsValidation!: IChatsValidation;
+  private conversationsValidation!: IConversationsValidation;
   private notificationsValidation!: INotificationsValidation;
 
   // Queues
@@ -234,8 +237,8 @@ export class Container implements IContainer {
     this.mediaRepository = new MediaRepository(this.db);
     this.postRepository = new PostRepository(this.db);
     this.searchRepository = new SearchRepository(this.db);
-    this.chatRepository = new ChatRepository(this.db);
-    this.chatMemberRepository = new ChatMemberRepository(this.db);
+    this.conversationRepository = new ConversationRepository(this.db);
+    this.conversationMemberRepository = new ConversationMemberRepository(this.db);
     this.chatMessageRepository = new ChatMessageRepository(this.db);
     this.notificationRepository = new NotificationRepository(this.db);
   }
@@ -282,16 +285,16 @@ export class Container implements IContainer {
       this.blockRepository,
       this.redis
     );
-    this.chatsService = new ChatsService(
-      this.chatRepository,
-      this.chatMemberRepository,
+    this.conversationsService = new ConversationsService(
+      this.conversationRepository,
+      this.conversationMemberRepository,
       this.friendsService,
       this.blockRepository,
       this.notificationsService
     );
     this.chatMessagesService = new ChatMessagesService(
-      this.chatRepository,
-      this.chatMemberRepository,
+      this.conversationRepository,
+      this.conversationMemberRepository,
       this.chatMessageRepository,
       this.blockRepository,
       this.notificationsService
@@ -309,7 +312,7 @@ export class Container implements IContainer {
     this.searchController = new SearchController(this.searchService);
     this.friendsController = new FriendsController(this.friendsService);
     this.blocksController = new BlocksController(this.blocksService);
-    this.chatsController = new ChatsController(this.chatsService);
+    this.conversationsController = new ConversationsController(this.conversationsService);
     this.chatMessagesController = new ChatMessagesController(this.chatMessagesService);
     this.notificationsController = new NotificationsController(this.notificationsService);
   }
@@ -326,7 +329,7 @@ export class Container implements IContainer {
     this.searchValidation = new SearchValidation();
     this.friendsValidation = new FriendsValidation(this.usersValidation);
     this.blocksValidation = new BlocksValidation(this.usersValidation);
-    this.chatsValidation = new ChatsValidation(this.usersValidation);
+    this.conversationsValidation = new ConversationsValidation(this.usersValidation);
     this.notificationsValidation = new NotificationsValidation(this.usersValidation);
   }
 
@@ -361,16 +364,16 @@ export class Container implements IContainer {
     return this.searchRepository;
   }
 
-  public getChatMemberRepository(): IChatMemberRepository {
-    return this.chatMemberRepository;
+  public getConversationMemberRepository(): IConversationMemberRepository {
+    return this.conversationMemberRepository;
   }
 
   public getFriendshipRepository(): IFriendshipRepository {
     return this.friendshipRepository;
   }
 
-  public getChatRepository(): ChatRepository {
-    return this.chatRepository;
+  public getConversationRepository(): ConversationRepository {
+    return this.conversationRepository;
   }
 
   public getChatMessageRepository(): ChatMessageRepository {
@@ -434,8 +437,8 @@ export class Container implements IContainer {
     return this.searchService;
   }
 
-  public getChatsService(): IChatsService {
-    return this.chatsService;
+  public getConversationsService(): IConversationsService {
+    return this.conversationsService;
   }
 
   public getChatMessagesService(): IChatMessagesService {
@@ -495,8 +498,8 @@ export class Container implements IContainer {
     return this.blocksController;
   }
 
-  public getChatsController(): IChatsController {
-    return this.chatsController;
+  public getConversationsController(): IConversationsController {
+    return this.conversationsController;
   }
 
   public getChatMessagesController(): IChatMessagesController {
@@ -532,8 +535,8 @@ export class Container implements IContainer {
     return this.blocksValidation;
   }
 
-  public getChatsValidation(): IChatsValidation {
-    return this.chatsValidation;
+  public getConversationsValidation(): IConversationsValidation {
+    return this.conversationsValidation;
   }
 
   public getNotificationsValidation(): INotificationsValidation {
