@@ -1,5 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { EConversationMemberRole } from '@/models/schemas/conversationMember.schema';
+import { EConversationMemberRole } from '@/models/conversationMember.schema';
 import { isValidMongoId } from '@/utils/common.util';
 import { validate } from '@/utils/validation.util';
 import { IUsersValidation } from '@/validations/users.validation';

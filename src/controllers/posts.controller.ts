@@ -7,7 +7,7 @@ import {
   PatchPostRequestDTO
 } from '@/dtos/requests/post.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
-import { IPost } from '@/models/schemas/post.schema';
+import { IPost } from '@/models/post.schema';
 import { Created } from '@/responses/success.response';
 import { IFriendsService } from '@/services/friends.service';
 import { IPostsService } from '@/services/posts.service';

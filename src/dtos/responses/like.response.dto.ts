@@ -1,4 +1,4 @@
-import { ILike } from '@/models/schemas/like.schema';
+import { ILike } from '@/models/like.schema';
 
 export class CreateLikeResponseDTO {
   _id: string;

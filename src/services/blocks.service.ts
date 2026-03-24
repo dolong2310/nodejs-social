@@ -1,5 +1,5 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import type { IBlockRepository } from '@/repositories/block.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
 import type { IFriendshipRepository } from '@/repositories/friendship.repository';

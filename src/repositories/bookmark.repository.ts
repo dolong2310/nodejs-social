@@ -5,7 +5,7 @@
  */
 
 import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/dtos/requests/bookmark.request.dto';
-import BookmarkSchema, { IBookmark } from '@/models/schemas/bookmark.schema';
+import BookmarkSchema, { IBookmark } from '@/models/bookmark.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 

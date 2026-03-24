@@ -1,4 +1,4 @@
-import { IChatAttachment, IChatMessage } from '@/models/schemas/chatMessage.schema';
+import { IChatAttachment, IChatMessage } from '@/models/chatMessage.schema';
 
 export interface ChatMessageResponseDTO {
   id: string;

@@ -1,7 +1,7 @@
 import ConversationMemberSchema, {
   EConversationMemberRole,
   IConversationMember
-} from '@/models/schemas/conversationMember.schema';
+} from '@/models/conversationMember.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { Document, ObjectId } from 'mongodb';
 

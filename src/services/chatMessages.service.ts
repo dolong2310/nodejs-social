@@ -5,8 +5,8 @@ import {
   ChatMessagesPageResponseDTO,
   toChatMessageDto
 } from '@/dtos/responses/chatMessage.response.dto';
-import { IChatAttachment } from '@/models/schemas/chatMessage.schema';
-import { EConversationType, IConversation } from '@/models/schemas/conversation.schema';
+import { IChatAttachment } from '@/models/chatMessage.schema';
+import { EConversationType, IConversation } from '@/models/conversation.schema';
 import { IRealtimeChatEmitter } from '@/ports/realtimeChatEmitter.port';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { ChatMessageRepository, IChatMessageRepository } from '@/repositories/chatMessage.repository';

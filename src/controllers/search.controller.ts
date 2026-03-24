@@ -2,7 +2,7 @@ import { BaseController } from '@/controllers/base.controller';
 import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
 import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { ESearchType } from '@/enums/search.enum';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import { ISearchService } from '@/services/search.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';

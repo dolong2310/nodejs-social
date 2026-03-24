@@ -1,7 +1,7 @@
 import { config } from '@/config';
 import { UPLOAD_DIR_IMAGE } from '@/constants/file.constant';
 import { EEncodingVideoStatus, EMediaType } from '@/enums/media.enum';
-import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
+import { IVideoStatus } from '@/models/videoStatus.schema';
 import { IVideoHLSJobQueue } from '@/queue/queues/video-hls.queue';
 import { IMediaRepository } from '@/repositories/media.repository';
 import { IS3Service } from '@/services/s3.service';

@@ -24,8 +24,8 @@ import {
 } from '@/dtos/responses/auth.response.dto';
 import { ETokenType } from '@/enums/token.enum';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { IRefreshToken } from '@/models/schemas/refreshToken.schema';
-import { IUser } from '@/models/schemas/user.schema';
+import { IRefreshToken } from '@/models/refreshToken.schema';
+import { IUser } from '@/models/user.schema';
 import { IEmailJobQueue } from '@/queue/queues/email.queue';
 import { IUserRepository } from '@/repositories/user.repository';
 import { BadRequestError } from '@/responses/error.response';

@@ -8,7 +8,7 @@ import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EMediaType } from '@/enums/media.enum';
 import { EPostAudience } from '@/enums/posts.enum';
 import { ESearchPeopleFollow, ESearchType } from '@/enums/search.enum';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { Document, ObjectId } from 'mongodb';

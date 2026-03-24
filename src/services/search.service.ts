@@ -3,7 +3,7 @@ import { CACHE_KEYS } from '@/constants/cache.constant';
 import type { IRedisService } from '@/database/redis/redis.service';
 import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { ISearchRepository } from '@/repositories/search.repository';
 import { BaseService } from '@/services/base.service';

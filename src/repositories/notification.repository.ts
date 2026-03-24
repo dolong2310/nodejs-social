@@ -1,4 +1,4 @@
-import { INotification } from '@/models/schemas/notification.schema';
+import { INotification } from '@/models/notification.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { Filter, ObjectId } from 'mongodb';
 

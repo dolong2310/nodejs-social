@@ -1,5 +1,5 @@
-import { EConversationType, IConversation } from '@/models/schemas/conversation.schema';
-import { EConversationMemberRole, IConversationMember } from '@/models/schemas/conversationMember.schema';
+import { EConversationType, IConversation } from '@/models/conversation.schema';
+import { EConversationMemberRole, IConversationMember } from '@/models/conversationMember.schema';
 import { ObjectId } from 'mongodb';
 
 export interface ConversationMemberRowDTO {

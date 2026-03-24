@@ -3,7 +3,7 @@
  */
 
 import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/dtos/requests/like.request.dto';
-import LikeSchema, { ILike } from '@/models/schemas/like.schema';
+import LikeSchema, { ILike } from '@/models/like.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 

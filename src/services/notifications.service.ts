@@ -1,8 +1,8 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants/notification.constant';
 import { NotificationsPageDTO, toNotificationListItem } from '@/dtos/responses/notification.response.dto';
-import { IChatMessage } from '@/models/schemas/chatMessage.schema';
-import { IConversation } from '@/models/schemas/conversation.schema';
+import { IChatMessage } from '@/models/chatMessage.schema';
+import { IConversation } from '@/models/conversation.schema';
 import NotificationSchema, {
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
@@ -10,8 +10,8 @@ import NotificationSchema, {
   INewMessageNotificationPayload,
   INotification,
   NewMessagePreviewKind
-} from '@/models/schemas/notification.schema';
-import { IUser } from '@/models/schemas/user.schema';
+} from '@/models/notification.schema';
+import { IUser } from '@/models/user.schema';
 import { BlockRepository } from '@/repositories/block.repository';
 import { INotificationRepository } from '@/repositories/notification.repository';
 import { IUserRepository } from '@/repositories/user.repository';

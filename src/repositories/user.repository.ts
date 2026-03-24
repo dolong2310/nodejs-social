@@ -6,8 +6,8 @@
 
 import { RegisterRequestDTO } from '@/dtos/requests/auth.request.dto';
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import RefreshTokenSchema, { IRefreshToken } from '@/models/schemas/refreshToken.schema';
-import UserSchema, { IUser } from '@/models/schemas/user.schema';
+import RefreshTokenSchema, { IRefreshToken } from '@/models/refreshToken.schema';
+import UserSchema, { IUser } from '@/models/user.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { FindOneAndUpdateOptions, FindOneOptions, ObjectId, UpdateResult } from 'mongodb';
 

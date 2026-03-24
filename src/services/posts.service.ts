@@ -9,8 +9,8 @@ import {
 } from '@/dtos/requests/post.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
 import { EPostAudience, EPostType } from '@/enums/posts.enum';
-import { IHashtag } from '@/models/schemas/hashtag.schema';
-import { IPost } from '@/models/schemas/post.schema';
+import { IHashtag } from '@/models/hashtag.schema';
+import { IPost } from '@/models/post.schema';
 import { IBlockRepository } from '@/repositories/block.repository';
 import { IPostRepository } from '@/repositories/post.repository';
 import { ForbiddenError, NotFoundError } from '@/responses/error.response';

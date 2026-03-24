@@ -7,8 +7,8 @@
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { IRedisService } from '@/database/redis/redis.service';
-import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
-import { IUser } from '@/models/schemas/user.schema';
+import { IFriendRequest } from '@/models/friendRequest.schema';
+import { IUser } from '@/models/user.schema';
 import { BlockRepository } from '@/repositories/block.repository';
 import { FriendRequestRepository } from '@/repositories/friendRequest.repository';
 import type { IFriendshipRepository } from '@/repositories/friendship.repository';

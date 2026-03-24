@@ -3,7 +3,7 @@
  * but may still see post content they previously engaged with (like, bookmark, or comment on that post).
  */
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import { ObjectId } from 'mongodb';
 
 /** Sentinel id — not a real user; clients must not link to profile. */

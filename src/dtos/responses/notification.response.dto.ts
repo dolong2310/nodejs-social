@@ -5,7 +5,7 @@ import {
   INewMessageNotificationPayload,
   INotification,
   NotificationType
-} from '@/models/schemas/notification.schema';
+} from '@/models/notification.schema';
 
 export interface NotificationActorDTO {
   userId: string;

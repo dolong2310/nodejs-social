@@ -1,4 +1,4 @@
-import { IFriendRequest } from '@/models/schemas/friendRequest.schema';
+import { IFriendRequest } from '@/models/friendRequest.schema';
 import { ObjectId } from 'mongodb';
 
 /** Minimal user fields for friends / request lists (aligns with typical client needs). */

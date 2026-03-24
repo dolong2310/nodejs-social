@@ -2,7 +2,7 @@
  * FriendshipRepository — undirected friend edges (normalized userIdLow/userIdHigh).
  */
 
-import FriendshipSchema, { IFriendship } from '@/models/schemas/friendship.schema';
+import FriendshipSchema, { IFriendship } from '@/models/friendship.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 

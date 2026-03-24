@@ -5,7 +5,7 @@
  */
 
 import { EEncodingVideoStatus } from '@/enums/media.enum';
-import VideoStatusSchema, { IVideoStatus } from '@/models/schemas/videoStatus.schema';
+import VideoStatusSchema, { IVideoStatus } from '@/models/videoStatus.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { UpdateResult } from 'mongodb';
 

@@ -1,5 +1,5 @@
 import { EUserVerificationStatus } from '@/enums/users.enum';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 
 export class UserResponseDTO {
   _id: string;

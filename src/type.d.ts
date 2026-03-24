@@ -1,5 +1,5 @@
 import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import { TokenPayload } from '@/types/token.type';
 import type { Logger } from 'pino';
 import 'express';

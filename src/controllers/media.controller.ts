@@ -4,7 +4,7 @@ import { HTTP_STATUS } from '@/constants/httpStatus.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
 import { FilenameParamsDTO, VideoHLSParamsDTO } from '@/dtos/requests/media.request.dto';
-import { IVideoStatus } from '@/models/schemas/videoStatus.schema';
+import { IVideoStatus } from '@/models/videoStatus.schema';
 import { BadRequestError, InternalServerError, NotFoundError } from '@/responses/error.response';
 import { IMediaService } from '@/services/media.service';
 import { IS3Service } from '@/services/s3.service';

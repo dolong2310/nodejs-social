@@ -2,7 +2,7 @@
  * BlockRepository — BLCK-02 symmetric query helpers for Phase 3 feed filtering.
  */
 
-import BlockSchema from '@/models/schemas/block.schema';
+import BlockSchema from '@/models/block.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 

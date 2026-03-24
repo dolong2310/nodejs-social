@@ -2,7 +2,7 @@
  * FriendRequestRepository — directed pending requests.
  */
 
-import FriendRequestSchema, { IFriendRequest } from '@/models/schemas/friendRequest.schema';
+import FriendRequestSchema, { IFriendRequest } from '@/models/friendRequest.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { ObjectId } from 'mongodb';
 

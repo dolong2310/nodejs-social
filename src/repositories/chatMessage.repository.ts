@@ -1,4 +1,4 @@
-import ChatMessageSchema, { IChatAttachment, IChatMessage } from '@/models/schemas/chatMessage.schema';
+import ChatMessageSchema, { IChatAttachment, IChatMessage } from '@/models/chatMessage.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { Filter, ObjectId } from 'mongodb';
 

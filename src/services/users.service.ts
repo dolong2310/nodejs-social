@@ -2,7 +2,7 @@ import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { IRedisService } from '@/database/redis/redis.service';
 import { UpdateMeRequestDTO } from '@/dtos/requests/user.request.dto';
 import { UserResponseDTO } from '@/dtos/responses/user.response.dto';
-import { IUser } from '@/models/schemas/user.schema';
+import { IUser } from '@/models/user.schema';
 import { IUserRepository } from '@/repositories/user.repository';
 import { BaseService } from '@/services/base.service';
 

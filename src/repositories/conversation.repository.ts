@@ -1,4 +1,4 @@
-import ConversationSchema, { EConversationType, IConversation } from '@/models/schemas/conversation.schema';
+import ConversationSchema, { EConversationType, IConversation } from '@/models/conversation.schema';
 import { BaseRepository } from '@/repositories/base.repository';
 import { normalizeFriendshipPair } from '@/repositories/friendship.repository';
 import { ObjectId } from 'mongodb';
