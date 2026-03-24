@@ -1,3 +1,4 @@
+import { ConnectionService } from '@/database/connection.service';
 import type Redis from 'ioredis';
 
 export interface IRedisService {
@@ -17,14 +18,16 @@ export interface IRedisService {
   sendRawCommand(...args: string[]): Promise<unknown>;
 }
 
-class RedisService implements IRedisService {
-  constructor(private readonly client: Redis) {}
+class RedisService extends ConnectionService implements IRedisService {
+  constructor(private readonly client: Redis) {
+    super();
+  }
 
   async connect(): Promise<void> {
     await this.client.connect();
   }
 
-  async disconnect(): Promise<void> {
+  protected async releaseConnection(): Promise<void> {
     await this.client.quit();
   }
 

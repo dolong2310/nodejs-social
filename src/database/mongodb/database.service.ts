@@ -1,3 +1,4 @@
+import { ConnectionService } from '@/database/connection.service';
 import { logger } from '@/logger';
 import { IBlock } from '@/models/block.schema';
 import { IBookmark } from '@/models/bookmark.schema';
@@ -18,9 +19,8 @@ import { Collection, Db, Document, MongoClient } from 'mongodb';
 const log = logger.child({ module: 'mongodb' });
 
 export interface IDatabaseService {
-  readonly chatDb: Db;
   connect(): Promise<void>;
-  close(): Promise<void>;
+  disconnect(): Promise<void>;
   createUsersIndex(): Promise<void>;
   createRefreshTokensIndex(): Promise<void>;
   createVideoStatusesIndex(): Promise<void>;
@@ -32,20 +32,16 @@ export interface IDatabaseService {
   initializeConversationIndexes(): Promise<void>;
 }
 
-class DatabaseService implements IDatabaseService {
+class DatabaseService extends ConnectionService implements IDatabaseService {
   private client: MongoClient;
   private db: Db;
-  private readonly _chatDb: Db;
-  private isClosed = false;
+  private chatDb: Db;
 
   constructor(config: { uri: string; databaseName: string; chatDatabaseName: string }) {
+    super();
     this.client = new MongoClient(config.uri);
     this.db = this.client.db(config.databaseName);
-    this._chatDb = this.client.db(config.chatDatabaseName);
-  }
-
-  get chatDb(): Db {
-    return this._chatDb;
+    this.chatDb = this.client.db(config.chatDatabaseName);
   }
 
   async connect() {
@@ -53,25 +49,23 @@ class DatabaseService implements IDatabaseService {
       await this.db.command({ ping: 1 });
     } catch (error) {
       log.error({ err: error }, 'error connecting to social database');
-      await this.close();
+      await this.disconnect();
       throw error;
     }
     try {
-      await this._chatDb.command({ ping: 1 });
+      await this.chatDb.command({ ping: 1 });
     } catch (error) {
       log.error({ err: error }, 'error connecting to chat database');
-      await this.close();
+      await this.disconnect();
       throw error;
     }
     log.info(
-      { socialDatabase: this.db.databaseName, chatDatabase: this._chatDb.databaseName },
+      { socialDatabase: this.db.databaseName, chatDatabase: this.chatDb.databaseName },
       'connected to mongodb databases'
     );
   }
 
-  async close() {
-    if (this.isClosed) return;
-    this.isClosed = true;
+  protected async releaseConnection(): Promise<void> {
     await this.client.close();
   }
 
@@ -311,15 +305,15 @@ class DatabaseService implements IDatabaseService {
   }
 
   get conversations(): Collection<IConversation> {
-    return this._chatDb.collection<IConversation>('chats');
+    return this.chatDb.collection<IConversation>('chats');
   }
 
   get conversationMembers(): Collection<IConversationMember> {
-    return this._chatDb.collection<IConversationMember>('chatMembers');
+    return this.chatDb.collection<IConversationMember>('chatMembers');
   }
 
   get chatMessages(): Collection<IChatMessage> {
-    return this._chatDb.collection<IChatMessage>('messages');
+    return this.chatDb.collection<IChatMessage>('messages');
   }
 }
 

@@ -139,7 +139,7 @@ function setupGracefulShutdown(httpServer: HttpServer): void {
     logger.info({ signal }, 'shutting down gracefully');
     httpServer.close(async () => {
       await Promise.allSettled([
-        DatabaseInstance.get().close(),
+        DatabaseInstance.get().disconnect(),
         RedisInstance.get().disconnect(),
         QueueService.close()
       ]);
