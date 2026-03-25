@@ -1,0 +1,76 @@
+{
+  "$jsonSchema": {
+    "title": "notifications (NotificationSchema + notifications.service payloads)",
+    "bsonType": "object",
+    "required": ["_id", "recipientId", "read", "createdAt", "type", "actor", "payload"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "recipientId": { "bsonType": "objectId" },
+      "read": { "bsonType": "bool" },
+      "readAt": { "bsonType": "date", "description": "Set when marked read; absent on insert" },
+      "createdAt": { "bsonType": "date" },
+      "type": {
+        "bsonType": "string",
+        "enum": ["friend_request", "friend_accepted", "new_message", "added_to_group"]
+      },
+      "actor": {
+        "bsonType": "object",
+        "required": ["userId", "displayName"],
+        "properties": {
+          "userId": { "bsonType": "string", "description": "ObjectId hex string" },
+          "displayName": { "bsonType": "string" },
+          "avatar": { "bsonType": "string" }
+        },
+        "additionalProperties": false
+      },
+      "payload": {
+        "oneOf": [
+          {
+            "bsonType": "object",
+            "title": "friend_request",
+            "required": ["fromUserId"],
+            "properties": {
+              "fromUserId": { "bsonType": "string" }
+            },
+            "additionalProperties": false
+          },
+          {
+            "bsonType": "object",
+            "title": "friend_accepted",
+            "required": ["friendUserId"],
+            "properties": {
+              "friendUserId": { "bsonType": "string" }
+            },
+            "additionalProperties": false
+          },
+          {
+            "bsonType": "object",
+            "title": "new_message",
+            "required": ["chatId", "messageId", "previewKind"],
+            "properties": {
+              "chatId": { "bsonType": "string" },
+              "messageId": { "bsonType": "string" },
+              "previewText": { "bsonType": "string" },
+              "previewKind": {
+                "bsonType": "string",
+                "enum": ["text", "attachment", "mixed"]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "bsonType": "object",
+            "title": "added_to_group",
+            "required": ["chatId"],
+            "properties": {
+              "chatId": { "bsonType": "string" },
+              "chatName": { "bsonType": "string" }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "additionalProperties": false
+  }
+}

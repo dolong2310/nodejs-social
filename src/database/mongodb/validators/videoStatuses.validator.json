@@ -1,0 +1,23 @@
+{
+  "$jsonSchema": {
+    "title": "videoStatuses (VideoStatusSchema + media.repository createVideoStatus / updateVideoStatus)",
+    "bsonType": "object",
+    "required": ["_id", "name", "status", "message", "createdAt", "updatedAt"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "name": { "bsonType": "string" },
+      "status": {
+        "bsonType": "string",
+        "enum": ["pending", "processing", "success", "failed"],
+        "description": "EEncodingVideoStatus"
+      },
+      "message": {
+        "bsonType": "string",
+        "description": "Default '' on insert; optional on IVideoStatus but always set in VideoStatusSchema"
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}
