@@ -6,6 +6,7 @@
 
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { AutoBind } from '@/decorators/autoBind.decorator';
 import { IRedisService } from '@/database/redis/redis.service';
 import { IFriendRequest } from '@/models/friendRequest.schema';
 import { IUser } from '@/models/user.schema';
@@ -96,6 +97,7 @@ class FriendsService extends BaseService implements IFriendsService {
     await Promise.all([this.invalidateFriendCache(userIdA), this.invalidateFriendCache(userIdB)]);
   }
 
+  @AutoBind
   async findFriendUserIds(userId: string): Promise<ObjectId[]> {
     const cached = await this.redisService.get<string[]>(CACHE_KEYS.friends(userId));
     if (cached !== null) {
