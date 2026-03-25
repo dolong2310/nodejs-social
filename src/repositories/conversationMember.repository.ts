@@ -104,7 +104,7 @@ export class ConversationMemberRepository extends BaseRepository implements ICon
       { $match: { userId } },
       {
         $lookup: {
-          from: 'chats',
+          from: 'conversations',
           localField: 'chatId',
           foreignField: '_id',
           as: 'conv'

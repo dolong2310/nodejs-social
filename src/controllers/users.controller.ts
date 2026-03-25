@@ -43,7 +43,7 @@ class UsersController extends BaseController implements IUsersController {
     const userId = this.getUserId(req);
     const dto = new UpdateMeRequestDTO(req.body);
 
-    const updatedUser = await this.usersService.updateMe(userId, dto);
+    const updatedUser = await this.usersService.updateMe(userId, this.sanitize(dto));
 
     if (!updatedUser) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);

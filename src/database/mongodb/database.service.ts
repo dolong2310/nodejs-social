@@ -216,7 +216,7 @@ class DatabaseService extends ConnectionService implements IDatabaseService {
     }
   }
 
-  /** Chat DB — idempotent indexes (Phase 4). Collection names unchanged: chats, chatMembers, messages. */
+  /** Chat DB — idempotent indexes (Phase 4). Collection names unchanged: conversations, conversationMembers, messages. */
   async initializeConversationIndexes(): Promise<void> {
     await Promise.all([
       this._ensureConversationDocumentsIndexes(),
@@ -305,11 +305,11 @@ class DatabaseService extends ConnectionService implements IDatabaseService {
   }
 
   get conversations(): Collection<IConversation> {
-    return this.chatDb.collection<IConversation>('chats');
+    return this.chatDb.collection<IConversation>('conversations');
   }
 
   get conversationMembers(): Collection<IConversationMember> {
-    return this.chatDb.collection<IConversationMember>('chatMembers');
+    return this.chatDb.collection<IConversationMember>('conversationMembers');
   }
 
   get chatMessages(): Collection<IChatMessage> {

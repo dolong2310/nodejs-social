@@ -2,10 +2,15 @@ import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
 import { HTTP_STATUS } from '@/constants/httpStatus.constant';
 import { UnprocessableEntityError } from '@/responses/error.response';
 import { NextFunction, Request, Response } from 'express';
-import { ValidationChain, ValidationError, validationResult } from 'express-validator';
+import { Location, matchedData, ValidationChain, ValidationError, validationResult } from 'express-validator';
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';
 
-export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
+export type ValidateOptions = {
+  assignMatchedBody?: boolean;
+  locations?: Location[];
+};
+
+export const validate = (validation: RunnableValidationChains<ValidationChain>, options?: ValidateOptions) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     await validation.run(req);
 
@@ -26,6 +31,10 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       }
 
       return next(new UnprocessableEntityError(errorObject.message, errorObject.status, errorObject.errors));
+    }
+
+    if (options?.assignMatchedBody) {
+      req.body = matchedData(req, { locations: options.locations }); // matchedData: optional fields omitted from the request are excluded by default
     }
 
     // If no errors, let's go

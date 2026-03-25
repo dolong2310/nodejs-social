@@ -22,27 +22,3 @@ class HashtagSchema {
 }
 
 export default HashtagSchema;
-
-// validate hashtag schema
-// {
-//   $jsonSchema: {
-//     title: "Hashtag object validation",
-//     bsonType: "object",
-//     required: ["_id", "name", "createdAt"],
-//     properties: {
-//       _id: {
-//         bsonType: "objectId",
-//         description: "'_id' must be an objectId and is required",
-//       },
-//       name: {
-//         bsonType: "string",
-//         description: "'name' must be a string and is required",
-//       },
-//       createdAt: {
-//         bsonType: "date",
-//         description: "'createdAt' must be a date and is required",
-//       },
-//     },
-//     additionalProperties: false
-//   }
-// }

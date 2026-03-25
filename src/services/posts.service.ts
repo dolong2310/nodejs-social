@@ -183,9 +183,7 @@ class PostsService extends BaseService implements IPostsService {
       await this.assertThreadedEngagementAllowed(userId, body);
     }
 
-    const { hashtags: hashtagsBody } = body;
-
-    const hashtags = (await this.findAndUpsertHashtags(hashtagsBody)).filter((h) => h !== null);
+    const hashtags = (await this.findAndUpsertHashtags(body.hashtags)).filter((h) => h !== null);
     const hashtagIds = hashtags.map((hashtag) => hashtag._id);
     const newPost = await this.postRepository.createPost({ userId, body: { ...body, hashtags: hashtagIds } });
     return newPost;
