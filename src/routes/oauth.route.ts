@@ -18,6 +18,7 @@ export class OAuthRoute extends BaseRoute {
     // Initialize the controller here, after the container is available
     this.oauthController = this.container.getOAuthController();
 
+    this.router.get('/google/url', appLimiter, this.oauthController.getGoogleAuthUrl);
     this.router.get('/google', appLimiter, asyncHandler(this.oauthController.googleLogin));
   }
 }

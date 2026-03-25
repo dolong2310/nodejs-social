@@ -1,3 +1,8 @@
+import {
+  REFRESH_TOKEN_COOKIE_NAME,
+  refreshTokenCookieSharedOptions,
+  refreshTokenMaxAgeMs
+} from '@/constants/auth.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { BaseController } from '@/controllers/base.controller';
 import {
@@ -34,8 +39,8 @@ import { ParamsDictionary } from 'express-serve-static-core';
 export interface IAuthController {
   register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response): Promise<void>;
   login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response): Promise<void>;
-  logout(req: Request<ParamsDictionary, object, LogoutRequestDTO>, res: Response): Promise<void>;
-  refreshToken(req: Request<ParamsDictionary, object, RefreshTokenRequestDTO>, res: Response): Promise<void>;
+  logout(req: Request, res: Response): Promise<void>;
+  refreshToken(req: Request, res: Response): Promise<void>;
   verifyEmail(req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response): Promise<void>;
   resendVerifyEmail(req: Request, res: Response): Promise<void>;
   forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response): Promise<void>;
@@ -79,17 +84,22 @@ class AuthController extends BaseController implements IAuthController {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
-    const tokens = await this.authService.login(dto, existingUser);
+    const { accessToken, refreshToken } = await this.authService.login(dto, existingUser);
+
+    this.setCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+      ...refreshTokenCookieSharedOptions,
+      maxAge: refreshTokenMaxAgeMs(refreshToken)
+    });
 
     this.sendResponse<LoginResponseDTO>({
       res,
-      data: tokens,
+      data: { accessToken },
       message: 'Login successfully'
     });
   };
 
-  logout = async (req: Request<ParamsDictionary, object, LogoutRequestDTO>, res: Response) => {
-    const dto = new LogoutRequestDTO(req.body);
+  logout = async (req: Request, res: Response) => {
+    const dto = new LogoutRequestDTO(req.refreshTokenJwt!);
     const { type } = req.tokenPayload as TokenPayload;
 
     const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
@@ -100,14 +110,16 @@ class AuthController extends BaseController implements IAuthController {
 
     const { message } = await this.authService.logout(dto);
 
+    this.clearCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieSharedOptions);
+
     this.sendResponse<LogoutResponseDTO>({
       res,
       message
     });
   };
 
-  refreshToken = async (req: Request<ParamsDictionary, object, RefreshTokenRequestDTO>, res: Response) => {
-    const dto = new RefreshTokenRequestDTO(req.body);
+  refreshToken = async (req: Request, res: Response) => {
+    const dto = new RefreshTokenRequestDTO(req.refreshTokenJwt!);
     const { userId, exp, type } = req.tokenPayload as TokenPayload;
 
     const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
@@ -116,15 +128,20 @@ class AuthController extends BaseController implements IAuthController {
       throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
     }
 
-    const tokens = await this.authService.refreshToken({
+    const { accessToken, refreshToken } = await this.authService.refreshToken({
       refreshToken: dto.refreshToken,
       userId,
       exp
     });
 
+    this.setCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+      ...refreshTokenCookieSharedOptions,
+      maxAge: refreshTokenMaxAgeMs(refreshToken)
+    });
+
     this.sendResponse<RefreshTokenResponseDTO>({
       res,
-      data: tokens,
+      data: { accessToken },
       message: 'Refresh token successfully'
     });
   };

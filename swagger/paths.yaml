@@ -29,6 +29,7 @@ paths:
       tags: [auth]
       summary: Đăng nhập
       operationId: login
+      description: Trả về `accessToken` trong JSON; `refreshToken` được set qua header `Set-Cookie` (httpOnly).
       requestBody:
         required: true
         content:
@@ -37,7 +38,12 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Đăng nhập thành công
+          description: Đăng nhập thành công (kèm Set-Cookie refreshToken)
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=...; Path=/; HttpOnly; SameSite=Lax
           content:
             application/json:
               schema:
@@ -53,13 +59,10 @@ paths:
       tags: [auth]
       summary: Đăng xuất
       operationId: logout
-      security: [{ bearerAuth: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'
+      description: Cần Bearer access token và cookie `refreshToken`. Body không dùng.
+      security:
+        - bearerAuth: []
+          refreshTokenCookie: []
       responses:
         '200':
           description: Đăng xuất thành công
@@ -78,15 +81,19 @@ paths:
       tags: [auth]
       summary: Làm mới access token
       operationId: refreshToken
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
+      description: |
+        Đọc refresh từ cookie httpOnly; trả về `accessToken` trong body; refresh mới được set lại qua Set-Cookie. Gọi với `credentials: include` (CORS).
+        Client cần gọi `POST /auth/refresh-token` với cookie (credentials) để lấy `accessToken` trong JSON.
+      security:
+        - refreshTokenCookie: []
       responses:
         '200':
-          description: Làm mới token thành công
+          description: Làm mới token thành công (kèm Set-Cookie refreshToken mới)
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=...; Path=/; HttpOnly; SameSite=Lax
           content:
             application/json:
               schema:
@@ -300,10 +307,12 @@ paths:
       tags: [oauth]
       summary: Đăng nhập bằng Google
       operationId: googleLogin
-      description: Chuyển hướng đến trang đăng nhập Google OAuth
+      description: |
+        Callback OAuth (query `code`): server tạo session, set cookie `refreshToken` (httpOnly), redirect `302` tới `{FRONTEND_URL}/oauth/callback`.
+        Client cần gọi `POST /auth/refresh-token` với cookie (credentials) để lấy `accessToken` trong JSON.
       responses:
         '302':
-          description: Redirect đến Google OAuth
+          description: Redirect tới frontend sau khi set cookie; hoặc redirect tới Google khi bắt đầu flow (tùy triển khai client)
 
   # ==================== MEDIA ====================
   /media/upload-image:

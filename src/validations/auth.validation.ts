@@ -1,10 +1,11 @@
+import { REFRESH_TOKEN_COOKIE_NAME } from '@/constants/auth.constant';
 import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { ETokenType } from '@/enums/token.enum';
 import { AuthFailureError, BadRequestError, ForbiddenError } from '@/responses/error.response';
 import { ITokenService } from '@/services/token.service';
 import { validate } from '@/utils/validation.util';
 import { dateOfBirthSchema, nameSchema } from '@/validations/users.validation';
-import { RequestHandler } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema, ParamSchema } from 'express-validator';
 import jwt from 'jsonwebtoken';
@@ -209,37 +210,27 @@ class AuthValidation implements IAuthValidation {
     )
   );
 
-  refreshTokenValidation = validate(
-    checkSchema(
-      {
-        refreshToken: {
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.TOKEN_MUST_BE_STRING
-          },
-          trim: true,
-          custom: {
-            options: async (token: string | undefined, { req }) => {
-              if (!token) {
-                throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.NO_TOKEN_PROVIDED);
-              }
+  refreshTokenValidation = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    const token = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
+    if (!token || typeof token !== 'string' || !token.trim()) {
+      next(new ForbiddenError(VALIDATION_ERROR_MESSAGE.NO_TOKEN_PROVIDED));
+      return;
+    }
 
-              try {
-                const decoded = await this.tokenService.verifyRefreshToken(token);
-                req.tokenPayload = decoded;
-                return true;
-              } catch (error) {
-                if (error instanceof jwt.JsonWebTokenError) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
-                }
-                throw error;
-              }
-            }
-          }
-        }
-      },
-      ['body']
-    )
-  );
+    const trimmed = token.trim();
+    try {
+      const decoded = await this.tokenService.verifyRefreshToken(trimmed);
+      req.tokenPayload = decoded;
+      req.refreshTokenJwt = trimmed;
+      next();
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        next(new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID));
+        return;
+      }
+      next(error);
+    }
+  };
 }
 
 export default AuthValidation;

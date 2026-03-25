@@ -12,11 +12,10 @@ import {
   ResetPasswordRequestDTO
 } from '@/dtos/requests/auth.request.dto';
 import {
+  AuthTokenPair,
   ChangePasswordResponseDTO,
   ForgotPasswordResponseDTO,
-  LoginResponseDTO,
   LogoutResponseDTO,
-  RefreshTokenResponseDTO,
   RegisterResponseDTO,
   ResendVerifyEmailResponseDTO,
   ResetPasswordResponseDTO,
@@ -37,16 +36,12 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IAuthService {
-  findRefreshTokenByToken(token: string): Promise<IRefreshToken | null>;
-  register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<LoginResponseDTO>;
+  register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<AuthTokenPair>;
   register(body: RegisterRequestDTO, options?: { autoLogin?: false }): Promise<RegisterResponseDTO>;
-  register(
-    body: RegisterRequestDTO,
-    options?: { autoLogin?: boolean }
-  ): Promise<RegisterResponseDTO | LoginResponseDTO>;
-  login(body: LoginRequestDTO, user: IUser): Promise<LoginResponseDTO>;
+  register(body: RegisterRequestDTO, options?: { autoLogin?: boolean }): Promise<RegisterResponseDTO | AuthTokenPair>;
+  login(body: LoginRequestDTO, user: IUser): Promise<AuthTokenPair>;
   logout(refreshToken: LogoutRequestDTO): Promise<LogoutResponseDTO>;
-  refreshToken(payload: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<RefreshTokenResponseDTO>;
+  refreshToken(payload: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<AuthTokenPair>;
   verifyEmail(userId: string): Promise<VerifyEmailResponseDTO>;
   resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<ResendVerifyEmailResponseDTO>;
   forgotPassword(
@@ -54,6 +49,8 @@ export interface IAuthService {
   ): Promise<ForgotPasswordResponseDTO>;
   resetPassword(payload: ResetPasswordRequestDTO & { userId: string }): Promise<ResetPasswordResponseDTO>;
   changePassword(payload: ChangePasswordRequestDTO & { userId: string }): Promise<ChangePasswordResponseDTO>;
+  createAuthSession(user: IUser): Promise<AuthTokenPair>;
+  findRefreshTokenByToken(token: string): Promise<IRefreshToken | null>;
 }
 
 class AuthService extends BaseService implements IAuthService {
@@ -66,16 +63,12 @@ class AuthService extends BaseService implements IAuthService {
     super();
   }
 
-  findRefreshTokenByToken(token: string): Promise<IRefreshToken | null> {
-    return this.userRepository.findRefreshToken(token);
-  }
-
-  async register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<LoginResponseDTO>;
+  async register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<AuthTokenPair>;
   async register(body: RegisterRequestDTO, options?: { autoLogin?: false }): Promise<RegisterResponseDTO>;
   async register(
     body: RegisterRequestDTO,
     options?: { autoLogin?: boolean }
-  ): Promise<RegisterResponseDTO | LoginResponseDTO> {
+  ): Promise<RegisterResponseDTO | AuthTokenPair> {
     const { name, email, password, dateOfBirth } = body;
     const { autoLogin = false } = options ?? {};
 
@@ -118,37 +111,19 @@ class AuthService extends BaseService implements IAuthService {
     });
 
     if (autoLogin) {
-      return this.login({ email, password }, newUser);
+      return this.createAuthSession(newUser);
     }
 
     return new RegisterResponseDTO(newUser);
   }
 
-  async login({ password }: LoginRequestDTO, user: IUser): Promise<LoginResponseDTO> {
-    const userId = user._id.toString();
-
+  async login({ password }: LoginRequestDTO, user: IUser): Promise<AuthTokenPair> {
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
     }
 
-    const [accessToken, refreshToken] = await Promise.all([
-      this.tokenService.signAccessToken({
-        userId,
-        type: ETokenType.ACCESS_TOKEN
-      }),
-      this.tokenService.signRefreshToken({
-        userId,
-        type: ETokenType.REFRESH_TOKEN
-      })
-    ]);
-
-    await this.userRepository.createRefreshToken(refreshToken, userId);
-
-    return {
-      accessToken,
-      refreshToken
-    };
+    return this.createAuthSession(user);
   }
 
   async logout({ refreshToken }: LogoutRequestDTO): Promise<LogoutResponseDTO> {
@@ -160,7 +135,7 @@ class AuthService extends BaseService implements IAuthService {
     userId,
     refreshToken,
     exp
-  }: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<RefreshTokenResponseDTO> {
+  }: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<AuthTokenPair> {
     const [newAccessToken, newRefreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -300,6 +275,32 @@ class AuthService extends BaseService implements IAuthService {
     await this.redisService.del(CACHE_KEYS.user(userId));
 
     return { message: 'Password changed successfully' };
+  }
+
+  async createAuthSession(user: IUser): Promise<AuthTokenPair> {
+    const userId = user._id.toString();
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.signAccessToken({
+        userId,
+        type: ETokenType.ACCESS_TOKEN
+      }),
+      this.tokenService.signRefreshToken({
+        userId,
+        type: ETokenType.REFRESH_TOKEN
+      })
+    ]);
+
+    await this.userRepository.createRefreshToken(refreshToken, userId);
+
+    return {
+      accessToken,
+      refreshToken
+    };
+  }
+
+  findRefreshTokenByToken(token: string): Promise<IRefreshToken | null> {
+    return this.userRepository.findRefreshToken(token);
   }
 }
 

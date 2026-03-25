@@ -89,14 +89,13 @@ components:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
         - type: object
+          description: Refresh token chỉ trong Set-Cookie (httpOnly), không nằm trong body.
           properties:
             data:
               type: object
+              required: [accessToken]
               properties:
                 accessToken:
-                  type: string
-                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                refreshToken:
                   type: string
                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       example:
@@ -104,7 +103,6 @@ components:
         statusCode: 200
         data:
           accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.xxx"
-          refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
     RegisterResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -119,24 +117,6 @@ components:
           _id: "507f1f77bcf86cd799439011"
           name: "Nguyễn Văn A"
           email: "nguyenvana@example.com"
-    LogoutRequest:
-      type: object
-      required: [refreshToken]
-      properties:
-        refreshToken:
-          type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-      example:
-        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
-    RefreshTokenRequest:
-      type: object
-      required: [refreshToken]
-      properties:
-        refreshToken:
-          type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-      example:
-        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.yyy"
     VerifyEmailRequest:
       type: object
       required: [token]

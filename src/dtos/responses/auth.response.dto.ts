@@ -2,9 +2,14 @@ import { UserResponseDTO } from '@/dtos/responses/user.response.dto';
 
 export class RegisterResponseDTO extends UserResponseDTO {}
 
-export interface LoginResponseDTO {
+/** Internal token pair (AuthService / OAuth); refresh only sent via httpOnly cookie at HTTP layer. */
+export interface AuthTokenPair {
   accessToken: string;
   refreshToken: string;
+}
+
+export interface LoginResponseDTO {
+  accessToken: string;
 }
 
 export interface LogoutResponseDTO {

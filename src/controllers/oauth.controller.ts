@@ -1,11 +1,17 @@
 import { envConfig } from '@/config';
+import {
+  REFRESH_TOKEN_COOKIE_NAME,
+  refreshTokenCookieSharedOptions,
+  refreshTokenMaxAgeMs
+} from '@/constants/auth.constant';
 import { BaseController } from '@/controllers/base.controller';
-import { OAuthGoogleLoginQueryDTO } from '@/dtos/requests/oauth.request.dto';
+import { GetGoogleAuthUrlQueryDTO, OAuthGoogleLoginQueryDTO } from '@/dtos/requests/oauth.request.dto';
 import { IOAuthService } from '@/services/oauth.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IOAuthController {
+  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>, res: Response): void;
   googleLogin(req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response): Promise<void>;
 }
 
@@ -14,12 +20,26 @@ class OAuthController extends BaseController implements IOAuthController {
     super();
   }
 
-  googleLogin = async (req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response) => {
-    const { accessToken, refreshToken } = await this.oauthService.googleLogin(req.query);
+  getGoogleAuthUrl = (req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>, res: Response) => {
+    const { ip, userAgent } = req.query;
+    const url = this.oauthService.getGoogleAuthUrl({ ip, userAgent });
+    this.sendResponse<string>({
+      res,
+      data: url,
+      message: 'Get authorization url successfully'
+    });
+  };
 
-    return res.redirect(
-      `${envConfig.GOOGLE_REDIRECT_URI}/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
-    );
+  googleLogin = async (req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response) => {
+    const { refreshToken } = await this.oauthService.googleLogin(req.query);
+
+    this.setCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+      ...refreshTokenCookieSharedOptions,
+      maxAge: refreshTokenMaxAgeMs(refreshToken)
+    });
+
+    // After redirect, client will call /auth/refresh-token to get accessToken
+    return res.redirect(`${envConfig.FRONTEND_URL}/oauth/google/callback`);
   };
 }
 

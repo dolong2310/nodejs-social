@@ -44,7 +44,7 @@ export class AuthRoute extends BaseRoute {
       this.authValidation.refreshTokenValidation,
       asyncHandler(this.authController.logout)
     );
-    this.router.post(
+    this.router.get(
       '/refresh-token',
       authLimiter,
       this.authValidation.refreshTokenValidation,

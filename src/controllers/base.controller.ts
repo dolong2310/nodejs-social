@@ -8,9 +8,17 @@ import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import { PaginationResponseDTO } from '@/dtos/responses/common.response.dto';
 import { NotFoundError } from '@/responses/error.response';
 import { Created, OK, SuccessResponseParams } from '@/responses/success.response';
+import type { CookieOptions } from 'express';
 import { Request, Response } from 'express';
 
 export abstract class BaseController {
+  /**
+   * Filter undefined fields
+   */
+  sanitize<T extends object>(obj: T): T {
+    return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
+  }
+
   /**
    * Sends a response with the specified status code, message, and data.
    */
@@ -87,22 +95,22 @@ export abstract class BaseController {
   }
 
   /**
-   * Sets a cookie with the specified name, value, and options.
+   * Sets a cookie. Mặc định: httpOnly, secure (prod), sameSite strict — có thể ghi đè / bổ sung qua `options` (vd. path, sameSite: lax, maxAge).
    */
-  protected setCookie(res: Response, name: string, value: string, maxAge: number): void {
-    res.cookie(name, value, {
+  protected setCookie(res: Response, name: string, value: string, options?: CookieOptions): void {
+    const defaults: CookieOptions = {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'strict',
-      maxAge
-    });
+      sameSite: 'strict'
+    };
+    res.cookie(name, value, { ...defaults, ...options });
   }
 
   /**
-   * Clears a cookie with the specified name.
+   * Clears a cookie. Nên truyền cùng path/sameSite/httpOnly/secure như lúc set để trình duyệt xóa đúng.
    */
-  protected clearCookie(res: Response, name: string): void {
-    res.clearCookie(name);
+  protected clearCookie(res: Response, name: string, options?: CookieOptions): void {
+    res.clearCookie(name, options ?? {});
   }
 
   /**

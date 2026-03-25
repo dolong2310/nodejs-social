@@ -173,7 +173,8 @@ class UsersValidation implements IUsersValidation {
         coverPhoto: imageSchema
       },
       ['body']
-    )
+    ),
+    { assignMatchedBody: true, locations: ['body'] }
   );
 
   userVerifiedValidation = async (req: Request, _res: Response, next: NextFunction) => {

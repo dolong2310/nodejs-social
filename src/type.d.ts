@@ -9,6 +9,8 @@ declare module 'express' {
     user?: IUser;
     postDetail?: PostDetailResponseDTO;
     tokenPayload?: TokenPayload;
+    /** Raw refresh JWT from httpOnly cookie (set by refresh-token / logout cookie validation). */
+    refreshTokenJwt?: string;
     log: Logger;
   }
 

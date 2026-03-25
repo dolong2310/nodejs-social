@@ -5,3 +5,8 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Access Token (JWT)
+    refreshTokenCookie:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+      description: HttpOnly cookie — server set khi login / refresh / OAuth Google; không có trong JSON response.

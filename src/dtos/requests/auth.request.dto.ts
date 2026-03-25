@@ -25,16 +25,16 @@ export class LoginRequestDTO {
 export class LogoutRequestDTO {
   refreshToken: string;
 
-  constructor(body: { refreshToken: string }) {
-    this.refreshToken = body.refreshToken;
+  constructor(refreshToken: string) {
+    this.refreshToken = refreshToken;
   }
 }
 
 export class RefreshTokenRequestDTO {
   refreshToken: string;
 
-  constructor(body: { refreshToken: string }) {
-    this.refreshToken = body.refreshToken;
+  constructor(refreshToken: string) {
+    this.refreshToken = refreshToken;
   }
 }
 
