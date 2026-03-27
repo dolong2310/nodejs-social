@@ -1,4 +1,4 @@
-import { SearchQueryDTO } from '@/dtos/requests/search.request.dto';
+import { SearchQueryDTO } from '@/modules';
 import { createHash } from 'crypto';
 
 export type SearchUsersCacheKeyParts = SearchQueryDTO & {

@@ -7,7 +7,7 @@ import {
   UPLOAD_DIR_IMAGE_TEMP,
   UPLOAD_DIR_VIDEO,
   UPLOAD_DIR_VIDEO_TEMP
-} from '@/constants/file.constant';
+} from '@/constants';
 import { Request } from 'express';
 import formidable, { File } from 'formidable';
 import fs from 'fs';

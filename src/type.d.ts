@@ -1,8 +1,7 @@
-import { PostDetailResponseDTO } from '@/dtos/responses/post.response.dto';
-import { IUser } from '@/models/user.schema';
-import { TokenPayload } from '@/types/token.type';
-import type { Logger } from 'pino';
+import { TokenPayload } from '@/interfaces';
+import { IUser, PostDetailResponseDTO } from '@/modules';
 import 'express';
+import type { Logger } from 'pino';
 
 declare module 'express' {
   interface Request {

@@ -1,28 +1,31 @@
 import { config } from '@/config';
-import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
-import { Container } from '@/container';
-import { DatabaseInstance } from '@/database/mongodb';
-import { RedisInstance } from '@/database/redis';
-import { httpLogger, logger } from '@/logger';
-import { bindRequestLogContextMiddleware } from '@/logger/request-context';
-import { errorHandler } from '@/middlewares/error.middleware';
-import { QueueService } from '@/queue';
-import authRouter from '@/routes/auth.route';
-import blocksRouter from '@/routes/blocks.route';
-import bookmarksRouter from '@/routes/bookmarks.route';
-import conversationsRouter from '@/routes/conversations.route';
-import friendsRouter from '@/routes/friends.route';
-import likesRouter from '@/routes/likes.route';
-import mediaRouter from '@/routes/media.route';
-import notificationsRouter from '@/routes/notifications.route';
-import oauthRouter from '@/routes/oauth.route';
-import postsRouter from '@/routes/posts.route';
-import searchRouter from '@/routes/search.route';
-import staticRouter from '@/routes/static.route';
-import usersRouter from '@/routes/users.route';
-import SocketService from '@/services/socket.service';
-import { AppConfig } from '@/types/app.type';
-import { getSwaggerDefinition } from '@/utils/file.util';
+import { UPLOAD_DIR_VIDEO } from '@/constants';
+import { AppConfig } from '@/interfaces';
+import {
+  authRouter,
+  blocksRouter,
+  bookmarksRouter,
+  conversationsRouter,
+  friendsRouter,
+  likesRouter,
+  mediaRouter,
+  notificationsRouter,
+  oauthRouter,
+  postsRouter,
+  searchRouter,
+  staticRouter,
+  usersRouter
+} from '@/modules';
+import {
+  Container,
+  DatabaseInstance,
+  LoggerInstance,
+  QueueService,
+  RedisInstance,
+  RequestContextLogger
+} from '@/providers';
+import { errorHandler, SocketService } from '@/shared';
+import { getSwaggerDefinition } from '@/utils';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express, Router } from 'express';
@@ -87,8 +90,8 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
 function createExpressApp(): Express {
   const app = express();
 
-  app.use(httpLogger);
-  app.use(bindRequestLogContextMiddleware);
+  app.use(LoggerInstance.getHttpLogger());
+  app.use(RequestContextLogger.bindRequestLogContextMiddleware);
   app.use(helmet());
   app.use(express.json());
   app.use(cookieParser());
@@ -136,14 +139,14 @@ function setupSwagger(): Router {
 
 function setupGracefulShutdown(httpServer: HttpServer): void {
   const shutdown = async (signal: string) => {
-    logger.info({ signal }, 'shutting down gracefully');
+    LoggerInstance.getLogger().info({ signal }, 'shutting down gracefully');
     httpServer.close(async () => {
       await Promise.allSettled([
         DatabaseInstance.get().disconnect(),
         RedisInstance.get().disconnect(),
         QueueService.close()
       ]);
-      logger.info('all connections closed');
+      LoggerInstance.getLogger().info('all connections closed');
       process.exit(0);
     });
   };

@@ -1,5 +1,5 @@
 import { envConfig } from '@/config';
-import { SOCKET_CLIENT_CHAT_SUBSCRIBE, SOCKET_SERVER_PRESENCE_CHAT } from '@/constants/socket.constant';
+import { SOCKET_CLIENT_CHAT_SUBSCRIBE, SOCKET_SERVER_PRESENCE_CHAT } from '@/constants';
 import { DatabaseInstance, startIntegrationHttpServer } from '../helpers/integration-app';
 import { io as ioc } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';

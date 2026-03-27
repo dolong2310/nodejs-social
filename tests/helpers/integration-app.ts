@@ -1,10 +1,9 @@
 import { createApp } from '@/app';
 import { config, envConfig } from '@/config';
-import { DatabaseInstance } from '@/database/mongodb';
-import { RedisInstance } from '@/database/redis';
-import { QueueService } from '@/queue';
-import type { AddressInfo } from 'node:net';
+import { DatabaseInstance } from '@/providers';
+import { QueueService } from '@/providers';
 import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 
 export type IntegrationHttpServer = {
   readonly baseUrl: string;

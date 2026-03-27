@@ -5,15 +5,15 @@
  * Run: npx tsx scripts/uat-notifications-smoke.ts --env=development
  * Optional: UAT_SMOKE_EMAIL + UAT_SMOKE_PASSWORD (recipient = existing user; sender still temp).
  */
-import { io } from 'socket.io-client';
 import { MongoClient, ObjectId } from 'mongodb';
+import { io } from 'socket.io-client';
 import { envConfig } from '../src/config/index.js';
 import { NOTIFICATION_SOCKET_EVENT } from '../src/constants/notification.constant.js';
-import { ETokenType } from '../src/enums/token.enum.js';
-import type { INotificationPayload, NotificationType } from '../src/models/schemas/notification.schema.js';
-import NotificationSchema from '../src/models/schemas/notification.schema.js';
-import BlockSchema from '../src/models/schemas/block.schema.js';
-import TokenService from '../src/services/token.service.js';
+import { ETokenType } from '../src/interfaces/enums/token.enum.js';
+import { BlockSchema } from '../src/modules/blocks/blocks.schema.js';
+import type { INotificationPayload, NotificationType } from '../src/modules/notifications/notifications.schema.js';
+import { NotificationSchema } from '../src/modules/notifications/notifications.schema.js';
+import { TokenService } from '../src/shared/services/token.service.js';
 
 const baseUrl = `http://127.0.0.1:${parseInt(envConfig.PORT, 10)}`;
 

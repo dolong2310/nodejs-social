@@ -2,8 +2,7 @@
  * BLCK-02 / Phase 4 D-11: consistent "unknown user" payloads when a viewer must not see a blocked author's PII
  * but may still see post content they previously engaged with (like, bookmark, or comment on that post).
  */
-import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/dtos/responses/post.response.dto';
-import { IUser } from '@/models/user.schema';
+import { IUser, PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules';
 import { ObjectId } from 'mongodb';
 
 /** Sentinel id — not a real user; clients must not link to profile. */

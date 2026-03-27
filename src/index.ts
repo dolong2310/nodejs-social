@@ -1,7 +1,7 @@
 import { createApp } from '@/app';
 import { config, envConfig, getCorsAllowedOrigins } from '@/config';
-import { logger } from '@/logger';
-import { initUploadsFolder } from '@/utils/file.util';
+import { LoggerInstance } from '@/providers';
+import { initUploadsFolder } from '@/utils';
 import { createServer } from 'http';
 
 async function bootstrap() {
@@ -31,7 +31,7 @@ async function bootstrap() {
   });
 
   httpServer.listen(port, () => {
-    logger.info({ port }, 'server listening');
+    LoggerInstance.getLogger().info({ port }, 'server listening');
   });
 }
 

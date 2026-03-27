@@ -1,4 +1,4 @@
-import { EPostType } from '@/enums/posts.enum';
+import { EPostType } from '@/modules';
 import { Document } from 'mongodb';
 
 export const buildBasePostPipeline = ({
@@ -7,7 +7,7 @@ export const buildBasePostPipeline = ({
   limit,
   includeAuthor = false
 }: {
-  match?: Record<string, any>;
+  match?: Record<string, unknown>;
   skip?: number;
   limit?: number;
   includeAuthor?: boolean;

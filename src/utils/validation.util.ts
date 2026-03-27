@@ -1,6 +1,5 @@
-import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
-import { HTTP_STATUS } from '@/constants/httpStatus.constant';
-import { UnprocessableEntityError } from '@/responses/error.response';
+import { HTTP_ERROR_MESSAGE, HTTP_STATUS } from '@/constants';
+import { UnprocessableEntityError } from '@/providers';
 import { NextFunction, Request, Response } from 'express';
 import { Location, matchedData, ValidationChain, ValidationError, validationResult } from 'express-validator';
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';
