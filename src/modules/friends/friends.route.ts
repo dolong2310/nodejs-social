@@ -3,7 +3,7 @@
  */
 
 import { BaseRoute, IFriendsController, IFriendsValidation, IUsersValidation, protect } from '@/modules';
-import { appLimiter, validatePaginationQuery } from '@/shared';
+import { appLimiter, validateCursorPaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class FriendsRoute extends BaseRoute {
@@ -24,21 +24,21 @@ class FriendsRoute extends BaseRoute {
       '/',
       protect,
       this.usersValidation.userVerifiedValidation,
-      validatePaginationQuery,
+      validateCursorPaginationQuery,
       asyncHandler(this.friendsController.listFriends)
     );
     this.router.get(
       '/requests/incoming',
       protect,
       this.usersValidation.userVerifiedValidation,
-      validatePaginationQuery,
+      validateCursorPaginationQuery,
       asyncHandler(this.friendsController.listIncoming)
     );
     this.router.get(
       '/requests/outgoing',
       protect,
       this.usersValidation.userVerifiedValidation,
-      validatePaginationQuery,
+      validateCursorPaginationQuery,
       asyncHandler(this.friendsController.listOutgoing)
     );
     this.router.post(

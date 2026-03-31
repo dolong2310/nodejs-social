@@ -1,7 +1,3 @@
-export * from './chatMessages.controller';
-export * from './chatMessages.repository';
-export * from './chatMessages.schema';
-export * from './chatMessages.service';
 export * from './conversationMember.repository';
 export * from './conversationMember.schema';
 export * from './conversations.controller';
@@ -10,7 +6,5 @@ export * from './conversations.route';
 export * from './conversations.schema';
 export * from './conversations.service';
 export * from './conversations.validation';
-export * from './dtos/chatMessages.request.dto';
-export * from './dtos/chatMessages.response.dto';
 export * from './dtos/conversations.request.dto';
 export * from './dtos/conversations.response.dto';

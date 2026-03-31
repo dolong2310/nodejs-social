@@ -3,7 +3,6 @@
  * It manages the instantiation and retrieval of repositories, services, controllers, and validations.
  */
 
-import { IRealtimeChatEmitter } from '@/interfaces';
 import {
   AuthController,
   AuthService,
@@ -18,6 +17,7 @@ import {
   ChatMessageRepository,
   ChatMessagesController,
   ChatMessagesService,
+  ChatMessagesValidation,
   ConversationMemberRepository,
   ConversationRepository,
   ConversationsController,
@@ -39,6 +39,7 @@ import {
   IBookmarksService,
   IChatMessagesController,
   IChatMessagesService,
+  IChatMessagesValidation,
   IConversationMemberRepository,
   IConversationsController,
   IConversationsService,
@@ -62,6 +63,7 @@ import {
   IPostsController,
   IPostsService,
   IPostsValidation,
+  IRealtimeChatEmitter,
   ISearchController,
   ISearchRepository,
   ISearchService,
@@ -96,7 +98,14 @@ import {
   UsersService,
   UsersValidation
 } from '@/modules';
-import { DatabaseService, IEmailJobQueue, IVideoHLSJobQueue, QueueService, RedisService } from '@/providers';
+import {
+  DatabaseService,
+  IEmailJobQueue,
+  INotificationTrimJobQueue,
+  IVideoHLSJobQueue,
+  QueueService,
+  RedisService
+} from '@/providers';
 import { IS3Service, ITokenService, S3Service, TokenService } from '@/shared';
 
 export interface IContainer {
@@ -154,8 +163,10 @@ export interface IContainer {
   getFriendsValidation(): IFriendsValidation;
   getBlocksValidation(): IBlocksValidation;
   getConversationsValidation(): IConversationsValidation;
+  getChatMessagesValidation(): IChatMessagesValidation;
   getNotificationsValidation(): INotificationsValidation;
 
+  // Bindings
   bindNotificationsSocket(emitter: ISocketUserEmitter | null): void;
   bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void;
 }
@@ -224,11 +235,13 @@ export class Container implements IContainer {
   private friendsValidation!: IFriendsValidation;
   private blocksValidation!: IBlocksValidation;
   private conversationsValidation!: IConversationsValidation;
+  private chatMessagesValidation!: IChatMessagesValidation;
   private notificationsValidation!: INotificationsValidation;
 
   // Queues
   private emailJobQueue!: IEmailJobQueue;
   private videoHLSJobQueue!: IVideoHLSJobQueue;
+  private notificationTrimJobQueue!: INotificationTrimJobQueue;
 
   private constructor(db: DatabaseService, redis: RedisService) {
     this.db = db;
@@ -290,7 +303,8 @@ export class Container implements IContainer {
     this.notificationsService = new NotificationsService(
       this.notificationRepository,
       this.userRepository,
-      this.blockRepository
+      this.blockRepository,
+      this.notificationTrimJobQueue
     );
     this.friendsService = new FriendsService(
       this.friendshipRepository,
@@ -362,6 +376,7 @@ export class Container implements IContainer {
     this.friendsValidation = new FriendsValidation(this.usersValidation);
     this.blocksValidation = new BlocksValidation(this.usersValidation);
     this.conversationsValidation = new ConversationsValidation(this.usersValidation);
+    this.chatMessagesValidation = new ChatMessagesValidation();
     this.notificationsValidation = new NotificationsValidation(this.usersValidation);
   }
 
@@ -369,6 +384,7 @@ export class Container implements IContainer {
     const mq = QueueService.get();
     this.emailJobQueue = mq.getEmailJobQueue();
     this.videoHLSJobQueue = mq.getVideoHLSJobQueue();
+    this.notificationTrimJobQueue = mq.getNotificationTrimJobQueue();
   }
 
   // Repositories
@@ -481,14 +497,6 @@ export class Container implements IContainer {
     return this.notificationsService;
   }
 
-  public bindNotificationsSocket(emitter: ISocketUserEmitter | null): void {
-    this.notificationsService.bindSocketEmitter(emitter);
-  }
-
-  public bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void {
-    this.chatMessagesService.bindRealtimeChatEmitter(emitter);
-  }
-
   // Controllers
   public getAuthController(): IAuthController {
     return this.authController;
@@ -571,8 +579,21 @@ export class Container implements IContainer {
     return this.conversationsValidation;
   }
 
+  public getChatMessagesValidation(): IChatMessagesValidation {
+    return this.chatMessagesValidation;
+  }
+
   public getNotificationsValidation(): INotificationsValidation {
     return this.notificationsValidation;
+  }
+
+  // Bindings
+  public bindNotificationsSocket(emitter: ISocketUserEmitter | null): void {
+    this.notificationsService.bindSocketEmitter(emitter);
+  }
+
+  public bindRealtimeChatEmitter(emitter: IRealtimeChatEmitter | null): void {
+    this.chatMessagesService.bindRealtimeChatEmitter(emitter);
   }
 }
 

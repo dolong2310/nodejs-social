@@ -2,6 +2,8 @@ export * from './block-redaction.util';
 export * from './common.util';
 export * from './conversation-cursor.util';
 export * from './file.util';
+export * from './friend-cursor.util';
+export * from './friendRequest-cursor.util';
 export * from './handler.util';
 export * from './notification-cursor.util';
 export * from './password.util';

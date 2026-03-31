@@ -50,3 +50,27 @@ export const validatePaginationQuery = validate(
     ['query']
   )
 );
+
+export const validateCursorPaginationQuery = validate(
+  checkSchema(
+    {
+      limit: {
+        isNumeric: true,
+        custom: {
+          options: async (value: string) => {
+            const limit = Number(value);
+            if (limit < 1 || limit > 100) {
+              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.LIMIT_MUST_BE_BETWEEN_1_TO_100);
+            }
+            return true;
+          }
+        }
+      },
+      cursor: {
+        optional: true,
+        isString: true
+      }
+    },
+    ['query']
+  )
+);

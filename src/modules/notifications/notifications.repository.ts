@@ -3,18 +3,19 @@ import { Filter, ObjectId } from 'mongodb';
 
 export interface INotificationRepository {
   insertOne(doc: INotification): Promise<INotification>;
-  countForRecipient(recipientId: ObjectId): Promise<number>;
+  insertMany(docs: INotification[]): Promise<void>;
+  countForRecipient(recipientUserId: string): Promise<number>;
   findPageBeforeCursor(
-    recipientId: ObjectId,
+    recipientUserId: string,
     limit: number,
-    before?: { createdAt: Date; _id: ObjectId },
+    before?: { createdAt: Date; _id: string },
     unreadOnly?: boolean,
     /** Hide notifications whose actor is blocked with viewer (D-14). */
     actorUserIdNin?: string[]
   ): Promise<INotification[]>;
-  markReadByIds(recipientId: ObjectId, ids: ObjectId[]): Promise<number>;
-  markAllRead(recipientId: ObjectId): Promise<number>;
-  findOldestIdsForTrim(recipientId: ObjectId, take: number): Promise<ObjectId[]>;
+  markReadByIds(recipientUserId: string, ids: string[]): Promise<number>;
+  markAllRead(recipientUserId: string): Promise<number>;
+  findOldestIdsForTrim(recipientUserId: string, take: number): Promise<ObjectId[]>;
   deleteByIds(ids: ObjectId[]): Promise<number>;
 }
 
@@ -24,17 +25,23 @@ export class NotificationRepository extends BaseRepository implements INotificat
     return doc;
   }
 
-  countForRecipient(recipientId: ObjectId): Promise<number> {
-    return this.db.notifications.countDocuments({ recipientId });
+  async insertMany(docs: INotification[]): Promise<void> {
+    if (docs.length === 0) return;
+    await this.db.notifications.insertMany(docs, { ordered: false });
+  }
+
+  countForRecipient(recipientUserId: string): Promise<number> {
+    return this.db.notifications.countDocuments({ recipientId: new ObjectId(recipientUserId) });
   }
 
   async findPageBeforeCursor(
-    recipientId: ObjectId,
+    recipientUserId: string,
     limit: number,
-    before?: { createdAt: Date; _id: ObjectId },
+    before?: { createdAt: Date; _id: string },
     unreadOnly?: boolean,
     actorUserIdNin?: string[]
   ): Promise<INotification[]> {
+    const recipientId = new ObjectId(recipientUserId);
     const filter: Filter<INotification> = { recipientId };
     if (actorUserIdNin && actorUserIdNin.length > 0) {
       filter['actor.userId'] = { $nin: actorUserIdNin };
@@ -43,26 +50,27 @@ export class NotificationRepository extends BaseRepository implements INotificat
       filter.read = false;
     }
     if (before) {
-      filter.$or = [
-        { createdAt: { $lt: before.createdAt } },
-        { createdAt: before.createdAt, _id: { $lt: before._id } }
-      ];
+      const beforeId = new ObjectId(before._id);
+      filter.$or = [{ createdAt: { $lt: before.createdAt } }, { createdAt: before.createdAt, _id: { $lt: beforeId } }];
     }
     return this.db.notifications.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit).toArray();
   }
 
-  async markReadByIds(recipientId: ObjectId, ids: ObjectId[]): Promise<number> {
+  async markReadByIds(recipientUserId: string, ids: string[]): Promise<number> {
     if (ids.length === 0) return 0;
     const now = new Date();
+    const recipientId = new ObjectId(recipientUserId);
+    const oids = ids.map((id) => new ObjectId(id));
     const r = await this.db.notifications.updateMany(
-      { recipientId, _id: { $in: ids }, read: false },
+      { recipientId, _id: { $in: oids }, read: false },
       { $set: { read: true, readAt: now } }
     );
     return r.modifiedCount;
   }
 
-  async markAllRead(recipientId: ObjectId): Promise<number> {
+  async markAllRead(recipientUserId: string): Promise<number> {
     const now = new Date();
+    const recipientId = new ObjectId(recipientUserId);
     const r = await this.db.notifications.updateMany(
       { recipientId, read: false },
       { $set: { read: true, readAt: now } }
@@ -71,8 +79,9 @@ export class NotificationRepository extends BaseRepository implements INotificat
   }
 
   /** Prefer read documents first, then oldest by createdAt (D-11). */
-  async findOldestIdsForTrim(recipientId: ObjectId, take: number): Promise<ObjectId[]> {
+  async findOldestIdsForTrim(recipientUserId: string, take: number): Promise<ObjectId[]> {
     if (take <= 0) return [];
+    const recipientId = new ObjectId(recipientUserId);
     const rows = await this.db.notifications
       .find({ recipientId })
       .sort({ read: -1, createdAt: 1, _id: 1 })

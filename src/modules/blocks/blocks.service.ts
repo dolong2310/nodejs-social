@@ -2,7 +2,7 @@ import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import type { FriendUserRow, IBlockRepository, IFriendshipRepository, IFriendsService } from '@/modules';
 import { BaseService, FriendRequestRepository, IUser, IUserRepository } from '@/modules';
 import { BadRequestError, ConflictRequestError, NotFoundError } from '@/providers';
-import { MongoServerError, ObjectId } from 'mongodb';
+import { MongoServerError } from 'mongodb';
 
 export interface IBlocksService {
   blockUser(blockerUserId: string, blockedUserId: string): Promise<void>;
@@ -33,7 +33,7 @@ export class BlocksService extends BaseService implements IBlocksService {
 
   private toFriendUserRow(user: IUser): FriendUserRow {
     return {
-      _id: user._id,
+      _id: user._id.toHexString(),
       name: user.name,
       username: user.username,
       avatar: user.avatar
@@ -50,18 +50,15 @@ export class BlocksService extends BaseService implements IBlocksService {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
 
-    const blockerOid = new ObjectId(blockerUserId);
-    const blockedOid = new ObjectId(blockedUserId);
-
-    if (await this.blockRepository.isBlockedEitherWay(blockerOid, blockedOid)) {
+    if (await this.blockRepository.isBlockedEitherWay(blockerUserId, blockedUserId)) {
       throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.BLOCK_ALREADY_EXISTS);
     }
 
-    await this.friendshipRepository.deleteFriendshipPair(blockerOid, blockedOid);
-    await this.friendRequestRepository.deleteAllRequestsInvolvingUsers(blockerOid, blockedOid);
+    await this.friendshipRepository.deleteFriendshipPair(blockerUserId, blockedUserId);
+    await this.friendRequestRepository.deleteAllRequestsInvolvingUsers(blockerUserId, blockedUserId);
 
     try {
-      await this.blockRepository.createBlock(blockerOid, blockedOid);
+      await this.blockRepository.createBlock(blockerUserId, blockedUserId);
     } catch (e) {
       if (e instanceof MongoServerError && e.code === 11000) {
         throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.BLOCK_ALREADY_EXISTS);
@@ -76,9 +73,7 @@ export class BlocksService extends BaseService implements IBlocksService {
   }
 
   async unblockUser(blockerUserId: string, blockedUserId: string): Promise<void> {
-    const blockerOid = new ObjectId(blockerUserId);
-    const blockedOid = new ObjectId(blockedUserId);
-    const deleted = await this.blockRepository.deleteBlock(blockerOid, blockedOid);
+    const deleted = await this.blockRepository.deleteBlock(blockerUserId, blockedUserId);
     if (deleted === 0) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.NO_ACTIVE_BLOCK);
     }
@@ -93,16 +88,14 @@ export class BlocksService extends BaseService implements IBlocksService {
     page: string,
     limit: string
   ): Promise<{ users: FriendUserRow[]; total: number }> {
-    const blockerOid = new ObjectId(blockerUserId);
-    const blockedOids = await this.blockRepository.listBlockedUserIdsForBlocker(blockerOid);
-    const sorted = [...blockedOids].sort((a, b) => Buffer.compare(a.id, b.id));
+    const blockedHexes = await this.blockRepository.listBlockedUserIdsForBlocker(blockerUserId);
+    const sorted = [...blockedHexes].sort((a, b) => Buffer.compare(Buffer.from(a, 'hex'), Buffer.from(b, 'hex')));
     const total = sorted.length;
     const { skip, limitNum } = this.parsePageLimit(page, limit);
-    const pageOids = sorted.slice(skip, skip + limitNum);
-    const idStrings = pageOids.map((o) => o.toHexString());
-    const users = await this.userRepository.findManyByIds(idStrings);
+    const pageIds = sorted.slice(skip, skip + limitNum);
+    const users = await this.userRepository.findManyByIds(pageIds);
     const byHex = new Map(users.map((u) => [u._id.toHexString(), u]));
-    const ordered = idStrings.map((id) => byHex.get(id)).filter((u): u is IUser => Boolean(u));
+    const ordered = pageIds.map((id) => byHex.get(id)).filter((u): u is IUser => Boolean(u));
     return { users: ordered.map((u) => this.toFriendUserRow(u)), total };
   }
 }

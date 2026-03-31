@@ -2,7 +2,6 @@ import { IMedia } from '@/interfaces';
 import { EPostAudience, EPostType } from '@/modules';
 import { PaginationQueryDTO } from '@/shared';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { ObjectId } from 'mongodb';
 
 export class CreatePostRequestDTO {
   type: EPostType;
@@ -57,7 +56,7 @@ export interface GetPostsParamsDTO extends ParamsDictionary {
 
 export interface GetNewFeedsPayloadDTO {
   userId: string;
-  friendUserIds: ObjectId[];
+  friendUserIds: string[];
   page: PaginationQueryDTO['page'];
   limit: PaginationQueryDTO['limit'];
 }

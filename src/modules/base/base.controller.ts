@@ -78,6 +78,28 @@ export abstract class BaseController {
     }).send(res);
   }
 
+  /**
+   * Sends a cursor pagination response (no skip/total), typically used by `cursor` + `limit`.
+   * Output payload shape (fixed): `{ items, nextCursor }`.
+   */
+  protected sendCursorPaginatedResponse<TItem>({
+    res,
+    items,
+    nextCursor,
+    message
+  }: {
+    res: Response;
+    items: TItem[];
+    nextCursor: string | null;
+    message: string;
+  }): void {
+    this.sendResponse({
+      res,
+      data: { items, nextCursor },
+      message
+    });
+  }
+
   sendFileResponse<T extends string>(res: Response, path: T): void {
     res.sendFile(path);
   }

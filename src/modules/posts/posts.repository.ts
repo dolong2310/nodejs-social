@@ -25,25 +25,25 @@ export interface IPostRepository {
    * True if viewer has post-level engagement: like, bookmark, or a COMMENT child on this post.
    * Used for BLCK-02 / D-11 (blocked pair + prior engagement → content visible, author redacted).
    */
-  hasViewerEngagedWithPost(viewerId: ObjectId, postId: ObjectId): Promise<boolean>;
+  hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean>;
   /**
    * Post ids whose author is in `authorIds` and where `viewerId` has engaged (like, bookmark, or comment on that post).
    */
-  findPostIdsWhereViewerEngagedWithAuthors(viewerId: ObjectId, authorIds: ObjectId[]): Promise<ObjectId[]>;
+  findPostIdsWhereViewerEngagedWithAuthors(viewerId: string, authorIds: string[]): Promise<string[]>;
   findPosts(payload: {
     userId: string;
-    friendUserIds: ObjectId[];
-    blockedAuthorIds: ObjectId[];
+    friendUserIds: string[];
+    blockedAuthorIds: string[];
     /** Extra posts to include (e.g. engaged-with-blocked-author); visibility still enforced by caller context. */
-    extraVisiblePostIds?: ObjectId[];
+    extraVisiblePostIds?: string[];
     page: number;
     limit: number;
   }): Promise<PostNewFeedResponseDTO[]>;
   countPosts(payload: {
     userId: string;
-    friendUserIds: ObjectId[];
-    blockedAuthorIds: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    friendUserIds: string[];
+    blockedAuthorIds: string[];
+    extraVisiblePostIds?: string[];
   }): Promise<number>;
   findGuestPosts(payload: { page: number; limit: number }): Promise<PostNewFeedResponseDTO[]>;
   countGuestPosts(): Promise<number>;
@@ -81,24 +81,29 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     super(db);
   }
 
-  async hasViewerEngagedWithPost(viewerId: ObjectId, postId: ObjectId): Promise<boolean> {
+  async hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean> {
+    const v = new ObjectId(viewerId);
+    const p = new ObjectId(postId);
     const [like, bookmark, comment] = await Promise.all([
-      this.db.likes.findOne({ userId: viewerId, postId }, { projection: { _id: 1 } }),
-      this.db.bookmarks.findOne({ userId: viewerId, postId }, { projection: { _id: 1 } }),
-      this.db.posts.findOne({ userId: viewerId, parentId: postId, type: EPostType.COMMENT }, { projection: { _id: 1 } })
+      this.db.likes.findOne({ userId: v, postId: p }, { projection: { _id: 1 } }),
+      this.db.bookmarks.findOne({ userId: v, postId: p }, { projection: { _id: 1 } }),
+      this.db.posts.findOne({ userId: v, parentId: p, type: EPostType.COMMENT }, { projection: { _id: 1 } })
     ]);
     return like !== null || bookmark !== null || comment !== null;
   }
 
-  async findPostIdsWhereViewerEngagedWithAuthors(viewerId: ObjectId, authorIds: ObjectId[]): Promise<ObjectId[]> {
+  async findPostIdsWhereViewerEngagedWithAuthors(viewerId: string, authorIds: string[]): Promise<string[]> {
     if (authorIds.length === 0) {
       return [];
     }
 
+    const viewerOid = new ObjectId(viewerId);
+    const authorOids = authorIds.map((id) => new ObjectId(id));
+
     const [fromLikes, fromBookmarks, fromComments] = await Promise.all([
       this.db.likes
         .aggregate<{ _id: ObjectId }>([
-          { $match: { userId: viewerId } },
+          { $match: { userId: viewerOid } },
           {
             $lookup: {
               from: 'posts',
@@ -108,13 +113,13 @@ export class PostRepository extends BaseRepository implements IPostRepository {
             }
           },
           { $unwind: '$post' },
-          { $match: { 'post.userId': { $in: authorIds } } },
+          { $match: { 'post.userId': { $in: authorOids } } },
           { $group: { _id: '$postId' } }
         ])
         .toArray(),
       this.db.bookmarks
         .aggregate<{ _id: ObjectId }>([
-          { $match: { userId: viewerId } },
+          { $match: { userId: viewerOid } },
           {
             $lookup: {
               from: 'posts',
@@ -124,7 +129,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
             }
           },
           { $unwind: '$post' },
-          { $match: { 'post.userId': { $in: authorIds } } },
+          { $match: { 'post.userId': { $in: authorOids } } },
           { $group: { _id: '$postId' } }
         ])
         .toArray(),
@@ -132,7 +137,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
         .aggregate<{ _id: ObjectId }>([
           {
             $match: {
-              userId: viewerId,
+              userId: viewerOid,
               type: EPostType.COMMENT,
               parentId: { $ne: null }
             }
@@ -146,20 +151,20 @@ export class PostRepository extends BaseRepository implements IPostRepository {
             }
           },
           { $unwind: '$parent' },
-          { $match: { 'parent.userId': { $in: authorIds } } },
+          { $match: { 'parent.userId': { $in: authorOids } } },
           { $group: { _id: '$parentId' } }
         ])
         .toArray()
     ]);
 
     const seen = new Set<string>();
-    const out: ObjectId[] = [];
+    const out: string[] = [];
     for (const row of [...fromLikes, ...fromBookmarks, ...fromComments]) {
       const id = row._id;
       const k = id.toHexString();
       if (!seen.has(k)) {
         seen.add(k);
-        out.push(id);
+        out.push(k);
       }
     }
     return out;
@@ -297,15 +302,15 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     limit
   }: {
     userId: string;
-    friendUserIds: ObjectId[];
-    blockedAuthorIds: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    friendUserIds: string[];
+    blockedAuthorIds: string[];
+    extraVisiblePostIds?: string[];
     page: number;
     limit: number;
   }): Promise<PostNewFeedResponseDTO[]> {
     const viewerOid = new ObjectId(userId);
-    const blocked = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
-    const friendIds = friendUserIds.filter((id) => !id.equals(viewerOid));
+    const blocked = blockedAuthorIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
+    const friendIds = friendUserIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
 
     /**
      * Authenticated home feed (FEED-01, FEED-02, BLCK-02):
@@ -326,7 +331,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       }
     ];
     if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
-      orBranches.push({ _id: { $in: extraVisiblePostIds } });
+      orBranches.push({ _id: { $in: extraVisiblePostIds.map((id) => new ObjectId(id)) } });
     }
     const match: Record<string, unknown> = { $or: orBranches };
 
@@ -348,13 +353,13 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     extraVisiblePostIds
   }: {
     userId: string;
-    friendUserIds: ObjectId[];
-    blockedAuthorIds: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    friendUserIds: string[];
+    blockedAuthorIds: string[];
+    extraVisiblePostIds?: string[];
   }): Promise<number> {
     const viewerOid = new ObjectId(userId);
-    const blocked = blockedAuthorIds.filter((id) => !id.equals(viewerOid));
-    const friendIds = friendUserIds.filter((id) => !id.equals(viewerOid));
+    const blocked = blockedAuthorIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
+    const friendIds = friendUserIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
 
     const orBranches: Record<string, unknown>[] = [
       {
@@ -368,7 +373,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       }
     ];
     if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
-      orBranches.push({ _id: { $in: extraVisiblePostIds } });
+      orBranches.push({ _id: { $in: extraVisiblePostIds.map((id) => new ObjectId(id)) } });
     }
     const match: Record<string, unknown> = { $or: orBranches };
 

@@ -25,6 +25,8 @@ import {
   RequestContextLogger
 } from '@/providers';
 import { errorHandler, SocketService } from '@/shared';
+import { ChatFeature } from '@/shared/services/socket/features/chat.feature';
+import { PresenceFeature } from '@/shared/services/socket/features/presence.feature';
 import { getSwaggerDefinition } from '@/utils';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -66,15 +68,8 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
     app.use(rateLimit(appConfig.rateLimitOptions));
   }
 
-  const container = Container.getOrSet(databaseService, redisService);
-  const socket = new SocketService(
-    httpServer,
-    container.getUsersService(),
-    container.getConversationMemberRepository(),
-    container.getFriendshipRepository()
-  );
-  container.bindNotificationsSocket(socket);
-  container.bindRealtimeChatEmitter(socket);
+  const container = Container.getOrSet(databaseService, redisService); // init Container
+  const socket = setupSocket(httpServer, container);
   socket.run();
 
   app.use(config.api.prefix, setupRoutes());
@@ -97,6 +92,20 @@ function createExpressApp(): Express {
   app.use(cookieParser());
 
   return app;
+}
+
+function setupSocket(httpServer: HttpServer, container: Container): SocketService {
+  const socket = new SocketService(httpServer, {
+    tokenService: container.getTokenService(),
+    usersService: container.getUsersService(),
+    features: [
+      new PresenceFeature(container.getFriendshipRepository()),
+      new ChatFeature(container.getConversationMemberRepository())
+    ]
+  });
+  container.bindNotificationsSocket(socket);
+  container.bindRealtimeChatEmitter(socket);
+  return socket;
 }
 
 function setupRoutes(): Router {

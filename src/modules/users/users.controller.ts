@@ -11,7 +11,6 @@ import {
 import { ForbiddenError, NotFoundError } from '@/providers';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { ObjectId } from 'mongodb';
 
 export interface IUsersController {
   getMe(req: Request, res: Response): Promise<void>;
@@ -71,7 +70,7 @@ export class UsersController extends BaseController implements IUsersController 
 
     const viewerId = this.getUserId(req, { optional: true });
     if (viewerId) {
-      const blocked = await this.blockRepository.isBlockedEitherWay(new ObjectId(viewerId), new ObjectId(user._id));
+      const blocked = await this.blockRepository.isBlockedEitherWay(viewerId, user._id);
       if (blocked) {
         throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_USER_PROFILE_BLOCKED);
       }

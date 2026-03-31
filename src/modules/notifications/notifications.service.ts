@@ -17,9 +17,8 @@ import {
   NotificationsPageDTO,
   toNotificationListItem
 } from '@/modules';
-import { BadRequestError, NotFoundError } from '@/providers';
+import { BadRequestError, INotificationTrimJobQueue, NotFoundError } from '@/providers';
 import { decodeNotificationCursor, encodeNotificationCursor } from '@/utils';
-import { ObjectId } from 'mongodb';
 
 export interface ISocketUserEmitter {
   emitToUser(userId: string, event: string, data: unknown): void;
@@ -39,11 +38,19 @@ export interface INotificationsService {
 
 export class NotificationsService extends BaseService implements INotificationsService {
   private socketEmitter: ISocketUserEmitter | null = null;
+  private static readonly NEW_MESSAGE_OPTIMIZE_THRESHOLD = 50;
+  private static readonly ACTOR_CACHE_TTL_MS = 60000;
+  private static readonly ACTOR_CACHE_MAX_ENTRIES = 5000;
+  private readonly actorCache = this.createTtlCapCache<string, INotification['actor']>(
+    NotificationsService.ACTOR_CACHE_TTL_MS,
+    NotificationsService.ACTOR_CACHE_MAX_ENTRIES
+  );
 
   constructor(
     private readonly notificationRepository: INotificationRepository,
     private readonly userRepository: IUserRepository,
-    private readonly blockRepository: BlockRepository
+    private readonly blockRepository: BlockRepository,
+    private readonly notificationTrimJobQueue: INotificationTrimJobQueue
   ) {
     super();
   }
@@ -53,15 +60,21 @@ export class NotificationsService extends BaseService implements INotificationsS
   }
 
   private async buildActor(userId: string): Promise<INotification['actor']> {
+    const now = Date.now();
+    const cached = this.actorCache.get(userId, now);
+    if (cached) return cached;
+
     const user = await this.userRepository.findById<IUser>(userId);
     if (!user) {
       throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
     }
-    return {
+    const actor = {
       userId: user._id.toHexString(),
       displayName: user.name,
       avatar: user.avatar
     };
+    this.actorCache.set(userId, actor, now);
+    return actor;
   }
 
   private emitToRecipient(recipientUserId: string, doc: INotification): void {
@@ -71,18 +84,29 @@ export class NotificationsService extends BaseService implements INotificationsS
     });
   }
 
-  private async trimIfNeeded(recipientId: ObjectId): Promise<void> {
-    const count = await this.notificationRepository.countForRecipient(recipientId);
+  /**
+   * Sau khi insert noti mới, đảm bảo tổng số noti của user này không vượt NOTIFICATION_MAX_PER_USER:
+   * - Đếm tổng noti hiện có
+   * - Nếu vượt quá thì tìm các noti cũ nhất và xóa bớt
+   */
+  private async trimIfNeeded(recipientUserId: string): Promise<void> {
+    const count = await this.notificationRepository.countForRecipient(recipientUserId);
     const excess = count - NOTIFICATION_MAX_PER_USER;
     if (excess <= 0) return;
-    const ids = await this.notificationRepository.findOldestIdsForTrim(recipientId, excess);
+    const ids = await this.notificationRepository.findOldestIdsForTrim(recipientUserId, excess);
     await this.notificationRepository.deleteByIds(ids);
   }
 
-  private async persistAndEmit(recipientHex: string, doc: INotification): Promise<void> {
+  /**
+   * Hàm được gọi khi có notification mới được tạo.
+   * - Thêm notification vào database
+   * - trimIfNeeded để không vượt NOTIFICATION_MAX_PER_USER
+   * - emit notification đến recipient
+   */
+  private async persistAndEmit(recipientId: string, doc: INotification): Promise<void> {
     await this.notificationRepository.insertOne(doc);
-    await this.trimIfNeeded(doc.recipientId);
-    this.emitToRecipient(recipientHex, doc);
+    await this.trimIfNeeded(doc.recipientId.toHexString());
+    this.emitToRecipient(recipientId, doc);
   }
 
   private newMessagePayload(message: IChatMessage): INewMessageNotificationPayload {
@@ -111,11 +135,15 @@ export class NotificationsService extends BaseService implements INotificationsS
     };
   }
 
+  /**
+   * Hàm được gọi khi một lời mời kết bạn được chấp nhận.
+   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã gửi lời mời kết bạn").
+   */
   async recordFriendRequest(recipientUserId: string, fromUserId: string): Promise<void> {
     const actor = await this.buildActor(fromUserId);
     const payload: IFriendRequestNotificationPayload = { fromUserId };
     const doc = new NotificationSchema({
-      recipientId: new ObjectId(recipientUserId),
+      recipientId: recipientUserId,
       type: 'friend_request',
       actor,
       payload
@@ -123,11 +151,15 @@ export class NotificationsService extends BaseService implements INotificationsS
     await this.persistAndEmit(recipientUserId, doc);
   }
 
+  /**
+   * Hàm được gọi khi một lời mời kết bạn được chấp nhận.
+   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã chấp nhận lời mời kết bạn của bạn").
+   */
   async recordFriendAccepted(originalRequesterUserId: string, accepterUserId: string): Promise<void> {
     const actor = await this.buildActor(accepterUserId);
     const payload: IFriendAcceptedNotificationPayload = { friendUserId: accepterUserId };
     const doc = new NotificationSchema({
-      recipientId: new ObjectId(originalRequesterUserId),
+      recipientId: originalRequesterUserId,
       type: 'friend_accepted',
       actor,
       payload
@@ -135,21 +167,56 @@ export class NotificationsService extends BaseService implements INotificationsS
     await this.persistAndEmit(originalRequesterUserId, doc);
   }
 
+  /**
+   * Hàm này tạo notification “new_message” cho tất cả những người nhận liên quan (trừ chính người gửi).
+   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã gửi tin nhắn mới").
+   */
   async recordNewMessage(message: IChatMessage, senderUserId: string, recipientUserIds: string[]): Promise<void> {
+    // Lọc ra những người nhận liên quan (trừ chính người gửi)
+    const recipients = [...new Set(recipientUserIds)].filter((rid) => rid !== senderUserId);
     const actor = await this.buildActor(senderUserId);
     const payload = this.newMessagePayload(message);
-    for (const rid of recipientUserIds) {
-      if (rid === senderUserId) continue;
-      const doc = new NotificationSchema({
-        recipientId: new ObjectId(rid),
-        type: 'new_message',
-        actor,
-        payload
-      });
-      await this.persistAndEmit(rid, doc);
+
+    if (recipients.length === 0) return;
+
+    // Small group: keep current sync flow (insertOne + trim + emit) for correctness.
+    if (recipients.length < NotificationsService.NEW_MESSAGE_OPTIMIZE_THRESHOLD) {
+      for (const rid of recipients) {
+        const doc = new NotificationSchema({
+          recipientId: rid,
+          type: 'new_message',
+          actor,
+          payload
+        });
+        await this.persistAndEmit(rid, doc);
+      }
+      return;
     }
+
+    // Large group: insert many + emit immediately, trimming runs in background.
+    const docs = recipients.map(
+      (rid) =>
+        new NotificationSchema({
+          recipientId: rid,
+          type: 'new_message',
+          actor,
+          payload
+        })
+    );
+
+    await this.notificationRepository.insertMany(docs);
+
+    for (const doc of docs) {
+      this.emitToRecipient(doc.recipientId.toHexString(), doc);
+    }
+
+    void this.notificationTrimJobQueue.add({ recipientUserIds: recipients }).catch(() => {});
   }
 
+  /**
+   * Hàm được gọi khi một người dùng được thêm vào một nhóm chat.
+   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã thêm bạn vào nhóm chat").
+   */
   async recordAddedToGroup(inviteeUserId: string, inviterUserId: string, conv: IConversation): Promise<void> {
     const actor = await this.buildActor(inviterUserId);
     const payload: IAddedToGroupNotificationPayload = {
@@ -157,7 +224,7 @@ export class NotificationsService extends BaseService implements INotificationsS
       chatName: conv.name
     };
     const doc = new NotificationSchema({
-      recipientId: new ObjectId(inviteeUserId),
+      recipientId: inviteeUserId,
       type: 'added_to_group',
       actor,
       payload
@@ -165,17 +232,21 @@ export class NotificationsService extends BaseService implements INotificationsS
     await this.persistAndEmit(inviteeUserId, doc);
   }
 
+  /**
+   * Hàm dùng để lấy danh sách thông báo (notifications) cho một user đang xem, có hỗ trợ:
+   * - Lọc theo người bị block (không hiển thị thông báo từ user mà mình block hoặc block mình).
+   * - Filter chỉ thông báo chưa đọc nếu unreadOnly = true.
+   */
   async listForViewer(
     viewerId: string,
     limit: number,
     cursor?: string,
     unreadOnly?: boolean
   ): Promise<NotificationsPageDTO> {
-    const viewerOid = new ObjectId(viewerId);
-    const blocked = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerOid);
-    const blockedHex = new Set(blocked.map((id) => id.toHexString()));
+    const blocked = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerId);
+    const blockedIds = new Set(blocked);
 
-    let before: { createdAt: Date; _id: ObjectId } | undefined;
+    let before: { createdAt: Date; _id: string } | undefined;
     if (cursor) {
       try {
         before = decodeNotificationCursor(cursor);
@@ -185,9 +256,11 @@ export class NotificationsService extends BaseService implements INotificationsS
     }
 
     const pageSize = Math.min(100, Math.max(1, limit));
-    const actorNin = [...blockedHex];
+    // Danh sách id user không được xuất hiện trong trường actor của notification (vì đã block).
+    const actorNin = [...blockedIds];
+    // lấy danh sách notification cho user, có filter block + unread + cursor.
     const rows = await this.notificationRepository.findPageBeforeCursor(
-      viewerOid,
+      viewerId,
       pageSize + 1,
       before,
       unreadOnly,
@@ -197,7 +270,7 @@ export class NotificationsService extends BaseService implements INotificationsS
     const slice = rows.slice(0, pageSize);
     const next =
       hasMore && slice.length > 0
-        ? encodeNotificationCursor(slice[slice.length - 1].createdAt, slice[slice.length - 1]._id)
+        ? encodeNotificationCursor(slice[slice.length - 1].createdAt, slice[slice.length - 1]._id.toHexString())
         : null;
 
     return {
@@ -206,14 +279,17 @@ export class NotificationsService extends BaseService implements INotificationsS
     };
   }
 
+  /**
+   * Hàm được gọi khi user đã đọc một hoặc nhiều thông báo.
+   * - Nếu ids không trống, mark read cho từng id.
+   * - Nếu ids trống, mark read cho tất cả thông báo chưa đọc.
+   */
   async markRead(viewerId: string, ids?: string[]): Promise<void> {
-    const recipientId = new ObjectId(viewerId);
     if (ids && ids.length > 0) {
-      const oids = ids.map((id) => new ObjectId(id));
-      await this.notificationRepository.markReadByIds(recipientId, oids);
+      await this.notificationRepository.markReadByIds(viewerId, ids);
       return;
     }
-    await this.notificationRepository.markAllRead(recipientId);
+    await this.notificationRepository.markAllRead(viewerId);
   }
 
   async markSingleRead(viewerId: string, notificationId: string): Promise<void> {

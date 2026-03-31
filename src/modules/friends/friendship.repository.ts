@@ -6,10 +6,13 @@ import { BaseRepository, FriendshipSchema, IFriendship } from '@/modules';
 import { ObjectId } from 'mongodb';
 
 export interface IFriendshipRepository {
-  findFriendUserIdsForUser(userId: ObjectId): Promise<ObjectId[]>;
-  findFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<IFriendship | null>;
-  insertFriendship(userIdA: ObjectId, userIdB: ObjectId): Promise<void>;
-  deleteFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<number>;
+  findFriendUserIdsForUser(userId: string): Promise<string[]>;
+  listFriendUserIdsForUserByCursor(userId: string, limit: number, cursor?: string): Promise<string[]>;
+  findFriendshipPair(userIdA: string, userIdB: string): Promise<IFriendship | null>;
+  /** Count undirected friend edges between `userId` and any id in `otherUserIds` (distinct peers). */
+  countFriendshipsWithUserAmongOthers(userId: string, otherUserIds: string[]): Promise<number>;
+  insertFriendship(userIdA: string, userIdB: string): Promise<void>;
+  deleteFriendshipPair(userIdA: string, userIdB: string): Promise<number>;
 }
 
 /**
@@ -25,30 +28,73 @@ export function normalizeFriendshipPair(a: ObjectId, b: ObjectId): { userIdLow: 
 }
 
 export class FriendshipRepository extends BaseRepository implements IFriendshipRepository {
-  async findFriendUserIdsForUser(userId: ObjectId): Promise<ObjectId[]> {
+  async findFriendUserIdsForUser(userId: string): Promise<string[]> {
+    const oid = new ObjectId(userId);
     const col = this.db.friendships;
     const [asLow, asHigh] = await Promise.all([
-      col.find({ userIdLow: userId }).project({ userIdHigh: 1, _id: 0 }).toArray(),
-      col.find({ userIdHigh: userId }).project({ userIdLow: 1, _id: 0 }).toArray()
+      col.find({ userIdLow: oid }).project({ userIdHigh: 1, _id: 0 }).toArray(),
+      col.find({ userIdHigh: oid }).project({ userIdLow: 1, _id: 0 }).toArray()
     ]);
     const fromLow = asLow.map((d) => d.userIdHigh).filter(Boolean) as ObjectId[];
     const fromHigh = asHigh.map((d) => d.userIdLow).filter(Boolean) as ObjectId[];
-    return [...fromLow, ...fromHigh];
+    return [...fromLow, ...fromHigh].map((id) => id.toHexString());
   }
 
-  async findFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<IFriendship | null> {
-    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+  async findFriendshipPair(userIdA: string, userIdB: string): Promise<IFriendship | null> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(new ObjectId(userIdA), new ObjectId(userIdB));
     return this.db.friendships.findOne<IFriendship>({ userIdLow, userIdHigh });
   }
 
-  async insertFriendship(userIdA: ObjectId, userIdB: ObjectId): Promise<void> {
-    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+  async listFriendUserIdsForUserByCursor(userId: string, limit: number, cursor?: string): Promise<string[]> {
+    const oid = new ObjectId(userId);
+    const cursorOid = cursor ? new ObjectId(cursor) : undefined;
+    const pipeline = [
+      {
+        $match: {
+          $or: [{ userIdLow: oid }, { userIdHigh: oid }]
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          friendId: { $cond: [{ $eq: ['$userIdLow', oid] }, '$userIdHigh', '$userIdLow'] }
+        }
+      },
+      ...(cursorOid ? [{ $match: { friendId: { $gt: cursorOid } } }] : []),
+      { $sort: { friendId: 1 as const } },
+      { $limit: limit }
+    ];
+
+    const rows = await this.db.friendships.aggregate<{ friendId: ObjectId }>(pipeline).toArray();
+    return rows.map((row) => row.friendId.toHexString());
+  }
+
+  /**
+   * - Đếm số lượng mối quan hệ bạn bè giữa tất cả các member trong group với admin.
+   * - Nghĩa là nó đang lấy tất cả số lượng member trong group là bạn bè của admin và so sánh với số lượng member trong group (trừ admin ra) phải bằng nhau.
+   */
+  async countFriendshipsWithUserAmongOthers(userId: string, otherUserIds: string[]): Promise<number> {
+    if (otherUserIds.length === 0) {
+      return 0;
+    }
+    const userOid = new ObjectId(userId);
+    const others = otherUserIds.map((id) => new ObjectId(id));
+    return this.db.friendships.countDocuments({
+      $or: [
+        { userIdLow: userOid, userIdHigh: { $in: others } },
+        { userIdHigh: userOid, userIdLow: { $in: others } }
+      ]
+    });
+  }
+
+  async insertFriendship(userIdA: string, userIdB: string): Promise<void> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(new ObjectId(userIdA), new ObjectId(userIdB));
     const doc = new FriendshipSchema({ userIdLow, userIdHigh, createdAt: new Date() });
     await this.db.friendships.insertOne(doc);
   }
 
-  async deleteFriendshipPair(userIdA: ObjectId, userIdB: ObjectId): Promise<number> {
-    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+  async deleteFriendshipPair(userIdA: string, userIdB: string): Promise<number> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(new ObjectId(userIdA), new ObjectId(userIdB));
     const result = await this.db.friendships.deleteOne({ userIdLow, userIdHigh });
     return result.deletedCount;
   }

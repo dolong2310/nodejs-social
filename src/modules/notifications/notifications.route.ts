@@ -3,7 +3,7 @@
  */
 
 import { BaseRoute, INotificationsController, INotificationsValidation, IUsersValidation, protect } from '@/modules';
-import { appLimiter } from '@/shared';
+import { appLimiter, validateCursorPaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class NotificationsRoute extends BaseRoute {
@@ -25,6 +25,7 @@ class NotificationsRoute extends BaseRoute {
       appLimiter,
       protect,
       this.usersValidation.userVerifiedValidation,
+      validateCursorPaginationQuery,
       this.notificationsValidation.listQuery,
       asyncHandler(this.notificationsController.list)
     );

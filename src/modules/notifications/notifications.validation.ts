@@ -17,8 +17,6 @@ export class NotificationsValidation implements INotificationsValidation {
   listQuery = validate(
     checkSchema(
       {
-        limit: { optional: true, isInt: { options: { min: 1, max: 100 } } },
-        cursor: { optional: true, isString: true },
         unreadOnly: { optional: true, isIn: { options: [['true', 'false', '1', '0']] } }
       },
       ['query']

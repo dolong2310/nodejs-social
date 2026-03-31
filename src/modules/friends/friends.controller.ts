@@ -9,14 +9,14 @@ import {
   UnfriendParamsDTO
 } from '@/modules';
 import { Created } from '@/providers';
-import { PaginationQueryDTO } from '@/shared';
+import { CursorPaginationQueryDTO } from '@/shared';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IFriendsController {
-  listFriends(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
-  listIncoming(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
-  listOutgoing(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
+  listFriends(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
+  listIncoming(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
+  listOutgoing(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
   sendFriendRequest(req: Request<ParamsDictionary, object, SendFriendRequestBodyDTO>, res: Response): Promise<void>;
   acceptIncomingRequest(req: Request<AcceptDeclineRequestParamsDTO>, res: Response): Promise<void>;
   declineIncomingRequest(req: Request<AcceptDeclineRequestParamsDTO>, res: Response): Promise<void>;
@@ -29,38 +29,38 @@ export class FriendsController extends BaseController implements IFriendsControl
     super();
   }
 
-  listFriends = async (req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) => {
+  listFriends = async (req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) => {
     const userId = this.getUserId(req);
-    const { page, limit } = req.query;
-    const { users, total } = await this.friendsService.listFriends(userId, page, limit);
-    this.sendPaginatedResponse<FriendUserSummaryResponseDTO[]>({
+    const { limit, cursor } = req.query;
+    const { users, nextCursor } = await this.friendsService.listFriends(userId, Number(limit), cursor);
+    this.sendCursorPaginatedResponse({
       res,
-      data: users.map((u) => new FriendUserSummaryResponseDTO(u)),
-      pagination: { page, limit, totalItems: total },
+      items: users.map((u) => new FriendUserSummaryResponseDTO(u)),
+      nextCursor,
       message: 'Get friends successfully'
     });
   };
 
-  listIncoming = async (req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) => {
+  listIncoming = async (req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) => {
     const userId = this.getUserId(req);
-    const { page, limit } = req.query;
-    const { users, total } = await this.friendsService.listIncomingRequests(userId, page, limit);
-    this.sendPaginatedResponse<FriendUserSummaryResponseDTO[]>({
+    const { limit, cursor } = req.query;
+    const { users, nextCursor } = await this.friendsService.listIncomingRequests(userId, Number(limit), cursor);
+    this.sendCursorPaginatedResponse({
       res,
-      data: users.map((u) => new FriendUserSummaryResponseDTO(u)),
-      pagination: { page, limit, totalItems: total },
+      items: users.map((u) => new FriendUserSummaryResponseDTO(u)),
+      nextCursor,
       message: 'Get incoming friend requests successfully'
     });
   };
 
-  listOutgoing = async (req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) => {
+  listOutgoing = async (req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) => {
     const userId = this.getUserId(req);
-    const { page, limit } = req.query;
-    const { users, total } = await this.friendsService.listOutgoingRequests(userId, page, limit);
-    this.sendPaginatedResponse<FriendUserSummaryResponseDTO[]>({
+    const { limit, cursor } = req.query;
+    const { users, nextCursor } = await this.friendsService.listOutgoingRequests(userId, Number(limit), cursor);
+    this.sendCursorPaginatedResponse({
       res,
-      data: users.map((u) => new FriendUserSummaryResponseDTO(u)),
-      pagination: { page, limit, totalItems: total },
+      items: users.map((u) => new FriendUserSummaryResponseDTO(u)),
+      nextCursor,
       message: 'Get outgoing friend requests successfully'
     });
   };

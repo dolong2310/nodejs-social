@@ -13,7 +13,6 @@ import {
 } from '@/modules';
 import type { IRedisService } from '@/providers';
 import { redactNewFeedAuthor } from '@/utils';
-import { ObjectId } from 'mongodb';
 
 export interface ISearchService {
   searchPosts(
@@ -51,7 +50,7 @@ export class SearchService extends BaseService implements ISearchService {
     userId?: string;
   }): Promise<[PostDetailResponseDTO[], number]> {
     const blockedAuthorIds = userId
-      ? await this.blockRepository.listUserIdsBlockedInEitherDirection(new ObjectId(userId))
+      ? await this.blockRepository.listUserIdsBlockedInEitherDirection(userId)
       : undefined;
 
     const extraVisiblePostIds =
@@ -85,10 +84,9 @@ export class SearchService extends BaseService implements ISearchService {
     const [posts, totalPosts] = await Promise.all([postsPromise, totalPostsPromise]);
 
     if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
-      const viewerOid = new ObjectId(userId);
-      const blockedHex = new Set(blockedAuthorIds.filter((id) => !id.equals(viewerOid)).map((b) => b.toHexString()));
+      const blockedHex = new Set(blockedAuthorIds.filter((id) => id !== userId));
       for (const p of posts) {
-        const row = p as PostDetailResponseDTO & { author?: { _id: ObjectId } };
+        const row = p as PostDetailResponseDTO & { author?: { _id: { toHexString(): string } } };
         if (row.author && blockedHex.has(row.author._id.toHexString())) {
           redactNewFeedAuthor(row as unknown as PostNewFeedResponseDTO);
         }

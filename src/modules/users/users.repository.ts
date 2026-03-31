@@ -25,7 +25,7 @@ export interface IUserRepository {
   findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null>;
   findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null>;
   findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null>;
-  findManyByIds(ids: string[]): Promise<IUser[]>;
+  findManyByIds(ids: string[], projection?: Record<string, 0 | 1>): Promise<IUser[]>;
 }
 
 export class UserRepository extends BaseRepository implements IUserRepository {
@@ -109,7 +109,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return this.db.users.findOne<T>({ username }, options ?? {});
   }
 
-  async findManyByIds(ids: string[]): Promise<IUser[]> {
+  async findManyByIds(ids: string[], projection?: Record<string, 0 | 1>): Promise<IUser[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -118,6 +118,6 @@ export class UserRepository extends BaseRepository implements IUserRepository {
       return [];
     }
     const oids = unique.map((id) => new ObjectId(id));
-    return this.db.users.find({ _id: { $in: oids } }).toArray();
+    return this.db.users.find({ _id: { $in: oids } }, projection ? { projection } : undefined).toArray();
   }
 }

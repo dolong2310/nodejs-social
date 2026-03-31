@@ -1,5 +1,4 @@
 import { IFriendRequest } from '@/modules';
-import { ObjectId } from 'mongodb';
 
 /** Minimal user fields for friends / request lists (aligns with typical client needs). */
 export class FriendUserSummaryResponseDTO {
@@ -8,8 +7,8 @@ export class FriendUserSummaryResponseDTO {
   username?: string;
   avatar?: string;
 
-  constructor(user: { _id: ObjectId; name: string; username?: string; avatar?: string }) {
-    this._id = user._id.toString();
+  constructor(user: { _id: string; name: string; username?: string; avatar?: string }) {
+    this._id = user._id;
     this.name = user.name;
     this.username = user.username;
     this.avatar = user.avatar;

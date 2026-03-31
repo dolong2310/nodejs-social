@@ -238,7 +238,7 @@ export class UsersValidation implements IUsersValidation {
             trim: true,
             custom: {
               options: async (userId: string, { req }) => {
-                if (!isValidMongoId) {
+                if (!isValidMongoId(userId)) {
                   throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_USER_ID);
                 }
 

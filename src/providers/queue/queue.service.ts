@@ -2,7 +2,10 @@ import {
   EmailJobQueue,
   EmailWorker,
   IEmailJobQueue,
+  INotificationTrimJobQueue,
   IVideoHLSJobQueue,
+  NotificationTrimJobQueue,
+  NotificationTrimWorker,
   VideoHLSJobQueue,
   VideoHLSWorker
 } from '@/providers';
@@ -15,6 +18,7 @@ const log = LoggerInstance.getLogger().child({ module: 'queue' });
 export interface IQueueService {
   getEmailJobQueue(): IEmailJobQueue;
   getVideoHLSJobQueue(): IVideoHLSJobQueue;
+  getNotificationTrimJobQueue(): INotificationTrimJobQueue;
 }
 
 export class QueueService implements IQueueService {
@@ -22,6 +26,7 @@ export class QueueService implements IQueueService {
 
   private readonly emailJobQueue: EmailJobQueue;
   private readonly videoHLSJobQueue: VideoHLSJobQueue;
+  private readonly notificationTrimJobQueue: NotificationTrimJobQueue;
   private readonly workers: Worker[];
 
   private constructor(redisOptions: RedisOptions) {
@@ -40,9 +45,14 @@ export class QueueService implements IQueueService {
     // 1. Initialize queues
     this.emailJobQueue = new EmailJobQueue(connection);
     this.videoHLSJobQueue = new VideoHLSJobQueue(connection);
+    this.notificationTrimJobQueue = new NotificationTrimJobQueue(connection);
 
     // 2. Initialize workers
-    this.workers = [new EmailWorker().createWorker(connection), new VideoHLSWorker().createWorker(connection)];
+    this.workers = [
+      new EmailWorker().createWorker(connection),
+      new VideoHLSWorker().createWorker(connection),
+      new NotificationTrimWorker().createWorker(connection)
+    ];
 
     log.info('queue service initialized');
   }
@@ -66,7 +76,8 @@ export class QueueService implements IQueueService {
     await Promise.allSettled([
       ...QueueService.instance.workers.map((w) => w.close()),
       QueueService.instance.emailJobQueue.close(),
-      QueueService.instance.videoHLSJobQueue.close()
+      QueueService.instance.videoHLSJobQueue.close(),
+      QueueService.instance.notificationTrimJobQueue.close()
     ]);
     QueueService.instance = null;
     log.info('queue service closed');
@@ -82,5 +93,9 @@ export class QueueService implements IQueueService {
 
   getVideoHLSJobQueue(): IVideoHLSJobQueue {
     return this.videoHLSJobQueue;
+  }
+
+  getNotificationTrimJobQueue(): INotificationTrimJobQueue {
+    return this.notificationTrimJobQueue;
   }
 }

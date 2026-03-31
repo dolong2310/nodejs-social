@@ -61,15 +61,16 @@ export class NotificationSchema implements INotification {
   public payload: INotificationPayload;
 
   constructor(
-    data: Omit<INotification, '_id' | 'createdAt' | 'read' | 'readAt'> & {
+    data: Omit<INotification, '_id' | 'createdAt' | 'read' | 'readAt' | 'recipientId'> & {
       _id?: ObjectId;
+      recipientId: string | ObjectId;
       createdAt?: Date;
       read?: boolean;
       readAt?: Date;
     }
   ) {
     this._id = data._id ?? new ObjectId();
-    this.recipientId = data.recipientId;
+    this.recipientId = typeof data.recipientId === 'string' ? new ObjectId(data.recipientId) : data.recipientId;
     this.read = data.read ?? false;
     this.readAt = data.readAt;
     this.createdAt = data.createdAt ?? new Date();

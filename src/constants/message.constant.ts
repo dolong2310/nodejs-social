@@ -110,6 +110,9 @@ export const VALIDATION_ERROR_MESSAGE = {
   INVALID_RECEIVER_ID: 'Invalid receiver ID',
 
   // Conversation errors
+  CONVERSATION_ID_IS_REQUIRED: 'Conversation ID is required',
+  CONVERSATION_ID_MUST_BE_A_STRING: 'Conversation ID must be a string',
+  INVALID_CONVERSATION_ID: 'Invalid conversation ID',
   CONVERSATION_NOT_FOUND: 'Conversation not found',
   CONVERSATION_NOT_MEMBER: 'You are not a member of this conversation',
   CONVERSATION_PEER_NOT_FRIEND: 'You can only start a direct conversation with a friend',

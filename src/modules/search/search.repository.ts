@@ -24,18 +24,18 @@ export interface ISearchRepository {
     people?: ESearchPeople;
     page: number;
     limit: number;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
-    blockedAuthorIds?: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    findFriendUserIds(userId: string): Promise<string[]>;
+    blockedAuthorIds?: string[];
+    extraVisiblePostIds?: string[];
   }): Promise<PostDetailResponseDTO[]>;
   countPosts(payload: {
     userId?: string;
     query: string;
     type?: ESearchType;
     people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
-    blockedAuthorIds?: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    findFriendUserIds(userId: string): Promise<string[]>;
+    blockedAuthorIds?: string[];
+    extraVisiblePostIds?: string[];
   }): Promise<number>;
   findUsers(payload: {
     userId?: string;
@@ -43,13 +43,13 @@ export interface ISearchRepository {
     people?: ESearchPeople;
     page: number;
     limit: number;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<string[]>;
   }): Promise<IUser[]>;
   countUsers(payload: {
     userId?: string;
     query: string;
     people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<string[]>;
   }): Promise<number>;
 }
 
@@ -65,9 +65,9 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     people?: ESearchPeople;
     page: number;
     limit: number;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
-    blockedAuthorIds?: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    findFriendUserIds(userId: string): Promise<string[]>;
+    blockedAuthorIds?: string[];
+    extraVisiblePostIds?: string[];
   }): Promise<PostDetailResponseDTO[]> {
     const match = await this._getPostMatch(payload);
     const pipelineGetNewFeeds = buildBasePostPipeline({
@@ -86,9 +86,9 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     query: string;
     type?: ESearchType;
     people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
-    blockedAuthorIds?: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    findFriendUserIds(userId: string): Promise<string[]>;
+    blockedAuthorIds?: string[];
+    extraVisiblePostIds?: string[];
   }): Promise<number> {
     const match = await this._getPostMatch(payload);
     return this.count(this.db.posts, match);
@@ -104,7 +104,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     people?: ESearchPeople;
     page: number;
     limit: number;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<string[]>;
   }): Promise<IUser[]> {
     // Tìm kiếm users theo query (tìm kiếm theo name, username, email)
     // Nếu có userId (đang login) thì có thể filter theo `people`; không thì chỉ tìm tất cả users
@@ -132,7 +132,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     userId?: string;
     query: string;
     people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<string[]>;
   }): Promise<number> {
     const match = await this._getUserMatch(payload);
     const totalUsers = await this.db.users.countDocuments(match);
@@ -152,9 +152,9 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     query: string;
     type?: ESearchType;
     people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
-    blockedAuthorIds?: ObjectId[];
-    extraVisiblePostIds?: ObjectId[];
+    findFriendUserIds(userId: string): Promise<string[]>;
+    blockedAuthorIds?: string[];
+    extraVisiblePostIds?: string[];
   }) {
     const andClauses: Record<string, unknown>[] = [];
 
@@ -176,8 +176,8 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
 
     if (userId) {
       const viewerOid = new ObjectId(userId);
-      const blocked = (blockedAuthorIds ?? []).filter((id) => !id.equals(viewerOid));
-      const friendIds = (await findFriendUserIds(userId)).filter((id) => !id.equals(viewerOid));
+      const blocked = (blockedAuthorIds ?? []).filter((id) => id !== userId).map((id) => new ObjectId(id));
+      const friendIds = (await findFriendUserIds(userId)).filter((id) => id !== userId).map((id) => new ObjectId(id));
 
       const orVisibility: Record<string, unknown>[] = [
         {
@@ -191,15 +191,16 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
         }
       ];
       if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
-        orVisibility.push({ _id: { $in: extraVisiblePostIds } });
+        orVisibility.push({ _id: { $in: extraVisiblePostIds.map((id) => new ObjectId(id)) } });
       }
       andClauses.push({ $or: orVisibility });
 
       if (people) {
         if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
-          const friendUserIds = await findFriendUserIds(userId);
+          const friendHexes = await findFriendUserIds(userId);
+          const friendOids = friendHexes.map((id) => new ObjectId(id));
           andClauses.push({
-            userId: people === ESearchPeople.FRIENDS ? { $in: friendUserIds } : { $nin: friendUserIds }
+            userId: people === ESearchPeople.FRIENDS ? { $in: friendOids } : { $nin: friendOids }
           });
         } else if (people === ESearchPeople.ONLY_ME) {
           andClauses.push({ userId: { $eq: viewerOid } });
@@ -224,7 +225,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     userId?: string;
     query: string;
     people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<ObjectId[]>;
+    findFriendUserIds(userId: string): Promise<string[]>;
   }) {
     const match: Record<string, unknown> = {};
 
@@ -236,8 +237,9 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
 
     if (people && userId) {
       if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
-        const friendUserIds = await findFriendUserIds(userId);
-        match['_id'] = people === ESearchPeople.FRIENDS ? { $in: friendUserIds } : { $nin: friendUserIds };
+        const friendHexes = await findFriendUserIds(userId);
+        const friendOids = friendHexes.map((id) => new ObjectId(id));
+        match['_id'] = people === ESearchPeople.FRIENDS ? { $in: friendOids } : { $nin: friendOids };
       } else if (people === ESearchPeople.ONLY_ME) {
         match['_id'] = { $eq: new ObjectId(userId) };
       }

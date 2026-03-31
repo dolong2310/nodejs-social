@@ -13,7 +13,7 @@ import {
 } from '@/modules';
 import { LoggerInstance } from '@/providers/logger';
 import { IHashtag, IRefreshToken, IVideoStatus } from '@/shared';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import { ClientSession, Collection, Db, Document, MongoClient } from 'mongodb';
 import { ConnectionService } from '../connection.abstract';
 
 const log = LoggerInstance.getLogger().child({ module: 'mongodb' });
@@ -30,6 +30,8 @@ export interface IDatabaseService {
   createPostsIndex(): Promise<void>;
   createNotificationIndexes(): Promise<void>;
   initializeConversationIndexes(): Promise<void>;
+  /** Multi-document transaction on this client (replica set / sharded cluster). Pass `session` into operations that should participate. */
+  createTransaction<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
 }
 
 export class DatabaseService extends ConnectionService implements IDatabaseService {
@@ -42,6 +44,19 @@ export class DatabaseService extends ConnectionService implements IDatabaseServi
     this.client = new MongoClient(config.uri);
     this.db = this.client.db(config.databaseName);
     this.chatDb = this.client.db(config.chatDatabaseName);
+  }
+
+  async createTransaction<T>(fn: (session: ClientSession) => Promise<T>): Promise<T> {
+    const session = this.client.startSession();
+    try {
+      let result!: T;
+      await session.withTransaction(async () => {
+        result = await fn(session);
+      });
+      return result;
+    } finally {
+      await session.endSession();
+    }
   }
 
   async connect() {
@@ -249,6 +264,11 @@ export class DatabaseService extends ConnectionService implements IDatabaseServi
     const byUser = 'userId_1_chatId_1';
     if (!(await this.indexExistsSafe(col, [byUser]))) {
       await col.createIndex({ userId: 1, chatId: 1 });
+    }
+
+    const byChatRole = 'chatId_1_role_1';
+    if (!(await this.indexExistsSafe(col, [byChatRole]))) {
+      await col.createIndex({ chatId: 1, role: 1 });
     }
   }
 

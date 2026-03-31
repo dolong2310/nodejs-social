@@ -5,12 +5,13 @@
 import {
   BaseRoute,
   IChatMessagesController,
+  IChatMessagesValidation,
   IConversationsController,
   IConversationsValidation,
   IUsersValidation,
   protect
 } from '@/modules';
-import { appLimiter } from '@/shared';
+import { appLimiter, validateCursorPaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class ConversationsRoute extends BaseRoute {
@@ -18,6 +19,7 @@ class ConversationsRoute extends BaseRoute {
   private chatMessagesController!: IChatMessagesController;
   private usersValidation!: IUsersValidation;
   private conversationsValidation!: IConversationsValidation;
+  private chatMessagesValidation!: IChatMessagesValidation;
 
   constructor() {
     super();
@@ -28,6 +30,7 @@ class ConversationsRoute extends BaseRoute {
     this.chatMessagesController = this.container.getChatMessagesController();
     this.usersValidation = this.container.getUsersValidation();
     this.conversationsValidation = this.container.getConversationsValidation();
+    this.chatMessagesValidation = this.container.getChatMessagesValidation();
 
     this.router.post(
       '/direct',
@@ -52,38 +55,8 @@ class ConversationsRoute extends BaseRoute {
       appLimiter,
       protect,
       this.usersValidation.userVerifiedValidation,
-      this.conversationsValidation.listConversationsQuery,
+      validateCursorPaginationQuery,
       asyncHandler(this.conversationsController.listConversations)
-    );
-
-    this.router.get(
-      '/:conversationId/messages',
-      appLimiter,
-      protect,
-      this.usersValidation.userVerifiedValidation,
-      this.conversationsValidation.conversationIdParam,
-      this.conversationsValidation.listMessagesQuery,
-      asyncHandler(this.chatMessagesController.listMessages)
-    );
-
-    this.router.post(
-      '/:conversationId/messages',
-      appLimiter,
-      protect,
-      this.usersValidation.userVerifiedValidation,
-      this.conversationsValidation.conversationIdParam,
-      this.conversationsValidation.sendMessageBody,
-      asyncHandler(this.chatMessagesController.sendMessage)
-    );
-
-    this.router.patch(
-      '/:conversationId/read',
-      appLimiter,
-      protect,
-      this.usersValidation.userVerifiedValidation,
-      this.conversationsValidation.conversationIdParam,
-      this.conversationsValidation.markReadBody,
-      asyncHandler(this.chatMessagesController.markRead)
     );
 
     this.router.get(
@@ -153,6 +126,37 @@ class ConversationsRoute extends BaseRoute {
       this.conversationsValidation.conversationIdParam,
       this.conversationsValidation.newAdminUserIdBody,
       asyncHandler(this.conversationsController.transferAdmin)
+    );
+
+    // Chat Messages
+    this.router.get(
+      '/:conversationId/messages',
+      appLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.conversationsValidation.conversationIdParam,
+      validateCursorPaginationQuery,
+      asyncHandler(this.chatMessagesController.listMessages)
+    );
+
+    this.router.post(
+      '/:conversationId/messages',
+      appLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.conversationsValidation.conversationIdParam,
+      this.chatMessagesValidation.sendMessageBody,
+      asyncHandler(this.chatMessagesController.sendMessage)
+    );
+
+    this.router.patch(
+      '/:conversationId/read',
+      appLimiter,
+      protect,
+      this.usersValidation.userVerifiedValidation,
+      this.conversationsValidation.conversationIdParam,
+      this.chatMessagesValidation.markReadBody,
+      asyncHandler(this.chatMessagesController.markRead)
     );
   }
 }

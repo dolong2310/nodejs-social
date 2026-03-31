@@ -1,5 +1,5 @@
 // WARN: Keep the order of the exports.
-// 'base' must be first because it is used in other modules.
+// 'base' must be first position because it is used in other modules.
 export * from './base';
 export * from './users';
 export * from './auth';
@@ -12,4 +12,5 @@ export * from './likes';
 export * from './blocks';
 export * from './friends';
 export * from './conversations';
+export * from './chatMessages';
 export * from './notifications';

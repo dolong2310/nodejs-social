@@ -1,14 +1,16 @@
-import { BaseController, INotificationsService, MarkNotificationsReadBodyDTO } from '@/modules';
+import {
+  BaseController,
+  INotificationsService,
+  MarkNotificationsReadBodyDTO,
+  NotificationIdParams,
+  NotificationListQueryDTO
+} from '@/modules';
 import { OK } from '@/providers';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
-export interface NotificationIdParams extends ParamsDictionary {
-  notificationId: string;
-}
-
 export interface INotificationsController {
-  list(req: Request, res: Response): Promise<void>;
+  list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>, res: Response): Promise<void>;
   markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>, res: Response): Promise<void>;
   markOneRead(req: Request<NotificationIdParams>, res: Response): Promise<void>;
 }
@@ -18,15 +20,18 @@ export class NotificationsController extends BaseController implements INotifica
     super();
   }
 
-  list = async (req: Request, res: Response) => {
+  list = async (req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>, res: Response) => {
     const userId = this.getUserId(req);
-    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-    const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
-    const unreadRaw = req.query.unreadOnly;
+    const { limit, cursor, unreadOnly: unreadRaw } = req.query;
     const unreadOnly =
       unreadRaw === 'true' || unreadRaw === '1' ? true : unreadRaw === 'false' || unreadRaw === '0' ? false : undefined;
-    const page = await this.notificationsService.listForViewer(userId, limit, cursor, unreadOnly);
-    this.sendResponse({ res, data: page, message: 'Notifications loaded' });
+    const page = await this.notificationsService.listForViewer(userId, Number(limit), cursor, unreadOnly);
+    this.sendCursorPaginatedResponse({
+      res,
+      items: page.notifications,
+      nextCursor: page.nextCursor,
+      message: 'Notifications loaded'
+    });
   };
 
   markRead = async (req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>, res: Response) => {

@@ -1,5 +1,4 @@
 import { EConversationMemberRole, EConversationType, IConversation, IConversationMember } from '@/modules';
-import { ObjectId } from 'mongodb';
 
 export interface ConversationMemberRowDTO {
   userId: string;
@@ -24,7 +23,7 @@ export interface ConversationDetailResponseDTO extends ConversationSummaryRespon
   members: ConversationMemberRowDTO[];
 }
 
-export function toConversationSummary(conv: IConversation, peerUserId?: ObjectId): ConversationSummaryResponseDTO {
+export function toConversationSummary(conv: IConversation, peerUserIdHex?: string): ConversationSummaryResponseDTO {
   const base: ConversationSummaryResponseDTO = {
     id: conv._id.toHexString(),
     type: conv.type,
@@ -34,8 +33,8 @@ export function toConversationSummary(conv: IConversation, peerUserId?: ObjectId
     updatedAt: conv.updatedAt.toISOString(),
     createdAt: conv.createdAt.toISOString()
   };
-  if (peerUserId) {
-    base.peerUserId = peerUserId.toHexString();
+  if (peerUserIdHex) {
+    base.peerUserId = peerUserIdHex;
   }
   return base;
 }
