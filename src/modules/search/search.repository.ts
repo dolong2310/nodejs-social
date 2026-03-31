@@ -4,6 +4,7 @@
  * It provides methods to interact with the search data in the database.
  */
 
+import { Injectable } from '@/decorators';
 import {
   BaseRepository,
   EMediaType,
@@ -53,6 +54,7 @@ export interface ISearchRepository {
   }): Promise<number>;
 }
 
+@Injectable()
 export class SearchRepository extends BaseRepository implements ISearchRepository {
   async findPosts({
     page,

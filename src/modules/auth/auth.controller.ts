@@ -4,16 +4,16 @@ import {
   refreshTokenMaxAgeMs,
   VALIDATION_ERROR_MESSAGE
 } from '@/constants';
+import { Injectable } from '@/decorators';
 import { ETokenType, TokenPayload } from '@/interfaces';
 import {
+  AuthService,
   BaseController,
   ChangePasswordRequestDTO,
   ChangePasswordResponseDTO,
   EUserVerificationStatus,
   ForgotPasswordRequestDTO,
   ForgotPasswordResponseDTO,
-  IAuthService,
-  IUsersService,
   LoginRequestDTO,
   LoginResponseDTO,
   LogoutRequestDTO,
@@ -25,6 +25,7 @@ import {
   ResendVerifyEmailResponseDTO,
   ResetPasswordRequestDTO,
   ResetPasswordResponseDTO,
+  UsersService,
   VerifyEmailRequestDTO,
   VerifyEmailResponseDTO
 } from '@/modules';
@@ -44,10 +45,11 @@ export interface IAuthController {
   changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class AuthController extends BaseController implements IAuthController {
   constructor(
-    private readonly authService: IAuthService,
-    private readonly usersService: IUsersService
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService
   ) {
     super();
   }

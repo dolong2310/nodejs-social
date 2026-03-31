@@ -1,17 +1,18 @@
 import { config } from '@/config';
 import { CACHE_KEYS } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
   BaseService,
-  IBlockRepository,
-  IFriendsService,
-  IPostsService,
-  ISearchRepository,
+  BlockRepository,
+  FriendsService,
   IUser,
   PostDetailResponseDTO,
   PostNewFeedResponseDTO,
-  SearchQueryDTO
+  PostsService,
+  SearchQueryDTO,
+  SearchRepository
 } from '@/modules';
-import type { IRedisService } from '@/providers';
+import { RedisService } from '@/providers';
 import { redactNewFeedAuthor } from '@/utils';
 
 export interface ISearchService {
@@ -28,13 +29,14 @@ export interface ISearchService {
 }
 
 /** Search uses `findFriendUserIds` for `people` query filter (mutual friends via FriendsService). */
+@Injectable()
 export class SearchService extends BaseService implements ISearchService {
   constructor(
-    private readonly searchRepository: ISearchRepository,
-    private readonly friendsService: IFriendsService,
-    private readonly postsService: IPostsService,
-    private readonly blockRepository: IBlockRepository,
-    private readonly redis: IRedisService
+    private readonly searchRepository: SearchRepository,
+    private readonly friendsService: FriendsService,
+    private readonly postsService: PostsService,
+    private readonly blockRepository: BlockRepository,
+    private readonly redis: RedisService
   ) {
     super();
   }

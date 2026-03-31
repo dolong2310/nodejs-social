@@ -1,9 +1,10 @@
+import { Injectable } from '@/decorators';
 import {
   AcceptDeclineRequestParamsDTO,
   BaseController,
   FriendRequestRowResponseDTO,
   FriendUserSummaryResponseDTO,
-  IFriendsService,
+  FriendsService,
   RevokeOutgoingRequestParamsDTO,
   SendFriendRequestBodyDTO,
   UnfriendParamsDTO
@@ -24,8 +25,9 @@ export interface IFriendsController {
   unfriend(req: Request<UnfriendParamsDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class FriendsController extends BaseController implements IFriendsController {
-  constructor(private readonly friendsService: IFriendsService) {
+  constructor(private readonly friendsService: FriendsService) {
     super();
   }
 

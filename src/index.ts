@@ -3,6 +3,7 @@ import { config, envConfig, getCorsAllowedOrigins } from '@/config';
 import { LoggerInstance } from '@/providers';
 import { initUploadsFolder } from '@/utils';
 import { createServer } from 'http';
+import 'reflect-metadata';
 
 async function bootstrap() {
   const port = config.port;

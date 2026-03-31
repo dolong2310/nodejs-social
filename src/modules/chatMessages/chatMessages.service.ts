@@ -1,17 +1,18 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
+  BlockRepository,
+  ChatMessageRepository,
   ChatMessageResponseDTO,
   ChatMessagesPageResponseDTO,
+  ConversationMemberRepository,
+  ConversationRepository,
   EConversationType,
-  IBlockRepository,
   IChatAttachment,
   IChatMessage,
-  IChatMessageRepository,
   IConversation,
-  IConversationMemberRepository,
-  IConversationRepository,
-  INotificationsService,
   MarkChatReadBodyDTO,
+  NotificationsService,
   SendChatMessageBodyDTO,
   toChatMessageDto
 } from '@/modules';
@@ -44,15 +45,16 @@ export interface IChatMessagesService {
   markRead(userId: string, conversationId: string, body: MarkChatReadBodyDTO): Promise<void>;
 }
 
+@Injectable()
 export class ChatMessagesService extends SharedConversationsService implements IChatMessagesService {
   private realtimeChatEmitter: IRealtimeChatEmitter | null = null;
 
   constructor(
-    private readonly conversationRepository: IConversationRepository,
-    protected readonly conversationMemberRepository: IConversationMemberRepository,
-    private readonly chatMessageRepository: IChatMessageRepository,
-    private readonly blockRepository: IBlockRepository,
-    private readonly notificationsService: INotificationsService
+    private readonly conversationRepository: ConversationRepository,
+    protected readonly conversationMemberRepository: ConversationMemberRepository,
+    private readonly chatMessageRepository: ChatMessageRepository,
+    private readonly blockRepository: BlockRepository,
+    private readonly notificationsService: NotificationsService
   ) {
     super(conversationMemberRepository);
   }

@@ -1,4 +1,5 @@
-import { IUsersValidation } from '@/modules';
+import { AutoBind, Injectable } from '@/decorators';
+import { UsersValidation } from '@/modules';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 
@@ -7,12 +8,17 @@ export interface IBlocksValidation {
   unblockUserIdValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
+@Injectable()
 export class BlocksValidation implements IBlocksValidation {
-  blockUserBodyValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  unblockUserIdValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  constructor(private readonly usersValidation: UsersValidation) {}
 
-  constructor(private readonly usersValidation: IUsersValidation) {
-    this.blockUserBodyValidation = this.usersValidation.userIdValidation('userId', 'body');
-    this.unblockUserIdValidation = this.usersValidation.userIdValidation('userId', 'params');
+  @AutoBind()
+  blockUserBodyValidation() {
+    return this.usersValidation.userIdValidation('userId', 'body');
+  }
+
+  @AutoBind()
+  unblockUserIdValidation() {
+    return this.usersValidation.userIdValidation('userId', 'params');
   }
 }

@@ -2,6 +2,7 @@
  * FriendshipRepository — undirected friend edges (normalized userIdLow/userIdHigh).
  */
 
+import { Injectable } from '@/decorators';
 import { BaseRepository, FriendshipSchema, IFriendship } from '@/modules';
 import { ObjectId } from 'mongodb';
 
@@ -27,6 +28,7 @@ export function normalizeFriendshipPair(a: ObjectId, b: ObjectId): { userIdLow: 
   return cmp < 0 ? { userIdLow: a, userIdHigh: b } : { userIdLow: b, userIdHigh: a };
 }
 
+@Injectable()
 export class FriendshipRepository extends BaseRepository implements IFriendshipRepository {
   async findFriendUserIdsForUser(userId: string): Promise<string[]> {
     const oid = new ObjectId(userId);

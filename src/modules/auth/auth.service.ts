@@ -1,5 +1,6 @@
 import { envConfig } from '@/config';
 import { CACHE_KEYS, VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import { EEmailTemplate, ETokenType } from '@/interfaces';
 import {
   AuthTokenPair,
@@ -10,7 +11,6 @@ import {
   ForgotPasswordRequestDTO,
   ForgotPasswordResponseDTO,
   IUser,
-  IUserRepository,
   LoginRequestDTO,
   LogoutRequestDTO,
   LogoutResponseDTO,
@@ -20,10 +20,11 @@ import {
   ResendVerifyEmailResponseDTO,
   ResetPasswordRequestDTO,
   ResetPasswordResponseDTO,
+  UserRepository,
   VerifyEmailResponseDTO
 } from '@/modules';
-import { BadRequestError, IEmailJobQueue, IRedisService } from '@/providers';
-import { IRefreshToken, ITokenService } from '@/shared';
+import { BadRequestError, EmailJobQueue, RedisService } from '@/providers';
+import { IRefreshToken, TokenService } from '@/shared';
 import { comparePassword, hashPassword } from '@/utils';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
@@ -46,12 +47,13 @@ export interface IAuthService {
   findRefreshTokenByToken(token: string): Promise<IRefreshToken | null>;
 }
 
+@Injectable()
 export class AuthService extends BaseService implements IAuthService {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly tokenService: ITokenService,
-    private readonly emailJobQueue: IEmailJobQueue,
-    private readonly redisService: IRedisService
+    private readonly userRepository: UserRepository,
+    private readonly tokenService: TokenService,
+    private readonly emailJobQueue: EmailJobQueue,
+    private readonly redisService: RedisService
   ) {
     super();
   }

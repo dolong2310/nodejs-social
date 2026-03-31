@@ -1,11 +1,12 @@
 import { envConfig } from '@/config';
+import { Injectable } from '@/decorators';
 import {
+  AuthService,
   GetGoogleAuthUrlQueryDTO,
-  IAuthService,
-  IUsersService,
   OAuthGoogleLoginQueryDTO,
   OAuthGoogleLoginResponseDTO,
-  RegisterRequestDTO
+  RegisterRequestDTO,
+  UsersService
 } from '@/modules';
 import { BadRequestError } from '@/providers';
 import axios from 'axios';
@@ -18,12 +19,13 @@ export interface IOAuthService {
   googleLogin(query: OAuthGoogleLoginQueryDTO): Promise<OAuthGoogleLoginResponseDTO>;
 }
 
+@Injectable()
 export class OAuthService implements IOAuthService {
   private oauth2Client: OAuth2Client;
 
   constructor(
-    private readonly authService: IAuthService,
-    private readonly usersService: IUsersService
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService
   ) {
     this.oauth2Client = new google.auth.OAuth2(
       envConfig.GOOGLE_CLIENT_ID,

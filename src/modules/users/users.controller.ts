@@ -1,12 +1,13 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
   BaseController,
+  BlockRepository,
   GetUserProfileParamsDTO,
-  IBlockRepository,
-  IUsersService,
   UpdateMeBodyDTO,
   UpdateMeRequestDTO,
-  UserResponseDTO
+  UserResponseDTO,
+  UsersService
 } from '@/modules';
 import { ForbiddenError, NotFoundError } from '@/providers';
 import { Request, Response } from 'express';
@@ -18,10 +19,11 @@ export interface IUsersController {
   getUserProfile(req: Request<GetUserProfileParamsDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class UsersController extends BaseController implements IUsersController {
   constructor(
-    private readonly usersService: IUsersService,
-    private readonly blockRepository: IBlockRepository
+    private readonly usersService: UsersService,
+    private readonly blockRepository: BlockRepository
   ) {
     super();
   }

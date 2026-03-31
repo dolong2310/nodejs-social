@@ -1,19 +1,20 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
   BaseService,
+  BlockRepository,
   CreatePostRequestDTO,
   EPostAudience,
   EPostType,
+  FriendsService,
   GetNewFeedsPayloadDTO,
   GetPostDetailParamsDTO,
   GetPostsParamsDTO,
-  IBlockRepository,
-  IFriendsService,
   IPost,
-  IPostRepository,
   PatchPostRequestDTO,
   PostDetailResponseDTO,
-  PostNewFeedResponseDTO
+  PostNewFeedResponseDTO,
+  PostRepository
 } from '@/modules';
 import { ForbiddenError, NotFoundError } from '@/providers';
 import { IHashtag, PaginationQueryDTO } from '@/shared';
@@ -51,11 +52,12 @@ export interface IPostsService {
   getExtraVisiblePostIdsForBlockedEngagement(userId: string, blockedAuthorIds: string[]): Promise<string[]>;
 }
 
+@Injectable()
 export class PostsService extends BaseService implements IPostsService {
   constructor(
-    private readonly postRepository: IPostRepository,
-    private readonly blockRepository: IBlockRepository,
-    private readonly friendsService: IFriendsService
+    private readonly postRepository: PostRepository,
+    private readonly blockRepository: BlockRepository,
+    private readonly friendsService: FriendsService
   ) {
     super();
   }

@@ -2,6 +2,7 @@
  * FriendRequestRepository — directed pending requests.
  */
 
+import { Injectable } from '@/decorators';
 import { BaseRepository, FriendRequestSchema, IFriendRequest } from '@/modules';
 import { ObjectId } from 'mongodb';
 
@@ -23,6 +24,7 @@ export interface IFriendRequestRepository {
   findPendingByDirectedPair(fromUserId: string, toUserId: string): Promise<IFriendRequest | null>;
 }
 
+@Injectable()
 export class FriendRequestRepository extends BaseRepository implements IFriendRequestRepository {
   async countOutgoingRequestsCreatedOnUtcDay(
     fromUserId: string,

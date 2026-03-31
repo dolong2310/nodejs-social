@@ -1,5 +1,7 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
+  BlockRepository,
   ConversationDetailResponseDTO,
   ConversationMemberRepository,
   ConversationRepository,
@@ -8,14 +10,11 @@ import {
   CreateGroupConversationBodyDTO,
   EConversationMemberRole,
   EConversationType,
-  IBlockRepository,
+  FriendsService,
   IConversation,
   IConversationMember,
-  IConversationMemberRepository,
-  IConversationRepository,
-  IFriendsService,
-  INotificationsService,
   InviteConversationMemberBodyDTO,
+  NotificationsService,
   PatchConversationBodyDTO,
   PatchConversationMemberRoleBodyDTO,
   toConversationMemberRow,
@@ -61,13 +60,14 @@ export interface IConversationsService {
   ): Promise<ConversationDetailResponseDTO>;
 }
 
+@Injectable()
 export class ConversationsService extends SharedConversationsService implements IConversationsService {
   constructor(
-    private readonly conversationRepository: IConversationRepository,
-    protected readonly conversationMemberRepository: IConversationMemberRepository,
-    private readonly friendsService: IFriendsService,
-    private readonly blockRepository: IBlockRepository,
-    private readonly notificationsService: INotificationsService
+    private readonly conversationRepository: ConversationRepository,
+    protected readonly conversationMemberRepository: ConversationMemberRepository,
+    private readonly friendsService: FriendsService,
+    private readonly blockRepository: BlockRepository,
+    private readonly notificationsService: NotificationsService
   ) {
     super(conversationMemberRepository);
   }

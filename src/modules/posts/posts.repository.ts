@@ -4,6 +4,7 @@
  * It provides methods to interact with the post data in the database.
  */
 
+import { Injectable } from '@/decorators';
 import {
   BaseRepository,
   CreatePostRequestDTO,
@@ -76,6 +77,7 @@ export interface IPostRepository {
   findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]>;
 }
 
+@Injectable()
 export class PostRepository extends BaseRepository implements IPostRepository {
   constructor(readonly db: DatabaseService) {
     super(db);

@@ -1,5 +1,6 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { IUsersValidation } from '@/modules';
+import { AutoBind, Injectable } from '@/decorators';
+import { UsersValidation } from '@/modules';
 import { isValidMongoId, validate } from '@/utils';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -11,36 +12,44 @@ export interface INotificationsValidation {
   notificationIdParam: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
+@Injectable()
 export class NotificationsValidation implements INotificationsValidation {
-  notificationIdParam!: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+  constructor(private readonly usersValidation: UsersValidation) {}
 
-  listQuery = validate(
-    checkSchema(
-      {
-        unreadOnly: { optional: true, isIn: { options: [['true', 'false', '1', '0']] } }
-      },
-      ['query']
-    )
-  );
+  @AutoBind()
+  notificationIdParam() {
+    return this.usersValidation.userIdValidation('notificationId', 'params');
+  }
 
-  markReadBody = validate(
-    checkSchema(
-      {
-        ids: { optional: true, isArray: true },
-        'ids.*': {
-          isString: true,
-          trim: true,
-          custom: {
-            options: (id: string) => isValidMongoId(id),
-            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_USER_ID
+  @AutoBind()
+  listQuery() {
+    return validate(
+      checkSchema(
+        {
+          unreadOnly: { optional: true, isIn: { options: [['true', 'false', '1', '0']] } }
+        },
+        ['query']
+      )
+    );
+  }
+
+  @AutoBind()
+  markReadBody() {
+    return validate(
+      checkSchema(
+        {
+          ids: { optional: true, isArray: true },
+          'ids.*': {
+            isString: true,
+            trim: true,
+            custom: {
+              options: (id: string) => isValidMongoId(id),
+              errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_USER_ID
+            }
           }
-        }
-      },
-      ['body']
-    )
-  );
-
-  constructor(usersValidation: IUsersValidation) {
-    this.notificationIdParam = usersValidation.userIdValidation('notificationId', 'params');
+        },
+        ['body']
+      )
+    );
   }
 }

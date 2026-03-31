@@ -1,14 +1,15 @@
+import { Injectable } from '@/decorators';
 import {
   BaseController,
   CreatePostRequestDTO,
+  FriendsService,
   GetPostDetailParamsDTO,
   GetPostsParamsDTO,
-  IFriendsService,
   IPost,
-  IPostsService,
   PatchPostRequestDTO,
   PostDetailResponseDTO,
-  PostNewFeedResponseDTO
+  PostNewFeedResponseDTO,
+  PostsService
 } from '@/modules';
 import { Created } from '@/providers';
 import { PaginationQueryDTO } from '@/shared';
@@ -23,10 +24,11 @@ export interface IPostsController {
   patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class PostsController extends BaseController implements IPostsController {
   constructor(
-    private readonly postsService: IPostsService,
-    private readonly friendsService: IFriendsService
+    private readonly postsService: PostsService,
+    private readonly friendsService: FriendsService
   ) {
     super();
   }

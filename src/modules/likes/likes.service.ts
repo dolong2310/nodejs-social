@@ -1,10 +1,11 @@
+import { Injectable } from '@/decorators';
 import {
   BaseService,
   CreateLikeRequestDTO,
   CreateLikeResponseDTO,
   DeleteLikeParamsDTO,
   DeleteLikeResponseDTO,
-  ILikeRepository
+  LikeRepository
 } from '@/modules';
 
 export interface ILikesService {
@@ -12,8 +13,9 @@ export interface ILikesService {
   unlikePost(payload: DeleteLikeParamsDTO & { userId: string }): Promise<DeleteLikeResponseDTO | null>;
 }
 
+@Injectable()
 export class LikesService extends BaseService implements ILikesService {
-  constructor(private readonly likeRepository: ILikeRepository) {
+  constructor(private readonly likeRepository: LikeRepository) {
     super();
   }
 

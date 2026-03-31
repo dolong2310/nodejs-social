@@ -1,3 +1,4 @@
+import { Injectable } from '@/decorators';
 import type { IConversationMember } from '@/modules';
 import {
   BaseRepository,
@@ -22,6 +23,7 @@ export interface IConversationRepository {
   touchUpdatedAt(conversationId: string, at?: Date): Promise<void>;
 }
 
+@Injectable()
 export class ConversationRepository extends BaseRepository implements IConversationRepository {
   findById(conversationId: string): Promise<IConversation | null> {
     return this.db.conversations.findOne({ _id: new ObjectId(conversationId) });

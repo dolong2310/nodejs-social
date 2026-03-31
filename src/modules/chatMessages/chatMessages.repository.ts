@@ -1,3 +1,4 @@
+import { Injectable } from '@/decorators';
 import { BaseRepository, ChatMessageSchema, IChatAttachment, IChatMessage } from '@/modules';
 import { Filter, ObjectId } from 'mongodb';
 
@@ -16,6 +17,7 @@ export interface IChatMessageRepository {
   ): Promise<IChatMessage[]>;
 }
 
+@Injectable()
 export class ChatMessageRepository extends BaseRepository implements IChatMessageRepository {
   async insertMessage(
     chatId: string,

@@ -1,7 +1,8 @@
+import { Injectable } from '@/decorators';
 import {
   BaseController,
+  ChatMessagesService,
   ConversationIdParams,
-  IChatMessagesService,
   MarkChatReadBodyDTO,
   SendChatMessageBodyDTO
 } from '@/modules';
@@ -18,8 +19,9 @@ export interface IChatMessagesController {
   markRead(req: Request<ConversationIdParams, object, MarkChatReadBodyDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class ChatMessagesController extends BaseController implements IChatMessagesController {
-  constructor(private readonly chatMessagesService: IChatMessagesService) {
+  constructor(private readonly chatMessagesService: ChatMessagesService) {
     super();
   }
 

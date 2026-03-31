@@ -5,23 +5,23 @@
  */
 
 import { CACHE_KEYS, CACHE_TTL, VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AutoBind } from '@/decorators';
-import type { IFriendshipRepository } from '@/modules';
+import { AutoBind, Injectable } from '@/decorators';
 import {
   BaseService,
   BlockRepository,
   FriendRequestRepository,
+  FriendshipRepository,
   IFriendRequest,
-  INotificationsService,
   IUser,
-  IUserRepository
+  NotificationsService,
+  UserRepository
 } from '@/modules';
 import {
   BadRequestError,
   ConflictRequestError,
   ForbiddenError,
-  IRedisService,
   NotFoundError,
+  RedisService,
   TooManyRequestsError
 } from '@/providers';
 import {
@@ -68,16 +68,17 @@ export interface IFriendsService {
   ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }>;
 }
 
+@Injectable()
 export class FriendsService extends BaseService implements IFriendsService {
   private static readonly OUTGOING_REQUESTS_PER_UTC_DAY = 100;
 
   constructor(
-    private readonly friendshipRepository: IFriendshipRepository,
+    private readonly friendshipRepository: FriendshipRepository,
     private readonly friendRequestRepository: FriendRequestRepository,
     private readonly blockRepository: BlockRepository,
-    private readonly redisService: IRedisService,
-    private readonly userRepository: IUserRepository,
-    private readonly notificationsService: INotificationsService
+    private readonly redisService: RedisService,
+    private readonly userRepository: UserRepository,
+    private readonly notificationsService: NotificationsService
   ) {
     super();
   }
@@ -108,7 +109,7 @@ export class FriendsService extends BaseService implements IFriendsService {
     await Promise.all([this.invalidateFriendCache(userIdA), this.invalidateFriendCache(userIdB)]);
   }
 
-  @AutoBind
+  @AutoBind()
   async findFriendUserIds(userId: string): Promise<string[]> {
     const cached = await this.redisService.get<string[]>(CACHE_KEYS.friends(userId));
     if (cached !== null) {

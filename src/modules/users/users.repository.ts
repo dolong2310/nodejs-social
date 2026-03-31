@@ -4,6 +4,7 @@
  * It provides methods to interact with the user data in the database.
  */
 
+import { Injectable } from '@/decorators';
 import { BaseRepository, EUserVerificationStatus, IUser, RegisterRequestDTO, UserSchema } from '@/modules';
 import { IRefreshToken, RefreshTokenSchema } from '@/shared';
 import { FindOneAndUpdateOptions, FindOneOptions, ObjectId, UpdateResult } from 'mongodb';
@@ -28,6 +29,7 @@ export interface IUserRepository {
   findManyByIds(ids: string[], projection?: Record<string, 0 | 1>): Promise<IUser[]>;
 }
 
+@Injectable()
 export class UserRepository extends BaseRepository implements IUserRepository {
   findRefreshToken(token: string): Promise<IRefreshToken | null> {
     return this.db.refreshTokens.findOne<IRefreshToken>({ token });

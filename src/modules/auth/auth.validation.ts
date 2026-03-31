@@ -1,8 +1,9 @@
 import { REFRESH_TOKEN_COOKIE_NAME, VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { AutoBind, Injectable } from '@/decorators';
 import { ETokenType } from '@/interfaces';
 import { dateOfBirthSchema, nameSchema } from '@/modules';
 import { AuthFailureError, BadRequestError, ForbiddenError } from '@/providers';
-import { ITokenService } from '@/shared';
+import { TokenService } from '@/shared';
 import { validate } from '@/utils';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -89,127 +90,147 @@ export interface IAuthValidation {
   refreshTokenValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
+@Injectable()
 export class AuthValidation implements IAuthValidation {
-  constructor(private readonly tokenService: ITokenService) {}
+  constructor(private readonly tokenService: TokenService) {}
 
-  registerValidation = validate(
-    checkSchema(
-      {
-        name: nameSchema,
-        email: emailSchema,
-        password: passwordSchema,
-        confirmPassword: confirmPasswordSchema,
-        dateOfBirth: dateOfBirthSchema
-      },
-      ['body']
-    )
-  );
+  @AutoBind()
+  registerValidation() {
+    return validate(
+      checkSchema(
+        {
+          name: nameSchema,
+          email: emailSchema,
+          password: passwordSchema,
+          confirmPassword: confirmPasswordSchema,
+          dateOfBirth: dateOfBirthSchema
+        },
+        ['body']
+      )
+    );
+  }
 
-  loginValidation = validate(
-    checkSchema(
-      {
-        email: emailSchema,
-        password: passwordSchema
-      },
-      ['body']
-    )
-  );
+  @AutoBind()
+  loginValidation() {
+    return validate(
+      checkSchema(
+        {
+          email: emailSchema,
+          password: passwordSchema
+        },
+        ['body']
+      )
+    );
+  }
 
-  verifyEmailValidation = validate(
-    checkSchema(
-      {
-        token: {
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.TOKEN_MUST_BE_STRING
-          },
-          trim: true,
+  @AutoBind()
+  verifyEmailValidation() {
+    return validate(
+      checkSchema(
+        {
+          token: {
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.TOKEN_MUST_BE_STRING
+            },
+            trim: true,
 
-          custom: {
-            options: async (token: string, { req }) => {
-              if (!token) {
-                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_REQUIRED);
-              }
-
-              try {
-                const decoded = await this.tokenService.verifyEmailVerificationToken(token);
-                if (decoded.type !== ETokenType.EMAIL_VERIFICATION_TOKEN) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+            custom: {
+              options: async (token: string, { req }) => {
+                if (!token) {
+                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_REQUIRED);
                 }
 
-                req.tokenPayload = decoded;
-                return true;
-              } catch (error) {
-                if (error instanceof jwt.JsonWebTokenError) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                try {
+                  const decoded = await this.tokenService.verifyEmailVerificationToken(token);
+                  if (decoded.type !== ETokenType.EMAIL_VERIFICATION_TOKEN) {
+                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                  }
+
+                  req.tokenPayload = decoded;
+                  return true;
+                } catch (error) {
+                  if (error instanceof jwt.JsonWebTokenError) {
+                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                  }
+                  throw error;
                 }
-                throw error;
-              }
-            }
-          }
-        }
-      },
-      ['body']
-    )
-  );
-
-  forgotPasswordValidation = validate(
-    checkSchema(
-      {
-        email: emailSchema
-      },
-      ['body']
-    )
-  );
-
-  resetPasswordValidation = validate(
-    checkSchema(
-      {
-        password: passwordSchema,
-        confirmPassword: confirmPasswordSchema,
-        token: {
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.TOKEN_MUST_BE_STRING
-          },
-          trim: true,
-          custom: {
-            options: async (value: string, { req }) => {
-              if (!value) {
-                throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_REQUIRED);
-              }
-
-              try {
-                const decoded = await this.tokenService.verifyForgotPasswordToken(value);
-                if (decoded.type !== ETokenType.FORGOT_PASSWORD_TOKEN) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
-                }
-
-                req.tokenPayload = decoded;
-                return true;
-              } catch (error) {
-                if (error instanceof jwt.JsonWebTokenError) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
-                }
-                throw error;
               }
             }
           }
-        }
-      },
-      ['body']
-    )
-  );
+        },
+        ['body']
+      )
+    );
+  }
 
-  changePasswordValidation = validate(
-    checkSchema(
-      {
-        password: passwordSchema,
-        confirmPassword: confirmPasswordSchema
-      },
-      ['body']
-    )
-  );
+  @AutoBind()
+  forgotPasswordValidation() {
+    return validate(
+      checkSchema(
+        {
+          email: emailSchema
+        },
+        ['body']
+      )
+    );
+  }
 
-  refreshTokenValidation = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  @AutoBind()
+  resetPasswordValidation() {
+    return validate(
+      checkSchema(
+        {
+          password: passwordSchema,
+          confirmPassword: confirmPasswordSchema,
+          token: {
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.TOKEN_MUST_BE_STRING
+            },
+            trim: true,
+            custom: {
+              options: async (value: string, { req }) => {
+                if (!value) {
+                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_REQUIRED);
+                }
+
+                try {
+                  const decoded = await this.tokenService.verifyForgotPasswordToken(value);
+                  if (decoded.type !== ETokenType.FORGOT_PASSWORD_TOKEN) {
+                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                  }
+
+                  req.tokenPayload = decoded;
+                  return true;
+                } catch (error) {
+                  if (error instanceof jwt.JsonWebTokenError) {
+                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                  }
+                  throw error;
+                }
+              }
+            }
+          }
+        },
+        ['body']
+      )
+    );
+  }
+
+  @AutoBind()
+  changePasswordValidation() {
+    return validate(
+      checkSchema(
+        {
+          password: passwordSchema,
+          confirmPassword: confirmPasswordSchema
+        },
+        ['body']
+      )
+    );
+  }
+
+  @AutoBind()
+  async refreshTokenValidation(req: Request, _res: Response, next: NextFunction): Promise<void> {
     const token = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
     if (!token || typeof token !== 'string' || !token.trim()) {
       next(new ForbiddenError(VALIDATION_ERROR_MESSAGE.NO_TOKEN_PROVIDED));
@@ -229,5 +250,5 @@ export class AuthValidation implements IAuthValidation {
       }
       next(error);
     }
-  };
+  }
 }

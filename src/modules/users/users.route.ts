@@ -2,33 +2,22 @@
  * This file defines the users routes for getting user profile, updating user profile, and getting user profile by username.
  */
 
-import { BaseRoute, IUsersController, IUsersValidation, optionalProtect, protect } from '@/modules';
+import { BaseRoute, UsersController, UsersValidation, optionalProtect, protect } from '@/modules';
 import { appLimiter } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class UsersRoute extends BaseRoute {
-  private usersController!: IUsersController;
-  private usersValidation!: IUsersValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    // Initialize the controller here, after the container is available
-    this.usersController = this.container.getUsersController();
-    this.usersValidation = this.container.getUsersValidation();
+    const { getMe, updateMe, getUserProfile } = this.container.get(UsersController);
+    const { userVerifiedValidation, updateMeValidation } = this.container.get(UsersValidation);
 
-    this.router.get('/me', appLimiter, protect, asyncHandler(this.usersController.getMe));
-    this.router.patch(
-      '/me',
-      appLimiter,
-      protect,
-      this.usersValidation.userVerifiedValidation,
-      this.usersValidation.updateMeValidation,
-      asyncHandler(this.usersController.updateMe)
-    );
-    this.router.get('/:username', appLimiter, optionalProtect, asyncHandler(this.usersController.getUserProfile));
+    this.router.get('/me', appLimiter, protect, asyncHandler(getMe));
+    this.router.patch('/me', appLimiter, protect, userVerifiedValidation, updateMeValidation, asyncHandler(updateMe));
+    this.router.get('/:username', appLimiter, optionalProtect, asyncHandler(getUserProfile));
   }
 }
 

@@ -1,4 +1,5 @@
 import { envConfig } from '@/config';
+import { Injectable } from '@/decorators';
 import { LoggerInstance } from '@/providers/logger';
 import { NotFoundError } from '@/providers/responses';
 import { CompleteMultipartUploadCommandOutput, GetObjectCommandOutput, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
@@ -20,6 +21,7 @@ export interface IS3Service {
   sendFileFromS3(res: Response, filepath: string): Promise<GetObjectCommandOutput>;
 }
 
+@Injectable()
 export class S3Service implements IS3Service {
   private readonly s3: S3;
 

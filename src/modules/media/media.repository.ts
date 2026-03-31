@@ -4,6 +4,7 @@
  * It provides methods to interact with the media data in the database.
  */
 
+import { Injectable } from '@/decorators';
 import { BaseRepository, EEncodingVideoStatus } from '@/modules';
 import { IVideoStatus, VideoStatusSchema } from '@/shared';
 import { UpdateResult } from 'mongodb';
@@ -18,6 +19,7 @@ export interface IMediaRepository {
   findVideoStatusByName(name: string): Promise<IVideoStatus | null>;
 }
 
+@Injectable()
 export class MediaRepository extends BaseRepository implements IMediaRepository {
   async createVideoStatus({ name, status }: { name: string; status: EEncodingVideoStatus }): Promise<IVideoStatus> {
     const videoStatus = new VideoStatusSchema({ name, status });

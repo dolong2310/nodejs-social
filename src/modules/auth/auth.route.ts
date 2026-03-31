@@ -2,76 +2,53 @@
  * This file defines the authentication routes for user signup, signin, token refresh, and logout.
  */
 
-import { BaseRoute, IAuthController, IAuthValidation, IUsersValidation, protect } from '@/modules';
+import { AuthController, AuthValidation, BaseRoute, UsersValidation, protect } from '@/modules';
 import { authLimiter } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class AuthRoute extends BaseRoute {
-  private authController!: IAuthController;
-  private authValidation!: IAuthValidation;
-  private usersValidation!: IUsersValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    // Initialize the controller here, after the container is available
-    this.authController = this.container.getAuthController();
-    this.authValidation = this.container.getAuthValidation();
-    this.usersValidation = this.container.getUsersValidation();
+    const {
+      register,
+      login,
+      logout,
+      refreshToken,
+      verifyEmail,
+      resendVerifyEmail,
+      forgotPassword,
+      resetPassword,
+      changePassword
+    } = this.container.get(AuthController);
+    const {
+      registerValidation,
+      loginValidation,
+      refreshTokenValidation,
+      verifyEmailValidation,
+      forgotPasswordValidation,
+      resetPasswordValidation,
+      changePasswordValidation
+    } = this.container.get(AuthValidation);
+    const { userVerifiedValidation } = this.container.get(UsersValidation);
 
-    this.router.post(
-      '/register',
-      authLimiter,
-      this.authValidation.registerValidation,
-      asyncHandler(this.authController.register)
-    );
-    this.router.post(
-      '/login',
-      authLimiter,
-      this.authValidation.loginValidation,
-      asyncHandler(this.authController.login)
-    );
-    this.router.post(
-      '/logout',
-      authLimiter,
-      protect,
-      this.authValidation.refreshTokenValidation,
-      asyncHandler(this.authController.logout)
-    );
-    this.router.get(
-      '/refresh-token',
-      authLimiter,
-      this.authValidation.refreshTokenValidation,
-      asyncHandler(this.authController.refreshToken)
-    );
-    this.router.post(
-      '/verify-email',
-      authLimiter,
-      this.authValidation.verifyEmailValidation,
-      asyncHandler(this.authController.verifyEmail)
-    );
-    this.router.post('/resend-verify-email', authLimiter, protect, asyncHandler(this.authController.resendVerifyEmail));
-    this.router.post(
-      '/forgot-password',
-      authLimiter,
-      this.authValidation.forgotPasswordValidation,
-      asyncHandler(this.authController.forgotPassword)
-    );
-    this.router.post(
-      '/reset-password',
-      authLimiter,
-      this.authValidation.resetPasswordValidation,
-      asyncHandler(this.authController.resetPassword)
-    );
+    this.router.post('/register', authLimiter, registerValidation, asyncHandler(register));
+    this.router.post('/login', authLimiter, loginValidation, asyncHandler(login));
+    this.router.post('/logout', authLimiter, protect, refreshTokenValidation, asyncHandler(logout));
+    this.router.get('/refresh-token', authLimiter, refreshTokenValidation, asyncHandler(refreshToken));
+    this.router.post('/verify-email', authLimiter, verifyEmailValidation, asyncHandler(verifyEmail));
+    this.router.post('/resend-verify-email', authLimiter, protect, asyncHandler(resendVerifyEmail));
+    this.router.post('/forgot-password', authLimiter, forgotPasswordValidation, asyncHandler(forgotPassword));
+    this.router.post('/reset-password', authLimiter, resetPasswordValidation, asyncHandler(resetPassword));
     this.router.put(
       '/change-password',
       authLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
-      this.authValidation.changePasswordValidation,
-      asyncHandler(this.authController.changePassword)
+      userVerifiedValidation,
+      changePasswordValidation,
+      asyncHandler(changePassword)
     );
   }
 }

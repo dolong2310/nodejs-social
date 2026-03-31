@@ -2,30 +2,26 @@
  * This file defines the search routes for searching posts and users.
  */
 
-import { BaseRoute, ISearchController, ISearchValidation, protectIfHasBearerToken } from '@/modules';
+import { BaseRoute, SearchController, SearchValidation, protectIfHasBearerToken } from '@/modules';
 import { appLimiter, validatePaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 export class SearchRoute extends BaseRoute {
-  private searchController!: ISearchController;
-  private searchValidation!: ISearchValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    // Initialize the controller here, after the container is available
-    this.searchController = this.container.getSearchController();
-    this.searchValidation = this.container.getSearchValidation();
+    const { search } = this.container.get(SearchController);
+    const { searchValidation } = this.container.get(SearchValidation);
 
     this.router.get(
       '/',
       appLimiter,
       protectIfHasBearerToken,
       validatePaginationQuery,
-      this.searchValidation.searchValidation,
-      asyncHandler(this.searchController.search)
+      searchValidation,
+      asyncHandler(search)
     );
   }
 }

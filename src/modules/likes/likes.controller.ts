@@ -1,11 +1,12 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
   BaseController,
   CreateLikeRequestDTO,
   CreateLikeResponseDTO,
   DeleteLikeParamsDTO,
   DeleteLikeResponseDTO,
-  ILikesService
+  LikesService
 } from '@/modules';
 import { BadRequestError, Created } from '@/providers';
 import { Request, Response } from 'express';
@@ -16,8 +17,9 @@ export interface ILikesController {
   deleteLike(req: Request<DeleteLikeParamsDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class LikesController extends BaseController implements ILikesController {
-  constructor(private readonly likesService: ILikesService) {
+  constructor(private readonly likesService: LikesService) {
     super();
   }
 

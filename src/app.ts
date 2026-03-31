@@ -5,7 +5,9 @@ import {
   authRouter,
   blocksRouter,
   bookmarksRouter,
+  ConversationMemberRepository,
   conversationsRouter,
+  FriendshipRepository,
   friendsRouter,
   likesRouter,
   mediaRouter,
@@ -14,7 +16,8 @@ import {
   postsRouter,
   searchRouter,
   staticRouter,
-  usersRouter
+  usersRouter,
+  UsersService
 } from '@/modules';
 import {
   Container,
@@ -24,7 +27,7 @@ import {
   RedisInstance,
   RequestContextLogger
 } from '@/providers';
-import { errorHandler, SocketService } from '@/shared';
+import { errorHandler, SocketService, TokenService } from '@/shared';
 import { ChatFeature } from '@/shared/services/socket/features/chat.feature';
 import { PresenceFeature } from '@/shared/services/socket/features/presence.feature';
 import { getSwaggerDefinition } from '@/utils';
@@ -68,7 +71,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
     app.use(rateLimit(appConfig.rateLimitOptions));
   }
 
-  const container = Container.getOrSet(databaseService, redisService); // init Container
+  const container = Container.getOrSet(); // init Container
   const socket = setupSocket(httpServer, container);
   socket.run();
 
@@ -96,11 +99,11 @@ function createExpressApp(): Express {
 
 function setupSocket(httpServer: HttpServer, container: Container): SocketService {
   const socket = new SocketService(httpServer, {
-    tokenService: container.getTokenService(),
-    usersService: container.getUsersService(),
+    tokenService: container.get(TokenService),
+    usersService: container.get(UsersService),
     features: [
-      new PresenceFeature(container.getFriendshipRepository()),
-      new ChatFeature(container.getConversationMemberRepository())
+      new PresenceFeature(container.get(FriendshipRepository)),
+      new ChatFeature(container.get(ConversationMemberRepository))
     ]
   });
   container.bindNotificationsSocket(socket);

@@ -1,3 +1,4 @@
+import { AutoBind, Injectable } from '@/decorators';
 import { validate } from '@/utils';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -8,24 +9,30 @@ export interface IChatMessagesValidation {
   markReadBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
+@Injectable()
 export class ChatMessagesValidation implements IChatMessagesValidation {
-  sendMessageBody = validate(
-    checkSchema(
-      {
-        text: { optional: true, isString: true, trim: true },
-        attachments: { optional: true, isArray: true }
-      },
-      ['body']
-    )
-  );
+  @AutoBind()
+  sendMessageBody() {
+    return validate(
+      checkSchema(
+        {
+          text: { optional: true, isString: true, trim: true },
+          attachments: { optional: true, isArray: true }
+        },
+        ['body']
+      )
+    );
+  }
 
-  markReadBody = validate(
-    checkSchema(
-      {
-        lastReadMessageId: { optional: true, isString: true, trim: true }
-      },
-      ['body']
-    )
-  );
-
+  @AutoBind()
+  markReadBody() {
+    return validate(
+      checkSchema(
+        {
+          lastReadMessageId: { optional: true, isString: true, trim: true }
+        },
+        ['body']
+      )
+    );
+  }
 }

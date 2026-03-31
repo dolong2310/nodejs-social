@@ -1,4 +1,5 @@
-import { BaseController, ESearchType, ISearchService, IUser, PostDetailResponseDTO, SearchQueryDTO } from '@/modules';
+import { Injectable } from '@/decorators';
+import { BaseController, ESearchType, IUser, PostDetailResponseDTO, SearchQueryDTO, SearchService } from '@/modules';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -6,8 +7,9 @@ export interface ISearchController {
   search(req: Request<ParamsDictionary, object, object, SearchQueryDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class SearchController extends BaseController implements ISearchController {
-  constructor(private readonly searchService: ISearchService) {
+  constructor(private readonly searchService: SearchService) {
     super();
   }
 

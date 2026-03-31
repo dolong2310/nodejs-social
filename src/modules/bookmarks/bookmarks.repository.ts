@@ -4,6 +4,7 @@
  * It provides methods to interact with the bookmark data in the database.
  */
 
+import { Injectable } from '@/decorators';
 import {
   BaseRepository,
   BookmarkSchema,
@@ -18,6 +19,7 @@ export interface IBookmarkRepository {
   findOneAndDelete({ userId, postId }: DeleteBookmarkParamsDTO & { userId: string }): Promise<IBookmark | null>;
 }
 
+@Injectable()
 export class BookmarkRepository extends BaseRepository implements IBookmarkRepository {
   findOneAndUpdate({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null> {
     return this.db.bookmarks.findOneAndUpdate(

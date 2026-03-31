@@ -1,10 +1,11 @@
+import { Injectable } from '@/decorators';
 import {
   BaseService,
+  BookmarkRepository,
   CreateBookmarkRequestDTO,
   CreateBookmarkResponseDTO,
   DeleteBookmarkParamsDTO,
-  DeleteBookmarkResponseDTO,
-  IBookmarkRepository
+  DeleteBookmarkResponseDTO
 } from '@/modules';
 
 export interface IBookmarksService {
@@ -12,8 +13,9 @@ export interface IBookmarksService {
   unbookmarkPost(payload: DeleteBookmarkParamsDTO & { userId: string }): Promise<DeleteBookmarkResponseDTO | null>;
 }
 
+@Injectable()
 export class BookmarksService extends BaseService implements IBookmarksService {
-  constructor(private readonly bookmarkRepository: IBookmarkRepository) {
+  constructor(private readonly bookmarkRepository: BookmarkRepository) {
     super();
   }
 

@@ -1,3 +1,4 @@
+import { Injectable } from '@/decorators';
 import { BaseRepository, ConversationMemberSchema, EConversationMemberRole, IConversationMember } from '@/modules';
 import { Document, ObjectId } from 'mongodb';
 
@@ -29,6 +30,7 @@ export interface IConversationMemberRepository {
   ): Promise<{ conversationId: ObjectId; updatedAt: Date }[]>;
 }
 
+@Injectable()
 export class ConversationMemberRepository extends BaseRepository implements IConversationMemberRepository {
   findMembership(conversationId: string, userId: string): Promise<IConversationMember | null> {
     return this.db.conversationMembers.findOne({

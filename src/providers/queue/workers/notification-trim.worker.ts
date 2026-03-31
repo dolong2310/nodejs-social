@@ -1,5 +1,6 @@
 import { NOTIFICATION_MAX_PER_USER } from '@/constants';
 import { AutoBind } from '@/decorators';
+import { NotificationRepository } from '@/modules';
 import {
   Container,
   INotificationTrimJobData,
@@ -17,7 +18,8 @@ export interface INotificationTrimWorker {
 
 export class NotificationTrimWorker implements INotificationTrimWorker {
   private get notificationRepository() {
-    return Container.get().getNotificationRepository();
+    const container = Container.get();
+    return container.get(NotificationRepository);
   }
 
   // TODO: need reuse function from notifications.service.ts
@@ -29,7 +31,7 @@ export class NotificationTrimWorker implements INotificationTrimWorker {
     await this.notificationRepository.deleteByIds(ids);
   }
 
-  @AutoBind
+  @AutoBind()
   private async processNotificationTrimJob(
     job: Job<INotificationTrimJobData, INotificationTrimJobResult>
   ): Promise<INotificationTrimJobResult> {

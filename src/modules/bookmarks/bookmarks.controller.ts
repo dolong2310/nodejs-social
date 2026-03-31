@@ -1,11 +1,12 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
   BaseController,
+  BookmarksService,
   CreateBookmarkRequestDTO,
   CreateBookmarkResponseDTO,
   DeleteBookmarkParamsDTO,
-  DeleteBookmarkResponseDTO,
-  IBookmarksService
+  DeleteBookmarkResponseDTO
 } from '@/modules';
 import { BadRequestError, Created } from '@/providers';
 import { Request, Response } from 'express';
@@ -16,8 +17,9 @@ export interface IBookmarksController {
   deleteBookmark(req: Request<DeleteBookmarkParamsDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class BookmarksController extends BaseController implements IBookmarksController {
-  constructor(private readonly bookmarksService: IBookmarksService) {
+  constructor(private readonly bookmarksService: BookmarksService) {
     super();
   }
 

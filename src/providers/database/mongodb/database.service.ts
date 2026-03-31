@@ -1,3 +1,4 @@
+import { Injectable } from '@/decorators';
 import {
   IBlock,
   IBookmark,
@@ -34,6 +35,7 @@ export interface IDatabaseService {
   createTransaction<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
 }
 
+@Injectable()
 export class DatabaseService extends ConnectionService implements IDatabaseService {
   private client: MongoClient;
   private db: Db;

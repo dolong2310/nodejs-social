@@ -1,10 +1,11 @@
+import { Injectable } from '@/decorators';
 import {
   BaseController,
   ConversationIdParams,
   ConversationMemberParams,
+  ConversationsService,
   CreateDirectConversationBodyDTO,
   CreateGroupConversationBodyDTO,
-  IConversationsService,
   InviteConversationMemberBodyDTO,
   PatchConversationBodyDTO,
   PatchConversationMemberRoleBodyDTO,
@@ -40,8 +41,9 @@ export interface IConversationsController {
   ): Promise<void>;
 }
 
+@Injectable()
 export class ConversationsController extends BaseController implements IConversationsController {
-  constructor(private readonly conversationsService: IConversationsService) {
+  constructor(private readonly conversationsService: ConversationsService) {
     super();
   }
 

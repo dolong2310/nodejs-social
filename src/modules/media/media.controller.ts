@@ -5,10 +5,11 @@ import {
   UPLOAD_DIR_VIDEO,
   VALIDATION_ERROR_MESSAGE
 } from '@/constants';
+import { Injectable } from '@/decorators';
 import { IMedia } from '@/interfaces';
-import { BaseController, FilenameParamsDTO, IMediaService, VideoHLSParamsDTO } from '@/modules';
+import { BaseController, FilenameParamsDTO, MediaService, VideoHLSParamsDTO } from '@/modules';
 import { BadRequestError, InternalServerError, NotFoundError } from '@/providers';
-import { IS3Service, IVideoStatus } from '@/shared';
+import { IVideoStatus, S3Service } from '@/shared';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import mime from 'mime';
@@ -26,10 +27,11 @@ export interface IMediaController {
   getVideoStatus(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 
+@Injectable()
 export class MediaController extends BaseController implements IMediaController {
   constructor(
-    private readonly mediaService: IMediaService,
-    private readonly s3Service: IS3Service
+    private readonly mediaService: MediaService,
+    private readonly s3Service: S3Service
   ) {
     super();
   }

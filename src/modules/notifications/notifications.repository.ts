@@ -1,3 +1,4 @@
+import { Injectable } from '@/decorators';
 import { BaseRepository, INotification } from '@/modules';
 import { Filter, ObjectId } from 'mongodb';
 
@@ -19,6 +20,7 @@ export interface INotificationRepository {
   deleteByIds(ids: ObjectId[]): Promise<number>;
 }
 
+@Injectable()
 export class NotificationRepository extends BaseRepository implements INotificationRepository {
   async insertOne(doc: INotification): Promise<INotification> {
     await this.db.notifications.insertOne(doc);

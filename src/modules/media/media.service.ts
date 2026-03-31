@@ -1,9 +1,10 @@
 import { config } from '@/config';
 import { UPLOAD_DIR_IMAGE } from '@/constants';
+import { Injectable } from '@/decorators';
 import { IMedia } from '@/interfaces';
-import { EEncodingVideoStatus, EMediaType, IMediaRepository } from '@/modules';
-import { IVideoHLSJobQueue } from '@/providers';
-import { IS3Service, IVideoStatus } from '@/shared';
+import { EEncodingVideoStatus, EMediaType, MediaRepository } from '@/modules';
+import { VideoHLSJobQueue } from '@/providers';
+import { IVideoStatus, S3Service } from '@/shared';
 import { getNameFromFullname, handleUploadImage, handleUploadVideo, handleUploadVideoHLS } from '@/utils';
 import { Request } from 'express';
 import fs from 'fs/promises';
@@ -18,11 +19,12 @@ export interface IMediaService {
   getVideoStatusByName(name: string): Promise<IVideoStatus | null>;
 }
 
+@Injectable()
 export class MediaService implements IMediaService {
   constructor(
-    private readonly mediaRepository: IMediaRepository,
-    private readonly s3Service: IS3Service,
-    private readonly videoHLSJobQueue: IVideoHLSJobQueue
+    private readonly mediaRepository: MediaRepository,
+    private readonly s3Service: S3Service,
+    private readonly videoHLSJobQueue: VideoHLSJobQueue
   ) {}
 
   async uploadImage(req: Request) {

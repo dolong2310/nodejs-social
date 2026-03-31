@@ -2,43 +2,39 @@
  * Likes routes — same engagement gates as bookmarks (verified + visibility + block).
  */
 
-import { BaseRoute, ILikesController, IPostsValidation, IUsersValidation, protect } from '@/modules';
+import { BaseRoute, LikesController, PostsValidation, UsersValidation, protect } from '@/modules';
 import { appLimiter } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 export class LikesRoute extends BaseRoute {
-  private likesController!: ILikesController;
-  private usersValidation!: IUsersValidation;
-  private postsValidation!: IPostsValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    this.likesController = this.container.getLikesController();
-    this.usersValidation = this.container.getUsersValidation();
-    this.postsValidation = this.container.getPostsValidation();
+    const { createLike, deleteLike } = this.container.get(LikesController);
+    const { attachAuthenticatedUserAllowUnverified, forbidUnverifiedEngagement } = this.container.get(UsersValidation);
+    const { postIdValidation, audienceValidation } = this.container.get(PostsValidation);
 
     this.router.post(
       '/',
       appLimiter,
       protect,
-      this.usersValidation.attachAuthenticatedUserAllowUnverified,
-      this.usersValidation.forbidUnverifiedEngagement,
-      this.postsValidation.postIdValidation('postId', 'body'),
-      this.postsValidation.audienceValidation,
-      asyncHandler(this.likesController.createLike)
+      attachAuthenticatedUserAllowUnverified,
+      forbidUnverifiedEngagement,
+      postIdValidation('postId', 'body'),
+      audienceValidation,
+      asyncHandler(createLike)
     );
     this.router.delete(
       '/posts/:postId',
       appLimiter,
       protect,
-      this.usersValidation.attachAuthenticatedUserAllowUnverified,
-      this.usersValidation.forbidUnverifiedEngagement,
-      this.postsValidation.postIdValidation('postId', 'params'),
-      this.postsValidation.audienceValidation,
-      asyncHandler(this.likesController.deleteLike)
+      attachAuthenticatedUserAllowUnverified,
+      forbidUnverifiedEngagement,
+      postIdValidation('postId', 'params'),
+      audienceValidation,
+      asyncHandler(deleteLike)
     );
   }
 }

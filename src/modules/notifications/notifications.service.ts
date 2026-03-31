@@ -1,4 +1,5 @@
 import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT, VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { AutoBind, Injectable } from '@/decorators';
 import {
   BaseService,
   BlockRepository,
@@ -9,15 +10,15 @@ import {
   IFriendRequestNotificationPayload,
   INewMessageNotificationPayload,
   INotification,
-  INotificationRepository,
   IUser,
-  IUserRepository,
   NewMessagePreviewKind,
+  NotificationRepository,
   NotificationSchema,
   NotificationsPageDTO,
-  toNotificationListItem
+  toNotificationListItem,
+  UserRepository
 } from '@/modules';
-import { BadRequestError, INotificationTrimJobQueue, NotFoundError } from '@/providers';
+import { BadRequestError, NotFoundError, NotificationTrimJobQueue } from '@/providers';
 import { decodeNotificationCursor, encodeNotificationCursor } from '@/utils';
 
 export interface ISocketUserEmitter {
@@ -36,6 +37,7 @@ export interface INotificationsService {
   recordAddedToGroup(inviteeUserId: string, inviterUserId: string, conv: IConversation): Promise<void>;
 }
 
+@Injectable()
 export class NotificationsService extends BaseService implements INotificationsService {
   private socketEmitter: ISocketUserEmitter | null = null;
   private static readonly NEW_MESSAGE_OPTIMIZE_THRESHOLD = 50;
@@ -47,10 +49,10 @@ export class NotificationsService extends BaseService implements INotificationsS
   );
 
   constructor(
-    private readonly notificationRepository: INotificationRepository,
-    private readonly userRepository: IUserRepository,
+    private readonly notificationRepository: NotificationRepository,
+    private readonly userRepository: UserRepository,
     private readonly blockRepository: BlockRepository,
-    private readonly notificationTrimJobQueue: INotificationTrimJobQueue
+    private readonly notificationTrimJobQueue: NotificationTrimJobQueue
   ) {
     super();
   }

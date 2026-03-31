@@ -1,9 +1,10 @@
+import { Injectable } from '@/decorators';
 import {
   BaseController,
-  INotificationsService,
   MarkNotificationsReadBodyDTO,
   NotificationIdParams,
-  NotificationListQueryDTO
+  NotificationListQueryDTO,
+  NotificationsService
 } from '@/modules';
 import { OK } from '@/providers';
 import { Request, Response } from 'express';
@@ -15,8 +16,9 @@ export interface INotificationsController {
   markOneRead(req: Request<NotificationIdParams>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class NotificationsController extends BaseController implements INotificationsController {
-  constructor(private readonly notificationsService: INotificationsService) {
+  constructor(private readonly notificationsService: NotificationsService) {
     super();
   }
 

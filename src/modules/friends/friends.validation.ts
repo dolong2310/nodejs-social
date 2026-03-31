@@ -1,4 +1,5 @@
-import { IUsersValidation } from '@/modules';
+import { AutoBind, Injectable } from '@/decorators';
+import { UsersValidation } from '@/modules';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 
@@ -9,11 +10,27 @@ export interface IFriendsValidation {
   unfriendUserIdValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
+@Injectable()
 export class FriendsValidation implements IFriendsValidation {
-  constructor(private readonly usersValidation: IUsersValidation) {}
+  constructor(private readonly usersValidation: UsersValidation) {}
 
-  sendRequestToUserIdValidation = () => this.usersValidation.userIdValidation('toUserId', 'body');
-  incomingFromUserIdValidation = () => this.usersValidation.userIdValidation('fromUserId', 'params');
-  revokeOutgoingToUserIdValidation = () => this.usersValidation.userIdValidation('toUserId', 'params');
-  unfriendUserIdValidation = () => this.usersValidation.userIdValidation('userId', 'params');
+  @AutoBind()
+  sendRequestToUserIdValidation() {
+    return this.usersValidation.userIdValidation('toUserId', 'body');
+  }
+
+  @AutoBind()
+  incomingFromUserIdValidation() {
+    return this.usersValidation.userIdValidation('fromUserId', 'params');
+  }
+
+  @AutoBind()
+  revokeOutgoingToUserIdValidation() {
+    return this.usersValidation.userIdValidation('toUserId', 'params');
+  }
+
+  @AutoBind()
+  unfriendUserIdValidation() {
+    return this.usersValidation.userIdValidation('userId', 'params');
+  }
 }

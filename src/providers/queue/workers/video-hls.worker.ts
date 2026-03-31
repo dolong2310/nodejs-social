@@ -1,6 +1,6 @@
 import { UPLOAD_DIR_VIDEO } from '@/constants';
 import { IVideoHLSJobData } from '@/interfaces';
-import { EEncodingVideoStatus, IMediaRepository } from '@/modules';
+import { EEncodingVideoStatus, IMediaRepository, MediaRepository } from '@/modules';
 import { Container } from '@/providers/container';
 import { LoggerInstance } from '@/providers/logger';
 import { IVideoHLSJobResult, QUEUE_NAMES } from '@/providers/queue';
@@ -23,7 +23,8 @@ export class VideoHLSWorker implements IVideoHLSWorker {
   private readonly s3Service = new S3Service();
 
   private get mediaRepository(): IMediaRepository {
-    return Container.get().getMediaRepository();
+    const container = Container.get();
+    return container.get(MediaRepository);
   }
 
   private async processVideoHLSJob(job: Job<IVideoHLSJobData, IVideoHLSJobResult>): Promise<IVideoHLSJobResult> {

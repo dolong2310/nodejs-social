@@ -1,6 +1,7 @@
 import { CACHE_KEYS, CACHE_TTL } from '@/constants';
-import { BaseService, IUser, IUserRepository, UpdateMeRequestDTO, UserResponseDTO } from '@/modules';
-import { IRedisService } from '@/providers';
+import { Injectable } from '@/decorators';
+import { BaseService, IUser, UpdateMeRequestDTO, UserRepository, UserResponseDTO } from '@/modules';
+import { RedisService } from '@/providers';
 
 export interface IUsersService {
   findUserByEmail(email: string): Promise<IUser | null>;
@@ -12,10 +13,11 @@ export interface IUsersService {
   invalidateUserCache(userId: string): Promise<void>;
 }
 
+@Injectable()
 export class UsersService extends BaseService implements IUsersService {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly redisService: IRedisService
+    private readonly userRepository: UserRepository,
+    private readonly redisService: RedisService
   ) {
     super();
   }

@@ -1,13 +1,14 @@
 import { USERNAME_REGEX, VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { EUserVerificationStatus, IUsersService } from '@/modules';
+import { AutoBind, Injectable } from '@/decorators';
+import { EUserVerificationStatus, UsersService } from '@/modules';
 import {
   AuthFailureError,
   BadRequestError,
   ForbiddenError,
   NotFoundError,
+  RequestContextLogger,
   UnprocessableEntityError
 } from '@/providers';
-import { RequestContextLogger } from '@/providers';
 import { isValidMongoId, validate } from '@/utils';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -78,105 +79,110 @@ export interface IUsersValidation {
   ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
+@Injectable()
 export class UsersValidation implements IUsersValidation {
-  constructor(private readonly usersService: IUsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
-  updateMeValidation = validate(
-    checkSchema(
-      {
-        name: {
-          ...nameSchema,
-          optional: true,
-          notEmpty: undefined
-        },
-        dateOfBirth: {
-          ...dateOfBirthSchema,
-          optional: true
-        },
-        bio: {
-          optional: true,
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.BIO_MUST_BE_A_STRING
+  @AutoBind()
+  updateMeValidation() {
+    return validate(
+      checkSchema(
+        {
+          name: {
+            ...nameSchema,
+            optional: true,
+            notEmpty: undefined
           },
-          isLength: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.BIO_LENGTH_MUST_BE_FROM_1_TO_500,
-            options: {
-              min: 1,
-              max: 500
-            }
+          dateOfBirth: {
+            ...dateOfBirthSchema,
+            optional: true
           },
-          trim: true
-        },
-        location: {
-          optional: true,
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_MUST_BE_A_STRING
-          },
-          isLength: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_LENGTH_MUST_BE_FROM_1_TO_500,
-            options: {
-              min: 1,
-              max: 500
-            }
-          },
-          trim: true
-        },
-        website: {
-          optional: true,
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_MUST_BE_A_STRING
-          },
-          isLength: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_LENGTH_MUST_BE_FROM_1_TO_500,
-            options: {
-              min: 1,
-              max: 500
-            }
-          },
-          trim: true
-        },
-        username: {
-          optional: true,
-          isString: {
-            errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_A_STRING
-          },
-          // isLength: {
-          //   errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_LENGTH_MUST_BE_FROM_1_TO_50,
-          //   options: {
-          //     min: 1,
-          //     max: 50
-          //   }
-          // },
-          trim: true,
-          custom: {
-            options: async (username: string) => {
-              // check if username is valid format
-              if (!USERNAME_REGEX.test(username)) {
-                throw new UnprocessableEntityError(
-                  VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_4_TO_15_CHARACTERS_LONG_AND_CONTAIN_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES
-                );
+          bio: {
+            optional: true,
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.BIO_MUST_BE_A_STRING
+            },
+            isLength: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.BIO_LENGTH_MUST_BE_FROM_1_TO_500,
+              options: {
+                min: 1,
+                max: 500
               }
-
-              // check if username already exists
-              const user = await this.usersService.findUserByUsername(username);
-
-              if (user) {
-                throw new UnprocessableEntityError(VALIDATION_ERROR_MESSAGE.USERNAME_ALREADY_EXISTS);
+            },
+            trim: true
+          },
+          location: {
+            optional: true,
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_MUST_BE_A_STRING
+            },
+            isLength: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_LENGTH_MUST_BE_FROM_1_TO_500,
+              options: {
+                min: 1,
+                max: 500
               }
+            },
+            trim: true
+          },
+          website: {
+            optional: true,
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_MUST_BE_A_STRING
+            },
+            isLength: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_LENGTH_MUST_BE_FROM_1_TO_500,
+              options: {
+                min: 1,
+                max: 500
+              }
+            },
+            trim: true
+          },
+          username: {
+            optional: true,
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_A_STRING
+            },
+            // isLength: {
+            //   errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_LENGTH_MUST_BE_FROM_1_TO_50,
+            //   options: {
+            //     min: 1,
+            //     max: 50
+            //   }
+            // },
+            trim: true,
+            custom: {
+              options: async (username: string) => {
+                // check if username is valid format
+                if (!USERNAME_REGEX.test(username)) {
+                  throw new UnprocessableEntityError(
+                    VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_4_TO_15_CHARACTERS_LONG_AND_CONTAIN_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES
+                  );
+                }
 
-              return true;
+                // check if username already exists
+                const user = await this.usersService.findUserByUsername(username);
+
+                if (user) {
+                  throw new UnprocessableEntityError(VALIDATION_ERROR_MESSAGE.USERNAME_ALREADY_EXISTS);
+                }
+
+                return true;
+              }
             }
-          }
+          },
+          avatar: imageSchema,
+          coverPhoto: imageSchema
         },
-        avatar: imageSchema,
-        coverPhoto: imageSchema
-      },
-      ['body']
-    ),
-    { assignMatchedBody: true, locations: ['body'] }
-  );
+        ['body']
+      ),
+      { assignMatchedBody: true, locations: ['body'] }
+    );
+  }
 
-  userVerifiedValidation = async (req: Request, _res: Response, next: NextFunction) => {
+  @AutoBind()
+  async userVerifiedValidation(req: Request, _res: Response, next: NextFunction) {
     const userId: string | undefined = req.tokenPayload?.userId;
     if (!userId) {
       throw new AuthFailureError();
@@ -194,9 +200,10 @@ export class UsersValidation implements IUsersValidation {
     req.user = user;
     syncLogContextFromUser(req);
     next();
-  };
+  }
 
-  attachAuthenticatedUserAllowUnverified = async (req: Request, _res: Response, next: NextFunction) => {
+  @AutoBind()
+  async attachAuthenticatedUserAllowUnverified(req: Request, _res: Response, next: NextFunction) {
     const userId: string | undefined = req.tokenPayload?.userId;
     if (!userId) {
       throw new AuthFailureError();
@@ -211,9 +218,10 @@ export class UsersValidation implements IUsersValidation {
     req.user = user;
     syncLogContextFromUser(req);
     next();
-  };
+  }
 
-  forbidUnverifiedEngagement = async (req: Request, _res: Response, next: NextFunction) => {
+  @AutoBind()
+  async forbidUnverifiedEngagement(req: Request, _res: Response, next: NextFunction) {
     const user = req.user;
     if (!user) {
       throw new AuthFailureError();
@@ -222,9 +230,10 @@ export class UsersValidation implements IUsersValidation {
       throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ENGAGEMENT_REQUIRES_VERIFIED_ACCOUNT);
     }
     next();
-  };
+  }
 
-  userIdValidation = (key: string, location: Location) => {
+  @AutoBind()
+  userIdValidation(key: string, location: Location) {
     return validate(
       checkSchema(
         {
@@ -262,5 +271,5 @@ export class UsersValidation implements IUsersValidation {
         [location]
       )
     );
-  };
+  }
 }

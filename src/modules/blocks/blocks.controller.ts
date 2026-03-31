@@ -1,9 +1,10 @@
+import { Injectable } from '@/decorators';
 import {
   BaseController,
   BlockCreatedResponseDTO,
+  BlocksService,
   BlockUserBodyDTO,
   FriendUserSummaryResponseDTO,
-  IBlocksService,
   UnblockUserParamsDTO
 } from '@/modules';
 import { Created } from '@/providers';
@@ -17,8 +18,9 @@ export interface IBlocksController {
   listBlocked(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class BlocksController extends BaseController implements IBlocksController {
-  constructor(private readonly blocksService: IBlocksService) {
+  constructor(private readonly blocksService: BlocksService) {
     super();
   }
 

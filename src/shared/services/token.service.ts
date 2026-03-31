@@ -1,4 +1,5 @@
 import { config } from '@/config';
+import { Injectable } from '@/decorators';
 import { ETokenType, TokenPayload, TokenPayloadCreate } from '@/interfaces';
 import jwt, { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
@@ -61,6 +62,7 @@ export interface ITokenService {
   verifyForgotPasswordTokenSync(token: string): TokenPayload;
 }
 
+@Injectable()
 export class TokenService implements ITokenService {
   constructor() {}
 

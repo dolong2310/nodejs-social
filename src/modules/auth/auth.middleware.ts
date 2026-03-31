@@ -1,7 +1,7 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { TokenPayload } from '@/interfaces';
-import { AuthFailureError, Container, ForbiddenError } from '@/providers';
-import { RequestContextLogger } from '@/providers';
+import { AuthFailureError, Container, ForbiddenError, RequestContextLogger } from '@/providers';
+import { TokenService } from '@/shared';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import jwt from 'jsonwebtoken';
@@ -100,7 +100,8 @@ export const optionalAuth = (
 
 const _verifyAccessToken = async (token: string): Promise<TokenPayload> => {
   try {
-    const tokenService = Container.get().getTokenService();
+    const container = Container.get();
+    const tokenService = container.get(TokenService);
     return await tokenService.verifyAccessToken(token);
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

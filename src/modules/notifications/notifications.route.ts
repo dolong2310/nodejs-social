@@ -2,50 +2,39 @@
  * social DB, list + mark read.
  */
 
-import { BaseRoute, INotificationsController, INotificationsValidation, IUsersValidation, protect } from '@/modules';
+import { BaseRoute, NotificationsController, NotificationsValidation, UsersValidation, protect } from '@/modules';
 import { appLimiter, validateCursorPaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class NotificationsRoute extends BaseRoute {
-  private notificationsController!: INotificationsController;
-  private usersValidation!: IUsersValidation;
-  private notificationsValidation!: INotificationsValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    this.notificationsController = this.container.getNotificationsController();
-    this.usersValidation = this.container.getUsersValidation();
-    this.notificationsValidation = this.container.getNotificationsValidation();
+    const { list, markRead, markOneRead } = this.container.get(NotificationsController);
+    const { userVerifiedValidation } = this.container.get(UsersValidation);
+    const { listQuery, markReadBody, notificationIdParam } = this.container.get(NotificationsValidation);
 
     this.router.get(
       '/',
       appLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
+      userVerifiedValidation,
       validateCursorPaginationQuery,
-      this.notificationsValidation.listQuery,
-      asyncHandler(this.notificationsController.list)
+      listQuery,
+      asyncHandler(list)
     );
 
-    this.router.patch(
-      '/read',
-      appLimiter,
-      protect,
-      this.usersValidation.userVerifiedValidation,
-      this.notificationsValidation.markReadBody,
-      asyncHandler(this.notificationsController.markRead)
-    );
+    this.router.patch('/read', appLimiter, protect, userVerifiedValidation, markReadBody, asyncHandler(markRead));
 
     this.router.patch(
       '/:notificationId/read',
       appLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
-      this.notificationsValidation.notificationIdParam,
-      asyncHandler(this.notificationsController.markOneRead)
+      userVerifiedValidation,
+      notificationIdParam,
+      asyncHandler(markOneRead)
     );
   }
 }

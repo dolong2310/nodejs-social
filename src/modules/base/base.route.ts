@@ -6,7 +6,6 @@
  * It is used to set up routes in the application.
  */
 
-// import { DatabaseInstance, RedisInstance } from '@/providers';
 import { Container } from '@/providers/container';
 import express, { Router } from 'express';
 
@@ -16,7 +15,6 @@ export abstract class BaseRoute {
 
   constructor() {
     this.router = express.Router();
-    // this.container = Container.getOrSet(DatabaseInstance.get(), RedisInstance.get());
     this.container = Container.get();
     this.initializeRoutes();
   }

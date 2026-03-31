@@ -2,66 +2,62 @@
  * This file defines the posts routes for getting new feeds, getting post detail, getting posts type, and creating post.
  */
 
-import { BaseRoute, IPostsController, IPostsValidation, IUsersValidation, optionalAuth, protect } from '@/modules';
+import { BaseRoute, PostsController, PostsValidation, UsersValidation, optionalAuth, protect } from '@/modules';
 import { postsLimiter, validatePaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class PostsRoute extends BaseRoute {
-  private postsController!: IPostsController;
-  private postsValidation!: IPostsValidation;
-  private usersValidation!: IUsersValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    // Initialize the controller here, after the container is available
-    this.postsController = this.container.getPostsController();
-    this.postsValidation = this.container.getPostsValidation();
-    this.usersValidation = this.container.getUsersValidation();
+    const { getNewFeeds, patchPost, getPostDetail, getPostsType, createPost } = this.container.get(PostsController);
+    const { postIdValidation, patchPostValidation, audienceValidation, postTypeValidation, createPostValidation } =
+      this.container.get(PostsValidation);
+    const { attachAuthenticatedUserAllowUnverified, userVerifiedValidation } = this.container.get(UsersValidation);
 
     this.router.get(
       '/',
       postsLimiter,
-      optionalAuth(this.usersValidation.attachAuthenticatedUserAllowUnverified),
+      optionalAuth(attachAuthenticatedUserAllowUnverified),
       validatePaginationQuery,
-      asyncHandler(this.postsController.getNewFeeds)
+      asyncHandler(getNewFeeds)
     );
     this.router.patch(
       '/:postId',
       postsLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
-      this.postsValidation.postIdValidation('postId', 'params'),
-      this.postsValidation.patchPostValidation,
-      asyncHandler(this.postsController.patchPost)
+      userVerifiedValidation,
+      postIdValidation('postId', 'params'),
+      patchPostValidation,
+      asyncHandler(patchPost)
     );
     this.router.get(
       '/:postId',
       postsLimiter,
-      optionalAuth(this.usersValidation.userVerifiedValidation),
-      this.postsValidation.postIdValidation('postId', 'params'),
-      this.postsValidation.audienceValidation,
-      asyncHandler(this.postsController.getPostDetail)
+      optionalAuth(userVerifiedValidation),
+      postIdValidation('postId', 'params'),
+      audienceValidation,
+      asyncHandler(getPostDetail)
     );
     this.router.get(
       '/:type/:postId',
       postsLimiter,
-      optionalAuth(this.usersValidation.attachAuthenticatedUserAllowUnverified),
-      this.postsValidation.postIdValidation('postId', 'params'),
-      this.postsValidation.audienceValidation,
-      this.postsValidation.postTypeValidation,
+      optionalAuth(attachAuthenticatedUserAllowUnverified),
+      postIdValidation('postId', 'params'),
+      audienceValidation,
+      postTypeValidation,
       validatePaginationQuery,
-      asyncHandler(this.postsController.getPostsType)
+      asyncHandler(getPostsType)
     );
     this.router.post(
       '/',
       postsLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
-      this.postsValidation.createPostValidation,
-      asyncHandler(this.postsController.createPost)
+      userVerifiedValidation,
+      createPostValidation,
+      asyncHandler(createPost)
     );
   }
 }

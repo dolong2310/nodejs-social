@@ -1,6 +1,7 @@
 import { envConfig } from '@/config';
 import { REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieSharedOptions, refreshTokenMaxAgeMs } from '@/constants';
-import { BaseController, GetGoogleAuthUrlQueryDTO, IOAuthService, OAuthGoogleLoginQueryDTO } from '@/modules';
+import { Injectable } from '@/decorators';
+import { BaseController, GetGoogleAuthUrlQueryDTO, OAuthGoogleLoginQueryDTO, OAuthService } from '@/modules';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -9,8 +10,9 @@ export interface IOAuthController {
   googleLogin(req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response): Promise<void>;
 }
 
+@Injectable()
 export class OAuthController extends BaseController implements IOAuthController {
-  constructor(private readonly oauthService: IOAuthService) {
+  constructor(private readonly oauthService: OAuthService) {
     super();
   }
 

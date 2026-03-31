@@ -2,6 +2,7 @@
  * Like Repository — compound unique (userId, postId), parallel to bookmarks.
  */
 
+import { Injectable } from '@/decorators';
 import { BaseRepository, CreateLikeRequestDTO, DeleteLikeParamsDTO, ILike, LikeSchema } from '@/modules';
 import { ObjectId } from 'mongodb';
 
@@ -10,6 +11,7 @@ export interface ILikeRepository {
   findOneAndDelete({ userId, postId }: DeleteLikeParamsDTO & { userId: string }): Promise<ILike | null>;
 }
 
+@Injectable()
 export class LikeRepository extends BaseRepository implements ILikeRepository {
   findOneAndUpdate({ userId, postId }: { userId: string; postId: string }): Promise<ILike | null> {
     return this.db.likes.findOneAndUpdate(

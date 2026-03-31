@@ -2,46 +2,36 @@
  * Block / unblock / list blocked users.
  */
 
-import { BaseRoute, IBlocksController, IBlocksValidation, IUsersValidation, protect } from '@/modules';
+import { BaseRoute, BlocksController, BlocksValidation, UsersValidation, protect } from '@/modules';
 import { appLimiter, validatePaginationQuery } from '@/shared';
 import { asyncHandler } from '@/utils';
 
 class BlocksRoute extends BaseRoute {
-  private blocksController!: IBlocksController;
-  private usersValidation!: IUsersValidation;
-  private blocksValidation!: IBlocksValidation;
-
   constructor() {
     super();
   }
 
   protected initializeRoutes(): void {
-    this.blocksController = this.container.getBlocksController();
-    this.usersValidation = this.container.getUsersValidation();
-    this.blocksValidation = this.container.getBlocksValidation();
+    const { listBlocked, blockUser, unblockUser } = this.container.get(BlocksController);
+    const { userVerifiedValidation } = this.container.get(UsersValidation);
+    const { blockUserBodyValidation, unblockUserIdValidation } = this.container.get(BlocksValidation);
 
-    this.router.get(
-      '/',
-      protect,
-      this.usersValidation.userVerifiedValidation,
-      validatePaginationQuery,
-      asyncHandler(this.blocksController.listBlocked)
-    );
+    this.router.get('/', protect, userVerifiedValidation, validatePaginationQuery, asyncHandler(listBlocked));
     this.router.post(
       '/',
       appLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
-      this.blocksValidation.blockUserBodyValidation,
-      asyncHandler(this.blocksController.blockUser)
+      userVerifiedValidation,
+      blockUserBodyValidation,
+      asyncHandler(blockUser)
     );
     this.router.delete(
       '/:userId',
       appLimiter,
       protect,
-      this.usersValidation.userVerifiedValidation,
-      this.blocksValidation.unblockUserIdValidation,
-      asyncHandler(this.blocksController.unblockUser)
+      userVerifiedValidation,
+      unblockUserIdValidation,
+      asyncHandler(unblockUser)
     );
   }
 }

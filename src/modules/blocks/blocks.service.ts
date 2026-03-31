@@ -1,6 +1,15 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import type { FriendUserRow, IBlockRepository, IFriendshipRepository, IFriendsService } from '@/modules';
-import { BaseService, FriendRequestRepository, IUser, IUserRepository } from '@/modules';
+import { Injectable } from '@/decorators';
+import type { FriendUserRow } from '@/modules';
+import {
+  BaseService,
+  BlockRepository,
+  FriendRequestRepository,
+  FriendshipRepository,
+  FriendsService,
+  IUser,
+  UserRepository
+} from '@/modules';
 import { BadRequestError, ConflictRequestError, NotFoundError } from '@/providers';
 import { MongoServerError } from 'mongodb';
 
@@ -14,13 +23,14 @@ export interface IBlocksService {
   ): Promise<{ users: FriendUserRow[]; total: number }>;
 }
 
+@Injectable()
 export class BlocksService extends BaseService implements IBlocksService {
   constructor(
-    private readonly blockRepository: IBlockRepository,
-    private readonly friendshipRepository: IFriendshipRepository,
+    private readonly blockRepository: BlockRepository,
+    private readonly friendshipRepository: FriendshipRepository,
     private readonly friendRequestRepository: FriendRequestRepository,
-    private readonly friendsService: IFriendsService,
-    private readonly userRepository: IUserRepository
+    private readonly friendsService: FriendsService,
+    private readonly userRepository: UserRepository
   ) {
     super();
   }
