@@ -1,13 +1,8 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import {
-  AuthFailureError,
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
-  UnprocessableEntityError
-} from '@/providers';
+import { AuthFailureError, BadRequestError, ForbiddenError, UnprocessableEntityError } from '@/providers';
+import { SharedUserIsBannedException, SharedUserNotFoundException, SharedUserNotVerifiedYetException } from '@/shared';
 
-export const UsersUserNotFoundException = new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+export const UsersUserNotFoundException = SharedUserNotFoundException;
 export const CannotViewUserProfileBlockedException = new ForbiddenError(
   VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_USER_PROFILE_BLOCKED
 );
@@ -18,8 +13,8 @@ export const UsernameAlreadyExistsException = new UnprocessableEntityError(
   VALIDATION_ERROR_MESSAGE.USERNAME_ALREADY_EXISTS
 );
 export const MissingAuthTokenPayloadException = new AuthFailureError();
-export const UserNotVerifiedYetException = new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET);
-export const UserIsBannedException = new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+export const UserNotVerifiedYetException = SharedUserNotVerifiedYetException;
+export const UserIsBannedException = SharedUserIsBannedException;
 export const EngagementRequiresVerifiedAccountException = new ForbiddenError(
   VALIDATION_ERROR_MESSAGE.ENGAGEMENT_REQUIRES_VERIFIED_ACCOUNT
 );

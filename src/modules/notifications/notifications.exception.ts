@@ -1,5 +1,4 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError, NotFoundError } from '@/providers';
+import { SharedInvalidCursorException, SharedUserNotFoundException } from '@/shared';
 
-export const NotificationActorUserNotFoundException = new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
-export const NotificationInvalidCursorException = new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+export const NotificationActorUserNotFoundException = SharedUserNotFoundException;
+export const NotificationInvalidCursorException = SharedInvalidCursorException;

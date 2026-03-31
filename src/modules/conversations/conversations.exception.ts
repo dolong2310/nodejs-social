@@ -1,7 +1,9 @@
 import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError, ConflictRequestError, ForbiddenError, NotFoundError } from '@/providers';
+import { BadRequestError, ConflictRequestError, ForbiddenError } from '@/providers';
+import { SharedInvalidCursorException, SharedUserNotFoundException } from '@/shared';
+import { SharedConversationNotFoundException, SharedConversationNotMemberException } from '@/shared/exceptions';
 
-export const ConversationNotFoundException = new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+export const ConversationNotFoundException = SharedConversationNotFoundException;
 export const ConversationInvalidPeerException = new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_INVALID_PEER);
 export const ConversationPeerNotFriendException = new ForbiddenError(
   VALIDATION_ERROR_MESSAGE.CONVERSATION_PEER_NOT_FRIEND
@@ -10,7 +12,7 @@ export const ConversationPeerBlockedException = new ForbiddenError(VALIDATION_ER
 export const ConversationGroupNeedsMemberException = new BadRequestError(
   VALIDATION_ERROR_MESSAGE.CONVERSATION_GROUP_NEEDS_MEMBER
 );
-export const ConversationInvalidCursorException = new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+export const ConversationInvalidCursorException = SharedInvalidCursorException;
 export const ConversationRoleForbiddenException = new ForbiddenError(
   VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN
 );
@@ -30,5 +32,5 @@ export const ConversationCannotKickException = new ForbiddenError(VALIDATION_ERR
 export const ConversationCannotKickBadRequestException = new BadRequestError(
   VALIDATION_ERROR_MESSAGE.CONVERSATION_CANNOT_KICK
 );
-export const ConversationNotMemberException = new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_MEMBER);
-export const ConversationTargetUserNotFoundException = new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+export const ConversationNotMemberException = SharedConversationNotMemberException;
+export const ConversationTargetUserNotFoundException = SharedUserNotFoundException;
