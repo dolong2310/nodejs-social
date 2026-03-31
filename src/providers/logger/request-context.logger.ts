@@ -22,7 +22,7 @@ export class RequestContextLogger {
     const store: RequestLogContext = {
       requestId: id !== undefined && id !== '' ? String(id) : undefined
     };
-    this.run(store, () => next());
+    RequestContextLogger.run(store, () => next());
   }
 
   public static syncLogContextFromAuth(req: Request): void {

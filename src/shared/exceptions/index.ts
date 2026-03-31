@@ -4,6 +4,6 @@ export * from './cursor.exception';
 export * from './email.exception';
 export * from './queue.exception';
 export * from './s3.exception';
-export * from './socket.exception';
 export * from './token.exception';
 export * from './users.exception';
+export * from './socket.exception';
