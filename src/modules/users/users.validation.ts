@@ -1,18 +1,22 @@
 import { USERNAME_REGEX, VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { AutoBind, Injectable } from '@/decorators';
-import { EUserVerificationStatus, UsersService } from '@/modules';
 import {
-  AuthFailureError,
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
-  RequestContextLogger,
-  UnprocessableEntityError
-} from '@/providers';
+  EUserVerificationStatus,
+  EngagementRequiresVerifiedAccountException,
+  InvalidUserIdException,
+  MissingAuthTokenPayloadException,
+  UserIsBannedException,
+  UserNotVerifiedYetException,
+  UsernameAlreadyExistsException,
+  UsernameFormatInvalidException,
+  UsersService,
+  UsersUserNotFoundException
+} from '@/modules';
+import { RequestContextLogger } from '@/providers';
 import { isValidMongoId, validate } from '@/utils';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
-import { checkSchema, Location, ParamSchema } from 'express-validator';
+import { Location, ParamSchema, checkSchema } from 'express-validator';
 
 const { syncLogContextFromUser } = RequestContextLogger;
 
@@ -156,16 +160,14 @@ export class UsersValidation implements IUsersValidation {
               options: async (username: string) => {
                 // check if username is valid format
                 if (!USERNAME_REGEX.test(username)) {
-                  throw new UnprocessableEntityError(
-                    VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_4_TO_15_CHARACTERS_LONG_AND_CONTAIN_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES
-                  );
+                  throw UsernameFormatInvalidException;
                 }
 
                 // check if username already exists
                 const user = await this.usersService.findUserByUsername(username);
 
                 if (user) {
-                  throw new UnprocessableEntityError(VALIDATION_ERROR_MESSAGE.USERNAME_ALREADY_EXISTS);
+                  throw UsernameAlreadyExistsException;
                 }
 
                 return true;
@@ -185,17 +187,17 @@ export class UsersValidation implements IUsersValidation {
   async userVerifiedValidation(req: Request, _res: Response, next: NextFunction) {
     const userId: string | undefined = req.tokenPayload?.userId;
     if (!userId) {
-      throw new AuthFailureError();
+      throw MissingAuthTokenPayloadException;
     }
     const user = await this.usersService.findUserById(userId); // TODO: cache by redis
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw UsersUserNotFoundException;
     }
     if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET);
+      throw UserNotVerifiedYetException;
     }
     if (user.verificationStatus === EUserVerificationStatus.BANNED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+      throw UserIsBannedException;
     }
     req.user = user;
     syncLogContextFromUser(req);
@@ -206,14 +208,14 @@ export class UsersValidation implements IUsersValidation {
   async attachAuthenticatedUserAllowUnverified(req: Request, _res: Response, next: NextFunction) {
     const userId: string | undefined = req.tokenPayload?.userId;
     if (!userId) {
-      throw new AuthFailureError();
+      throw MissingAuthTokenPayloadException;
     }
     const user = await this.usersService.findUserById(userId);
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw UsersUserNotFoundException;
     }
     if (user.verificationStatus === EUserVerificationStatus.BANNED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+      throw UserIsBannedException;
     }
     req.user = user;
     syncLogContextFromUser(req);
@@ -224,10 +226,10 @@ export class UsersValidation implements IUsersValidation {
   async forbidUnverifiedEngagement(req: Request, _res: Response, next: NextFunction) {
     const user = req.user;
     if (!user) {
-      throw new AuthFailureError();
+      throw MissingAuthTokenPayloadException;
     }
     if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ENGAGEMENT_REQUIRES_VERIFIED_ACCOUNT);
+      throw EngagementRequiresVerifiedAccountException;
     }
     next();
   }
@@ -248,7 +250,7 @@ export class UsersValidation implements IUsersValidation {
             custom: {
               options: async (userId: string, { req }) => {
                 if (!isValidMongoId(userId)) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_USER_ID);
+                  throw InvalidUserIdException;
                 }
 
                 const user = (req as Request).user;
@@ -257,7 +259,7 @@ export class UsersValidation implements IUsersValidation {
                   const findUser = await this.usersService.findUserById(userId);
 
                   if (!findUser) {
-                    throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+                    throw UsersUserNotFoundException;
                   }
 
                   (req as Request).user = findUser;

@@ -1,14 +1,16 @@
-import {
-  HTTP_ERROR_MESSAGE,
-  HTTP_STATUS,
-  UPLOAD_DIR_IMAGE,
-  UPLOAD_DIR_VIDEO,
-  VALIDATION_ERROR_MESSAGE
-} from '@/constants';
+import { HTTP_STATUS, UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants';
 import { Injectable } from '@/decorators';
 import { IMedia } from '@/interfaces';
-import { BaseController, FilenameParamsDTO, MediaService, VideoHLSParamsDTO } from '@/modules';
-import { BadRequestError, InternalServerError, NotFoundError } from '@/providers';
+import {
+  BaseController,
+  FilenameParamsDTO,
+  MediaService,
+  RequestedRangeNotSatisfiableException,
+  StaticMediaNotFoundException,
+  StaticVideoStreamInternalServerErrorException,
+  VideoHLSParamsDTO,
+  VideoNotFoundException
+} from '@/modules';
 import { IVideoStatus, S3Service } from '@/shared';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
@@ -40,7 +42,7 @@ export class MediaController extends BaseController implements IMediaController 
     const { filename } = req.params;
     const imagePath = path.resolve(UPLOAD_DIR_IMAGE, filename);
     if (!fs.existsSync(imagePath)) {
-      throw new NotFoundError();
+      throw StaticMediaNotFoundException;
     }
     this.sendFileResponse<typeof imagePath>(res, imagePath);
   };
@@ -49,7 +51,7 @@ export class MediaController extends BaseController implements IMediaController 
     const { filename } = req.params;
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     if (!fs.existsSync(videoPath)) {
-      throw new NotFoundError();
+      throw StaticMediaNotFoundException;
     }
     this.sendFileResponse<typeof videoPath>(res, videoPath);
   };
@@ -58,10 +60,7 @@ export class MediaController extends BaseController implements IMediaController 
     const { filename } = req.params;
     const range = req.headers.range;
     if (!range) {
-      throw new BadRequestError(
-        HTTP_ERROR_MESSAGE.REQUESTED_RANGE_NOT_SATISFIABLE,
-        HTTP_STATUS.REQUESTED_RANGE_NOT_SATISFIABLE
-      );
+      throw RequestedRangeNotSatisfiableException;
     }
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     const videoSize = fs.statSync(videoPath).size;
@@ -83,7 +82,7 @@ export class MediaController extends BaseController implements IMediaController 
       res.end();
     });
     videoStream.on('error', () => {
-      throw new InternalServerError();
+      throw StaticVideoStreamInternalServerErrorException;
     });
     return videoStream;
   };
@@ -133,7 +132,7 @@ export class MediaController extends BaseController implements IMediaController 
     const videoStatus = await this.mediaService.getVideoStatusByName(id);
 
     if (!videoStatus) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.VIDEO_NOT_FOUND);
+      throw VideoNotFoundException;
     }
 
     this.sendResponse<IVideoStatus>({

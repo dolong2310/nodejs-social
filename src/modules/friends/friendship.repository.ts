@@ -3,7 +3,12 @@
  */
 
 import { Injectable } from '@/decorators';
-import { BaseRepository, FriendshipSchema, IFriendship } from '@/modules';
+import {
+  BaseRepository,
+  FriendshipPairRequiresDistinctUserIdsException,
+  FriendshipSchema,
+  IFriendship
+} from '@/modules';
 import { ObjectId } from 'mongodb';
 
 export interface IFriendshipRepository {
@@ -23,7 +28,7 @@ export interface IFriendshipRepository {
 export function normalizeFriendshipPair(a: ObjectId, b: ObjectId): { userIdLow: ObjectId; userIdHigh: ObjectId } {
   const cmp = Buffer.compare(a.id, b.id);
   if (cmp === 0) {
-    throw new Error('friendship pair requires two distinct user ids');
+    throw FriendshipPairRequiresDistinctUserIdsException;
   }
   return cmp < 0 ? { userIdLow: a, userIdHigh: b } : { userIdLow: b, userIdHigh: a };
 }

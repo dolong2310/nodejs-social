@@ -2,6 +2,7 @@ export * from './dtos/posts.request.dto';
 export * from './dtos/posts.response.dto';
 export * from './posts.controller';
 export * from './posts.enum';
+export * from './posts.exception';
 export * from './posts.repository';
 export * from './posts.route';
 export * from './posts.schema';

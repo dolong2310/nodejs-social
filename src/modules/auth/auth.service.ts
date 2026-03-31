@@ -1,5 +1,5 @@
 import { envConfig } from '@/config';
-import { CACHE_KEYS, VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { CACHE_KEYS } from '@/constants';
 import { Injectable } from '@/decorators';
 import { EEmailTemplate, ETokenType } from '@/interfaces';
 import {
@@ -7,9 +7,11 @@ import {
   BaseService,
   ChangePasswordRequestDTO,
   ChangePasswordResponseDTO,
+  EmailAlreadyExistsException,
   EUserVerificationStatus,
   ForgotPasswordRequestDTO,
   ForgotPasswordResponseDTO,
+  InvalidEmailOrPasswordException,
   IUser,
   LoginRequestDTO,
   LogoutRequestDTO,
@@ -23,7 +25,7 @@ import {
   UserRepository,
   VerifyEmailResponseDTO
 } from '@/modules';
-import { BadRequestError, EmailJobQueue, RedisService } from '@/providers';
+import { EmailJobQueue, RedisService } from '@/providers';
 import { IRefreshToken, TokenService } from '@/shared';
 import { comparePassword, hashPassword } from '@/utils';
 import { ObjectId } from 'mongodb';
@@ -69,7 +71,7 @@ export class AuthService extends BaseService implements IAuthService {
 
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
+      throw EmailAlreadyExistsException;
     }
 
     const userId = new ObjectId();
@@ -115,7 +117,7 @@ export class AuthService extends BaseService implements IAuthService {
   async login({ password }: LoginRequestDTO, user: IUser): Promise<AuthTokenPair> {
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+      throw InvalidEmailOrPasswordException;
     }
 
     return this.createAuthSession(user);

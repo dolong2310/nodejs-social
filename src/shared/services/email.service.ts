@@ -1,6 +1,7 @@
 import { envConfig } from '@/config';
 import { EEmailTemplate, IEmailPayload } from '@/interfaces';
 import { LoggerInstance } from '@/providers/logger';
+import { InvalidEmailTemplateException } from '@/shared';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import fs from 'fs';
 import path from 'path';
@@ -72,7 +73,7 @@ export class EmailService {
       case EEmailTemplate.FORGOT_PASSWORD:
         return fs.readFileSync(path.resolve('src/templates/forgot-password-email.html'), 'utf8');
       default:
-        throw new Error('Invalid template');
+        throw InvalidEmailTemplateException;
     }
   }
 

@@ -1,4 +1,5 @@
 export * from './chatMessages.controller';
+export * from './chatMessages.exception';
 export * from './chatMessages.repository';
 export * from './chatMessages.schema';
 export * from './chatMessages.service';

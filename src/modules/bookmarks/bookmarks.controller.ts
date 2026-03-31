@@ -1,14 +1,14 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { Injectable } from '@/decorators';
 import {
   BaseController,
+  BookmarkPostNotFoundException,
   BookmarksService,
   CreateBookmarkRequestDTO,
   CreateBookmarkResponseDTO,
   DeleteBookmarkParamsDTO,
   DeleteBookmarkResponseDTO
 } from '@/modules';
-import { BadRequestError, Created } from '@/providers';
+import { Created } from '@/providers';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -33,7 +33,7 @@ export class BookmarksController extends BaseController implements IBookmarksCon
     });
 
     if (!bookmark) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+      throw BookmarkPostNotFoundException;
     }
 
     this.sendResponse<CreateBookmarkResponseDTO>({

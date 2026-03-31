@@ -1,5 +1,4 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError } from '@/providers';
+import { LimitMustBeBetweenOneToHundredException, PageMustBeGreaterThanZeroException } from '@/shared';
 import { validate } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 import { checkSchema } from 'express-validator';
@@ -25,7 +24,7 @@ export const validatePaginationQuery = validate(
             const page = Number(value);
 
             if (page < 1) {
-              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PAGE_MUST_BE_GREATER_THAN_0);
+              throw PageMustBeGreaterThanZeroException;
             }
 
             return true;
@@ -39,7 +38,7 @@ export const validatePaginationQuery = validate(
             const limit = Number(value);
 
             if (limit < 1 || limit > 100) {
-              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.LIMIT_MUST_BE_BETWEEN_1_TO_100);
+              throw LimitMustBeBetweenOneToHundredException;
             }
 
             return true;
@@ -60,7 +59,7 @@ export const validateCursorPaginationQuery = validate(
           options: async (value: string) => {
             const limit = Number(value);
             if (limit < 1 || limit > 100) {
-              throw new BadRequestError(VALIDATION_ERROR_MESSAGE.LIMIT_MUST_BE_BETWEEN_1_TO_100);
+              throw LimitMustBeBetweenOneToHundredException;
             }
             return true;
           }

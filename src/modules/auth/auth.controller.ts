@@ -1,9 +1,4 @@
-import {
-  REFRESH_TOKEN_COOKIE_NAME,
-  refreshTokenCookieSharedOptions,
-  refreshTokenMaxAgeMs,
-  VALIDATION_ERROR_MESSAGE
-} from '@/constants';
+import { REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieSharedOptions, refreshTokenMaxAgeMs } from '@/constants';
 import { Injectable } from '@/decorators';
 import { ETokenType, TokenPayload } from '@/interfaces';
 import {
@@ -11,9 +6,13 @@ import {
   BaseController,
   ChangePasswordRequestDTO,
   ChangePasswordResponseDTO,
+  EmailAlreadyExistsException,
   EUserVerificationStatus,
   ForgotPasswordRequestDTO,
   ForgotPasswordResponseDTO,
+  InvalidEmailOrPasswordException,
+  InvalidTokenAuthFailureException,
+  InvalidTokenBadRequestException,
   LoginRequestDTO,
   LoginResponseDTO,
   LogoutRequestDTO,
@@ -25,11 +24,13 @@ import {
   ResendVerifyEmailResponseDTO,
   ResetPasswordRequestDTO,
   ResetPasswordResponseDTO,
+  UserAlreadyVerifiedException,
+  UserNotFoundException,
   UsersService,
   VerifyEmailRequestDTO,
   VerifyEmailResponseDTO
 } from '@/modules';
-import { AuthFailureError, BadRequestError, Created, NotFoundError } from '@/providers';
+import { Created } from '@/providers';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -60,7 +61,7 @@ export class AuthController extends BaseController implements IAuthController {
     const existingUser = await this.usersService.findUserByEmail(dto.email);
 
     if (existingUser) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
+      throw EmailAlreadyExistsException;
     }
 
     const user = await this.authService.register(dto);
@@ -79,7 +80,7 @@ export class AuthController extends BaseController implements IAuthController {
     const existingUser = await this.usersService.findUserByEmail(dto.email);
 
     if (!existingUser) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+      throw InvalidEmailOrPasswordException;
     }
 
     const { accessToken, refreshToken } = await this.authService.login(dto, existingUser);
@@ -103,7 +104,7 @@ export class AuthController extends BaseController implements IAuthController {
     const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
 
     if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw InvalidTokenAuthFailureException;
     }
 
     const { message } = await this.authService.logout(dto);
@@ -123,7 +124,7 @@ export class AuthController extends BaseController implements IAuthController {
     const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
 
     if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw InvalidTokenAuthFailureException;
     }
 
     const { accessToken, refreshToken } = await this.authService.refreshToken({
@@ -151,15 +152,15 @@ export class AuthController extends BaseController implements IAuthController {
     const user = await this.usersService.findUserById(userId);
 
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw UserNotFoundException;
     }
 
     if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
+      throw UserAlreadyVerifiedException;
     }
 
     if (user.emailVerificationToken !== dto.token) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw InvalidTokenBadRequestException;
     }
 
     const { message } = await this.authService.verifyEmail(userId);
@@ -176,11 +177,11 @@ export class AuthController extends BaseController implements IAuthController {
     const user = await this.usersService.findUserById(userId);
 
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw UserNotFoundException;
     }
 
     if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.USER_ALREADY_VERIFIED);
+      throw UserAlreadyVerifiedException;
     }
 
     const { message } = await this.authService.resendVerifyEmail({ userId, name: user.name, email: user.email });
@@ -197,7 +198,7 @@ export class AuthController extends BaseController implements IAuthController {
     const existingUser = await this.usersService.findUserByEmail(dto.email);
 
     if (!existingUser) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+      throw InvalidEmailOrPasswordException;
     }
 
     const { message } = await this.authService.forgotPassword({
@@ -219,11 +220,11 @@ export class AuthController extends BaseController implements IAuthController {
     const user = await this.usersService.findUserById(userId);
 
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw UserNotFoundException;
     }
 
     if (user.forgotPasswordToken !== dto.token) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw InvalidTokenBadRequestException;
     }
 
     const { message } = await this.authService.resetPassword({ ...dto, userId });

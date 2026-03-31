@@ -3,6 +3,7 @@ export * from './dtos/friends.response.dto';
 export * from './friendRequests.repository';
 export * from './friendRequests.schema';
 export * from './friends.controller';
+export * from './friends.exception';
 export * from './friends.route';
 export * from './friends.service';
 export * from './friends.validation';

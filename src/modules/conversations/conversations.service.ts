@@ -1,11 +1,25 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { Injectable } from '@/decorators';
 import {
   BlockRepository,
+  ConversationCannotKickBadRequestException,
+  ConversationCannotKickException,
   ConversationDetailResponseDTO,
+  ConversationDirectNoKickException,
+  ConversationGroupNeedsMemberException,
+  ConversationInvalidCursorException,
+  ConversationInvalidPeerException,
+  ConversationInviteNotFriendException,
   ConversationMemberRepository,
+  ConversationNotFoundException,
+  ConversationNotMemberException,
+  ConversationPeerBlockedException,
+  ConversationPeerNotFriendException,
   ConversationRepository,
+  ConversationRoleForbiddenException,
   ConversationSummaryResponseDTO,
+  ConversationTargetUserNotFoundException,
+  ConversationTypeInvalidForOperationException,
+  ConversationUserAlreadyMemberException,
   CreateDirectConversationBodyDTO,
   CreateGroupConversationBodyDTO,
   EConversationMemberRole,
@@ -21,7 +35,6 @@ import {
   toConversationSummary,
   TransferConversationAdminBodyDTO
 } from '@/modules';
-import { BadRequestError, ConflictRequestError, ForbiddenError, NotFoundError } from '@/providers';
 import { SharedConversationsService } from '@/shared';
 import { decodeConversationListCursor, encodeConversationListCursor } from '@/utils';
 import { MongoServerError } from 'mongodb';
@@ -75,7 +88,7 @@ export class ConversationsService extends SharedConversationsService implements 
   private async loadConversation(conversationId: string): Promise<IConversation> {
     const conv = await this.conversationRepository.findById(conversationId);
     if (!conv) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+      throw ConversationNotFoundException;
     }
     return conv;
   }
@@ -104,7 +117,7 @@ export class ConversationsService extends SharedConversationsService implements 
   ): Promise<ConversationSummaryResponseDTO> {
     // Chặn tự gửi tin cho chính mình
     if (userId === body.peerUserId) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_INVALID_PEER);
+      throw ConversationInvalidPeerException;
     }
 
     // Tìm phòng direct đã tồn tại
@@ -121,10 +134,10 @@ export class ConversationsService extends SharedConversationsService implements 
       this.blockRepository.isBlockedEitherWay(userId, body.peerUserId)
     ]);
     if (!isFriend) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_PEER_NOT_FRIEND);
+      throw ConversationPeerNotFriendException;
     }
     if (isBlockedEitherWay) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_PEER_BLOCKED);
+      throw ConversationPeerBlockedException;
     }
 
     // tạo document vì hàm insertOne không trả về document được tạo
@@ -166,13 +179,13 @@ export class ConversationsService extends SharedConversationsService implements 
 
     // chỉ cho tạo group khi có ít nhất 1 member khác chính mình
     if (memberIds.length < 1) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_GROUP_NEEDS_MEMBER);
+      throw ConversationGroupNeedsMemberException;
     }
 
     // chỉ cho tạo group khi tất cả members đều là bạn bè của admin
     const allFriends = await this.friendsService.areAllFriends(userId, memberIds);
     if (!allFriends) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_PEER_NOT_FRIEND);
+      throw ConversationPeerNotFriendException;
     }
 
     // tạo document vì hàm insertOne không trả về document được tạo
@@ -205,7 +218,7 @@ export class ConversationsService extends SharedConversationsService implements 
       try {
         decoded = decodeConversationListCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+        throw ConversationInvalidCursorException;
       }
     }
 
@@ -282,7 +295,7 @@ export class ConversationsService extends SharedConversationsService implements 
     const self = await this.assertMember(conversationId, userId);
     // chỉ cho phép admin và manager được sửa metadata của conversation
     if (self.role === EConversationMemberRole.MEMBER) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
 
     // tạo object chứa các thay đổi cần thực hiện
@@ -330,23 +343,23 @@ export class ConversationsService extends SharedConversationsService implements 
 
     // kiểm tra conversation có phải là group không
     if (conv.type !== EConversationType.GROUP) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+      throw ConversationTypeInvalidForOperationException;
     }
 
     // kiểm tra người được mới có phải là member của conversation không
     if (existing) {
-      throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_USER_ALREADY_MEMBER);
+      throw ConversationUserAlreadyMemberException;
     }
 
     // kiểm tra người được mời có phải là bạn bè của người đang mời không
     if (!inviterFriend) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_INVITE_NOT_FRIEND_OF_BOTH);
+      throw ConversationInviteNotFriendException;
     }
 
     // kiểm tra người tạo group có phải là bạn bè của người được mời không
     const creatorFriend = await this.friendsService.isFriendOf(conv.createdBy.toHexString(), inviteeUserId);
     if (!creatorFriend) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_INVITE_NOT_FRIEND_OF_BOTH);
+      throw ConversationInviteNotFriendException;
     }
 
     // thêm người được mời vào group database
@@ -379,7 +392,7 @@ export class ConversationsService extends SharedConversationsService implements 
       const adminsCount = await this.conversationMemberRepository.countAdmins(conversationId);
       // nếu chỉ còn 1 admin thì không cho rời group
       if (adminsCount === 1) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+        throw ConversationRoleForbiddenException;
       }
     }
 
@@ -398,12 +411,12 @@ export class ConversationsService extends SharedConversationsService implements 
     // kiểm tra conversation có phải là group không
     const conv = await this.loadConversation(conversationId);
     if (conv.type === EConversationType.DIRECT) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_DIRECT_NO_KICK);
+      throw ConversationDirectNoKickException;
     }
 
     // không cho kick chính mình
     if (targetUserId === userId) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_CANNOT_KICK);
+      throw ConversationCannotKickBadRequestException;
     }
 
     // Gom 1 query để lấy membership của actor (người thực hiện) + target (người bị kick) (giảm query so với findMembership 2 lần).
@@ -416,26 +429,26 @@ export class ConversationsService extends SharedConversationsService implements 
 
     // kiểm tra user có phải là member của conversation không
     if (!actor) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_MEMBER);
+      throw ConversationNotMemberException;
     }
     // kiểm tra người bị kick có phải là member của conversation không
     if (!target) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw ConversationTargetUserNotFoundException;
     }
 
     // kiểm tra quyền của người thực hiện
     if (actor.role === EConversationMemberRole.MEMBER) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_CANNOT_KICK);
+      throw ConversationCannotKickException;
     }
     // không cho kick ADMIN
     if (target.role === EConversationMemberRole.ADMIN) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_CANNOT_KICK);
+      throw ConversationCannotKickException;
     }
     // ADMIN thì kick được MEMBER và MANAGER (không kick được ADMIN).
     // MANAGER chỉ được kick MEMBER (không kick được MANAGER/ADMIN).
     if (actor.role === EConversationMemberRole.MANAGER) {
       if (target.role !== EConversationMemberRole.MEMBER) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_CANNOT_KICK);
+        throw ConversationCannotKickException;
       }
     }
 
@@ -466,7 +479,7 @@ export class ConversationsService extends SharedConversationsService implements 
     // kiểm tra conversation có phải là group không
     const conv = await this.loadConversation(conversationId);
     if (conv.type !== EConversationType.GROUP) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+      throw ConversationTypeInvalidForOperationException;
     }
 
     // gom 1 query để lấy membership của actor + target (giảm round-trip DB).
@@ -478,29 +491,29 @@ export class ConversationsService extends SharedConversationsService implements 
     const target = memberships.find((m) => m.userId.toHexString() === targetUserId);
     // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
     if (!actor) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_MEMBER);
+      throw ConversationNotMemberException;
     }
     if (actor.role !== EConversationMemberRole.ADMIN) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
     // kiểm tra người bị đổi role có phải là member của conversation không và có phải là ADMIN không
     if (!target) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw ConversationTargetUserNotFoundException;
     }
     if (target.role === EConversationMemberRole.ADMIN) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
 
     // kiểm tra role mới có phải là MEMBER hoặc MANAGER không
     const next = body.role;
     if (next === EConversationMemberRole.ADMIN) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
     if (target.role === EConversationMemberRole.MANAGER && next !== EConversationMemberRole.MEMBER) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
     if (target.role === EConversationMemberRole.MEMBER && next !== EConversationMemberRole.MANAGER) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
 
     // cập nhật role của người bị đổi role
@@ -526,12 +539,12 @@ export class ConversationsService extends SharedConversationsService implements 
     // kiểm tra conversation có phải là group không
     const conv = await this.loadConversation(conversationId);
     if (conv.type !== EConversationType.GROUP) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+      throw ConversationTypeInvalidForOperationException;
     }
 
     // không cho chuyển quyền admin cho chính mình
     if (body.newAdminUserId === userId) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
 
     // gom 1 query để lấy membership của actor + người mới nhận quyền admin (giảm round-trip DB).
@@ -544,15 +557,15 @@ export class ConversationsService extends SharedConversationsService implements 
 
     // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
     if (!actor) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_MEMBER);
+      throw ConversationNotMemberException;
     }
     if (actor.role !== EConversationMemberRole.ADMIN) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN);
+      throw ConversationRoleForbiddenException;
     }
 
     // kiểm tra người mới nhận quyền admin có phải là member của conversation không
     if (!newAdmin) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw ConversationTargetUserNotFoundException;
     }
 
     const updatedAt = new Date();

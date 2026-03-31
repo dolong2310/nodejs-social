@@ -2,6 +2,7 @@ export * from './dtos/users.request.dto';
 export * from './dtos/users.response.dto';
 export * from './users.controller';
 export * from './users.enum';
+export * from './users.exception';
 export * from './users.repository';
 export * from './users.route';
 export * from './users.schema';

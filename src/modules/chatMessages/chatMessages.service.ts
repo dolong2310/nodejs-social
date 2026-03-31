@@ -1,11 +1,15 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { Injectable } from '@/decorators';
 import {
   BlockRepository,
+  ChatAttachmentTooLargeException,
+  ChatConversationNotFoundException,
+  ChatInvalidCursorException,
+  ChatMessageEmptyException,
   ChatMessageRepository,
   ChatMessageResponseDTO,
   ChatMessagesPageResponseDTO,
   ConversationMemberRepository,
+  ConversationMessageForbiddenException,
   ConversationRepository,
   EConversationType,
   IChatAttachment,
@@ -16,7 +20,6 @@ import {
   SendChatMessageBodyDTO,
   toChatMessageDto
 } from '@/modules';
-import { BadRequestError, ForbiddenError, NotFoundError } from '@/providers';
 import { SharedConversationsService } from '@/shared';
 import { decodeMessageCursor, encodeMessageCursor } from '@/utils';
 
@@ -67,7 +70,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
     if (!att?.length) return;
     for (const a of att) {
       if (a.size > CHAT_ATTACHMENT_MAX_BYTES) {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CHAT_ATTACHMENT_TOO_LARGE);
+        throw ChatAttachmentTooLargeException;
       }
     }
   }
@@ -81,7 +84,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
     if (conv.type === EConversationType.DIRECT) {
       const peer = this.directPeer(conv, viewerUserId);
       if (await this.blockRepository.isBlockedEitherWay(viewerUserId, peer)) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_MESSAGE_FORBIDDEN);
+        throw ConversationMessageForbiddenException;
       }
     }
   }
@@ -105,7 +108,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
     // Conversation phải tồn tại trong DB.
     const conv = await this.conversationRepository.findById(conversationId);
     if (!conv) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+      throw ChatConversationNotFoundException;
     }
 
     // Kiểm tra có thể gửi tin direct được không.
@@ -117,7 +120,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
     this.validateAttachments(attachments);
 
     if ((!text || text.length === 0) && (!attachments || attachments.length === 0)) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CHAT_MESSAGE_EMPTY);
+      throw ChatMessageEmptyException;
     }
 
     // Lưu tin vào DB.
@@ -187,7 +190,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
         // Vì sao: Repository cần thời gian + _id để truy vấn ổn định khi nhiều tin cùng createdAt (trùng millisecond).
         before = decodeMessageCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+        throw ChatInvalidCursorException;
       }
     }
 
@@ -226,7 +229,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
       // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
       const found = await this.chatMessageRepository.findById(messageId);
       if (!found || found.chatId.toHexString() !== conversationId) {
-        throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+        throw ChatConversationNotFoundException;
       }
       msg = found;
     } else {
@@ -240,7 +243,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
       // Kiểm tra messageId có hợp lệ không.
       // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
       if (msg.chatId.toHexString() !== conversationId) {
-        throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+        throw ChatConversationNotFoundException;
       }
     }
 

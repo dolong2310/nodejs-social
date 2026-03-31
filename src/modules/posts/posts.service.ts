@@ -1,8 +1,9 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { Injectable } from '@/decorators';
 import {
   BaseService,
   BlockRepository,
+  CannotEngagePostBlockedException,
+  CannotEngageWithInaccessiblePostException,
   CreatePostRequestDTO,
   EPostAudience,
   EPostType,
@@ -11,12 +12,14 @@ import {
   GetPostDetailParamsDTO,
   GetPostsParamsDTO,
   IPost,
+  OnlyOwnerCanUpdatePostSettingsException,
   PatchPostRequestDTO,
   PostDetailResponseDTO,
   PostNewFeedResponseDTO,
-  PostRepository
+  PostNotFoundException,
+  PostRepository,
+  StrangerCommentsNotAllowedException
 } from '@/modules';
-import { ForbiddenError, NotFoundError } from '@/providers';
 import { IHashtag, PaginationQueryDTO } from '@/shared';
 import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils';
 
@@ -199,17 +202,17 @@ export class PostsService extends BaseService implements IPostsService {
   }): Promise<IPost> {
     const existing = await this.postRepository.findPostById(postId);
     if (!existing) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+      throw PostNotFoundException;
     }
     if (existing.userId.toHexString() !== userId) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_UPDATE_POST_SETTINGS);
+      throw OnlyOwnerCanUpdatePostSettingsException;
     }
     const updated = await this.postRepository.updatePostAudienceAndStrangerComments(postId, userId, {
       audience: body.audience,
       allowStrangerComments: body.allowStrangerComments
     });
     if (!updated) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+      throw PostNotFoundException;
     }
     return updated;
   }
@@ -217,14 +220,14 @@ export class PostsService extends BaseService implements IPostsService {
   private async assertThreadedEngagementAllowed(viewerId: string, body: CreatePostRequestDTO): Promise<void> {
     const parentId = body.parentId;
     if (!parentId) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+      throw PostNotFoundException;
     }
     const parent = await this.postRepository.findPostById(parentId);
     if (!parent) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+      throw PostNotFoundException;
     }
     if (await this.blockRepository.isBlockedEitherWay(viewerId, parent.userId.toHexString())) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_POST_BLOCKED);
+      throw CannotEngagePostBlockedException;
     }
     await this.assertViewerCanSeeParentForEngagement(viewerId, parent);
 
@@ -240,7 +243,7 @@ export class PostsService extends BaseService implements IPostsService {
     }
     const allowStrangerEngagement = parent.allowStrangerComments ?? true;
     if (!allowStrangerEngagement && [EPostType.COMMENT, EPostType.REPOST, EPostType.QUOTE].includes(body.type)) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.STRANGER_COMMENTS_NOT_ALLOWED_ON_THIS_POST);
+      throw StrangerCommentsNotAllowedException;
     }
   }
 
@@ -256,13 +259,13 @@ export class PostsService extends BaseService implements IPostsService {
     const isMention = parent.mentions.map((m) => m.toString()).includes(viewerId);
     const isFriend = await this.friendsService.isFriendOf(viewerId, ownerId);
     if (isOnlyMe) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_WITH_INACCESSIBLE_POST);
+      throw CannotEngageWithInaccessiblePostException;
     }
     if (isFriendsOnly && !isFriend && !isMention) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_WITH_INACCESSIBLE_POST);
+      throw CannotEngageWithInaccessiblePostException;
     }
     if (!isPublic && !isFriendsOnly) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_ENGAGE_WITH_INACCESSIBLE_POST);
+      throw CannotEngageWithInaccessiblePostException;
     }
   }
 

@@ -1,6 +1,6 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { TokenPayload } from '@/interfaces';
-import { AuthFailureError, Container, ForbiddenError, RequestContextLogger } from '@/providers';
+import { InvalidTokenAuthFailureException, NoTokenProvidedException, TokenHasExpiredException } from '@/modules';
+import { AuthFailureError, Container, RequestContextLogger } from '@/providers';
 import { TokenService } from '@/shared';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -14,7 +14,7 @@ export const protect = async (req: Request, _res: Response, next: NextFunction):
   if (!token) {
     const authHeader = req.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      next(new ForbiddenError(VALIDATION_ERROR_MESSAGE.NO_TOKEN_PROVIDED));
+      next(NoTokenProvidedException);
       return;
     }
     token = authHeader.split(' ')[1];
@@ -105,12 +105,12 @@ const _verifyAccessToken = async (token: string): Promise<TokenPayload> => {
     return await tokenService.verifyAccessToken(token);
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_HAS_EXPIRED);
+      throw TokenHasExpiredException;
     }
     if (error instanceof jwt.JsonWebTokenError) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw InvalidTokenAuthFailureException;
     }
-    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+    throw InvalidTokenAuthFailureException;
   }
 };
 
@@ -119,7 +119,7 @@ const _mapJwtVerifyError = (error: unknown): Error => {
     return error;
   }
   if (error instanceof jwt.TokenExpiredError) {
-    return new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_HAS_EXPIRED);
+    return TokenHasExpiredException;
   }
-  return new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+  return InvalidTokenAuthFailureException;
 };

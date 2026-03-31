@@ -1,8 +1,14 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { ETokenType, TokenPayload } from '@/interfaces';
 import { EUserVerificationStatus, IUsersService } from '@/modules';
-import { AuthFailureError, ForbiddenError, NotFoundError } from '@/providers';
 import { ITokenService } from '@/shared';
+import {
+  SocketEventUnauthorizedError,
+  SocketTokenInvalidException,
+  SocketUnauthorizedException,
+  SocketUserBannedException,
+  SocketUserNotFoundException,
+  SocketUserNotVerifiedException
+} from '@/shared/exceptions';
 import { ExtendedError, Socket } from 'socket.io';
 import { SocketContext } from './socket.types';
 
@@ -23,23 +29,23 @@ export function createSocketAuthResolver(
     const { Authorization } = socket.handshake.auth;
     const accessToken = Authorization?.split(' ')[1];
     if (!accessToken) {
-      throw new AuthFailureError();
+      throw SocketUnauthorizedException;
     }
 
     const decoded = await tokenService.verifyAccessToken(accessToken);
     if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw SocketTokenInvalidException;
     }
 
     const user = await usersService.findUserById(decoded.userId);
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw SocketUserNotFoundException;
     }
     if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_NOT_VERIFIED_YET);
+      throw SocketUserNotVerifiedException;
     }
     if (user.verificationStatus === EUserVerificationStatus.BANNED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+      throw SocketUserBannedException;
     }
 
     return { accessToken, decoded };
@@ -51,12 +57,12 @@ export function createSocketAuthResolver(
   async function verifyExistingAccessToken(socket: Socket): Promise<TokenPayload> {
     const { accessToken } = socket.handshake.auth;
     if (!accessToken) {
-      throw new AuthFailureError();
+      throw SocketUnauthorizedException;
     }
 
     const decoded = await tokenService.verifyAccessToken(accessToken);
     if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-      throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+      throw SocketTokenInvalidException;
     }
 
     return decoded as TokenPayload;
@@ -92,7 +98,7 @@ export function createSocketAuthResolver(
           socket.handshake.auth.decoded = decoded;
           next();
         } catch {
-          next(new Error('Unauthorized'));
+          next(SocketEventUnauthorizedError);
         }
       })();
     },
@@ -102,7 +108,7 @@ export function createSocketAuthResolver(
     resolveContext: async (socket) => {
       const decoded = socket.handshake.auth.decoded as TokenPayload | undefined;
       if (!decoded?.userId) {
-        throw new AuthFailureError();
+        throw SocketUnauthorizedException;
       }
       return { userId: decoded.userId };
     }

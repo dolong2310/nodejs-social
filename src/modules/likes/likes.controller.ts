@@ -1,4 +1,3 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { Injectable } from '@/decorators';
 import {
   BaseController,
@@ -6,9 +5,10 @@ import {
   CreateLikeResponseDTO,
   DeleteLikeParamsDTO,
   DeleteLikeResponseDTO,
+  LikePostNotFoundException,
   LikesService
 } from '@/modules';
-import { BadRequestError, Created } from '@/providers';
+import { Created } from '@/providers';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -33,7 +33,7 @@ export class LikesController extends BaseController implements ILikesController 
     });
 
     if (!like) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+      throw LikePostNotFoundException;
     }
 
     this.sendResponse<CreateLikeResponseDTO>({

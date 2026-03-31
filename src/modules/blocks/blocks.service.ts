@@ -1,16 +1,18 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { Injectable } from '@/decorators';
 import type { FriendUserRow } from '@/modules';
 import {
   BaseService,
+  BlockAlreadyExistsException,
   BlockRepository,
+  BlockUserNotFoundException,
+  CannotBlockYourselfException,
   FriendRequestRepository,
   FriendshipRepository,
   FriendsService,
   IUser,
+  NoActiveBlockException,
   UserRepository
 } from '@/modules';
-import { BadRequestError, ConflictRequestError, NotFoundError } from '@/providers';
 import { MongoServerError } from 'mongodb';
 
 export interface IBlocksService {
@@ -52,16 +54,16 @@ export class BlocksService extends BaseService implements IBlocksService {
 
   async blockUser(blockerUserId: string, blockedUserId: string): Promise<void> {
     if (blockerUserId === blockedUserId) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CANNOT_BLOCK_YOURSELF);
+      throw CannotBlockYourselfException;
     }
 
     const blocked = await this.userRepository.findById(blockedUserId);
     if (!blocked) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw BlockUserNotFoundException;
     }
 
     if (await this.blockRepository.isBlockedEitherWay(blockerUserId, blockedUserId)) {
-      throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.BLOCK_ALREADY_EXISTS);
+      throw BlockAlreadyExistsException;
     }
 
     await this.friendshipRepository.deleteFriendshipPair(blockerUserId, blockedUserId);
@@ -71,7 +73,7 @@ export class BlocksService extends BaseService implements IBlocksService {
       await this.blockRepository.createBlock(blockerUserId, blockedUserId);
     } catch (e) {
       if (e instanceof MongoServerError && e.code === 11000) {
-        throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.BLOCK_ALREADY_EXISTS);
+        throw BlockAlreadyExistsException;
       }
       throw e;
     }
@@ -85,7 +87,7 @@ export class BlocksService extends BaseService implements IBlocksService {
   async unblockUser(blockerUserId: string, blockedUserId: string): Promise<void> {
     const deleted = await this.blockRepository.deleteBlock(blockerUserId, blockedUserId);
     if (deleted === 0) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.NO_ACTIVE_BLOCK);
+      throw NoActiveBlockException;
     }
     await Promise.all([
       this.friendsService.invalidateFriendCache(blockerUserId),

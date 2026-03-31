@@ -1,6 +1,7 @@
 export * from './conversationMember.repository';
 export * from './conversationMember.schema';
 export * from './conversations.controller';
+export * from './conversations.exception';
 export * from './conversations.repository';
 export * from './conversations.route';
 export * from './conversations.schema';

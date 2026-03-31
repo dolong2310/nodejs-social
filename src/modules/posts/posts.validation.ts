@@ -3,6 +3,7 @@ import { AutoBind, Injectable } from '@/decorators';
 import { IMedia } from '@/interfaces';
 import {
   BlockRepository,
+  CannotViewPostBlockedException,
   CreatePostRequestDTO,
   EMediaType,
   EPostAudience,
@@ -10,12 +11,25 @@ import {
   EUserVerificationStatus,
   FriendsService,
   GetPostDetailParamsDTO,
+  GuestCannotAccessNonPublicPostException,
+  HashtagsMustBeArrayOfStringsException,
+  InvalidPostIdException,
+  MediaMustBeArrayOfValidItemsException,
+  MentionsMustBeArrayOfValidUserIdsException,
+  OnlyFriendsCanViewPostsException,
+  OnlyOwnerCanViewPostsException,
+  ParentIdMustBeNullException,
+  ParentIdMustBeValidPostIdException,
   PatchPostRequestDTO,
+  PostContentMustBeEmptyStringException,
+  PostContentMustBeNonEmptyStringException,
   PostDetailResponseDTO,
+  PostNotFoundException,
   PostsService,
-  UsersService
+  UserIsBannedException,
+  UsersService,
+  UsersUserNotFoundException
 } from '@/modules';
-import { AuthFailureError, BadRequestError, ForbiddenError, NotFoundError } from '@/providers';
 import { isValidMongoId, redactPostDetailBlockedAuthor, validate } from '@/utils';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
@@ -85,7 +99,7 @@ export class PostsValidation implements IPostsValidation {
                 const { type, mentions, hashtags } = req.body as CreatePostRequestDTO;
 
                 if (type === EPostType.REPOST && content !== '') {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_EMPTY_STRING);
+                  throw PostContentMustBeEmptyStringException;
                 }
 
                 if (
@@ -94,7 +108,7 @@ export class PostsValidation implements IPostsValidation {
                   isEmpty(hashtags) &&
                   content === ''
                 ) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_NON_EMPTY_STRING);
+                  throw PostContentMustBeNonEmptyStringException;
                 }
 
                 return true;
@@ -111,12 +125,12 @@ export class PostsValidation implements IPostsValidation {
                 if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
                   // parentId không được null, phải là string hợp lệ (ObjectId)
                   if (parentId === null || typeof parentId !== 'string' || !isValidMongoId(parentId)) {
-                    throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_A_VALID_POST_ID);
+                    throw ParentIdMustBeValidPostIdException;
                   }
                 }
 
                 if (type === EPostType.POST && parentId !== null) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_NULL);
+                  throw ParentIdMustBeNullException;
                 }
 
                 return true;
@@ -131,7 +145,7 @@ export class PostsValidation implements IPostsValidation {
             custom: {
               options: async (hashtags: string[]) => {
                 if (hashtags.length > 0 && !hashtags.every((hashtag) => typeof hashtag === 'string')) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS);
+                  throw HashtagsMustBeArrayOfStringsException;
                 }
 
                 return true;
@@ -146,7 +160,7 @@ export class PostsValidation implements IPostsValidation {
             custom: {
               options: async (userIds: string[]) => {
                 if (userIds.length > 0 && !userIds.every((userId) => isValidMongoId(userId))) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS);
+                  throw MentionsMustBeArrayOfValidUserIdsException;
                 }
 
                 return true;
@@ -165,7 +179,7 @@ export class PostsValidation implements IPostsValidation {
                   mediaItems.length > 0 &&
                   mediaItems.some((item) => typeof item.url !== 'string' || !validMediaTypes.includes(item.type))
                 ) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS);
+                  throw MediaMustBeArrayOfValidItemsException;
                 }
 
                 return true;
@@ -216,13 +230,13 @@ export class PostsValidation implements IPostsValidation {
             custom: {
               options: async (postId: string, { req }: Meta) => {
                 if (!isValidMongoId(postId)) {
-                  throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_POST_ID);
+                  throw InvalidPostIdException;
                 }
 
                 const postDetail = await this.postsService.findPostDetail(postId);
 
                 if (!postDetail) {
-                  throw new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
+                  throw PostNotFoundException;
                 }
 
                 (req as Request).postDetail = postDetail;
@@ -255,7 +269,7 @@ export class PostsValidation implements IPostsValidation {
     const isGuestUser = !userId;
     if (isGuestUser) {
       if (!isPublicAudience) {
-        throw new AuthFailureError();
+        throw GuestCannotAccessNonPublicPostException;
       }
     }
 
@@ -268,23 +282,23 @@ export class PostsValidation implements IPostsValidation {
     // kiểm tra user owner của bài post có bị banned không
     const userOwner = await this.usersService.findUserById(ownerId);
     if (!userOwner) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw UsersUserNotFoundException;
     }
     if (isOwner && userOwner.verificationStatus === EUserVerificationStatus.BANNED) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.USER_IS_BANNED);
+      throw UserIsBannedException;
     }
 
     // kiểm tra bài post có chế độ "only me" thì chỉ user owner mới được xem bài post
     if (isOnlyMeAudience) {
       if (!isOwner) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_OWNER_CAN_VIEW_POSTS);
+        throw OnlyOwnerCanViewPostsException;
       }
     }
 
     // friends-only (legacy DB: "followers") — chỉ bạn bè, owner, hoặc mentions
     if (isFriendsOnlyAudience) {
       if (!isFriend && !isOwner && !isMention) {
-        throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.ONLY_FRIENDS_CAN_VIEW_POSTS);
+        throw OnlyFriendsCanViewPostsException;
       }
     }
 
@@ -294,7 +308,7 @@ export class PostsValidation implements IPostsValidation {
       if (blocked) {
         const engaged = await this.postsService.hasViewerEngagedWithPost(userId, post._id.toString());
         if (!engaged) {
-          throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CANNOT_VIEW_POST_BLOCKED);
+          throw CannotViewPostBlockedException;
         }
         redactPostDetailBlockedAuthor(post);
       }

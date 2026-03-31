@@ -1,5 +1,5 @@
-import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT, VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AutoBind, Injectable } from '@/decorators';
+import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants';
+import { Injectable } from '@/decorators';
 import {
   BaseService,
   BlockRepository,
@@ -12,13 +12,15 @@ import {
   INotification,
   IUser,
   NewMessagePreviewKind,
+  NotificationActorUserNotFoundException,
+  NotificationInvalidCursorException,
   NotificationRepository,
   NotificationSchema,
   NotificationsPageDTO,
   toNotificationListItem,
   UserRepository
 } from '@/modules';
-import { BadRequestError, NotFoundError, NotificationTrimJobQueue } from '@/providers';
+import { NotificationTrimJobQueue } from '@/providers';
 import { decodeNotificationCursor, encodeNotificationCursor } from '@/utils';
 
 export interface ISocketUserEmitter {
@@ -68,7 +70,7 @@ export class NotificationsService extends BaseService implements INotificationsS
 
     const user = await this.userRepository.findById<IUser>(userId);
     if (!user) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw NotificationActorUserNotFoundException;
     }
     const actor = {
       userId: user._id.toHexString(),
@@ -253,7 +255,7 @@ export class NotificationsService extends BaseService implements INotificationsS
       try {
         before = decodeNotificationCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+        throw NotificationInvalidCursorException;
       }
     }
 

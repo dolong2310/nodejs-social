@@ -1,6 +1,7 @@
 export * from './dtos/notifications.request.dto';
 export * from './dtos/notifications.response.dto';
 export * from './notifications.controller';
+export * from './notifications.exception';
 export * from './notifications.repository';
 export * from './notifications.route';
 export * from './notifications.schema';

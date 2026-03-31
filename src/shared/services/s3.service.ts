@@ -1,7 +1,7 @@
 import { envConfig } from '@/config';
 import { Injectable } from '@/decorators';
 import { LoggerInstance } from '@/providers/logger';
-import { NotFoundError } from '@/providers/responses';
+import { S3ObjectNotFoundException } from '@/shared';
 import { CompleteMultipartUploadCommandOutput, GetObjectCommandOutput, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -101,7 +101,7 @@ export class S3Service implements IS3Service {
 
       return s3Object;
     } catch {
-      throw new NotFoundError();
+      throw S3ObjectNotFoundException;
     }
   }
 }

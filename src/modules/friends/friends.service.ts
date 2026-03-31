@@ -4,26 +4,28 @@
  * local timezone and not per-user local timezones.
  */
 
-import { CACHE_KEYS, CACHE_TTL, VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { CACHE_KEYS, CACHE_TTL } from '@/constants';
 import { AutoBind, Injectable } from '@/decorators';
 import {
+  AlreadyFriendsException,
   BaseService,
   BlockRepository,
+  CannotSendFriendRequestToYourselfException,
+  FriendActionBlockedException,
+  FriendRequestAlreadyPendingException,
+  FriendRequestDailyLimitExceededException,
   FriendRequestRepository,
   FriendshipRepository,
+  FriendUserNotFoundException,
   IFriendRequest,
+  InvalidCursorException,
   IUser,
+  NoFriendshipWithUserException,
+  NoPendingFriendRequestException,
   NotificationsService,
   UserRepository
 } from '@/modules';
-import {
-  BadRequestError,
-  ConflictRequestError,
-  ForbiddenError,
-  NotFoundError,
-  RedisService,
-  TooManyRequestsError
-} from '@/providers';
+import { RedisService } from '@/providers';
 import {
   decodeFriendListCursor,
   decodeFriendRequestCursor,
@@ -153,13 +155,13 @@ export class FriendsService extends BaseService implements IFriendsService {
    */
   async sendFriendRequest(myUserId: string, toUserId: string): Promise<IFriendRequest> {
     if (myUserId === toUserId) {
-      throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CANNOT_SEND_FRIEND_REQUEST_TO_YOURSELF);
+      throw CannotSendFriendRequestToYourselfException;
     }
 
     // kiểm tra xem người được gửi yêu cầu có tồn tại không
     const target = await this.userRepository.findById(toUserId);
     if (!target) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw FriendUserNotFoundException;
     }
 
     const { start, endExclusive } = this.utcDayRange(new Date());
@@ -171,18 +173,18 @@ export class FriendsService extends BaseService implements IFriendsService {
 
     // kiểm tra xem người được gửi yêu cầu có block người gửi không
     if (isBlockedEitherWay) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.FRIEND_ACTION_BLOCKED);
+      throw FriendActionBlockedException;
     }
 
     // kiểm tra xem người được gửi yêu cầu có là bạn bè với người gửi không
     if (existingFriendship) {
-      throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.ALREADY_FRIENDS);
+      throw AlreadyFriendsException;
     }
 
     // kiểm tra xem người gửi có vượt quá số lượng yêu cầu kết bạn tới người được gửi yêu cầu không
     // Vì 1 ngày chỉ được gửi 100 yêu cầu kết bạn tới người được gửi yêu cầu không => tránh spam
     if (sentToday >= FriendsService.OUTGOING_REQUESTS_PER_UTC_DAY) {
-      throw new TooManyRequestsError(VALIDATION_ERROR_MESSAGE.FRIEND_REQUEST_DAILY_LIMIT_EXCEEDED);
+      throw FriendRequestDailyLimitExceededException;
     }
 
     // try/catch để bắt lỗi Mongo duplicate key 11000 (thường do unique index theo cặp directed fromUserId+toUserId)
@@ -199,7 +201,7 @@ export class FriendsService extends BaseService implements IFriendsService {
       return created;
     } catch (e) {
       if (e instanceof MongoServerError && e.code === 11000) {
-        throw new ConflictRequestError(VALIDATION_ERROR_MESSAGE.FRIEND_REQUEST_ALREADY_PENDING);
+        throw FriendRequestAlreadyPendingException;
       }
       throw e;
     }
@@ -217,12 +219,12 @@ export class FriendsService extends BaseService implements IFriendsService {
       if (alreadyFriends) {
         return;
       }
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.NO_PENDING_FRIEND_REQUEST);
+      throw NoPendingFriendRequestException;
     }
 
     // kiểm tra xem người nhận có block người gửi không
     if (await this.blockRepository.isBlockedEitherWay(myUserId, fromUserId)) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.FRIEND_ACTION_BLOCKED);
+      throw FriendActionBlockedException;
     }
 
     // Bọc try/catch vì có thể đụng unique index (Mongo error 11000) nếu friendship đã tồn tại do race condition.
@@ -252,7 +254,7 @@ export class FriendsService extends BaseService implements IFriendsService {
   async declineIncomingRequest(myUserId: string, fromUserId: string): Promise<void> {
     const deleted = await this.friendRequestRepository.deleteDirectedRequest(fromUserId, myUserId);
     if (deleted === 0) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.NO_PENDING_FRIEND_REQUEST);
+      throw NoPendingFriendRequestException;
     }
     await this.invalidateBoth(myUserId, fromUserId);
   }
@@ -260,7 +262,7 @@ export class FriendsService extends BaseService implements IFriendsService {
   async revokeOutgoingRequest(myUserId: string, toUserId: string): Promise<void> {
     const deleted = await this.friendRequestRepository.deleteDirectedRequest(myUserId, toUserId);
     if (deleted === 0) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.NO_PENDING_FRIEND_REQUEST);
+      throw NoPendingFriendRequestException;
     }
     await this.invalidateBoth(myUserId, toUserId);
   }
@@ -268,7 +270,7 @@ export class FriendsService extends BaseService implements IFriendsService {
   async unfriend(myUserId: string, otherUserId: string): Promise<void> {
     const deleted = await this.friendshipRepository.deleteFriendshipPair(myUserId, otherUserId);
     if (deleted === 0) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.NO_FRIENDSHIP_WITH_USER);
+      throw NoFriendshipWithUserException;
     }
     await this.invalidateBoth(myUserId, otherUserId);
   }
@@ -283,7 +285,7 @@ export class FriendsService extends BaseService implements IFriendsService {
       try {
         decodedCursor = decodeFriendListCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+        throw InvalidCursorException;
       }
     }
 
@@ -322,7 +324,7 @@ export class FriendsService extends BaseService implements IFriendsService {
       try {
         decoded = decodeFriendRequestCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+        throw InvalidCursorException;
       }
     }
 
@@ -359,7 +361,7 @@ export class FriendsService extends BaseService implements IFriendsService {
       try {
         decoded = decodeFriendRequestCursor(cursor);
       } catch {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_CURSOR);
+        throw InvalidCursorException;
       }
     }
 

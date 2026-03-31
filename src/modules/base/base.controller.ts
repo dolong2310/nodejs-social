@@ -4,8 +4,8 @@
  */
 
 import { isProduction } from '@/config';
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { Created, NotFoundError, OK, SuccessResponseParams } from '@/providers';
+import { MissingAuthenticatedUserException } from '@/modules';
+import { Created, OK, SuccessResponseParams } from '@/providers';
 import { PaginationResponseDTO } from '@/shared';
 import type { CookieOptions } from 'express';
 import { Request, Response } from 'express';
@@ -110,7 +110,7 @@ export abstract class BaseController {
   protected getUserId(req: Request, options?: { optional?: boolean }): string {
     const userId = req.tokenPayload?.userId;
     if (!userId && !options?.optional) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.USER_NOT_FOUND);
+      throw MissingAuthenticatedUserException;
     }
     return userId || '';
   }

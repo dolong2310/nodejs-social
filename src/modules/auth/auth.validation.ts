@@ -1,8 +1,14 @@
 import { REFRESH_TOKEN_COOKIE_NAME, VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { AutoBind, Injectable } from '@/decorators';
 import { ETokenType } from '@/interfaces';
-import { dateOfBirthSchema, nameSchema } from '@/modules';
-import { AuthFailureError, BadRequestError, ForbiddenError } from '@/providers';
+import {
+  ConfirmPasswordMustMatchException,
+  dateOfBirthSchema,
+  InvalidTokenAuthFailureException,
+  nameSchema,
+  NoTokenProvidedException,
+  TokenIsRequiredException
+} from '@/modules';
 import { TokenService } from '@/shared';
 import { validate } from '@/utils';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
@@ -73,7 +79,7 @@ const confirmPasswordSchema: ParamSchema = {
   custom: {
     options: (value, { req }) => {
       if (value !== req.body.password) {
-        throw new BadRequestError(VALIDATION_ERROR_MESSAGE.CONFIRM_PASSWORD_MUST_MATCH_PASSWORD);
+        throw ConfirmPasswordMustMatchException;
       }
       return true;
     }
@@ -137,20 +143,20 @@ export class AuthValidation implements IAuthValidation {
             custom: {
               options: async (token: string, { req }) => {
                 if (!token) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_REQUIRED);
+                  throw TokenIsRequiredException;
                 }
 
                 try {
                   const decoded = await this.tokenService.verifyEmailVerificationToken(token);
                   if (decoded.type !== ETokenType.EMAIL_VERIFICATION_TOKEN) {
-                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                    throw InvalidTokenAuthFailureException;
                   }
 
                   req.tokenPayload = decoded;
                   return true;
                 } catch (error) {
                   if (error instanceof jwt.JsonWebTokenError) {
-                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                    throw InvalidTokenAuthFailureException;
                   }
                   throw error;
                 }
@@ -190,20 +196,20 @@ export class AuthValidation implements IAuthValidation {
             custom: {
               options: async (value: string, { req }) => {
                 if (!value) {
-                  throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_REQUIRED);
+                  throw TokenIsRequiredException;
                 }
 
                 try {
                   const decoded = await this.tokenService.verifyForgotPasswordToken(value);
                   if (decoded.type !== ETokenType.FORGOT_PASSWORD_TOKEN) {
-                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                    throw InvalidTokenAuthFailureException;
                   }
 
                   req.tokenPayload = decoded;
                   return true;
                 } catch (error) {
                   if (error instanceof jwt.JsonWebTokenError) {
-                    throw new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID);
+                    throw InvalidTokenAuthFailureException;
                   }
                   throw error;
                 }
@@ -233,7 +239,7 @@ export class AuthValidation implements IAuthValidation {
   async refreshTokenValidation(req: Request, _res: Response, next: NextFunction): Promise<void> {
     const token = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
     if (!token || typeof token !== 'string' || !token.trim()) {
-      next(new ForbiddenError(VALIDATION_ERROR_MESSAGE.NO_TOKEN_PROVIDED));
+      next(NoTokenProvidedException);
       return;
     }
 
@@ -245,7 +251,7 @@ export class AuthValidation implements IAuthValidation {
       next();
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {
-        next(new AuthFailureError(VALIDATION_ERROR_MESSAGE.TOKEN_IS_INVALID));
+        next(InvalidTokenAuthFailureException);
         return;
       }
       next(error);

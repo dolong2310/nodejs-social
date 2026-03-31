@@ -3,12 +3,12 @@ import { Injectable } from '@/decorators';
 import {
   AuthService,
   GetGoogleAuthUrlQueryDTO,
+  GoogleAccountNotVerifiedException,
   OAuthGoogleLoginQueryDTO,
   OAuthGoogleLoginResponseDTO,
   RegisterRequestDTO,
   UsersService
 } from '@/modules';
-import { BadRequestError } from '@/providers';
 import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
@@ -87,7 +87,7 @@ export class OAuthService implements IOAuthService {
 
     // 3.1 Check if email is verified
     if (!data.verified_email || !data.email) {
-      throw new BadRequestError('Google account is not verified');
+      throw GoogleAccountNotVerifiedException;
     }
 
     // check user exists
@@ -158,7 +158,7 @@ export class OAuthService implements IOAuthService {
     const userInfo = await this.getOAuthGoogleUser(token.access_token, token.id_token);
 
     if (!userInfo.verified_email) {
-      throw new BadRequestError('Google account is not verified');
+      throw GoogleAccountNotVerifiedException;
     }
 
     // check user exists

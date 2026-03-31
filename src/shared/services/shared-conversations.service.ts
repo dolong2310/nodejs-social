@@ -1,7 +1,6 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
 import { EConversationType, IConversation, IConversationMember, IConversationMemberRepository } from '@/modules';
 import { BaseService } from '@/modules/base/base.service';
-import { ForbiddenError, NotFoundError } from '@/providers';
+import { SharedConversationNotFoundException, SharedConversationNotMemberException } from '@/shared/exceptions';
 
 export class SharedConversationsService extends BaseService {
   constructor(protected readonly conversationMemberRepository: IConversationMemberRepository) {
@@ -10,7 +9,7 @@ export class SharedConversationsService extends BaseService {
 
   protected directPeer(conv: IConversation, viewerUserId: string): string {
     if (conv.type !== EConversationType.DIRECT || !conv.userIdLow || !conv.userIdHigh) {
-      throw new NotFoundError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_FOUND);
+      throw SharedConversationNotFoundException;
     }
     return conv.userIdLow.toHexString() === viewerUserId
       ? conv.userIdHigh!.toHexString()
@@ -24,7 +23,7 @@ export class SharedConversationsService extends BaseService {
   protected async assertMember(conversationId: string, userId: string): Promise<IConversationMember> {
     const member = await this.conversationMemberRepository.findMembership(conversationId, userId);
     if (!member) {
-      throw new ForbiddenError(VALIDATION_ERROR_MESSAGE.CONVERSATION_NOT_MEMBER);
+      throw SharedConversationNotMemberException;
     }
     return member;
   }
