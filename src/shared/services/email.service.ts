@@ -69,9 +69,9 @@ export class EmailService {
   private getTemplate(template: EEmailTemplate) {
     switch (template) {
       case EEmailTemplate.VERIFY_EMAIL:
-        return fs.readFileSync(path.resolve('src/templates/verify-email.html'), 'utf8');
+        return fs.readFileSync(path.resolve('src/views/verify-email.html'), 'utf8');
       case EEmailTemplate.FORGOT_PASSWORD:
-        return fs.readFileSync(path.resolve('src/templates/forgot-password-email.html'), 'utf8');
+        return fs.readFileSync(path.resolve('src/views/forgot-password-email.html'), 'utf8');
       default:
         throw InvalidEmailTemplateException;
     }

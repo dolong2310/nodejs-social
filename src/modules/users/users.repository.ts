@@ -17,6 +17,7 @@ export interface IUserRepository {
   findRefreshToken(token: string): Promise<IRefreshToken | null>;
   createRefreshToken(token: string, userId: string): Promise<IRefreshToken>;
   deleteRefreshToken(token: string): Promise<boolean>;
+  rotateRefreshToken(oldToken: string, newToken: string, userId: string): Promise<boolean>;
   create(
     data: RegisterRequestDTO & {
       userId: string;
@@ -25,7 +26,10 @@ export interface IUserRepository {
       username: string;
     }
   ): Promise<IUser>;
-  update(id: string, data: Partial<IUser>): Promise<UpdateResult<IUser>>;
+  markEmailVerified(id: string): Promise<UpdateResult<IUser>>;
+  updateEmailVerificationToken(id: string, emailVerificationToken: string): Promise<UpdateResult<IUser>>;
+  updateForgotPasswordToken(id: string, forgotPasswordToken: string): Promise<UpdateResult<IUser>>;
+  resetPassword(id: string, password: string): Promise<UpdateResult<IUser>>;
   findOneAndUpdate(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<IUser | null>;
   findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null>;
   findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null>;
@@ -57,6 +61,21 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return result.deletedCount > 0;
   }
 
+  async rotateRefreshToken(oldToken: string, newToken: string, userId: string): Promise<boolean> {
+    const result = await this.db.refreshTokens.updateOne(
+      {
+        token: oldToken,
+        userId: new ObjectId(userId)
+      },
+      {
+        $set: {
+          token: newToken
+        }
+      }
+    );
+    return result.modifiedCount > 0;
+  }
+
   async create(
     data: RegisterRequestDTO & {
       userId: string;
@@ -79,15 +98,55 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return newUser;
   }
 
-  async update(id: string, data: Partial<IUser>): Promise<UpdateResult<IUser>> {
+  async markEmailVerified(id: string): Promise<UpdateResult<IUser>> {
     const result = await this.db.users.updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
-          emailVerificationToken: data.emailVerificationToken,
-          verificationStatus: data.verificationStatus
+          emailVerificationToken: '',
+          verificationStatus: EUserVerificationStatus.VERIFIED
         },
         $currentDate: { updatedAt: true } // giá trị được cập nhật tại thời điểm mongodb update document (chênh lệch với service vì nó chạy sau)
+      }
+    );
+    return result;
+  }
+
+  async updateEmailVerificationToken(id: string, emailVerificationToken: string): Promise<UpdateResult<IUser>> {
+    const result = await this.db.users.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          emailVerificationToken
+        },
+        $currentDate: { updatedAt: true }
+      }
+    );
+    return result;
+  }
+
+  async updateForgotPasswordToken(id: string, forgotPasswordToken: string): Promise<UpdateResult<IUser>> {
+    const result = await this.db.users.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          forgotPasswordToken
+        },
+        $currentDate: { updatedAt: true }
+      }
+    );
+    return result;
+  }
+
+  async resetPassword(id: string, password: string): Promise<UpdateResult<IUser>> {
+    const result = await this.db.users.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          password,
+          forgotPasswordToken: ''
+        },
+        $currentDate: { updatedAt: true }
       }
     );
     return result;

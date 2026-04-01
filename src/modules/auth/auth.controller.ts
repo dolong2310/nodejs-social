@@ -8,7 +8,6 @@ import { Injectable } from '@/decorators/injectable.decorator';
 import { ETokenType } from '@/interfaces/enums/token.enum';
 import { TokenPayload } from '@/interfaces/types/token.type';
 import {
-  EmailAlreadyExistsException,
   InvalidEmailOrPasswordException,
   InvalidTokenAuthFailureException,
   InvalidTokenBadRequestException,
@@ -69,12 +68,6 @@ export class AuthController extends BaseController implements IAuthController {
   async register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response) {
     const dto = new RegisterRequestDTO(req.body);
 
-    const existingUser = await this.usersService.findUserByEmail(dto.email);
-
-    if (existingUser) {
-      throw EmailAlreadyExistsException;
-    }
-
     const user = await this.authService.register(dto);
 
     this.sendResponse<RegisterResponseDTO>({
@@ -113,10 +106,7 @@ export class AuthController extends BaseController implements IAuthController {
   async logout(req: Request, res: Response) {
     const dto = new LogoutRequestDTO(req.refreshTokenJwt!);
     const { type } = req.tokenPayload as TokenPayload;
-
-    const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
-
-    if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
+    if (type !== ETokenType.REFRESH_TOKEN) {
       throw InvalidTokenAuthFailureException;
     }
 
@@ -134,10 +124,7 @@ export class AuthController extends BaseController implements IAuthController {
   async refreshToken(req: Request, res: Response) {
     const dto = new RefreshTokenRequestDTO(req.refreshTokenJwt!);
     const { userId, exp, type } = req.tokenPayload as TokenPayload;
-
-    const findRefreshToken = await this.authService.findRefreshTokenByToken(dto.refreshToken);
-
-    if (!findRefreshToken || type !== ETokenType.REFRESH_TOKEN) {
+    if (type !== ETokenType.REFRESH_TOKEN) {
       throw InvalidTokenAuthFailureException;
     }
 
@@ -165,7 +152,7 @@ export class AuthController extends BaseController implements IAuthController {
     const userId = this.getUserId(req);
 
     const user = await this.usersService.findUserById(userId);
-
+    console.log('user: ', user);
     if (!user) {
       throw UserNotFoundException;
     }
@@ -212,7 +199,9 @@ export class AuthController extends BaseController implements IAuthController {
   async forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response) {
     const dto = new ForgotPasswordRequestDTO(req.body);
 
-    const existingUser = await this.usersService.findUserByEmail(dto.email);
+    const existingUser = await this.usersService.findUserByEmail(dto.email, {
+      projection: { _id: 1, name: 1, email: 1 }
+    });
 
     if (!existingUser) {
       throw InvalidEmailOrPasswordException;

@@ -7,6 +7,7 @@ export type SearchUsersCacheKeyParts = SearchQueryDTO & {
 
 export const CACHE_KEYS = {
   user: (userId: string) => `user:${userId}`,
+  userByUsername: (username: string) => `user:username:${username.toLowerCase()}`,
   friends: (userId: string) => `friends:${userId}`,
   searchUsers: (parts: SearchUsersCacheKeyParts): string => {
     const fingerprint = JSON.stringify(parts);

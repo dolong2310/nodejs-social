@@ -156,10 +156,16 @@ export class UsersValidation implements IUsersValidation {
           // },
           trim: true,
           custom: {
-            options: async (username: string) => {
+            options: async (username: string, { req }) => {
               // check if username is valid format
               if (!USERNAME_REGEX.test(username)) {
                 throw UsernameFormatInvalidException;
+              }
+
+              // nếu username gửi lên trùng username hiện tại của user thì skip, tránh query DB không cần thiết
+              const authenticatedUser = (req as Request).user;
+              if (authenticatedUser?.username === username) {
+                return true;
               }
 
               // check if username already exists

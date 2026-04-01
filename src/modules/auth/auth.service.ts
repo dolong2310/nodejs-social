@@ -3,7 +3,11 @@ import { CACHE_KEYS } from '@/constants/cache.constant';
 import { Injectable } from '@/decorators/injectable.decorator';
 import { ETokenType } from '@/interfaces/enums/token.enum';
 import { EEmailTemplate } from '@/interfaces/types/mail.type';
-import { EmailAlreadyExistsException, InvalidEmailOrPasswordException } from '@/modules/auth/auth.exception';
+import {
+  EmailAlreadyExistsException,
+  InvalidEmailOrPasswordException,
+  InvalidTokenAuthFailureException
+} from '@/modules/auth/auth.exception';
 import {
   ChangePasswordRequestDTO,
   ForgotPasswordRequestDTO,
@@ -128,7 +132,10 @@ export class AuthService extends BaseService implements IAuthService {
   }
 
   async logout({ refreshToken }: LogoutRequestDTO): Promise<LogoutResponseDTO> {
-    await this.userRepository.deleteRefreshToken(refreshToken);
+    const deleted = await this.userRepository.deleteRefreshToken(refreshToken);
+    if (!deleted) {
+      throw InvalidTokenAuthFailureException;
+    }
     return { message: 'Logout successfully' };
   }
 
@@ -149,10 +156,10 @@ export class AuthService extends BaseService implements IAuthService {
       })
     ]);
 
-    await Promise.all([
-      this.userRepository.deleteRefreshToken(refreshToken),
-      this.userRepository.createRefreshToken(newRefreshToken, userId)
-    ]);
+    const rotated = await this.userRepository.rotateRefreshToken(refreshToken, newRefreshToken, userId);
+    if (!rotated) {
+      throw InvalidTokenAuthFailureException;
+    }
 
     return {
       accessToken: newAccessToken,
@@ -161,10 +168,7 @@ export class AuthService extends BaseService implements IAuthService {
   }
 
   async verifyEmail(userId: string): Promise<VerifyEmailResponseDTO> {
-    await this.userRepository.update(userId, {
-      emailVerificationToken: '',
-      verificationStatus: EUserVerificationStatus.VERIFIED
-    });
+    await this.userRepository.markEmailVerified(userId);
     await this.redisService.del(CACHE_KEYS.user(userId));
     return { message: 'Email verified successfully' };
   }
@@ -196,9 +200,8 @@ export class AuthService extends BaseService implements IAuthService {
       template: EEmailTemplate.VERIFY_EMAIL
     });
 
-    await this.userRepository.update(userId, {
-      emailVerificationToken
-    });
+    await this.userRepository.updateEmailVerificationToken(userId, emailVerificationToken);
+    await this.redisService.del(CACHE_KEYS.user(userId));
 
     return {
       message: 'Email verification sent successfully'
@@ -231,9 +234,8 @@ export class AuthService extends BaseService implements IAuthService {
       template: EEmailTemplate.FORGOT_PASSWORD
     });
 
-    await this.userRepository.update(userId, {
-      forgotPasswordToken
-    });
+    await this.userRepository.updateForgotPasswordToken(userId, forgotPasswordToken);
+    await this.redisService.del(CACHE_KEYS.user(userId));
 
     return {
       message: 'Forgot password sent successfully'
@@ -246,10 +248,7 @@ export class AuthService extends BaseService implements IAuthService {
   }: ResetPasswordRequestDTO & { userId: string }): Promise<ResetPasswordResponseDTO> {
     const hashedPassword = await hashPassword(password);
 
-    await this.userRepository.update(userId, {
-      forgotPasswordToken: '',
-      password: hashedPassword
-    });
+    await this.userRepository.resetPassword(userId, hashedPassword);
     await this.redisService.del(CACHE_KEYS.user(userId));
 
     return { message: 'Password reset successfully' };
