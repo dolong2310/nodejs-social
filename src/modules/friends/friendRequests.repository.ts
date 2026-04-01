@@ -2,8 +2,10 @@
  * FriendRequestRepository — directed pending requests.
  */
 
-import { Injectable } from '@/decorators';
-import { BaseRepository, FriendRequestSchema, IFriendRequest } from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { FriendRequestSchema, IFriendRequest } from '@/modules/friends/friendRequests.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { ObjectId } from 'mongodb';
 
 export interface IFriendRequestRepository {
@@ -26,6 +28,10 @@ export interface IFriendRequestRepository {
 
 @Injectable()
 export class FriendRequestRepository extends BaseRepository implements IFriendRequestRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async countOutgoingRequestsCreatedOnUtcDay(
     fromUserId: string,
     dayStart: Date,

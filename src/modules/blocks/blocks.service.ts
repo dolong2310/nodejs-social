@@ -1,18 +1,18 @@
-import { Injectable } from '@/decorators';
-import type { FriendUserRow } from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
 import {
-  BaseService,
   BlockAlreadyExistsException,
-  BlockRepository,
   BlockUserNotFoundException,
   CannotBlockYourselfException,
-  FriendRequestRepository,
-  FriendshipRepository,
-  FriendsService,
-  IUser,
-  NoActiveBlockException,
-  UserRepository
-} from '@/modules';
+  NoActiveBlockException
+} from '@/modules/blocks/blocks.exception';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { FriendRequestRepository } from '@/modules/friends/friendRequests.repository';
+import type { FriendUserRow } from '@/modules/friends/friends.service';
+import { FriendsService } from '@/modules/friends/friends.service';
+import { FriendshipRepository } from '@/modules/friends/friendship.repository';
+import { UserRepository } from '@/modules/users/users.repository';
+import { IUser } from '@/modules/users/users.schema';
 import { MongoServerError } from 'mongodb';
 
 export interface IBlocksService {

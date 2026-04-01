@@ -1,7 +1,11 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError, ConflictRequestError, ForbiddenError } from '@/providers';
-import { SharedInvalidCursorException, SharedUserNotFoundException } from '@/shared';
-import { SharedConversationNotFoundException, SharedConversationNotMemberException } from '@/shared/exceptions';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BadRequestError, ConflictRequestError, ForbiddenError } from '@/providers/httpResponses/error.response';
+import {
+  SharedConversationNotFoundException,
+  SharedConversationNotMemberException
+} from '@/shared/exceptions/conversations.exception';
+import { SharedInvalidCursorException } from '@/shared/exceptions/cursor.exception';
+import { SharedUserNotFoundException } from '@/shared/exceptions/users.exception';
 
 export const ConversationNotFoundException = SharedConversationNotFoundException;
 export const ConversationInvalidPeerException = new BadRequestError(VALIDATION_ERROR_MESSAGE.CONVERSATION_INVALID_PEER);

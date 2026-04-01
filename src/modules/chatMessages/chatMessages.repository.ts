@@ -1,5 +1,7 @@
-import { Injectable } from '@/decorators';
-import { BaseRepository, ChatMessageSchema, IChatAttachment, IChatMessage } from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { ChatMessageSchema, IChatAttachment, IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { Filter, ObjectId } from 'mongodb';
 
 export interface IChatMessageRepository {
@@ -19,6 +21,10 @@ export interface IChatMessageRepository {
 
 @Injectable()
 export class ChatMessageRepository extends BaseRepository implements IChatMessageRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async insertMessage(
     chatId: string,
     senderId: string,

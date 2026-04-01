@@ -1,4 +1,4 @@
-import { EPostType } from '@/modules';
+import { EPostType } from '@/modules/posts/posts.enum';
 import { Document } from 'mongodb';
 
 export const buildBasePostPipeline = ({

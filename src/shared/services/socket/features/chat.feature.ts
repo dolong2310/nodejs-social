@@ -5,8 +5,8 @@ import {
   SOCKET_ROOM_CHAT_PREFIX,
   SOCKET_SERVER_PRESENCE_CHAT,
   chatRoom
-} from '@/constants';
-import { IConversationMemberRepository } from '@/modules';
+} from '@/constants/socket.constant';
+import { IConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
 import { Server, Socket } from 'socket.io';
 import { SocketFeature } from '../socket.feature';
 import { SocketContext } from '../socket.types';

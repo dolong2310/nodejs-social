@@ -1,27 +1,28 @@
-import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants';
-import { Injectable } from '@/decorators';
+import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants/notification.constant';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
+import { IConversation } from '@/modules/conversations/conversations.schema';
+import { NotificationsPageDTO, toNotificationListItem } from '@/modules/notifications/dtos/notifications.response.dto';
 import {
-  BaseService,
-  BlockRepository,
+  NotificationActorUserNotFoundException,
+  NotificationInvalidCursorException
+} from '@/modules/notifications/notifications.exception';
+import { NotificationRepository } from '@/modules/notifications/notifications.repository';
+import {
   IAddedToGroupNotificationPayload,
-  IChatMessage,
-  IConversation,
   IFriendAcceptedNotificationPayload,
   IFriendRequestNotificationPayload,
   INewMessageNotificationPayload,
   INotification,
-  IUser,
   NewMessagePreviewKind,
-  NotificationActorUserNotFoundException,
-  NotificationInvalidCursorException,
-  NotificationRepository,
-  NotificationSchema,
-  NotificationsPageDTO,
-  toNotificationListItem,
-  UserRepository
-} from '@/modules';
-import { NotificationTrimJobQueue } from '@/providers';
-import { decodeNotificationCursor, encodeNotificationCursor } from '@/utils';
+  NotificationSchema
+} from '@/modules/notifications/notifications.schema';
+import { UserRepository } from '@/modules/users/users.repository';
+import { IUser } from '@/modules/users/users.schema';
+import { NotificationTrimJobQueue } from '@/providers/queue/queues/notification-trim.queue';
+import { decodeNotificationCursor, encodeNotificationCursor } from '@/utils/notification-cursor.util';
 
 export interface ISocketUserEmitter {
   emitToUser(userId: string, event: string, data: unknown): void;

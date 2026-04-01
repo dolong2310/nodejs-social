@@ -1,12 +1,16 @@
-import { TokenPayload } from '@/interfaces';
-import { InvalidTokenAuthFailureException, NoTokenProvidedException, TokenHasExpiredException } from '@/modules';
-import { AuthFailureError, Container, RequestContextLogger } from '@/providers';
-import { TokenService } from '@/shared';
+import { TokenPayload } from '@/interfaces/types/token.type';
+import {
+  InvalidTokenAuthFailureException,
+  NoTokenProvidedException,
+  TokenHasExpiredException
+} from '@/modules/auth/auth.exception';
+import { Container } from '@/providers/container/instance.container';
+import { AuthFailureError } from '@/providers/httpResponses/error.response';
+import { RequestContextLogger } from '@/providers/logger/request-context.logger';
+import { TokenService } from '@/shared/services/token.service';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import jwt from 'jsonwebtoken';
-
-const { syncLogContextFromAuth } = RequestContextLogger;
 
 export const protect = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   let token = req.cookies.accessToken;
@@ -22,7 +26,7 @@ export const protect = async (req: Request, _res: Response, next: NextFunction):
 
   try {
     req.tokenPayload = await _verifyAccessToken(token);
-    syncLogContextFromAuth(req);
+    RequestContextLogger.syncLogContextFromAuth(req);
     next();
   } catch (error) {
     next(_mapJwtVerifyError(error));
@@ -47,7 +51,7 @@ export const optionalProtect = async (req: Request, _res: Response, next: NextFu
 
   try {
     req.tokenPayload = await _verifyAccessToken(token);
-    syncLogContextFromAuth(req);
+    RequestContextLogger.syncLogContextFromAuth(req);
   } catch {
     // Invalid/expired token on an optional-auth route: treat as guest (no tokenPayload).
   }
@@ -64,7 +68,7 @@ export const protectIfHasBearerToken = async (req: Request, _res: Response, next
   const token = authHeader.split(' ')[1];
   try {
     req.tokenPayload = await _verifyAccessToken(token);
-    syncLogContextFromAuth(req);
+    RequestContextLogger.syncLogContextFromAuth(req);
     next();
   } catch (error) {
     next(_mapJwtVerifyError(error));
@@ -84,7 +88,7 @@ export const optionalAuth = (
     const token = authHeader.split(' ')[1];
     try {
       req.tokenPayload = await _verifyAccessToken(token);
-      syncLogContextFromAuth(req);
+      RequestContextLogger.syncLogContextFromAuth(req);
     } catch (error) {
       next(_mapJwtVerifyError(error));
       return;

@@ -1,36 +1,46 @@
-import { REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieSharedOptions, refreshTokenMaxAgeMs } from '@/constants';
-import { Injectable } from '@/decorators';
-import { ETokenType, TokenPayload } from '@/interfaces';
 import {
-  AuthService,
-  BaseController,
-  ChangePasswordRequestDTO,
-  ChangePasswordResponseDTO,
+  REFRESH_TOKEN_COOKIE_NAME,
+  refreshTokenCookieSharedOptions,
+  refreshTokenMaxAgeMs
+} from '@/constants/auth.constant';
+import { AutoBind } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { ETokenType } from '@/interfaces/enums/token.enum';
+import { TokenPayload } from '@/interfaces/types/token.type';
+import {
   EmailAlreadyExistsException,
-  EUserVerificationStatus,
-  ForgotPasswordRequestDTO,
-  ForgotPasswordResponseDTO,
   InvalidEmailOrPasswordException,
   InvalidTokenAuthFailureException,
   InvalidTokenBadRequestException,
+  UserAlreadyVerifiedException,
+  UserNotFoundException
+} from '@/modules/auth/auth.exception';
+import { AuthService } from '@/modules/auth/auth.service';
+import {
+  ChangePasswordRequestDTO,
+  ForgotPasswordRequestDTO,
   LoginRequestDTO,
-  LoginResponseDTO,
   LogoutRequestDTO,
-  LogoutResponseDTO,
   RefreshTokenRequestDTO,
-  RefreshTokenResponseDTO,
   RegisterRequestDTO,
+  ResetPasswordRequestDTO,
+  VerifyEmailRequestDTO
+} from '@/modules/auth/dtos/auth.request.dto';
+import {
+  ChangePasswordResponseDTO,
+  ForgotPasswordResponseDTO,
+  LoginResponseDTO,
+  LogoutResponseDTO,
+  RefreshTokenResponseDTO,
   RegisterResponseDTO,
   ResendVerifyEmailResponseDTO,
-  ResetPasswordRequestDTO,
   ResetPasswordResponseDTO,
-  UserAlreadyVerifiedException,
-  UserNotFoundException,
-  UsersService,
-  VerifyEmailRequestDTO,
   VerifyEmailResponseDTO
-} from '@/modules';
-import { Created } from '@/providers';
+} from '@/modules/auth/dtos/auth.response.dto';
+import { BaseController } from '@/modules/base/base.controller';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
+import { UsersService } from '@/modules/users/users.service';
+import { Created } from '@/providers/httpResponses/success.response';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -55,7 +65,8 @@ export class AuthController extends BaseController implements IAuthController {
     super();
   }
 
-  register = async (req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response) => {
+  @AutoBind()
+  async register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response) {
     const dto = new RegisterRequestDTO(req.body);
 
     const existingUser = await this.usersService.findUserByEmail(dto.email);
@@ -72,9 +83,10 @@ export class AuthController extends BaseController implements IAuthController {
       data: user,
       message: 'User registered successfully'
     });
-  };
+  }
 
-  login = async (req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response) => {
+  @AutoBind()
+  async login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response) {
     const dto = new LoginRequestDTO(req.body);
 
     const existingUser = await this.usersService.findUserByEmail(dto.email);
@@ -95,9 +107,10 @@ export class AuthController extends BaseController implements IAuthController {
       data: { accessToken },
       message: 'Login successfully'
     });
-  };
+  }
 
-  logout = async (req: Request, res: Response) => {
+  @AutoBind()
+  async logout(req: Request, res: Response) {
     const dto = new LogoutRequestDTO(req.refreshTokenJwt!);
     const { type } = req.tokenPayload as TokenPayload;
 
@@ -115,9 +128,10 @@ export class AuthController extends BaseController implements IAuthController {
       res,
       message
     });
-  };
+  }
 
-  refreshToken = async (req: Request, res: Response) => {
+  @AutoBind()
+  async refreshToken(req: Request, res: Response) {
     const dto = new RefreshTokenRequestDTO(req.refreshTokenJwt!);
     const { userId, exp, type } = req.tokenPayload as TokenPayload;
 
@@ -143,9 +157,10 @@ export class AuthController extends BaseController implements IAuthController {
       data: { accessToken },
       message: 'Refresh token successfully'
     });
-  };
+  }
 
-  verifyEmail = async (req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response) => {
+  @AutoBind()
+  async verifyEmail(req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response) {
     const dto = new VerifyEmailRequestDTO(req.body);
     const userId = this.getUserId(req);
 
@@ -169,9 +184,10 @@ export class AuthController extends BaseController implements IAuthController {
       res,
       message
     });
-  };
+  }
 
-  resendVerifyEmail = async (req: Request, res: Response) => {
+  @AutoBind()
+  async resendVerifyEmail(req: Request, res: Response) {
     const userId = this.getUserId(req);
 
     const user = await this.usersService.findUserById(userId);
@@ -190,9 +206,10 @@ export class AuthController extends BaseController implements IAuthController {
       res,
       message
     });
-  };
+  }
 
-  forgotPassword = async (req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response) => {
+  @AutoBind()
+  async forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response) {
     const dto = new ForgotPasswordRequestDTO(req.body);
 
     const existingUser = await this.usersService.findUserByEmail(dto.email);
@@ -211,9 +228,10 @@ export class AuthController extends BaseController implements IAuthController {
       res,
       message
     });
-  };
+  }
 
-  resetPassword = async (req: Request<ParamsDictionary, object, ResetPasswordRequestDTO>, res: Response) => {
+  @AutoBind()
+  async resetPassword(req: Request<ParamsDictionary, object, ResetPasswordRequestDTO>, res: Response) {
     const dto = new ResetPasswordRequestDTO(req.body);
     const userId = this.getUserId(req);
 
@@ -233,9 +251,10 @@ export class AuthController extends BaseController implements IAuthController {
       res,
       message
     });
-  };
+  }
 
-  changePassword = async (req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response) => {
+  @AutoBind()
+  async changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response) {
     const dto = new ChangePasswordRequestDTO(req.body);
     const userId = this.getUserId(req);
 
@@ -245,5 +264,5 @@ export class AuthController extends BaseController implements IAuthController {
       res,
       message
     });
-  };
+  }
 }

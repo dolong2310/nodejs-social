@@ -1,7 +1,11 @@
-import { CACHE_KEYS, CACHE_TTL } from '@/constants';
-import { Injectable } from '@/decorators';
-import { BaseService, IUser, UpdateMeRequestDTO, UserRepository, UserResponseDTO } from '@/modules';
-import { RedisService } from '@/providers';
+import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { UpdateMeRequestDTO } from '@/modules/users/dtos/users.request.dto';
+import { UserResponseDTO } from '@/modules/users/dtos/users.response.dto';
+import { UserRepository } from '@/modules/users/users.repository';
+import { IUser } from '@/modules/users/users.schema';
+import { RedisService } from '@/providers/database/redis/redis.service';
 
 export interface IUsersService {
   findUserByEmail(email: string): Promise<IUser | null>;

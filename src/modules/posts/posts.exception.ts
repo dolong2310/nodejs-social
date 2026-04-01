@@ -1,5 +1,10 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AuthFailureError, BadRequestError, ForbiddenError, NotFoundError } from '@/providers';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import {
+  AuthFailureError,
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError
+} from '@/providers/httpResponses/error.response';
 
 export const PostNotFoundException = new NotFoundError(VALIDATION_ERROR_MESSAGE.POST_NOT_FOUND);
 export const OnlyOwnerCanUpdatePostSettingsException = new ForbiddenError(

@@ -1,4 +1,4 @@
-import { UserResponseDTO } from '@/modules';
+import { UserResponseDTO } from '@/modules/users/dtos/users.response.dto';
 
 export class RegisterResponseDTO extends UserResponseDTO {}
 

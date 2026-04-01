@@ -2,9 +2,14 @@
  * social DB, list + mark read.
  */
 
-import { BaseRoute, NotificationsController, NotificationsValidation, UsersValidation, protect } from '@/modules';
-import { appLimiter, validateCursorPaginationQuery } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { NotificationsController } from '@/modules/notifications/notifications.controller';
+import { NotificationsValidation } from '@/modules/notifications/notifications.validation';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { validateCursorPaginationQuery } from '@/shared/middlewares/common.middleware';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class NotificationsRoute extends BaseRoute {
   constructor() {

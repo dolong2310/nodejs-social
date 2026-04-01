@@ -1,5 +1,11 @@
-import { Injectable } from '@/decorators';
-import { BaseRepository, ConversationMemberSchema, EConversationMemberRole, IConversationMember } from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import {
+  ConversationMemberSchema,
+  EConversationMemberRole,
+  IConversationMember
+} from '@/modules/conversations/conversationMember.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { Document, ObjectId } from 'mongodb';
 
 export interface IConversationMemberRepository {
@@ -32,6 +38,10 @@ export interface IConversationMemberRepository {
 
 @Injectable()
 export class ConversationMemberRepository extends BaseRepository implements IConversationMemberRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   findMembership(conversationId: string, userId: string): Promise<IConversationMember | null> {
     return this.db.conversationMembers.findOne({
       chatId: new ObjectId(conversationId),

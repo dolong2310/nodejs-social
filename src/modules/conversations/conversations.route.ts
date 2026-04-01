@@ -2,17 +2,16 @@
  * Conversations: direct / group / messages / read / get / patch / invite / leave / kick / patch role / transfer admin.
  */
 
-import {
-  BaseRoute,
-  ChatMessagesController,
-  ChatMessagesValidation,
-  ConversationsController,
-  ConversationsValidation,
-  UsersValidation,
-  protect
-} from '@/modules';
-import { appLimiter, validateCursorPaginationQuery } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { ChatMessagesController } from '@/modules/chatMessages/chatMessages.controller';
+import { ChatMessagesValidation } from '@/modules/chatMessages/chatMessages.validation';
+import { ConversationsController } from '@/modules/conversations/conversations.controller';
+import { ConversationsValidation } from '@/modules/conversations/conversations.validation';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { validateCursorPaginationQuery } from '@/shared/middlewares/common.middleware';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class ConversationsRoute extends BaseRoute {
   constructor() {

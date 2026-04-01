@@ -1,7 +1,7 @@
-import { envConfig } from '@/config';
-import { Injectable } from '@/decorators';
-import { LoggerInstance } from '@/providers/logger';
-import { S3ObjectNotFoundException } from '@/shared';
+import { envConfig } from '@/config/envConfig';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { S3ObjectNotFoundException } from '@/shared/exceptions/s3.exception';
 import { CompleteMultipartUploadCommandOutput, GetObjectCommandOutput, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';

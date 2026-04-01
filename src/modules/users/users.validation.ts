@@ -1,7 +1,9 @@
-import { USERNAME_REGEX, VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AutoBind, Injectable } from '@/decorators';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { USERNAME_REGEX } from '@/constants/regex.constant';
+import { AutoBind } from '@/decorators/autoBind.decorator';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
 import {
-  EUserVerificationStatus,
   EngagementRequiresVerifiedAccountException,
   InvalidUserIdException,
   MissingAuthTokenPayloadException,
@@ -9,16 +11,15 @@ import {
   UserNotVerifiedYetException,
   UsernameAlreadyExistsException,
   UsernameFormatInvalidException,
-  UsersService,
   UsersUserNotFoundException
-} from '@/modules';
-import { RequestContextLogger } from '@/providers';
-import { isValidMongoId, validate } from '@/utils';
+} from '@/modules/users/users.exception';
+import { UsersService } from '@/modules/users/users.service';
+import { RequestContextLogger } from '@/providers/logger/request-context.logger';
+import { isValidMongoId } from '@/utils/common.util';
+import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { Location, ParamSchema, checkSchema } from 'express-validator';
-
-const { syncLogContextFromUser } = RequestContextLogger;
 
 export const nameSchema: ParamSchema = {
   notEmpty: {
@@ -87,101 +88,98 @@ export interface IUsersValidation {
 export class UsersValidation implements IUsersValidation {
   constructor(private readonly usersService: UsersService) {}
 
-  @AutoBind()
-  updateMeValidation() {
-    return validate(
-      checkSchema(
-        {
-          name: {
-            ...nameSchema,
-            optional: true,
-            notEmpty: undefined
+  updateMeValidation = validate(
+    checkSchema(
+      {
+        name: {
+          ...nameSchema,
+          optional: true,
+          notEmpty: undefined
+        },
+        dateOfBirth: {
+          ...dateOfBirthSchema,
+          optional: true
+        },
+        bio: {
+          optional: true,
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.BIO_MUST_BE_A_STRING
           },
-          dateOfBirth: {
-            ...dateOfBirthSchema,
-            optional: true
-          },
-          bio: {
-            optional: true,
-            isString: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.BIO_MUST_BE_A_STRING
-            },
-            isLength: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.BIO_LENGTH_MUST_BE_FROM_1_TO_500,
-              options: {
-                min: 1,
-                max: 500
-              }
-            },
-            trim: true
-          },
-          location: {
-            optional: true,
-            isString: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_MUST_BE_A_STRING
-            },
-            isLength: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_LENGTH_MUST_BE_FROM_1_TO_500,
-              options: {
-                min: 1,
-                max: 500
-              }
-            },
-            trim: true
-          },
-          website: {
-            optional: true,
-            isString: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_MUST_BE_A_STRING
-            },
-            isLength: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_LENGTH_MUST_BE_FROM_1_TO_500,
-              options: {
-                min: 1,
-                max: 500
-              }
-            },
-            trim: true
-          },
-          username: {
-            optional: true,
-            isString: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_A_STRING
-            },
-            // isLength: {
-            //   errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_LENGTH_MUST_BE_FROM_1_TO_50,
-            //   options: {
-            //     min: 1,
-            //     max: 50
-            //   }
-            // },
-            trim: true,
-            custom: {
-              options: async (username: string) => {
-                // check if username is valid format
-                if (!USERNAME_REGEX.test(username)) {
-                  throw UsernameFormatInvalidException;
-                }
-
-                // check if username already exists
-                const user = await this.usersService.findUserByUsername(username);
-
-                if (user) {
-                  throw UsernameAlreadyExistsException;
-                }
-
-                return true;
-              }
+          isLength: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.BIO_LENGTH_MUST_BE_FROM_1_TO_500,
+            options: {
+              min: 1,
+              max: 500
             }
           },
-          avatar: imageSchema,
-          coverPhoto: imageSchema
+          trim: true
         },
-        ['body']
-      ),
-      { assignMatchedBody: true, locations: ['body'] }
-    );
-  }
+        location: {
+          optional: true,
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_MUST_BE_A_STRING
+          },
+          isLength: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.LOCATION_LENGTH_MUST_BE_FROM_1_TO_500,
+            options: {
+              min: 1,
+              max: 500
+            }
+          },
+          trim: true
+        },
+        website: {
+          optional: true,
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_MUST_BE_A_STRING
+          },
+          isLength: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.WEBSITE_LENGTH_MUST_BE_FROM_1_TO_500,
+            options: {
+              min: 1,
+              max: 500
+            }
+          },
+          trim: true
+        },
+        username: {
+          optional: true,
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_A_STRING
+          },
+          // isLength: {
+          //   errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_LENGTH_MUST_BE_FROM_1_TO_50,
+          //   options: {
+          //     min: 1,
+          //     max: 50
+          //   }
+          // },
+          trim: true,
+          custom: {
+            options: async (username: string) => {
+              // check if username is valid format
+              if (!USERNAME_REGEX.test(username)) {
+                throw UsernameFormatInvalidException;
+              }
+
+              // check if username already exists
+              const user = await this.usersService.findUserByUsername(username);
+
+              if (user) {
+                throw UsernameAlreadyExistsException;
+              }
+
+              return true;
+            }
+          }
+        },
+        avatar: imageSchema,
+        coverPhoto: imageSchema
+      },
+      ['body']
+    ),
+    { assignMatchedBody: true, locations: ['body'] }
+  );
 
   @AutoBind()
   async userVerifiedValidation(req: Request, _res: Response, next: NextFunction) {
@@ -200,7 +198,7 @@ export class UsersValidation implements IUsersValidation {
       throw UserIsBannedException;
     }
     req.user = user;
-    syncLogContextFromUser(req);
+    RequestContextLogger.syncLogContextFromUser(req);
     next();
   }
 
@@ -218,7 +216,7 @@ export class UsersValidation implements IUsersValidation {
       throw UserIsBannedException;
     }
     req.user = user;
-    syncLogContextFromUser(req);
+    RequestContextLogger.syncLogContextFromUser(req);
     next();
   }
 

@@ -1,5 +1,6 @@
-import { RedisService } from '@/providers/database/redis';
-import { LoggerInstance } from '@/providers/logger';
+import { SEED_ERROR_MESSAGE } from '@/constants/message.constant';
+import { RedisService } from '@/providers/database/redis/redis.service';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
 import Redis, { type RedisOptions } from 'ioredis';
 
 const log = LoggerInstance.getLogger().child({ module: 'redis' });
@@ -37,7 +38,7 @@ export class RedisInstance {
 
   static get(): RedisService {
     if (!this.instance) {
-      throw new Error('RedisService has not been initialized. Call RedisInstance.init() during bootstrap.');
+      throw new Error(SEED_ERROR_MESSAGE.REDIS_INSTANCE_NOT_INITIALIZED);
     }
     return this.instance;
   }

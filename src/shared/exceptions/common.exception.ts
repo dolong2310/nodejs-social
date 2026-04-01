@@ -1,5 +1,5 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError } from '@/providers';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BadRequestError } from '@/providers/httpResponses/error.response';
 
 export const PageMustBeGreaterThanZeroException = new BadRequestError(
   VALIDATION_ERROR_MESSAGE.PAGE_MUST_BE_GREATER_THAN_0

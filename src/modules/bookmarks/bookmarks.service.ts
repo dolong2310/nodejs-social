@@ -1,12 +1,8 @@
-import { Injectable } from '@/decorators';
-import {
-  BaseService,
-  BookmarkRepository,
-  CreateBookmarkRequestDTO,
-  CreateBookmarkResponseDTO,
-  DeleteBookmarkParamsDTO,
-  DeleteBookmarkResponseDTO
-} from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { BookmarkRepository } from '@/modules/bookmarks/bookmarks.repository';
+import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/modules/bookmarks/dtos/bookmarks.request.dto';
+import { CreateBookmarkResponseDTO, DeleteBookmarkResponseDTO } from '@/modules/bookmarks/dtos/bookmarks.response.dto';
 
 export interface IBookmarksService {
   bookmarkPost(payload: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO | null>;

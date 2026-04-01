@@ -1,5 +1,6 @@
-import { AutoBind, Injectable } from '@/decorators';
-import { UsersValidation } from '@/modules';
+import { AutoBind } from '@/decorators/autoBind.decorator';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { UsersValidation } from '@/modules/users/users.validation';
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 

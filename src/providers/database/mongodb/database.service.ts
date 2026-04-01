@@ -1,19 +1,19 @@
-import { Injectable } from '@/decorators';
-import {
-  IBlock,
-  IBookmark,
-  IChatMessage,
-  IConversation,
-  IConversationMember,
-  IFriendRequest,
-  IFriendship,
-  ILike,
-  INotification,
-  IPost,
-  IUser
-} from '@/modules';
-import { LoggerInstance } from '@/providers/logger';
-import { IHashtag, IRefreshToken, IVideoStatus } from '@/shared';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { IBlock } from '@/modules/blocks/blocks.schema';
+import { IBookmark } from '@/modules/bookmarks/bookmarks.schema';
+import { IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
+import { IConversationMember } from '@/modules/conversations/conversationMember.schema';
+import { IConversation } from '@/modules/conversations/conversations.schema';
+import { IFriendRequest } from '@/modules/friends/friendRequests.schema';
+import { IFriendship } from '@/modules/friends/friendship.schema';
+import { ILike } from '@/modules/likes/likes.schema';
+import { INotification } from '@/modules/notifications/notifications.schema';
+import { IPost } from '@/modules/posts/posts.schema';
+import { IUser } from '@/modules/users/users.schema';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { IHashtag } from '@/shared/models/hashtag.schema';
+import { IRefreshToken } from '@/shared/models/refreshToken.schema';
+import { IVideoStatus } from '@/shared/models/videoStatus.schema';
 import { ClientSession, Collection, Db, Document, MongoClient } from 'mongodb';
 import { ConnectionService } from '../connection.abstract';
 

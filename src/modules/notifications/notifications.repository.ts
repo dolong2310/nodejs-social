@@ -1,5 +1,7 @@
-import { Injectable } from '@/decorators';
-import { BaseRepository, INotification } from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { INotification } from '@/modules/notifications/notifications.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { Filter, ObjectId } from 'mongodb';
 
 export interface INotificationRepository {
@@ -22,6 +24,10 @@ export interface INotificationRepository {
 
 @Injectable()
 export class NotificationRepository extends BaseRepository implements INotificationRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async insertOne(doc: INotification): Promise<INotification> {
     await this.db.notifications.insertOne(doc);
     return doc;

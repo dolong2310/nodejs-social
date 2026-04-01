@@ -1,12 +1,13 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
 import {
   BadRequestError,
   ConflictRequestError,
   ForbiddenError,
   NotFoundError,
   TooManyRequestsError
-} from '@/providers';
-import { SharedInvalidCursorException, SharedUserNotFoundException } from '@/shared';
+} from '@/providers/httpResponses/error.response';
+import { SharedInvalidCursorException } from '@/shared/exceptions/cursor.exception';
+import { SharedUserNotFoundException } from '@/shared/exceptions/users.exception';
 
 export const CannotSendFriendRequestToYourselfException = new BadRequestError(
   VALIDATION_ERROR_MESSAGE.CANNOT_SEND_FRIEND_REQUEST_TO_YOURSELF

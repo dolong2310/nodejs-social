@@ -1,5 +1,5 @@
-import { IMedia } from '@/interfaces';
-import { EPostAudience, EPostType } from '@/modules';
+import { IMedia } from '@/interfaces/types/media.type';
+import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
 import { ObjectId } from 'mongodb';
 
 export interface IPost {

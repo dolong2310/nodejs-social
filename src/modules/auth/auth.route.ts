@@ -2,9 +2,13 @@
  * This file defines the authentication routes for user signup, signin, token refresh, and logout.
  */
 
-import { AuthController, AuthValidation, BaseRoute, UsersValidation, protect } from '@/modules';
-import { authLimiter } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { AuthController } from '@/modules/auth/auth.controller';
+import { protect } from '@/modules/auth/auth.middleware';
+import { AuthValidation } from '@/modules/auth/auth.validation';
+import { BaseRoute } from '@/modules/base/base.route';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { authLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class AuthRoute extends BaseRoute {
   constructor() {

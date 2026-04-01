@@ -1,9 +1,7 @@
-/*
- * BlockRepository — BLCK-02 symmetric query helpers for Phase 3 feed filtering.
- */
-
-import { Injectable } from '@/decorators';
-import { BaseRepository, BlockSchema } from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { BlockSchema } from '@/modules/blocks/blocks.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { ObjectId } from 'mongodb';
 
 export interface IBlockRepository {
@@ -28,6 +26,10 @@ function dedupeHexIds(ids: string[]): string[] {
 
 @Injectable()
 export class BlockRepository extends BaseRepository implements IBlockRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async isBlockedEitherWay(aUserId: string, bUserId: string): Promise<boolean> {
     const a = new ObjectId(aUserId);
     const b = new ObjectId(bUserId);

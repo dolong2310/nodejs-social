@@ -1,5 +1,6 @@
-import { TokenPayload } from '@/interfaces';
-import { IUser, PostDetailResponseDTO } from '@/modules';
+import { TokenPayload } from '@/interfaces/types/token.type';
+import { PostDetailResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { IUser } from '@/modules/users/users.schema';
 import 'express';
 import type { Logger } from 'pino';
 

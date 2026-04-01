@@ -6,7 +6,7 @@
  * It is used to set up routes in the application.
  */
 
-import { Container } from '@/providers/container';
+import { Container } from '@/providers/container/instance.container';
 import express, { Router } from 'express';
 
 export abstract class BaseRoute {

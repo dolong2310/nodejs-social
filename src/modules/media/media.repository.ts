@@ -4,9 +4,11 @@
  * It provides methods to interact with the media data in the database.
  */
 
-import { Injectable } from '@/decorators';
-import { BaseRepository, EEncodingVideoStatus } from '@/modules';
-import { IVideoStatus, VideoStatusSchema } from '@/shared';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { EEncodingVideoStatus } from '@/modules/media/media.enum';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
+import { IVideoStatus, VideoStatusSchema } from '@/shared/models/videoStatus.schema';
 import { UpdateResult } from 'mongodb';
 
 export interface IMediaRepository {
@@ -21,6 +23,10 @@ export interface IMediaRepository {
 
 @Injectable()
 export class MediaRepository extends BaseRepository implements IMediaRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async createVideoStatus({ name, status }: { name: string; status: EEncodingVideoStatus }): Promise<IVideoStatus> {
     const videoStatus = new VideoStatusSchema({ name, status });
     await this.db.videoStatuses.insertOne(videoStatus);

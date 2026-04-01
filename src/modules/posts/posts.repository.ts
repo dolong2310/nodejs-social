@@ -4,20 +4,15 @@
  * It provides methods to interact with the post data in the database.
  */
 
-import { Injectable } from '@/decorators';
-import {
-  BaseRepository,
-  CreatePostRequestDTO,
-  EPostAudience,
-  EPostType,
-  IPost,
-  PostDetailResponseDTO,
-  PostNewFeedResponseDTO,
-  PostSchema
-} from '@/modules';
-import { DatabaseService } from '@/providers';
-import { HashtagSchema, IHashtag } from '@/shared';
-import { buildBasePostPipeline } from '@/utils';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { CreatePostRequestDTO } from '@/modules/posts/dtos/posts.request.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
+import { IPost, PostSchema } from '@/modules/posts/posts.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
+import { HashtagSchema, IHashtag } from '@/shared/models/hashtag.schema';
+import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { AnyBulkWriteOperation, FindOneAndUpdateOptions, ObjectId, UpdateResult } from 'mongodb';
 
 export interface IPostRepository {

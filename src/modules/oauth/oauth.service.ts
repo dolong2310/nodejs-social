@@ -1,14 +1,11 @@
-import { envConfig } from '@/config';
-import { Injectable } from '@/decorators';
-import {
-  AuthService,
-  GetGoogleAuthUrlQueryDTO,
-  GoogleAccountNotVerifiedException,
-  OAuthGoogleLoginQueryDTO,
-  OAuthGoogleLoginResponseDTO,
-  RegisterRequestDTO,
-  UsersService
-} from '@/modules';
+import { envConfig } from '@/config/envConfig';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { AuthService } from '@/modules/auth/auth.service';
+import { RegisterRequestDTO } from '@/modules/auth/dtos/auth.request.dto';
+import { GetGoogleAuthUrlQueryDTO, OAuthGoogleLoginQueryDTO } from '@/modules/oauth/dtos/oauth.request.dto';
+import { OAuthGoogleLoginResponseDTO } from '@/modules/oauth/dtos/oauth.response.dto';
+import { GoogleAccountNotVerifiedException } from '@/modules/oauth/oauth.exception';
+import { UsersService } from '@/modules/users/users.service';
 import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';

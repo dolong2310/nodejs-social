@@ -1,4 +1,4 @@
-import { isProduction } from '@/config';
+import { isProduction } from '@/config/envConfig';
 import type { CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 

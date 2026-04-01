@@ -1,6 +1,11 @@
-import { EConversationType, IConversation, IConversationMember, IConversationMemberRepository } from '@/modules';
 import { BaseService } from '@/modules/base/base.service';
-import { SharedConversationNotFoundException, SharedConversationNotMemberException } from '@/shared/exceptions';
+import { IConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
+import { IConversationMember } from '@/modules/conversations/conversationMember.schema';
+import { EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
+import {
+  SharedConversationNotFoundException,
+  SharedConversationNotMemberException
+} from '@/shared/exceptions/conversations.exception';
 
 export class SharedConversationsService extends BaseService {
   constructor(protected readonly conversationMemberRepository: IConversationMemberRepository) {

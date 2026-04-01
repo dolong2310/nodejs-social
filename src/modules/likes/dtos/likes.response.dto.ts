@@ -1,4 +1,4 @@
-import { ILike } from '@/modules';
+import { ILike } from '@/modules/likes/likes.schema';
 
 export class CreateLikeResponseDTO {
   _id: string;

@@ -1,36 +1,33 @@
-import {
-  EmailJobQueue,
-  EmailWorker,
-  IEmailJobQueue,
-  INotificationTrimJobQueue,
-  IVideoHLSJobQueue,
-  NotificationTrimJobQueue,
-  NotificationTrimWorker,
-  VideoHLSJobQueue,
-  VideoHLSWorker
-} from '@/providers';
-import { LoggerInstance } from '@/providers/logger';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { EmailJobQueue } from '@/providers/queue/queues/email.queue';
+import { NotificationTrimJobQueue } from '@/providers/queue/queues/notification-trim.queue';
+import { VideoHLSJobQueue } from '@/providers/queue/queues/video-hls.queue';
+import { EmailWorker } from '@/providers/queue/workers/email.worker';
+import { NotificationTrimWorker } from '@/providers/queue/workers/notification-trim.worker';
+import { VideoHLSWorker } from '@/providers/queue/workers/video-hls.worker';
 import { type ConnectionOptions, type Worker } from 'bullmq';
 import type { RedisOptions } from 'ioredis';
 
 const log = LoggerInstance.getLogger().child({ module: 'queue' });
 
 export interface IQueueService {
-  getEmailJobQueue(): IEmailJobQueue;
-  getVideoHLSJobQueue(): IVideoHLSJobQueue;
-  getNotificationTrimJobQueue(): INotificationTrimJobQueue;
+  connect(): void;
+  getEmailJobQueue(): EmailJobQueue;
+  getVideoHLSJobQueue(): VideoHLSJobQueue;
+  getNotificationTrimJobQueue(): NotificationTrimJobQueue;
 }
 
 export class QueueService implements IQueueService {
   private static instance: QueueService | null = null;
+  private connection: ConnectionOptions;
 
-  private readonly emailJobQueue: EmailJobQueue;
-  private readonly videoHLSJobQueue: VideoHLSJobQueue;
-  private readonly notificationTrimJobQueue: NotificationTrimJobQueue;
-  private readonly workers: Worker[];
+  private emailJobQueue: EmailJobQueue | null = null;
+  private videoHLSJobQueue: VideoHLSJobQueue | null = null;
+  private notificationTrimJobQueue: NotificationTrimJobQueue | null = null;
+  private workers: Worker[] | null = null;
 
-  private constructor(redisOptions: RedisOptions) {
-    const connection: ConnectionOptions = {
+  constructor(redisOptions: RedisOptions) {
+    this.connection = {
       ...redisOptions,
       host: redisOptions.host,
       port: redisOptions.port,
@@ -41,43 +38,31 @@ export class QueueService implements IQueueService {
       enableReadyCheck: false, // enableReadyCheck: false giúp giảm thời gian khởi động vì bỏ qua bước kiểm tra ready check với Redis (phù hợp môi trường cloud hoặc cluster).
       retryStrategy: (times: number) => Math.min(times * 200, 5000) // retryStrategy: Xác định chiến lược retry khi kết nối thất bại – tăng dần thời gian đợi (times * 200ms), tối đa 5000ms mỗi lần.
     };
+  }
 
+  public connect() {
     // 1. Initialize queues
-    this.emailJobQueue = new EmailJobQueue(connection);
-    this.videoHLSJobQueue = new VideoHLSJobQueue(connection);
-    this.notificationTrimJobQueue = new NotificationTrimJobQueue(connection);
+    this.emailJobQueue = new EmailJobQueue(this.connection);
+    this.videoHLSJobQueue = new VideoHLSJobQueue(this.connection);
+    this.notificationTrimJobQueue = new NotificationTrimJobQueue(this.connection);
 
     // 2. Initialize workers
     this.workers = [
-      new EmailWorker().createWorker(connection),
-      new VideoHLSWorker().createWorker(connection),
-      new NotificationTrimWorker().createWorker(connection)
+      new EmailWorker().createWorker(this.connection),
+      new VideoHLSWorker().createWorker(this.connection),
+      new NotificationTrimWorker().createWorker(this.connection)
     ];
 
     log.info('queue service initialized');
   }
 
-  static init(redisOptions: RedisOptions): QueueService {
-    if (!QueueService.instance) {
-      QueueService.instance = new QueueService(redisOptions);
-    }
-    return QueueService.instance;
-  }
-
-  static get(): QueueService {
-    if (!QueueService.instance) {
-      throw new Error('QueueService has not been initialized. Call QueueService.init() during bootstrap.');
-    }
-    return QueueService.instance;
-  }
-
   static async close(): Promise<void> {
     if (!QueueService.instance) return;
     await Promise.allSettled([
-      ...QueueService.instance.workers.map((w) => w.close()),
-      QueueService.instance.emailJobQueue.close(),
-      QueueService.instance.videoHLSJobQueue.close(),
-      QueueService.instance.notificationTrimJobQueue.close()
+      ...QueueService.instance.workers!.map((w) => w.close()),
+      QueueService.instance.emailJobQueue!.close(),
+      QueueService.instance.videoHLSJobQueue!.close(),
+      QueueService.instance.notificationTrimJobQueue!.close()
     ]);
     QueueService.instance = null;
     log.info('queue service closed');
@@ -87,15 +72,15 @@ export class QueueService implements IQueueService {
     QueueService.instance = null;
   }
 
-  getEmailJobQueue(): IEmailJobQueue {
-    return this.emailJobQueue;
+  public getEmailJobQueue(): EmailJobQueue {
+    return this.emailJobQueue!;
   }
 
-  getVideoHLSJobQueue(): IVideoHLSJobQueue {
-    return this.videoHLSJobQueue;
+  public getVideoHLSJobQueue(): VideoHLSJobQueue {
+    return this.videoHLSJobQueue!;
   }
 
-  getNotificationTrimJobQueue(): INotificationTrimJobQueue {
-    return this.notificationTrimJobQueue;
+  public getNotificationTrimJobQueue(): NotificationTrimJobQueue {
+    return this.notificationTrimJobQueue!;
   }
 }

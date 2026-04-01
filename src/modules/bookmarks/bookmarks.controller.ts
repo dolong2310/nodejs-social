@@ -1,14 +1,11 @@
-import { Injectable } from '@/decorators';
-import {
-  BaseController,
-  BookmarkPostNotFoundException,
-  BookmarksService,
-  CreateBookmarkRequestDTO,
-  CreateBookmarkResponseDTO,
-  DeleteBookmarkParamsDTO,
-  DeleteBookmarkResponseDTO
-} from '@/modules';
-import { Created } from '@/providers';
+import { AutoBind } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseController } from '@/modules/base/base.controller';
+import { BookmarkPostNotFoundException } from '@/modules/bookmarks/bookmarks.exception';
+import { BookmarksService } from '@/modules/bookmarks/bookmarks.service';
+import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/modules/bookmarks/dtos/bookmarks.request.dto';
+import { CreateBookmarkResponseDTO, DeleteBookmarkResponseDTO } from '@/modules/bookmarks/dtos/bookmarks.response.dto';
+import { Created } from '@/providers/httpResponses/success.response';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -23,7 +20,8 @@ export class BookmarksController extends BaseController implements IBookmarksCon
     super();
   }
 
-  createBookmark = async (req: Request<ParamsDictionary, object, CreateBookmarkRequestDTO>, res: Response) => {
+  @AutoBind()
+  async createBookmark(req: Request<ParamsDictionary, object, CreateBookmarkRequestDTO>, res: Response) {
     const userId = this.getUserId(req);
     const dto = new CreateBookmarkRequestDTO(req.body);
 
@@ -42,9 +40,10 @@ export class BookmarksController extends BaseController implements IBookmarksCon
       data: bookmark,
       message: 'Bookmark post successfully'
     });
-  };
+  }
 
-  deleteBookmark = async (req: Request<DeleteBookmarkParamsDTO>, res: Response) => {
+  @AutoBind()
+  async deleteBookmark(req: Request<DeleteBookmarkParamsDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 
@@ -57,5 +56,5 @@ export class BookmarksController extends BaseController implements IBookmarksCon
       res,
       message: 'Unbookmark post successfully'
     });
-  };
+  }
 }

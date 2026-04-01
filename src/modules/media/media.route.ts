@@ -2,9 +2,12 @@
  * This file defines the media routes for uploading images, videos, and video streams.
  */
 
-import { BaseRoute, MediaController, UsersValidation, protect } from '@/modules';
-import { appLimiter } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { MediaController } from '@/modules/media/media.controller';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 export class MediaRoute extends BaseRoute {
   constructor() {

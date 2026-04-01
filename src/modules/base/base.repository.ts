@@ -4,7 +4,7 @@
  * and finding records with pagination.
  */
 
-import { DatabaseService } from '@/providers';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { Collection, CountDocumentsOptions, Document, Filter, Sort, WithId } from 'mongodb';
 
 export abstract class BaseRepository {

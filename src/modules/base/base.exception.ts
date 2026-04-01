@@ -1,3 +1,3 @@
-import { SharedUserNotFoundException } from '@/shared';
+import { SharedUserNotFoundException } from '@/shared/exceptions/users.exception';
 
 export const MissingAuthenticatedUserException = SharedUserNotFoundException;

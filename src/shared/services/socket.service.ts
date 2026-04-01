@@ -1,7 +1,14 @@
-import { getCorsAllowedOrigins } from '@/config';
-import { chatRoom, SOCKET_SERVER_CHAT_MESSAGE_NEW, SOCKET_SERVER_CHAT_READ_UPDATED, userRoom } from '@/constants';
-import { ChatMessageResponseDTO, IRealtimeChatEmitter, IUsersService } from '@/modules';
-import { ITokenService } from '@/shared';
+import { getCorsAllowedOrigins } from '@/config/generalConfig';
+import {
+  chatRoom,
+  SOCKET_SERVER_CHAT_MESSAGE_NEW,
+  SOCKET_SERVER_CHAT_READ_UPDATED,
+  userRoom
+} from '@/constants/socket.constant';
+import { IRealtimeChatEmitter } from '@/modules/chatMessages/chatMessages.service';
+import { ChatMessageResponseDTO } from '@/modules/chatMessages/dtos/chatMessages.response.dto';
+import { IUsersService } from '@/modules/users/users.service';
+import { ITokenService } from '@/shared/services/token.service';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { createSocketAuthResolver, SocketContext, SocketFeature } from './socket';

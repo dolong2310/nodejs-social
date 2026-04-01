@@ -1,6 +1,7 @@
-import { IVideoHLSJobData } from '@/interfaces';
-import { LoggerInstance } from '@/providers/logger';
-import { IVideoHLSJobResult, QUEUE_NAMES } from '@/providers/queue';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { IVideoHLSJobData } from '@/interfaces/types/media.type';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { IVideoHLSJobResult, QUEUE_NAMES } from '@/providers/queue/types';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 const log = LoggerInstance.getLogger().child({ module: 'video-hls-queue' });
@@ -11,6 +12,7 @@ export interface IVideoHLSJobQueue {
 }
 
 // Producer
+@Injectable()
 export class VideoHLSJobQueue implements IVideoHLSJobQueue {
   private readonly queue: Queue<IVideoHLSJobData, IVideoHLSJobResult>;
 

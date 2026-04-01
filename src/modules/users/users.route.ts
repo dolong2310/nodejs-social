@@ -2,9 +2,12 @@
  * This file defines the users routes for getting user profile, updating user profile, and getting user profile by username.
  */
 
-import { BaseRoute, UsersController, UsersValidation, optionalProtect, protect } from '@/modules';
-import { appLimiter } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { optionalProtect, protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { UsersController } from '@/modules/users/users.controller';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class UsersRoute extends BaseRoute {
   constructor() {

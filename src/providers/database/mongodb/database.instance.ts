@@ -1,4 +1,5 @@
-import { DatabaseService } from '@/providers';
+import { SEED_ERROR_MESSAGE } from '@/constants/message.constant';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 
 export class DatabaseInstance {
   private static instance: DatabaseService | null = null;
@@ -11,7 +12,7 @@ export class DatabaseInstance {
 
   static get() {
     if (!this.instance) {
-      throw new Error('DatabaseService has not been initialized. Call DatabaseInstance.init() during bootstrap.');
+      throw new Error(SEED_ERROR_MESSAGE.DATABASE_INSTANCE_NOT_INITIALIZED);
     }
     return this.instance;
   }

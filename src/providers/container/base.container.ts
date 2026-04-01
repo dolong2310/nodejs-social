@@ -1,7 +1,11 @@
-import { Constructor } from '@/interfaces';
+import { Constructor } from '@/interfaces/types/constructor.type';
 
 export abstract class BaseContainer {
   private readonly diInstances = new Map<Constructor, unknown>();
+
+  protected bind<T>(target: Constructor<T>, instance: T): void {
+    this.diInstances.set(target, instance);
+  }
 
   private findExistingInstance<T>(target: Constructor<T>): T | null {
     const TargetClass = target as Constructor<T>;
@@ -32,7 +36,6 @@ export abstract class BaseContainer {
     const dependencies = paramTypes.map((dependency) => this.resolve(dependency));
     const TargetClass = target as Constructor<T>;
     const instance = new TargetClass(...dependencies);
-
     this.diInstances.set(target, instance);
     return instance;
   }

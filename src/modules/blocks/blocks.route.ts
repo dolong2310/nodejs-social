@@ -2,9 +2,14 @@
  * Block / unblock / list blocked users.
  */
 
-import { BaseRoute, BlocksController, BlocksValidation, UsersValidation, protect } from '@/modules';
-import { appLimiter, validatePaginationQuery } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { BlocksController } from '@/modules/blocks/blocks.controller';
+import { BlocksValidation } from '@/modules/blocks/blocks.validation';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { validatePaginationQuery } from '@/shared/middlewares/common.middleware';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class BlocksRoute extends BaseRoute {
   constructor() {

@@ -1,4 +1,4 @@
-import { EEncodingVideoStatus } from '@/modules';
+import { EEncodingVideoStatus } from '@/modules/media/media.enum';
 import { ObjectId } from 'mongodb';
 
 export interface IVideoStatus {

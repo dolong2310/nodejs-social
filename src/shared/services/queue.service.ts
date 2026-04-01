@@ -1,4 +1,4 @@
-import { LoggerInstance } from '@/providers/logger';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
 
 const log = LoggerInstance.getLogger().child({ module: 'in-memory-queue' });
 

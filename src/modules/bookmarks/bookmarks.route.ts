@@ -2,9 +2,13 @@
  * This file defines the bookmarks routes for creating bookmark, deleting bookmark.
  */
 
-import { BaseRoute, BookmarksController, PostsValidation, UsersValidation, protect } from '@/modules';
-import { appLimiter } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { BookmarksController } from '@/modules/bookmarks/bookmarks.controller';
+import { PostsValidation } from '@/modules/posts/posts.validation';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class BookmarksRoute extends BaseRoute {
   constructor() {

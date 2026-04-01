@@ -1,18 +1,18 @@
-import { Injectable } from '@/decorators';
+import { AutoBind } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseController } from '@/modules/base/base.controller';
+import { FriendsService } from '@/modules/friends/friends.service';
 import {
-  BaseController,
   CreatePostRequestDTO,
-  FriendsService,
   GetPostDetailParamsDTO,
   GetPostsParamsDTO,
-  IPost,
-  PatchPostRequestDTO,
-  PostDetailResponseDTO,
-  PostNewFeedResponseDTO,
-  PostsService
-} from '@/modules';
-import { Created } from '@/providers';
-import { PaginationQueryDTO } from '@/shared';
+  PatchPostRequestDTO
+} from '@/modules/posts/dtos/posts.request.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { IPost } from '@/modules/posts/posts.schema';
+import { PostsService } from '@/modules/posts/posts.service';
+import { Created } from '@/providers/httpResponses/success.response';
+import { PaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -33,7 +33,8 @@ export class PostsController extends BaseController implements IPostsController 
     super();
   }
 
-  getNewFeeds = async (req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) => {
+  @AutoBind()
+  async getNewFeeds(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) {
     const { page, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
@@ -73,9 +74,10 @@ export class PostsController extends BaseController implements IPostsController 
       },
       message: 'Get new feeds successfully'
     });
-  };
+  }
 
-  getPostDetail = async (req: Request<GetPostDetailParamsDTO>, res: Response) => {
+  @AutoBind()
+  async getPostDetail(req: Request<GetPostDetailParamsDTO>, res: Response) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
     const post = req.postDetail as PostDetailResponseDTO;
@@ -92,9 +94,10 @@ export class PostsController extends BaseController implements IPostsController 
       data: post,
       message: 'Get post detail successfully'
     });
-  };
+  }
 
-  getPostsType = async (req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response) => {
+  @AutoBind()
+  async getPostsType(req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response) {
     const { postId, type } = req.params;
     const { page, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
@@ -117,9 +120,10 @@ export class PostsController extends BaseController implements IPostsController 
       },
       message: 'Get posts type successfully'
     });
-  };
+  }
 
-  createPost = async (req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response) => {
+  @AutoBind()
+  async createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response) {
     const userId = this.getUserId(req);
     const dto = new CreatePostRequestDTO(req.body);
 
@@ -134,9 +138,10 @@ export class PostsController extends BaseController implements IPostsController 
       data: post,
       message: 'Create post successfully'
     });
-  };
+  }
 
-  patchPost = async (req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response) => {
+  @AutoBind()
+  async patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
     const dto = new PatchPostRequestDTO(req.body);
@@ -152,5 +157,5 @@ export class PostsController extends BaseController implements IPostsController 
       data: post,
       message: 'Post updated successfully'
     });
-  };
+  }
 }

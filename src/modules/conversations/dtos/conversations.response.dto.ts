@@ -1,4 +1,5 @@
-import { EConversationMemberRole, EConversationType, IConversation, IConversationMember } from '@/modules';
+import { EConversationMemberRole, IConversationMember } from '@/modules/conversations/conversationMember.schema';
+import { EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
 
 export interface ConversationMemberRowDTO {
   userId: string;

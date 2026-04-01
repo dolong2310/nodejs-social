@@ -2,9 +2,14 @@
  * This file defines the posts routes for getting new feeds, getting post detail, getting posts type, and creating post.
  */
 
-import { BaseRoute, PostsController, PostsValidation, UsersValidation, optionalAuth, protect } from '@/modules';
-import { postsLimiter, validatePaginationQuery } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { optionalAuth, protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { PostsController } from '@/modules/posts/posts.controller';
+import { PostsValidation } from '@/modules/posts/posts.validation';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { validatePaginationQuery } from '@/shared/middlewares/common.middleware';
+import { postsLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 class PostsRoute extends BaseRoute {
   constructor() {

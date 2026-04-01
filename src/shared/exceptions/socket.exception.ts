@@ -1,10 +1,10 @@
-import { AuthFailureError } from '@/providers';
+import { AuthFailureError } from '@/providers/httpResponses/error.response';
+import { TokenInvalidException } from '@/shared/exceptions/token.exception';
 import {
   SharedUserIsBannedException,
   SharedUserNotFoundException,
-  SharedUserNotVerifiedYetException,
-  TokenInvalidException
-} from '@/shared';
+  SharedUserNotVerifiedYetException
+} from '@/shared/exceptions/users.exception';
 
 export const SocketUnauthorizedException = new AuthFailureError();
 export const SocketTokenInvalidException = TokenInvalidException;

@@ -1,4 +1,4 @@
-import { IBookmark } from '@/modules';
+import { IBookmark } from '@/modules/bookmarks/bookmarks.schema';
 
 export class CreateBookmarkResponseDTO {
   _id: string;

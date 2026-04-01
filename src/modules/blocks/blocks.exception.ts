@@ -1,6 +1,6 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError, ConflictRequestError, NotFoundError } from '@/providers';
-import { SharedUserNotFoundException } from '@/shared';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BadRequestError, ConflictRequestError, NotFoundError } from '@/providers/httpResponses/error.response';
+import { SharedUserNotFoundException } from '@/shared/exceptions/users.exception';
 
 export const CannotBlockYourselfException = new BadRequestError(VALIDATION_ERROR_MESSAGE.CANNOT_BLOCK_YOURSELF);
 export const BlockUserNotFoundException = SharedUserNotFoundException;

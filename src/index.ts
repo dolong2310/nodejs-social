@@ -1,9 +1,10 @@
-import { createApp } from '@/app';
-import { config, envConfig, getCorsAllowedOrigins } from '@/config';
-import { LoggerInstance } from '@/providers';
-import { initUploadsFolder } from '@/utils';
-import { createServer } from 'http';
 import 'reflect-metadata';
+import { createApp } from '@/app';
+import { envConfig } from '@/config/envConfig';
+import { config, getCorsAllowedOrigins } from '@/config/generalConfig';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { initUploadsFolder } from '@/utils/file.util';
+import { createServer } from 'http';
 
 async function bootstrap() {
   const port = config.port;

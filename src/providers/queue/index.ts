@@ -1,3 +1,4 @@
+export * from './queue.instance';
 export * from './queue.service';
 export * from './queues';
 export * from './workers';

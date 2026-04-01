@@ -1,5 +1,6 @@
-import { IPost, IUser } from '@/modules';
-import { IHashtag } from '@/shared';
+import { IPost } from '@/modules/posts/posts.schema';
+import { IUser } from '@/modules/users/users.schema';
+import { IHashtag } from '@/shared/models/hashtag.schema';
 
 export interface PostDetailResponseDTO extends Omit<IPost, 'hashtags' | 'mentions'> {
   hashtags: IHashtag[];

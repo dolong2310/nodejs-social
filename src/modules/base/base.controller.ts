@@ -3,10 +3,10 @@
  * It includes methods for validation error handling, error handling, sending responses, pagination, user ID retrieval, and cookie management.
  */
 
-import { isProduction } from '@/config';
-import { MissingAuthenticatedUserException } from '@/modules';
-import { Created, OK, SuccessResponseParams } from '@/providers';
-import { PaginationResponseDTO } from '@/shared';
+import { isProduction } from '@/config/envConfig';
+import { MissingAuthenticatedUserException } from '@/modules/base/base.exception';
+import { Created, OK, SuccessResponseParams } from '@/providers/httpResponses/success.response';
+import { PaginationResponseDTO } from '@/shared/dtos/common.response.dto';
 import type { CookieOptions } from 'express';
 import { Request, Response } from 'express';
 

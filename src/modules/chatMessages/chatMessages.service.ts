@@ -1,27 +1,26 @@
-import { Injectable } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
 import {
-  BlockRepository,
   ChatAttachmentTooLargeException,
   ChatConversationNotFoundException,
   ChatInvalidCursorException,
   ChatMessageEmptyException,
-  ChatMessageRepository,
+  ConversationMessageForbiddenException
+} from '@/modules/chatMessages/chatMessages.exception';
+import { ChatMessageRepository } from '@/modules/chatMessages/chatMessages.repository';
+import { IChatAttachment, IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
+import { MarkChatReadBodyDTO, SendChatMessageBodyDTO } from '@/modules/chatMessages/dtos/chatMessages.request.dto';
+import {
   ChatMessageResponseDTO,
   ChatMessagesPageResponseDTO,
-  ConversationMemberRepository,
-  ConversationMessageForbiddenException,
-  ConversationRepository,
-  EConversationType,
-  IChatAttachment,
-  IChatMessage,
-  IConversation,
-  MarkChatReadBodyDTO,
-  NotificationsService,
-  SendChatMessageBodyDTO,
   toChatMessageDto
-} from '@/modules';
-import { SharedConversationsService } from '@/shared';
-import { decodeMessageCursor, encodeMessageCursor } from '@/utils';
+} from '@/modules/chatMessages/dtos/chatMessages.response.dto';
+import { ConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
+import { ConversationRepository } from '@/modules/conversations/conversations.repository';
+import { EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { SharedConversationsService } from '@/shared/services/shared-conversations.service';
+import { decodeMessageCursor, encodeMessageCursor } from '@/utils/conversation-cursor.util';
 
 export interface IRealtimeChatEmitter {
   emitMessageCreated(conversationIdHex: string, memberUserIdHexes: string[], message: ChatMessageResponseDTO): void;

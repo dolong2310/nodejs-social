@@ -1,4 +1,4 @@
-import { CursorPaginationQueryDTO } from '@/shared';
+import { CursorPaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class MarkNotificationsReadBodyDTO {

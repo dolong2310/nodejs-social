@@ -1,6 +1,7 @@
-import { IEmailPayload } from '@/interfaces';
-import { LoggerInstance } from '@/providers/logger';
-import { IEmailJobResult, QUEUE_NAMES } from '@/providers/queue';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { IEmailPayload } from '@/interfaces/types/mail.type';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { IEmailJobResult, QUEUE_NAMES } from '@/providers/queue/types';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 const log = LoggerInstance.getLogger().child({ module: 'email-queue' });
@@ -11,6 +12,7 @@ export interface IEmailJobQueue {
 }
 
 // Producer
+@Injectable()
 export class EmailJobQueue implements IEmailJobQueue {
   private readonly queue: Queue<IEmailPayload, IEmailJobResult>;
 

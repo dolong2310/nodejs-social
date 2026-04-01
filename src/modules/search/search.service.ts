@@ -1,19 +1,16 @@
-import { config } from '@/config';
-import { CACHE_KEYS } from '@/constants';
-import { Injectable } from '@/decorators';
-import {
-  BaseService,
-  BlockRepository,
-  FriendsService,
-  IUser,
-  PostDetailResponseDTO,
-  PostNewFeedResponseDTO,
-  PostsService,
-  SearchQueryDTO,
-  SearchRepository
-} from '@/modules';
-import { RedisService } from '@/providers';
-import { redactNewFeedAuthor } from '@/utils';
+import { config } from '@/config/generalConfig';
+import { CACHE_KEYS } from '@/constants/cache.constant';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { FriendsService } from '@/modules/friends/friends.service';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { PostsService } from '@/modules/posts/posts.service';
+import { SearchQueryDTO } from '@/modules/search/dtos/search.request.dto';
+import { SearchRepository } from '@/modules/search/search.repository';
+import { IUser } from '@/modules/users/users.schema';
+import { RedisService } from '@/providers/database/redis/redis.service';
+import { redactNewFeedAuthor } from '@/utils/block-redaction.util';
 
 export interface ISearchService {
   searchPosts(

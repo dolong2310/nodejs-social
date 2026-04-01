@@ -1,5 +1,8 @@
-import { LimitMustBeBetweenOneToHundredException, PageMustBeGreaterThanZeroException } from '@/shared';
-import { validate } from '@/utils';
+import {
+  LimitMustBeBetweenOneToHundredException,
+  PageMustBeGreaterThanZeroException
+} from '@/shared/exceptions/common.exception';
+import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, Response } from 'express';
 import { checkSchema } from 'express-validator';
 import { pick } from 'lodash-es';

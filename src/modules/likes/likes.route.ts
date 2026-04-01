@@ -2,9 +2,13 @@
  * Likes routes — same engagement gates as bookmarks (verified + visibility + block).
  */
 
-import { BaseRoute, LikesController, PostsValidation, UsersValidation, protect } from '@/modules';
-import { appLimiter } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protect } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { LikesController } from '@/modules/likes/likes.controller';
+import { PostsValidation } from '@/modules/posts/posts.validation';
+import { UsersValidation } from '@/modules/users/users.validation';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 export class LikesRoute extends BaseRoute {
   constructor() {

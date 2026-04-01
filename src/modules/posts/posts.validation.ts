@@ -1,16 +1,19 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AutoBind, Injectable } from '@/decorators';
-import { IMedia } from '@/interfaces';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { AutoBind } from '@/decorators/autoBind.decorator';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { IMedia } from '@/interfaces/types/media.type';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { FriendsService } from '@/modules/friends/friends.service';
+import { EMediaType } from '@/modules/media/media.enum';
 import {
-  BlockRepository,
-  CannotViewPostBlockedException,
   CreatePostRequestDTO,
-  EMediaType,
-  EPostAudience,
-  EPostType,
-  EUserVerificationStatus,
-  FriendsService,
   GetPostDetailParamsDTO,
+  PatchPostRequestDTO
+} from '@/modules/posts/dtos/posts.request.dto';
+import { PostDetailResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
+import {
+  CannotViewPostBlockedException,
   GuestCannotAccessNonPublicPostException,
   HashtagsMustBeArrayOfStringsException,
   InvalidPostIdException,
@@ -20,17 +23,17 @@ import {
   OnlyOwnerCanViewPostsException,
   ParentIdMustBeNullException,
   ParentIdMustBeValidPostIdException,
-  PatchPostRequestDTO,
   PostContentMustBeEmptyStringException,
   PostContentMustBeNonEmptyStringException,
-  PostDetailResponseDTO,
-  PostNotFoundException,
-  PostsService,
-  UserIsBannedException,
-  UsersService,
-  UsersUserNotFoundException
-} from '@/modules';
-import { isValidMongoId, redactPostDetailBlockedAuthor, validate } from '@/utils';
+  PostNotFoundException
+} from '@/modules/posts/posts.exception';
+import { PostsService } from '@/modules/posts/posts.service';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
+import { UserIsBannedException, UsersUserNotFoundException } from '@/modules/users/users.exception';
+import { UsersService } from '@/modules/users/users.service';
+import { redactPostDetailBlockedAuthor } from '@/utils/block-redaction.util';
+import { isValidMongoId } from '@/utils/common.util';
+import { validate } from '@/utils/validation.util';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema, Location, Meta } from 'express-validator';
@@ -62,158 +65,152 @@ export class PostsValidation implements IPostsValidation {
     private readonly blockRepository: BlockRepository
   ) {}
 
-  @AutoBind()
-  createPostValidation() {
-    return validate(
-      checkSchema(
-        {
-          // type phải là 1 trong 4 giá trị: post, repost, comment, quote
-          type: {
-            isIn: {
-              options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
-              errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
-            },
-            trim: true
+  createPostValidation = validate(
+    checkSchema(
+      {
+        // type phải là 1 trong 4 giá trị: post, repost, comment, quote
+        type: {
+          isIn: {
+            options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
           },
-          audience: {
-            isIn: {
-              options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
-              errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
-            },
-            trim: true
+          trim: true
+        },
+        audience: {
+          isIn: {
+            options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
           },
-          allowStrangerComments: {
-            isBoolean: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
-            }
+          trim: true
+        },
+        allowStrangerComments: {
+          isBoolean: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
+          }
+        },
+        // nếu type là repost thì content phải là '' (string rỗng)
+        // nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng
+        content: {
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_STRING
           },
-          // nếu type là repost thì content phải là '' (string rỗng)
-          // nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng
-          content: {
-            isString: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_STRING
-            },
-            trim: true,
-            custom: {
-              options: async (content: string, { req }) => {
-                const { type, mentions, hashtags } = req.body as CreatePostRequestDTO;
+          trim: true,
+          custom: {
+            options: async (content: string, { req }) => {
+              const { type, mentions, hashtags } = req.body as CreatePostRequestDTO;
 
-                if (type === EPostType.REPOST && content !== '') {
-                  throw PostContentMustBeEmptyStringException;
-                }
-
-                if (
-                  [EPostType.POST, EPostType.COMMENT, EPostType.QUOTE].includes(type) &&
-                  isEmpty(mentions) &&
-                  isEmpty(hashtags) &&
-                  content === ''
-                ) {
-                  throw PostContentMustBeNonEmptyStringException;
-                }
-
-                return true;
+              if (type === EPostType.REPOST && content !== '') {
+                throw PostContentMustBeEmptyStringException;
               }
-            }
-          },
-          // nếu type là repost, comment, quote thì parentId phải là postId của bài viết cha (không được null hoặc string rỗng)
-          // nếu type là post thì parentId phải là null
-          parentId: {
-            custom: {
-              options: async (parentId: string | null, { req }) => {
-                const { type } = req.body as CreatePostRequestDTO;
 
-                if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
-                  // parentId không được null, phải là string hợp lệ (ObjectId)
-                  if (parentId === null || typeof parentId !== 'string' || !isValidMongoId(parentId)) {
-                    throw ParentIdMustBeValidPostIdException;
-                  }
-                }
-
-                if (type === EPostType.POST && parentId !== null) {
-                  throw ParentIdMustBeNullException;
-                }
-
-                return true;
+              if (
+                [EPostType.POST, EPostType.COMMENT, EPostType.QUOTE].includes(type) &&
+                isEmpty(mentions) &&
+                isEmpty(hashtags) &&
+                content === ''
+              ) {
+                throw PostContentMustBeNonEmptyStringException;
               }
-            }
-          },
-          // hashtags phải là mảng các string
-          hashtags: {
-            isArray: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY
-            },
-            custom: {
-              options: async (hashtags: string[]) => {
-                if (hashtags.length > 0 && !hashtags.every((hashtag) => typeof hashtag === 'string')) {
-                  throw HashtagsMustBeArrayOfStringsException;
-                }
 
-                return true;
-              }
-            }
-          },
-          // mentions phải là mảng các userId
-          mentions: {
-            isArray: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY
-            },
-            custom: {
-              options: async (userIds: string[]) => {
-                if (userIds.length > 0 && !userIds.every((userId) => isValidMongoId(userId))) {
-                  throw MentionsMustBeArrayOfValidUserIdsException;
-                }
-
-                return true;
-              }
-            }
-          },
-          // media phải là mảng các media
-          media: {
-            isArray: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY
-            },
-            custom: {
-              options: async (mediaItems: IMedia[]) => {
-                const validMediaTypes = Object.values(EMediaType); // ['image', 'video', 'video-hls']
-                if (
-                  mediaItems.length > 0 &&
-                  mediaItems.some((item) => typeof item.url !== 'string' || !validMediaTypes.includes(item.type))
-                ) {
-                  throw MediaMustBeArrayOfValidItemsException;
-                }
-
-                return true;
-              }
+              return true;
             }
           }
         },
-        ['body']
-      )
-    );
-  }
+        // nếu type là repost, comment, quote thì parentId phải là postId của bài viết cha (không được null hoặc string rỗng)
+        // nếu type là post thì parentId phải là null
+        parentId: {
+          custom: {
+            options: async (parentId: string | null, { req }) => {
+              const { type } = req.body as CreatePostRequestDTO;
 
-  @AutoBind()
-  patchPostValidation() {
-    return validate(
-      checkSchema(
-        {
-          audience: {
-            isIn: {
-              options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
-              errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
-            },
-            trim: true
-          },
-          allowStrangerComments: {
-            isBoolean: {
-              errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
+              if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
+                // parentId không được null, phải là string hợp lệ (ObjectId)
+                if (parentId === null || typeof parentId !== 'string' || !isValidMongoId(parentId)) {
+                  throw ParentIdMustBeValidPostIdException;
+                }
+              }
+
+              if (type === EPostType.POST && parentId !== null) {
+                throw ParentIdMustBeNullException;
+              }
+
+              return true;
             }
           }
         },
-        ['body']
-      )
-    );
-  }
+        // hashtags phải là mảng các string
+        hashtags: {
+          isArray: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY
+          },
+          custom: {
+            options: async (hashtags: string[]) => {
+              if (hashtags.length > 0 && !hashtags.every((hashtag) => typeof hashtag === 'string')) {
+                throw HashtagsMustBeArrayOfStringsException;
+              }
+
+              return true;
+            }
+          }
+        },
+        // mentions phải là mảng các userId
+        mentions: {
+          isArray: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY
+          },
+          custom: {
+            options: async (userIds: string[]) => {
+              if (userIds.length > 0 && !userIds.every((userId) => isValidMongoId(userId))) {
+                throw MentionsMustBeArrayOfValidUserIdsException;
+              }
+
+              return true;
+            }
+          }
+        },
+        // media phải là mảng các media
+        media: {
+          isArray: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY
+          },
+          custom: {
+            options: async (mediaItems: IMedia[]) => {
+              const validMediaTypes = Object.values(EMediaType); // ['image', 'video', 'video-hls']
+              if (
+                mediaItems.length > 0 &&
+                mediaItems.some((item) => typeof item.url !== 'string' || !validMediaTypes.includes(item.type))
+              ) {
+                throw MediaMustBeArrayOfValidItemsException;
+              }
+
+              return true;
+            }
+          }
+        }
+      },
+      ['body']
+    )
+  );
+
+  patchPostValidation = validate(
+    checkSchema(
+      {
+        audience: {
+          isIn: {
+            options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
+          },
+          trim: true
+        },
+        allowStrangerComments: {
+          isBoolean: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
+          }
+        }
+      },
+      ['body']
+    )
+  );
 
   postIdValidation(key: string, location: Location) {
     return validate(
@@ -317,21 +314,18 @@ export class PostsValidation implements IPostsValidation {
     next();
   }
 
-  @AutoBind()
-  postTypeValidation() {
-    return validate(
-      checkSchema(
-        {
-          type: {
-            isIn: {
-              options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
-              errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
-            },
-            trim: true
-          }
-        },
-        ['params']
-      )
-    );
-  }
+  postTypeValidation = validate(
+    checkSchema(
+      {
+        type: {
+          isIn: {
+            options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
+          },
+          trim: true
+        }
+      },
+      ['params']
+    )
+  );
 }

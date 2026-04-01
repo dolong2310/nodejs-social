@@ -1,42 +1,44 @@
-import { Injectable } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { ConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
+import { EConversationMemberRole, IConversationMember } from '@/modules/conversations/conversationMember.schema';
 import {
-  BlockRepository,
   ConversationCannotKickBadRequestException,
   ConversationCannotKickException,
-  ConversationDetailResponseDTO,
   ConversationDirectNoKickException,
   ConversationGroupNeedsMemberException,
   ConversationInvalidCursorException,
   ConversationInvalidPeerException,
   ConversationInviteNotFriendException,
-  ConversationMemberRepository,
   ConversationNotFoundException,
   ConversationNotMemberException,
   ConversationPeerBlockedException,
   ConversationPeerNotFriendException,
-  ConversationRepository,
   ConversationRoleForbiddenException,
-  ConversationSummaryResponseDTO,
   ConversationTargetUserNotFoundException,
   ConversationTypeInvalidForOperationException,
-  ConversationUserAlreadyMemberException,
+  ConversationUserAlreadyMemberException
+} from '@/modules/conversations/conversations.exception';
+import { ConversationRepository } from '@/modules/conversations/conversations.repository';
+import { EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
+import {
   CreateDirectConversationBodyDTO,
   CreateGroupConversationBodyDTO,
-  EConversationMemberRole,
-  EConversationType,
-  FriendsService,
-  IConversation,
-  IConversationMember,
   InviteConversationMemberBodyDTO,
-  NotificationsService,
   PatchConversationBodyDTO,
   PatchConversationMemberRoleBodyDTO,
-  toConversationMemberRow,
-  toConversationSummary,
   TransferConversationAdminBodyDTO
-} from '@/modules';
-import { SharedConversationsService } from '@/shared';
-import { decodeConversationListCursor, encodeConversationListCursor } from '@/utils';
+} from '@/modules/conversations/dtos/conversations.request.dto';
+import {
+  ConversationDetailResponseDTO,
+  ConversationSummaryResponseDTO,
+  toConversationMemberRow,
+  toConversationSummary
+} from '@/modules/conversations/dtos/conversations.response.dto';
+import { FriendsService } from '@/modules/friends/friends.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { SharedConversationsService } from '@/shared/services/shared-conversations.service';
+import { decodeConversationListCursor, encodeConversationListCursor } from '@/utils/conversation-cursor.util';
 import { MongoServerError } from 'mongodb';
 
 export interface IConversationsService {

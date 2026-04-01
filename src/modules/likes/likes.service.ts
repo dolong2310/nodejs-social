@@ -1,12 +1,8 @@
-import { Injectable } from '@/decorators';
-import {
-  BaseService,
-  CreateLikeRequestDTO,
-  CreateLikeResponseDTO,
-  DeleteLikeParamsDTO,
-  DeleteLikeResponseDTO,
-  LikeRepository
-} from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/modules/likes/dtos/likes.request.dto';
+import { CreateLikeResponseDTO, DeleteLikeResponseDTO } from '@/modules/likes/dtos/likes.response.dto';
+import { LikeRepository } from '@/modules/likes/likes.repository';
 
 export interface ILikesService {
   likePost(payload: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO | null>;

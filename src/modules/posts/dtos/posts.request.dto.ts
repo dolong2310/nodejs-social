@@ -1,6 +1,6 @@
-import { IMedia } from '@/interfaces';
-import { EPostAudience, EPostType } from '@/modules';
-import { PaginationQueryDTO } from '@/shared';
+import { IMedia } from '@/interfaces/types/media.type';
+import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
+import { PaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class CreatePostRequestDTO {

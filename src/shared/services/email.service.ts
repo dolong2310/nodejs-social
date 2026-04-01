@@ -1,7 +1,7 @@
-import { envConfig } from '@/config';
-import { EEmailTemplate, IEmailPayload } from '@/interfaces';
-import { LoggerInstance } from '@/providers/logger';
-import { InvalidEmailTemplateException } from '@/shared';
+import { envConfig } from '@/config/envConfig';
+import { EEmailTemplate, IEmailPayload } from '@/interfaces/types/mail.type';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { InvalidEmailTemplateException } from '@/shared/exceptions/email.exception';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import fs from 'fs';
 import path from 'path';

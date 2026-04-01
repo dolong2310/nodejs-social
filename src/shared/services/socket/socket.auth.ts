@@ -1,6 +1,7 @@
-import { ETokenType, TokenPayload } from '@/interfaces';
-import { EUserVerificationStatus, IUsersService } from '@/modules';
-import { ITokenService } from '@/shared';
+import { ETokenType } from '@/interfaces/enums/token.enum';
+import { TokenPayload } from '@/interfaces/types/token.type';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
+import { IUsersService } from '@/modules/users/users.service';
 import {
   SocketEventUnauthorizedError,
   SocketTokenInvalidException,
@@ -8,7 +9,8 @@ import {
   SocketUserBannedException,
   SocketUserNotFoundException,
   SocketUserNotVerifiedException
-} from '@/shared/exceptions';
+} from '@/shared/exceptions/socket.exception';
+import { ITokenService } from '@/shared/services/token.service';
 import { ExtendedError, Socket } from 'socket.io';
 import { SocketContext } from './socket.types';
 

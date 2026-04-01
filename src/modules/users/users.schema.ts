@@ -1,4 +1,4 @@
-import { EUserVerificationStatus } from '@/modules';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
 import { ObjectId } from 'mongodb';
 
 export interface IUser {

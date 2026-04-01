@@ -1,14 +1,11 @@
-import { Injectable } from '@/decorators';
-import {
-  BaseController,
-  CreateLikeRequestDTO,
-  CreateLikeResponseDTO,
-  DeleteLikeParamsDTO,
-  DeleteLikeResponseDTO,
-  LikePostNotFoundException,
-  LikesService
-} from '@/modules';
-import { Created } from '@/providers';
+import { AutoBind } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseController } from '@/modules/base/base.controller';
+import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/modules/likes/dtos/likes.request.dto';
+import { CreateLikeResponseDTO, DeleteLikeResponseDTO } from '@/modules/likes/dtos/likes.response.dto';
+import { LikePostNotFoundException } from '@/modules/likes/likes.exception';
+import { LikesService } from '@/modules/likes/likes.service';
+import { Created } from '@/providers/httpResponses/success.response';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -23,7 +20,8 @@ export class LikesController extends BaseController implements ILikesController 
     super();
   }
 
-  createLike = async (req: Request<ParamsDictionary, object, CreateLikeRequestDTO>, res: Response) => {
+  @AutoBind()
+  async createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>, res: Response) {
     const userId = this.getUserId(req);
     const dto = new CreateLikeRequestDTO(req.body);
 
@@ -42,9 +40,10 @@ export class LikesController extends BaseController implements ILikesController 
       data: like,
       message: 'Post liked successfully'
     });
-  };
+  }
 
-  deleteLike = async (req: Request<DeleteLikeParamsDTO>, res: Response) => {
+  @AutoBind()
+  async deleteLike(req: Request<DeleteLikeParamsDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 
@@ -57,5 +56,5 @@ export class LikesController extends BaseController implements ILikesController 
       res,
       message: 'Like removed successfully'
     });
-  };
+  }
 }

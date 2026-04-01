@@ -1,3 +1,11 @@
+export const SEED_ERROR_MESSAGE = {
+  DATABASE_INSTANCE_NOT_INITIALIZED:
+    'DatabaseService has not been initialized. Call DatabaseInstance.init() during bootstrap.',
+  REDIS_INSTANCE_NOT_INITIALIZED: 'RedisService has not been initialized. Call RedisInstance.init() during bootstrap.',
+  QUEUE_INSTANCE_NOT_INITIALIZED: 'QueueInstance has not been initialized. Call QueueInstance.init() during bootstrap.',
+  CONTAINER_INSTANCE_NOT_INITIALIZED: 'Container has not been initialized. Call Container.getOrSet() during bootstrap.'
+} as const;
+
 export const VALIDATION_ERROR_MESSAGE = {
   // Auth errors
   NAME_IS_REQUIRED: 'Name is required',

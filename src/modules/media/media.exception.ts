@@ -1,5 +1,7 @@
-import { HTTP_ERROR_MESSAGE, HTTP_STATUS, VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError, InternalServerError, NotFoundError } from '@/providers';
+import { HTTP_ERROR_MESSAGE } from '@/constants/httpMessage.constant';
+import { HTTP_STATUS } from '@/constants/httpStatus.constant';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BadRequestError, InternalServerError, NotFoundError } from '@/providers/httpResponses/error.response';
 
 export const VideoNotFoundException = new NotFoundError(VALIDATION_ERROR_MESSAGE.VIDEO_NOT_FOUND);
 export const StaticMediaNotFoundException = new NotFoundError();

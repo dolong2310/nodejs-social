@@ -1,7 +1,7 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { BadRequestError, ForbiddenError } from '@/providers';
-import { SharedInvalidCursorException } from '@/shared';
-import { SharedConversationNotFoundException } from '@/shared/exceptions';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { BadRequestError, ForbiddenError } from '@/providers/httpResponses/error.response';
+import { SharedConversationNotFoundException } from '@/shared/exceptions/conversations.exception';
+import { SharedInvalidCursorException } from '@/shared/exceptions/cursor.exception';
 
 export const ChatAttachmentTooLargeException = new BadRequestError(VALIDATION_ERROR_MESSAGE.CHAT_ATTACHMENT_TOO_LARGE);
 export const ConversationMessageForbiddenException = new ForbiddenError(

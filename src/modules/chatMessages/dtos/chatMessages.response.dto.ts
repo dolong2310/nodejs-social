@@ -1,4 +1,4 @@
-import { IChatAttachment, IChatMessage } from '@/modules';
+import { IChatAttachment, IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
 
 export interface ChatMessageResponseDTO {
   id: string;

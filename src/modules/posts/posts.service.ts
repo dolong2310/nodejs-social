@@ -1,27 +1,28 @@
-import { Injectable } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { FriendsService } from '@/modules/friends/friends.service';
 import {
-  BaseService,
-  BlockRepository,
-  CannotEngagePostBlockedException,
-  CannotEngageWithInaccessiblePostException,
   CreatePostRequestDTO,
-  EPostAudience,
-  EPostType,
-  FriendsService,
   GetNewFeedsPayloadDTO,
   GetPostDetailParamsDTO,
   GetPostsParamsDTO,
-  IPost,
+  PatchPostRequestDTO
+} from '@/modules/posts/dtos/posts.request.dto';
+import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
+import {
+  CannotEngagePostBlockedException,
+  CannotEngageWithInaccessiblePostException,
   OnlyOwnerCanUpdatePostSettingsException,
-  PatchPostRequestDTO,
-  PostDetailResponseDTO,
-  PostNewFeedResponseDTO,
   PostNotFoundException,
-  PostRepository,
   StrangerCommentsNotAllowedException
-} from '@/modules';
-import { IHashtag, PaginationQueryDTO } from '@/shared';
-import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils';
+} from '@/modules/posts/posts.exception';
+import { PostRepository } from '@/modules/posts/posts.repository';
+import { IPost } from '@/modules/posts/posts.schema';
+import { PaginationQueryDTO } from '@/shared/dtos/common.request.dto';
+import { IHashtag } from '@/shared/models/hashtag.schema';
+import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils/block-redaction.util';
 
 export interface IPostsService {
   findPostDetail(postId: string): Promise<PostDetailResponseDTO | null>;

@@ -1,13 +1,9 @@
-import { NOTIFICATION_MAX_PER_USER } from '@/constants';
-import { AutoBind } from '@/decorators';
-import { NotificationRepository } from '@/modules';
-import {
-  Container,
-  INotificationTrimJobData,
-  INotificationTrimJobResult,
-  LoggerInstance,
-  QUEUE_NAMES
-} from '@/providers';
+import { NOTIFICATION_MAX_PER_USER } from '@/constants/notification.constant';
+import { AutoBind } from '@/decorators/autoBind.decorator';
+import { NotificationRepository } from '@/modules/notifications/notifications.repository';
+import { Container } from '@/providers/container/instance.container';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { INotificationTrimJobData, INotificationTrimJobResult, QUEUE_NAMES } from '@/providers/queue/types';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 
 const log = LoggerInstance.getLogger().child({ module: 'notification-trim-worker' });

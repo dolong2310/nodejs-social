@@ -1,6 +1,7 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AuthFailureError, BadRequestError, ForbiddenError } from '@/providers';
-import { SharedUserNotFoundException, TokenInvalidException } from '@/shared';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import { AuthFailureError, BadRequestError, ForbiddenError } from '@/providers/httpResponses/error.response';
+import { TokenInvalidException } from '@/shared/exceptions/token.exception';
+import { SharedUserNotFoundException } from '@/shared/exceptions/users.exception';
 
 export const EmailAlreadyExistsException = new BadRequestError(VALIDATION_ERROR_MESSAGE.EMAIL_ALREADY_EXISTS);
 export const InvalidEmailOrPasswordException = new BadRequestError(VALIDATION_ERROR_MESSAGE.INVALID_EMAIL_OR_PASSWORD);

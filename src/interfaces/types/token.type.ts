@@ -1,4 +1,4 @@
-import { ETokenType } from '@/interfaces';
+import { ETokenType } from '@/interfaces/enums/token.enum';
 
 export interface TokenPayloadCreate {
   userId: string;

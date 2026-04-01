@@ -1,12 +1,9 @@
-import { Injectable } from '@/decorators';
-import type { IConversationMember } from '@/modules';
-import {
-  BaseRepository,
-  ConversationSchema,
-  EConversationType,
-  IConversation,
-  normalizeFriendshipPair
-} from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import type { IConversationMember } from '@/modules/conversations/conversationMember.schema';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { ConversationSchema, EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
+import { normalizeFriendshipPair } from '@/modules/friends/friendship.repository';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { ObjectId } from 'mongodb';
 
 export interface IConversationRepository {
@@ -25,6 +22,10 @@ export interface IConversationRepository {
 
 @Injectable()
 export class ConversationRepository extends BaseRepository implements IConversationRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   findById(conversationId: string): Promise<IConversation | null> {
     return this.db.conversations.findOne({ _id: new ObjectId(conversationId) });
   }

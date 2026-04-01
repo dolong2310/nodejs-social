@@ -1,33 +1,37 @@
-import { envConfig } from '@/config';
-import { CACHE_KEYS } from '@/constants';
-import { Injectable } from '@/decorators';
-import { EEmailTemplate, ETokenType } from '@/interfaces';
+import { envConfig } from '@/config/envConfig';
+import { CACHE_KEYS } from '@/constants/cache.constant';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { ETokenType } from '@/interfaces/enums/token.enum';
+import { EEmailTemplate } from '@/interfaces/types/mail.type';
+import { EmailAlreadyExistsException, InvalidEmailOrPasswordException } from '@/modules/auth/auth.exception';
 import {
-  AuthTokenPair,
-  BaseService,
   ChangePasswordRequestDTO,
-  ChangePasswordResponseDTO,
-  EmailAlreadyExistsException,
-  EUserVerificationStatus,
   ForgotPasswordRequestDTO,
-  ForgotPasswordResponseDTO,
-  InvalidEmailOrPasswordException,
-  IUser,
   LoginRequestDTO,
   LogoutRequestDTO,
-  LogoutResponseDTO,
   RefreshTokenRequestDTO,
   RegisterRequestDTO,
+  ResetPasswordRequestDTO
+} from '@/modules/auth/dtos/auth.request.dto';
+import {
+  AuthTokenPair,
+  ChangePasswordResponseDTO,
+  ForgotPasswordResponseDTO,
+  LogoutResponseDTO,
   RegisterResponseDTO,
   ResendVerifyEmailResponseDTO,
-  ResetPasswordRequestDTO,
   ResetPasswordResponseDTO,
-  UserRepository,
   VerifyEmailResponseDTO
-} from '@/modules';
-import { EmailJobQueue, RedisService } from '@/providers';
-import { IRefreshToken, TokenService } from '@/shared';
-import { comparePassword, hashPassword } from '@/utils';
+} from '@/modules/auth/dtos/auth.response.dto';
+import { BaseService } from '@/modules/base/base.service';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
+import { UserRepository } from '@/modules/users/users.repository';
+import { IUser } from '@/modules/users/users.schema';
+import { RedisService } from '@/providers/database/redis/redis.service';
+import { EmailJobQueue } from '@/providers/queue/queues/email.queue';
+import { IRefreshToken } from '@/shared/models/refreshToken.schema';
+import { TokenService } from '@/shared/services/token.service';
+import { comparePassword, hashPassword } from '@/utils/password.util';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 

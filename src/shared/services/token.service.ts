@@ -1,6 +1,7 @@
-import { config } from '@/config';
-import { Injectable } from '@/decorators';
-import { ETokenType, TokenPayload, TokenPayloadCreate } from '@/interfaces';
+import { config } from '@/config/generalConfig';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { ETokenType } from '@/interfaces/enums/token.enum';
+import { TokenPayload, TokenPayloadCreate } from '@/interfaces/types/token.type';
 import jwt, { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import { v4 as uuidv4 } from 'uuid';

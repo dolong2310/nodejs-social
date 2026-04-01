@@ -4,14 +4,11 @@
  * It provides methods to interact with the bookmark data in the database.
  */
 
-import { Injectable } from '@/decorators';
-import {
-  BaseRepository,
-  BookmarkSchema,
-  CreateBookmarkRequestDTO,
-  DeleteBookmarkParamsDTO,
-  IBookmark
-} from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { BookmarkSchema, IBookmark } from '@/modules/bookmarks/bookmarks.schema';
+import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/modules/bookmarks/dtos/bookmarks.request.dto';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { ObjectId } from 'mongodb';
 
 export interface IBookmarkRepository {
@@ -21,6 +18,10 @@ export interface IBookmarkRepository {
 
 @Injectable()
 export class BookmarkRepository extends BaseRepository implements IBookmarkRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   findOneAndUpdate({ userId, postId }: { userId: string; postId: string }): Promise<IBookmark | null> {
     return this.db.bookmarks.findOneAndUpdate(
       { userId: new ObjectId(userId), postId: new ObjectId(postId) },

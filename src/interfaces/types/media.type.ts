@@ -1,4 +1,4 @@
-import { EMediaType } from '@/modules';
+import { EMediaType } from '@/modules/media/media.enum';
 
 export interface IMedia {
   url: string;

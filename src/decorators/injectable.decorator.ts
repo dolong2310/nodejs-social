@@ -1,4 +1,4 @@
-import { Constructor } from '@/interfaces';
+import { Constructor } from '@/interfaces/types/constructor.type';
 
 type InjectableDecorator = <T extends Constructor>(target: T) => T | void;
 

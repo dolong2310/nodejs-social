@@ -1,36 +1,35 @@
-import { config } from '@/config';
-import { UPLOAD_DIR_VIDEO } from '@/constants';
-import { AppConfig } from '@/interfaces';
-import {
-  authRouter,
-  blocksRouter,
-  bookmarksRouter,
-  ConversationMemberRepository,
-  conversationsRouter,
-  FriendshipRepository,
-  friendsRouter,
-  likesRouter,
-  mediaRouter,
-  notificationsRouter,
-  oauthRouter,
-  postsRouter,
-  searchRouter,
-  staticRouter,
-  usersRouter,
-  UsersService
-} from '@/modules';
-import {
-  Container,
-  DatabaseInstance,
-  LoggerInstance,
-  QueueService,
-  RedisInstance,
-  RequestContextLogger
-} from '@/providers';
-import { errorHandler, SocketService, TokenService } from '@/shared';
+import { config } from '@/config/generalConfig';
+import { UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
+import { AppConfig } from '@/interfaces/types/app.type';
+import { authRouter } from '@/modules/auth/auth.route';
+import { blocksRouter } from '@/modules/blocks/blocks.route';
+import { bookmarksRouter } from '@/modules/bookmarks/bookmarks.route';
+import { ConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
+import { conversationsRouter } from '@/modules/conversations/conversations.route';
+import { friendsRouter } from '@/modules/friends/friends.route';
+import { FriendshipRepository } from '@/modules/friends/friendship.repository';
+import { likesRouter } from '@/modules/likes/likes.route';
+import { mediaRouter } from '@/modules/media/media.route';
+import { staticRouter } from '@/modules/media/static.route';
+import { notificationsRouter } from '@/modules/notifications/notifications.route';
+import { oauthRouter } from '@/modules/oauth/oauth.route';
+import { postsRouter } from '@/modules/posts/posts.route';
+import { searchRouter } from '@/modules/search/search.route';
+import { usersRouter } from '@/modules/users/users.route';
+import { UsersService } from '@/modules/users/users.service';
+import { Container } from '@/providers/container/instance.container';
+import { DatabaseInstance } from '@/providers/database/mongodb/database.instance';
+import { RedisInstance } from '@/providers/database/redis/redis.instance';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { RequestContextLogger } from '@/providers/logger/request-context.logger';
+import { QueueInstance } from '@/providers/queue/queue.instance';
+import { QueueService } from '@/providers/queue/queue.service';
+import { errorHandler } from '@/shared/middlewares/error.middleware';
+import { SocketService } from '@/shared/services/socket.service';
 import { ChatFeature } from '@/shared/services/socket/features/chat.feature';
 import { PresenceFeature } from '@/shared/services/socket/features/presence.feature';
-import { getSwaggerDefinition } from '@/utils';
+import { TokenService } from '@/shared/services/token.service';
+import { getSwaggerDefinition } from '@/utils/file.util';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express, Router } from 'express';
@@ -44,14 +43,14 @@ import swaggerUi from 'swagger-ui-express';
 export async function createApp(httpServer: HttpServer, appConfig: AppConfig): Promise<Express> {
   const databaseService = DatabaseInstance.init(appConfig.database);
   const redisService = RedisInstance.init(appConfig.redis);
+  const queueService = QueueInstance.init(appConfig.redis);
   await Promise.all([
     databaseService.connect(),
     databaseService.initializeIndexes(),
     databaseService.initializeConversationIndexes(),
-    redisService.connect()
+    redisService.connect(),
+    queueService.connect()
   ]);
-
-  QueueService.init(appConfig.redis); // WARN: QueueService must be initialized before Container — Container.initializeQueues() calls QueueService.get()
 
   const app = createExpressApp();
   httpServer.on('request', app);
@@ -71,7 +70,7 @@ export async function createApp(httpServer: HttpServer, appConfig: AppConfig): P
     app.use(rateLimit(appConfig.rateLimitOptions));
   }
 
-  const container = Container.getOrSet(); // init Container
+  const container = Container.getOrSet(databaseService, redisService); // init Container
   const socket = setupSocket(httpServer, container);
   socket.run();
 

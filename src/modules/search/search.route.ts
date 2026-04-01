@@ -2,9 +2,13 @@
  * This file defines the search routes for searching posts and users.
  */
 
-import { BaseRoute, SearchController, SearchValidation, protectIfHasBearerToken } from '@/modules';
-import { appLimiter, validatePaginationQuery } from '@/shared';
-import { asyncHandler } from '@/utils';
+import { protectIfHasBearerToken } from '@/modules/auth/auth.middleware';
+import { BaseRoute } from '@/modules/base/base.route';
+import { SearchController } from '@/modules/search/search.controller';
+import { SearchValidation } from '@/modules/search/search.validation';
+import { validatePaginationQuery } from '@/shared/middlewares/common.middleware';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
+import { asyncHandler } from '@/utils/handler.util';
 
 export class SearchRoute extends BaseRoute {
   constructor() {

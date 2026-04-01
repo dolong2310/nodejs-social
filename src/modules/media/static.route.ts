@@ -2,8 +2,9 @@
  * This file defines the static routes for getting static images, videos, and video streams.
  */
 
-import { BaseRoute, MediaController } from '@/modules';
-import { appLimiter } from '@/shared';
+import { BaseRoute } from '@/modules/base/base.route';
+import { MediaController } from '@/modules/media/media.controller';
+import { appLimiter } from '@/shared/middlewares/limiter.middleware';
 
 class StaticRoute extends BaseRoute {
   constructor() {

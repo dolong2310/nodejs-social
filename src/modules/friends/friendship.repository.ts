@@ -2,13 +2,11 @@
  * FriendshipRepository — undirected friend edges (normalized userIdLow/userIdHigh).
  */
 
-import { Injectable } from '@/decorators';
-import {
-  BaseRepository,
-  FriendshipPairRequiresDistinctUserIdsException,
-  FriendshipSchema,
-  IFriendship
-} from '@/modules';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { FriendshipPairRequiresDistinctUserIdsException } from '@/modules/friends/friends.exception';
+import { FriendshipSchema, IFriendship } from '@/modules/friends/friendship.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
 import { ObjectId } from 'mongodb';
 
 export interface IFriendshipRepository {
@@ -35,6 +33,10 @@ export function normalizeFriendshipPair(a: ObjectId, b: ObjectId): { userIdLow: 
 
 @Injectable()
 export class FriendshipRepository extends BaseRepository implements IFriendshipRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async findFriendUserIdsForUser(userId: string): Promise<string[]> {
     const oid = new ObjectId(userId);
     const col = this.db.friendships;

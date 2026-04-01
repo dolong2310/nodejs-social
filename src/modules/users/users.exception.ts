@@ -1,6 +1,15 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/constants';
-import { AuthFailureError, BadRequestError, ForbiddenError, UnprocessableEntityError } from '@/providers';
-import { SharedUserIsBannedException, SharedUserNotFoundException, SharedUserNotVerifiedYetException } from '@/shared';
+import { VALIDATION_ERROR_MESSAGE } from '@/constants/message.constant';
+import {
+  AuthFailureError,
+  BadRequestError,
+  ForbiddenError,
+  UnprocessableEntityError
+} from '@/providers/httpResponses/error.response';
+import {
+  SharedUserIsBannedException,
+  SharedUserNotFoundException,
+  SharedUserNotVerifiedYetException
+} from '@/shared/exceptions/users.exception';
 
 export const UsersUserNotFoundException = SharedUserNotFoundException;
 export const CannotViewUserProfileBlockedException = new ForbiddenError(

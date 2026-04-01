@@ -4,9 +4,13 @@
  * It provides methods to interact with the user data in the database.
  */
 
-import { Injectable } from '@/decorators';
-import { BaseRepository, EUserVerificationStatus, IUser, RegisterRequestDTO, UserSchema } from '@/modules';
-import { IRefreshToken, RefreshTokenSchema } from '@/shared';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { RegisterRequestDTO } from '@/modules/auth/dtos/auth.request.dto';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { EUserVerificationStatus } from '@/modules/users/users.enum';
+import { IUser, UserSchema } from '@/modules/users/users.schema';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
+import { IRefreshToken, RefreshTokenSchema } from '@/shared/models/refreshToken.schema';
 import { FindOneAndUpdateOptions, FindOneOptions, ObjectId, UpdateResult } from 'mongodb';
 
 export interface IUserRepository {
@@ -31,6 +35,10 @@ export interface IUserRepository {
 
 @Injectable()
 export class UserRepository extends BaseRepository implements IUserRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   findRefreshToken(token: string): Promise<IRefreshToken | null> {
     return this.db.refreshTokens.findOne<IRefreshToken>({ token });
   }

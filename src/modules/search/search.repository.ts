@@ -4,17 +4,15 @@
  * It provides methods to interact with the search data in the database.
  */
 
-import { Injectable } from '@/decorators';
-import {
-  BaseRepository,
-  EMediaType,
-  EPostAudience,
-  ESearchPeople,
-  ESearchType,
-  IUser,
-  PostDetailResponseDTO
-} from '@/modules';
-import { buildBasePostPipeline } from '@/utils';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseRepository } from '@/modules/base/base.repository';
+import { EMediaType } from '@/modules/media/media.enum';
+import { EPostAudience } from '@/modules/posts/posts.enum';
+import { ESearchPeople, ESearchType } from '@/modules/search/search.enum';
+import { IUser } from '@/modules/users/users.schema';
+import { PostDetailResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
+import { DatabaseService } from '@/providers/database/mongodb/database.service';
+import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { Document, ObjectId } from 'mongodb';
 
 export interface ISearchRepository {
@@ -56,6 +54,10 @@ export interface ISearchRepository {
 
 @Injectable()
 export class SearchRepository extends BaseRepository implements ISearchRepository {
+  constructor(db: DatabaseService) {
+    super(db);
+  }
+
   async findPosts({
     page,
     limit,

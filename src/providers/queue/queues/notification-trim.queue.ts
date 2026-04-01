@@ -1,4 +1,6 @@
-import { INotificationTrimJobData, INotificationTrimJobResult, LoggerInstance, QUEUE_NAMES } from '@/providers';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { LoggerInstance } from '@/providers/logger/instance.logger';
+import { INotificationTrimJobData, INotificationTrimJobResult, QUEUE_NAMES } from '@/providers/queue/types';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 const log = LoggerInstance.getLogger().child({ module: 'notification-trim-queue' });
@@ -9,6 +11,7 @@ export interface INotificationTrimJobQueue {
 }
 
 // Producer
+@Injectable()
 export class NotificationTrimJobQueue implements INotificationTrimJobQueue {
   private readonly queue: Queue<INotificationTrimJobData, INotificationTrimJobResult>;
 

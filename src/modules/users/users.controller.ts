@@ -1,15 +1,11 @@
-import { Injectable } from '@/decorators';
-import {
-  BaseController,
-  BlockRepository,
-  CannotViewUserProfileBlockedException,
-  GetUserProfileParamsDTO,
-  UpdateMeBodyDTO,
-  UpdateMeRequestDTO,
-  UserResponseDTO,
-  UsersService,
-  UsersUserNotFoundException
-} from '@/modules';
+import { AutoBind } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseController } from '@/modules/base/base.controller';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { GetUserProfileParamsDTO, UpdateMeBodyDTO, UpdateMeRequestDTO } from '@/modules/users/dtos/users.request.dto';
+import { UserResponseDTO } from '@/modules/users/dtos/users.response.dto';
+import { CannotViewUserProfileBlockedException, UsersUserNotFoundException } from '@/modules/users/users.exception';
+import { UsersService } from '@/modules/users/users.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -28,7 +24,8 @@ export class UsersController extends BaseController implements IUsersController 
     super();
   }
 
-  getMe = async (req: Request, res: Response) => {
+  @AutoBind()
+  async getMe(req: Request, res: Response) {
     const userId = this.getUserId(req);
 
     const user = await this.usersService.getMe(userId);
@@ -42,9 +39,10 @@ export class UsersController extends BaseController implements IUsersController 
       data: user,
       message: 'Get me successfully'
     });
-  };
+  }
 
-  updateMe = async (req: Request<ParamsDictionary, object, UpdateMeBodyDTO>, res: Response) => {
+  @AutoBind()
+  async updateMe(req: Request<ParamsDictionary, object, UpdateMeBodyDTO>, res: Response) {
     const userId = this.getUserId(req);
     const dto = new UpdateMeRequestDTO(req.body);
 
@@ -59,9 +57,10 @@ export class UsersController extends BaseController implements IUsersController 
       data: updatedUser,
       message: 'Update me successfully'
     });
-  };
+  }
 
-  getUserProfile = async (req: Request<GetUserProfileParamsDTO>, res: Response) => {
+  @AutoBind()
+  async getUserProfile(req: Request<GetUserProfileParamsDTO>, res: Response) {
     const { username } = req.params;
 
     const user = await this.usersService.getUserProfile(username);
@@ -83,5 +82,5 @@ export class UsersController extends BaseController implements IUsersController 
       data: user,
       message: 'Get user profile successfully'
     });
-  };
+  }
 }

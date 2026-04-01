@@ -1,14 +1,12 @@
-import { Injectable } from '@/decorators';
-import {
-  BaseController,
-  BlockCreatedResponseDTO,
-  BlocksService,
-  BlockUserBodyDTO,
-  FriendUserSummaryResponseDTO,
-  UnblockUserParamsDTO
-} from '@/modules';
-import { Created } from '@/providers';
-import { PaginationQueryDTO } from '@/shared';
+import { AutoBind } from '@/decorators';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseController } from '@/modules/base/base.controller';
+import { BlocksService } from '@/modules/blocks/blocks.service';
+import { BlockUserBodyDTO, UnblockUserParamsDTO } from '@/modules/blocks/dtos/blocks.request.dto';
+import { BlockCreatedResponseDTO } from '@/modules/blocks/dtos/blocks.response.dto';
+import { FriendUserSummaryResponseDTO } from '@/modules/friends/dtos/friends.response.dto';
+import { Created } from '@/providers/httpResponses/success.response';
+import { PaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -24,7 +22,8 @@ export class BlocksController extends BaseController implements IBlocksControlle
     super();
   }
 
-  blockUser = async (req: Request<ParamsDictionary, object, BlockUserBodyDTO>, res: Response) => {
+  @AutoBind()
+  async blockUser(req: Request<ParamsDictionary, object, BlockUserBodyDTO>, res: Response) {
     const blockerUserId = this.getUserId(req);
     const dto = new BlockUserBodyDTO(req.body);
     await this.blocksService.blockUser(blockerUserId, dto.userId);
@@ -34,16 +33,18 @@ export class BlocksController extends BaseController implements IBlocksControlle
       data: new BlockCreatedResponseDTO(dto.userId),
       message: 'User blocked successfully'
     });
-  };
+  }
 
-  unblockUser = async (req: Request<UnblockUserParamsDTO>, res: Response) => {
+  @AutoBind()
+  async unblockUser(req: Request<UnblockUserParamsDTO>, res: Response) {
     const blockerUserId = this.getUserId(req);
     const { userId: blockedUserId } = req.params;
     await this.blocksService.unblockUser(blockerUserId, blockedUserId);
     this.sendResponse({ res, message: 'User unblocked successfully' });
-  };
+  }
 
-  listBlocked = async (req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) => {
+  @AutoBind()
+  async listBlocked(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) {
     const blockerUserId = this.getUserId(req);
     const { page, limit } = req.query;
     const { users, total } = await this.blocksService.listBlockedUsers(blockerUserId, page, limit);
@@ -53,5 +54,5 @@ export class BlocksController extends BaseController implements IBlocksControlle
       pagination: { page, limit, totalItems: total },
       message: 'Get blocked users successfully'
     });
-  };
+  }
 }

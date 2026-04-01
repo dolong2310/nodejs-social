@@ -1,5 +1,5 @@
-import { SOCKET_SERVER_PRESENCE_USER, userRoom } from '@/constants';
-import { IFriendshipRepository } from '@/modules';
+import { SOCKET_SERVER_PRESENCE_USER, userRoom } from '@/constants/socket.constant';
+import { IFriendshipRepository } from '@/modules/friends/friendship.repository';
 import { Server, Socket } from 'socket.io';
 import { SocketFeature } from '../socket.feature';
 import { SocketContext } from '../socket.types';

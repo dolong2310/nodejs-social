@@ -4,34 +4,31 @@
  * local timezone and not per-user local timezones.
  */
 
-import { CACHE_KEYS, CACHE_TTL } from '@/constants';
-import { AutoBind, Injectable } from '@/decorators';
+import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
+import { AutoBind } from '@/decorators/autoBind.decorator';
+import { Injectable } from '@/decorators/injectable.decorator';
+import { BaseService } from '@/modules/base/base.service';
+import { BlockRepository } from '@/modules/blocks/blocks.repository';
+import { FriendRequestRepository } from '@/modules/friends/friendRequests.repository';
+import { IFriendRequest } from '@/modules/friends/friendRequests.schema';
 import {
   AlreadyFriendsException,
-  BaseService,
-  BlockRepository,
   CannotSendFriendRequestToYourselfException,
   FriendActionBlockedException,
   FriendRequestAlreadyPendingException,
   FriendRequestDailyLimitExceededException,
-  FriendRequestRepository,
-  FriendshipRepository,
   FriendUserNotFoundException,
-  IFriendRequest,
   InvalidCursorException,
-  IUser,
   NoFriendshipWithUserException,
-  NoPendingFriendRequestException,
-  NotificationsService,
-  UserRepository
-} from '@/modules';
-import { RedisService } from '@/providers';
-import {
-  decodeFriendListCursor,
-  decodeFriendRequestCursor,
-  encodeFriendListCursor,
-  encodeFriendRequestCursor
-} from '@/utils';
+  NoPendingFriendRequestException
+} from '@/modules/friends/friends.exception';
+import { FriendshipRepository } from '@/modules/friends/friendship.repository';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { UserRepository } from '@/modules/users/users.repository';
+import { IUser } from '@/modules/users/users.schema';
+import { RedisService } from '@/providers/database/redis/redis.service';
+import { decodeFriendListCursor, encodeFriendListCursor } from '@/utils/friend-cursor.util';
+import { decodeFriendRequestCursor, encodeFriendRequestCursor } from '@/utils/friendRequest-cursor.util';
 import { MongoServerError } from 'mongodb';
 
 /** User fields returned in friend / pending-request lists. */

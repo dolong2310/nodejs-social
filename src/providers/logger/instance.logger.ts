@@ -1,4 +1,5 @@
-import { config, isDevelopment } from '@/config';
+import { isDevelopment } from '@/config/envConfig';
+import { config } from '@/config/generalConfig';
 import { randomUUID } from 'node:crypto';
 import pino, { type Logger, type LoggerOptions } from 'pino';
 import pinoHttp, { type HttpLogger } from 'pino-http';

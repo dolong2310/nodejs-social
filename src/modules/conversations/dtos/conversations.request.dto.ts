@@ -1,4 +1,4 @@
-import { EConversationMemberRole } from '@/modules';
+import { EConversationMemberRole } from '@/modules/conversations/conversationMember.schema';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ConversationIdParams extends ParamsDictionary {
