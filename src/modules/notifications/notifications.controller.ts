@@ -29,11 +29,16 @@ export class NotificationsController extends BaseController implements INotifica
     const { limit, cursor, unreadOnly: unreadRaw } = req.query;
     const unreadOnly =
       unreadRaw === 'true' || unreadRaw === '1' ? true : unreadRaw === 'false' || unreadRaw === '0' ? false : undefined;
-    const page = await this.notificationsService.listForViewer(userId, Number(limit), cursor, unreadOnly);
+    const { items, nextCursor } = await this.notificationsService.listForViewer(
+      userId,
+      Number(limit),
+      cursor,
+      unreadOnly
+    );
     this.sendCursorPaginatedResponse({
       res,
-      items: page.notifications,
-      nextCursor: page.nextCursor,
+      items,
+      nextCursor,
       message: 'Notifications loaded'
     });
   }

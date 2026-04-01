@@ -68,14 +68,10 @@ export class ConversationsController extends BaseController implements IConversa
   async listConversations(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
-    const { conversations, nextCursor } = await this.conversationsService.listConversations(
-      userId,
-      Number(limit),
-      cursor
-    );
+    const { items, nextCursor } = await this.conversationsService.listConversations(userId, Number(limit), cursor);
     this.sendCursorPaginatedResponse({
       res,
-      items: conversations,
+      items,
       nextCursor,
       message: 'List conversations successfully'
     });

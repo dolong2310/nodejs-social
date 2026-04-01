@@ -1,7 +1,8 @@
 export const QUEUE_NAMES = {
   EMAIL: 'email',
   VIDEO_HLS: 'video-hls',
-  NOTIFICATION_TRIM: 'notification-trim'
+  NOTIFICATION_TRIM: 'notification-trim',
+  POST_VIEWS: 'post-views'
 } as const;
 
 export interface IEmailJobResult {
@@ -18,4 +19,13 @@ export interface INotificationTrimJobData {
 
 export interface INotificationTrimJobResult {
   processedRecipients: number;
+}
+
+export interface IPostViewsJobData {
+  postIds: string[];
+  isAuthenticatedViewer: boolean;
+}
+
+export interface IPostViewsJobResult {
+  updatedCount: number;
 }

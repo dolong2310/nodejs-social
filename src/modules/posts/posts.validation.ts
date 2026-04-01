@@ -15,6 +15,7 @@ import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
 import {
   CannotViewPostBlockedException,
   GuestCannotAccessNonPublicPostException,
+  HashtagsCountMustBeBetween0To20Exception,
   HashtagsMustBeArrayOfStringsException,
   InvalidPostIdException,
   MediaMustBeArrayOfValidItemsException,
@@ -58,6 +59,8 @@ export interface IPostsValidation {
 
 @Injectable()
 export class PostsValidation implements IPostsValidation {
+  private static readonly MAX_HASHTAGS_PER_POST = 20;
+
   constructor(
     private readonly postsService: PostsService,
     private readonly usersService: UsersService,
@@ -145,6 +148,10 @@ export class PostsValidation implements IPostsValidation {
           },
           custom: {
             options: async (hashtags: string[]) => {
+              if (hashtags.length > PostsValidation.MAX_HASHTAGS_PER_POST) {
+                throw HashtagsCountMustBeBetween0To20Exception;
+              }
+
               if (hashtags.length > 0 && !hashtags.every((hashtag) => typeof hashtag === 'string')) {
                 throw HashtagsMustBeArrayOfStringsException;
               }
@@ -212,8 +219,8 @@ export class PostsValidation implements IPostsValidation {
     )
   );
 
-  postIdValidation(key: string, location: Location) {
-    return validate(
+  postIdValidation = (key: string, location: Location) =>
+    validate(
       checkSchema(
         {
           [key]: {
@@ -246,7 +253,6 @@ export class PostsValidation implements IPostsValidation {
         [location]
       )
     );
-  }
 
   @AutoBind()
   async audienceValidation(
@@ -256,6 +262,9 @@ export class PostsValidation implements IPostsValidation {
   ): Promise<void> {
     const userId = req.tokenPayload?.userId;
     const post = req.postDetail as PostDetailResponseDTO;
+    const ownerId = post.userId.toString();
+    const isGuestUser = !userId;
+    const isOwner = !isGuestUser && ownerId === userId;
 
     const audienceStr = post.audience as string;
     const isPublicAudience = audienceStr === EPostAudience.PUBLIC;
@@ -263,26 +272,24 @@ export class PostsValidation implements IPostsValidation {
     const isOnlyMeAudience = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
 
     // kiểm tra user chưa login (guest user) thì chỉ được xem bài post có chế độ "public"
-    const isGuestUser = !userId;
     if (isGuestUser) {
       if (!isPublicAudience) {
         throw GuestCannotAccessNonPublicPostException;
       }
+      next();
+      return;
     }
 
-    const ownerId = post.userId.toString();
-
-    const isOwner = isGuestUser ? false : post.userId.equals(userId);
-    const isFriend = isGuestUser ? false : await this.friendsService.isFriendOf(userId, ownerId);
-    const isMention = isGuestUser ? false : post.mentions.map((mention) => mention.toString()).includes(userId);
-
-    // kiểm tra user owner của bài post có bị banned không
-    const userOwner = await this.usersService.findUserById(ownerId);
-    if (!userOwner) {
-      throw UsersUserNotFoundException;
-    }
-    if (isOwner && userOwner.verificationStatus === EUserVerificationStatus.BANNED) {
-      throw UserIsBannedException;
+    if (isOwner) {
+      // Chỉ cần query owner khi viewer chính là owner.
+      // Kiểm tra owner của bài post có bị banned không
+      const userOwner = await this.usersService.findUserById(ownerId);
+      if (!userOwner) {
+        throw UsersUserNotFoundException;
+      }
+      if (userOwner.verificationStatus === EUserVerificationStatus.BANNED) {
+        throw UserIsBannedException;
+      }
     }
 
     // kiểm tra bài post có chế độ "only me" thì chỉ user owner mới được xem bài post
@@ -292,15 +299,19 @@ export class PostsValidation implements IPostsValidation {
       }
     }
 
-    // friends-only (legacy DB: "followers") — chỉ bạn bè, owner, hoặc mentions
+    // friends-only — chỉ bạn bè, owner, hoặc mentions
     if (isFriendsOnlyAudience) {
-      if (!isFriend && !isOwner && !isMention) {
-        throw OnlyFriendsCanViewPostsException;
+      const isMention = post.mentions.some((mention) => mention.toString() === userId);
+      if (!isOwner && !isMention) {
+        const isFriend = await this.friendsService.isFriendOf(userId, ownerId);
+        if (!isFriend) {
+          throw OnlyFriendsCanViewPostsException;
+        }
       }
     }
 
-    // BLCK-02 / D-11: block hai chiều — mặc định 403; nếu viewer đã engage với post này thì cho xem và redact author.
-    if (userId) {
+    // block hai chiều — mặc định 403; nếu viewer đã engage với post này thì cho xem và redact author.
+    if (!isOwner) {
       const blocked = await this.blockRepository.isBlockedEitherWay(userId, post.userId.toHexString());
       if (blocked) {
         const engaged = await this.postsService.hasViewerEngagedWithPost(userId, post._id.toString());

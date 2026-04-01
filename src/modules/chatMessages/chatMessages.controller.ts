@@ -37,11 +37,16 @@ export class ChatMessagesController extends BaseController implements IChatMessa
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
     const { conversationId } = req.params;
-    const page = await this.chatMessagesService.listMessages(userId, conversationId, Number(limit), cursor);
+    const { items, nextCursor } = await this.chatMessagesService.listMessages(
+      userId,
+      conversationId,
+      Number(limit),
+      cursor
+    );
     this.sendCursorPaginatedResponse({
       res,
-      items: page.messages,
-      nextCursor: page.nextCursor,
+      items,
+      nextCursor,
       message: 'Messages loaded'
     });
   }

@@ -35,10 +35,10 @@ export class FriendsController extends BaseController implements IFriendsControl
   async listFriends(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
-    const { users, nextCursor } = await this.friendsService.listFriends(userId, Number(limit), cursor);
+    const { items, nextCursor } = await this.friendsService.listFriends(userId, Number(limit), cursor);
     this.sendCursorPaginatedResponse({
       res,
-      items: users.map((u) => new FriendUserSummaryResponseDTO(u)),
+      items: items.map((u) => new FriendUserSummaryResponseDTO(u)),
       nextCursor,
       message: 'Get friends successfully'
     });
@@ -48,10 +48,10 @@ export class FriendsController extends BaseController implements IFriendsControl
   async listIncoming(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
-    const { users, nextCursor } = await this.friendsService.listIncomingRequests(userId, Number(limit), cursor);
+    const { items, nextCursor } = await this.friendsService.listIncomingRequests(userId, Number(limit), cursor);
     this.sendCursorPaginatedResponse({
       res,
-      items: users.map((u) => new FriendUserSummaryResponseDTO(u)),
+      items: items.map((u) => new FriendUserSummaryResponseDTO(u)),
       nextCursor,
       message: 'Get incoming friend requests successfully'
     });
@@ -61,10 +61,10 @@ export class FriendsController extends BaseController implements IFriendsControl
   async listOutgoing(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
-    const { users, nextCursor } = await this.friendsService.listOutgoingRequests(userId, Number(limit), cursor);
+    const { items, nextCursor } = await this.friendsService.listOutgoingRequests(userId, Number(limit), cursor);
     this.sendCursorPaginatedResponse({
       res,
-      items: users.map((u) => new FriendUserSummaryResponseDTO(u)),
+      items: items.map((u) => new FriendUserSummaryResponseDTO(u)),
       nextCursor,
       message: 'Get outgoing friend requests successfully'
     });

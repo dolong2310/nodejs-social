@@ -165,10 +165,14 @@ export class DatabaseService extends ConnectionService implements IDatabaseServi
       // For findPostsType / countPostsType queries: { parentId, type }
       // Also used by the $lookup self-join in aggregation pipelines that counts child posts (comments/reposts/quotes)
       this.posts.createIndex({ parentId: 1, type: 1 }, { sparse: true }),
+      // For cursor-based findPostsType query: match { parentId, type } + sort/filter by createdAt, _id
+      this.posts.createIndex({ parentId: 1, type: 1, createdAt: -1, _id: -1 }, { sparse: true }),
       // For new-feed queries: { userId: { $in: [...] }, $or: [audience conditions] }
       this.posts.createIndex({ userId: 1, audience: 1 }),
       // For guest feed & audience-only filters: { audience }
-      this.posts.createIndex({ audience: 1 })
+      this.posts.createIndex({ audience: 1 }),
+      // For guest cursor feeds: match audience + sort/filter by createdAt, _id
+      this.posts.createIndex({ audience: 1, createdAt: -1, _id: -1 })
     ]);
   }
 

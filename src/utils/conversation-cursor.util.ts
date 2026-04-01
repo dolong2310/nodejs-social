@@ -1,3 +1,5 @@
+import { DateIdCursor } from '@/interfaces/types/cursor.type';
+
 export function encodeConversationListCursor(updatedAt: Date, conversationIdHex: string): string {
   return Buffer.from(JSON.stringify({ u: updatedAt.getTime(), c: conversationIdHex }), 'utf8').toString('base64url');
 }
@@ -11,7 +13,7 @@ export function encodeMessageCursor(createdAt: Date, messageIdHex: string): stri
   return Buffer.from(JSON.stringify({ t: createdAt.getTime(), i: messageIdHex }), 'utf8').toString('base64url');
 }
 
-export function decodeMessageCursor(raw: string): { createdAt: Date; _id: string } {
+export function decodeMessageCursor(raw: string): DateIdCursor {
   const o = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')) as { t: number; i: string };
   return { createdAt: new Date(o.t), _id: o.i };
 }

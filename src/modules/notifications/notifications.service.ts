@@ -1,10 +1,14 @@
 import { NOTIFICATION_MAX_PER_USER, NOTIFICATION_SOCKET_EVENT } from '@/constants/notification.constant';
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor, ICursorPaginationResult } from '@/interfaces/types/cursor.type';
 import { BaseService } from '@/modules/base/base.service';
 import { BlockRepository } from '@/modules/blocks/blocks.repository';
 import { IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
 import { IConversation } from '@/modules/conversations/conversations.schema';
-import { NotificationsPageDTO, toNotificationListItem } from '@/modules/notifications/dtos/notifications.response.dto';
+import {
+  NotificationListItemDTO,
+  toNotificationListItem
+} from '@/modules/notifications/dtos/notifications.response.dto';
 import {
   NotificationActorUserNotFoundException,
   NotificationInvalidCursorException
@@ -22,6 +26,7 @@ import {
 import { UserRepository } from '@/modules/users/users.repository';
 import { IUser } from '@/modules/users/users.schema';
 import { NotificationTrimJobQueue } from '@/providers/queue/queues/notification-trim.queue';
+import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 import { decodeNotificationCursor, encodeNotificationCursor } from '@/utils/notification-cursor.util';
 
 export interface ISocketUserEmitter {
@@ -30,7 +35,12 @@ export interface ISocketUserEmitter {
 
 export interface INotificationsService {
   bindSocketEmitter(emitter: ISocketUserEmitter | null): void;
-  listForViewer(viewerId: string, limit: number, cursor?: string, unreadOnly?: boolean): Promise<NotificationsPageDTO>;
+  listForViewer(
+    viewerId: string,
+    limit: number,
+    cursor?: string,
+    unreadOnly?: boolean
+  ): Promise<ICursorPaginationResult<NotificationListItemDTO>>;
   markRead(viewerId: string, ids?: string[]): Promise<void>;
   markSingleRead(viewerId: string, notificationId: string): Promise<void>;
   recordFriendRequest(recipientUserId: string, fromUserId: string): Promise<void>;
@@ -247,18 +257,15 @@ export class NotificationsService extends BaseService implements INotificationsS
     limit: number,
     cursor?: string,
     unreadOnly?: boolean
-  ): Promise<NotificationsPageDTO> {
+  ): Promise<ICursorPaginationResult<NotificationListItemDTO>> {
     const blocked = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerId);
     const blockedIds = new Set(blocked);
 
-    let before: { createdAt: Date; _id: string } | undefined;
-    if (cursor) {
-      try {
-        before = decodeNotificationCursor(cursor);
-      } catch {
-        throw NotificationInvalidCursorException;
-      }
-    }
+    const before: DateIdCursor | undefined = decodeCursorOrThrow(
+      cursor,
+      decodeNotificationCursor,
+      NotificationInvalidCursorException
+    );
 
     const pageSize = Math.min(100, Math.max(1, limit));
     // Danh sách id user không được xuất hiện trong trường actor của notification (vì đã block).
@@ -279,7 +286,7 @@ export class NotificationsService extends BaseService implements INotificationsS
         : null;
 
     return {
-      notifications: slice.map(toNotificationListItem),
+      items: slice.map(toNotificationListItem),
       nextCursor: next
     };
   }

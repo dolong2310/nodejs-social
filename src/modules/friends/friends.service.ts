@@ -7,6 +7,7 @@
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { AutoBind } from '@/decorators/autoBind.decorator';
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor, ICursorPaginationResult } from '@/interfaces/types/cursor.type';
 import { BaseService } from '@/modules/base/base.service';
 import { BlockRepository } from '@/modules/blocks/blocks.repository';
 import { FriendRequestRepository } from '@/modules/friends/friendRequests.repository';
@@ -27,6 +28,7 @@ import { NotificationsService } from '@/modules/notifications/notifications.serv
 import { UserRepository } from '@/modules/users/users.repository';
 import { IUser } from '@/modules/users/users.schema';
 import { RedisService } from '@/providers/database/redis/redis.service';
+import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 import { decodeFriendListCursor, encodeFriendListCursor } from '@/utils/friend-cursor.util';
 import { decodeFriendRequestCursor, encodeFriendRequestCursor } from '@/utils/friendRequest-cursor.util';
 import { MongoServerError } from 'mongodb';
@@ -50,21 +52,17 @@ export interface IFriendsService {
   declineIncomingRequest(myUserId: string, fromUserId: string): Promise<void>;
   revokeOutgoingRequest(myUserId: string, toUserId: string): Promise<void>;
   unfriend(myUserId: string, otherUserId: string): Promise<void>;
-  listFriends(
-    myUserId: string,
-    limit: number,
-    cursor?: string
-  ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }>;
+  listFriends(myUserId: string, limit: number, cursor?: string): Promise<ICursorPaginationResult<FriendUserRow>>;
   listIncomingRequests(
     myUserId: string,
     limit: number,
     cursor?: string
-  ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }>;
+  ): Promise<ICursorPaginationResult<FriendUserRow>>;
   listOutgoingRequests(
     myUserId: string,
     limit: number,
     cursor?: string
-  ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }>;
+  ): Promise<ICursorPaginationResult<FriendUserRow>>;
 }
 
 @Injectable()
@@ -272,19 +270,8 @@ export class FriendsService extends BaseService implements IFriendsService {
     await this.invalidateBoth(myUserId, otherUserId);
   }
 
-  async listFriends(
-    myUserId: string,
-    limit: number,
-    cursor?: string
-  ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }> {
-    let decodedCursor: string | undefined;
-    if (cursor) {
-      try {
-        decodedCursor = decodeFriendListCursor(cursor);
-      } catch {
-        throw InvalidCursorException;
-      }
-    }
+  async listFriends(myUserId: string, limit: number, cursor?: string): Promise<ICursorPaginationResult<FriendUserRow>> {
+    const decodedCursor = decodeCursorOrThrow(cursor, decodeFriendListCursor, InvalidCursorException);
 
     const pageSize = Math.min(100, Math.max(1, limit));
     // lấy danh sách id bạn bè của user theo cursor và limit
@@ -306,24 +293,21 @@ export class FriendsService extends BaseService implements IFriendsService {
     // tạo cursor cho trang tiếp theo
     const nextCursor = hasMore && slice.length > 0 ? encodeFriendListCursor(slice[slice.length - 1]) : null;
     // trả về danh sách bạn bè đã sắp xếp và cursor cho trang tiếp theo
-    return { users: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
+    return { items: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
   }
 
   async listIncomingRequests(
     myUserId: string,
     limit: number,
     cursor?: string
-  ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }> {
+  ): Promise<ICursorPaginationResult<FriendUserRow>> {
     const pageSize = Math.min(100, Math.max(1, limit));
 
-    let decoded: { createdAt: Date; _id: string } | undefined;
-    if (cursor) {
-      try {
-        decoded = decodeFriendRequestCursor(cursor);
-      } catch {
-        throw InvalidCursorException;
-      }
-    }
+    const decoded: DateIdCursor | undefined = decodeCursorOrThrow(
+      cursor,
+      decodeFriendRequestCursor,
+      InvalidCursorException
+    );
 
     const items = await this.friendRequestRepository.listIncomingForUser(myUserId, pageSize + 1, decoded);
     const hasMore = items.length > pageSize;
@@ -343,24 +327,21 @@ export class FriendsService extends BaseService implements IFriendsService {
     const nextCursor =
       hasMore && last ? encodeFriendRequestCursor(last.createdAt ?? new Date(0), last._id.toHexString()) : null;
 
-    return { users: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
+    return { items: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
   }
 
   async listOutgoingRequests(
     myUserId: string,
     limit: number,
     cursor?: string
-  ): Promise<{ users: FriendUserRow[]; nextCursor: string | null }> {
+  ): Promise<ICursorPaginationResult<FriendUserRow>> {
     const pageSize = Math.min(100, Math.max(1, limit));
 
-    let decoded: { createdAt: Date; _id: string } | undefined;
-    if (cursor) {
-      try {
-        decoded = decodeFriendRequestCursor(cursor);
-      } catch {
-        throw InvalidCursorException;
-      }
-    }
+    const decoded: DateIdCursor | undefined = decodeCursorOrThrow(
+      cursor,
+      decodeFriendRequestCursor,
+      InvalidCursorException
+    );
 
     const items = await this.friendRequestRepository.listOutgoingForUser(myUserId, pageSize + 1, decoded);
     const hasMore = items.length > pageSize;
@@ -380,6 +361,6 @@ export class FriendsService extends BaseService implements IFriendsService {
     const nextCursor =
       hasMore && last ? encodeFriendRequestCursor(last.createdAt ?? new Date(0), last._id.toHexString()) : null;
 
-    return { users: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
+    return { items: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
   }
 }

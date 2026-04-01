@@ -1,4 +1,5 @@
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { INotification } from '@/modules/notifications/notifications.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
@@ -11,7 +12,7 @@ export interface INotificationRepository {
   findPageBeforeCursor(
     recipientUserId: string,
     limit: number,
-    before?: { createdAt: Date; _id: string },
+    before?: DateIdCursor,
     unreadOnly?: boolean,
     /** Hide notifications whose actor is blocked with viewer (D-14). */
     actorUserIdNin?: string[]
@@ -45,7 +46,7 @@ export class NotificationRepository extends BaseRepository implements INotificat
   async findPageBeforeCursor(
     recipientUserId: string,
     limit: number,
-    before?: { createdAt: Date; _id: string },
+    before?: DateIdCursor,
     unreadOnly?: boolean,
     actorUserIdNin?: string[]
   ): Promise<INotification[]> {

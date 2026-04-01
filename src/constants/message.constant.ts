@@ -87,6 +87,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   PARENT_ID_MUST_BE_NULL: 'Parent ID must be null',
   HASHTAGS_MUST_BE_AN_ARRAY: 'Hashtags must be an array',
   HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS: 'Hashtags must be an array of strings',
+  HASHTAGS_COUNT_MUST_BE_BETWEEN_0_TO_20: 'Hashtags count must be between 0 and 20',
   MENTIONS_MUST_BE_AN_ARRAY: 'Mentions must be an array',
   MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS: 'Mentions must be an array of valid user IDs',
   MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',

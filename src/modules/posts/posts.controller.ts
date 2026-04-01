@@ -12,14 +12,14 @@ import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/d
 import { IPost } from '@/modules/posts/posts.schema';
 import { PostsService } from '@/modules/posts/posts.service';
 import { Created } from '@/providers/httpResponses/success.response';
-import { PaginationQueryDTO } from '@/shared/dtos/common.request.dto';
+import { CursorPaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostsController {
-  getNewFeeds(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
+  getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
   getPostDetail(req: Request<GetPostDetailParamsDTO>, res: Response): Promise<void>;
-  getPostsType(req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
+  getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
   createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response): Promise<void>;
   patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response): Promise<void>;
 }
@@ -34,12 +34,12 @@ export class PostsController extends BaseController implements IPostsController 
   }
 
   @AutoBind()
-  async getNewFeeds(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) {
-    const { page, limit } = req.query;
+  async getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) {
+    const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
     let posts: PostNewFeedResponseDTO[];
-    let totalPosts: number;
+    let nextCursor: string | null;
 
     if (userId) {
       // Same DTO field name as before; values are mutual friend ids from friendships collection.
@@ -48,30 +48,26 @@ export class PostsController extends BaseController implements IPostsController 
       const results = await this.postsService.getNewFeeds({
         userId,
         friendUserIds,
-        page,
+        cursor,
         limit
       });
 
-      posts = results.posts;
-      totalPosts = results.totalPosts;
+      posts = results.items;
+      nextCursor = results.nextCursor;
     } else {
       const guestResults = await this.postsService.getGuestNewFeeds({
-        page,
+        cursor,
         limit
       });
 
-      posts = guestResults.posts;
-      totalPosts = guestResults.totalPosts;
+      posts = guestResults.items;
+      nextCursor = guestResults.nextCursor;
     }
 
-    this.sendPaginatedResponse<PostNewFeedResponseDTO[]>({
+    this.sendCursorPaginatedResponse<PostNewFeedResponseDTO>({
       res,
-      data: posts,
-      pagination: {
-        page,
-        limit,
-        totalItems: totalPosts
-      },
+      items: posts,
+      nextCursor,
       message: 'Get new feeds successfully'
     });
   }
@@ -97,27 +93,23 @@ export class PostsController extends BaseController implements IPostsController 
   }
 
   @AutoBind()
-  async getPostsType(req: Request<GetPostsParamsDTO, object, object, PaginationQueryDTO>, res: Response) {
+  async getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>, res: Response) {
     const { postId, type } = req.params;
-    const { page, limit } = req.query;
+    const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    const { posts, totalPosts } = await this.postsService.getPostsType({
+    const { items, nextCursor } = await this.postsService.getPostsType({
       userId,
       postId,
       type,
-      page,
+      cursor,
       limit
     });
 
-    this.sendPaginatedResponse<PostDetailResponseDTO[]>({
+    this.sendCursorPaginatedResponse<PostDetailResponseDTO>({
       res,
-      data: posts,
-      pagination: {
-        page,
-        limit,
-        totalItems: totalPosts
-      },
+      items,
+      nextCursor,
       message: 'Get posts type successfully'
     });
   }

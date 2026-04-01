@@ -1,9 +1,11 @@
 import { LoggerInstance } from '@/providers/logger/instance.logger';
 import { EmailJobQueue } from '@/providers/queue/queues/email.queue';
 import { NotificationTrimJobQueue } from '@/providers/queue/queues/notification-trim.queue';
+import { PostViewsJobQueue } from '@/providers/queue/queues/post-views.queue';
 import { VideoHLSJobQueue } from '@/providers/queue/queues/video-hls.queue';
 import { EmailWorker } from '@/providers/queue/workers/email.worker';
 import { NotificationTrimWorker } from '@/providers/queue/workers/notification-trim.worker';
+import { PostViewsWorker } from '@/providers/queue/workers/post-views.worker';
 import { VideoHLSWorker } from '@/providers/queue/workers/video-hls.worker';
 import { type ConnectionOptions, type Worker } from 'bullmq';
 import type { RedisOptions } from 'ioredis';
@@ -15,6 +17,7 @@ export interface IQueueService {
   getEmailJobQueue(): EmailJobQueue;
   getVideoHLSJobQueue(): VideoHLSJobQueue;
   getNotificationTrimJobQueue(): NotificationTrimJobQueue;
+  getPostViewsJobQueue(): PostViewsJobQueue;
 }
 
 export class QueueService implements IQueueService {
@@ -24,6 +27,7 @@ export class QueueService implements IQueueService {
   private emailJobQueue: EmailJobQueue | null = null;
   private videoHLSJobQueue: VideoHLSJobQueue | null = null;
   private notificationTrimJobQueue: NotificationTrimJobQueue | null = null;
+  private postViewsJobQueue: PostViewsJobQueue | null = null;
   private workers: Worker[] | null = null;
 
   constructor(redisOptions: RedisOptions) {
@@ -45,12 +49,14 @@ export class QueueService implements IQueueService {
     this.emailJobQueue = new EmailJobQueue(this.connection);
     this.videoHLSJobQueue = new VideoHLSJobQueue(this.connection);
     this.notificationTrimJobQueue = new NotificationTrimJobQueue(this.connection);
+    this.postViewsJobQueue = new PostViewsJobQueue(this.connection);
 
     // 2. Initialize workers
     this.workers = [
       new EmailWorker().createWorker(this.connection),
       new VideoHLSWorker().createWorker(this.connection),
-      new NotificationTrimWorker().createWorker(this.connection)
+      new NotificationTrimWorker().createWorker(this.connection),
+      new PostViewsWorker().createWorker(this.connection)
     ];
 
     log.info('queue service initialized');
@@ -62,7 +68,8 @@ export class QueueService implements IQueueService {
       ...QueueService.instance.workers!.map((w) => w.close()),
       QueueService.instance.emailJobQueue!.close(),
       QueueService.instance.videoHLSJobQueue!.close(),
-      QueueService.instance.notificationTrimJobQueue!.close()
+      QueueService.instance.notificationTrimJobQueue!.close(),
+      QueueService.instance.postViewsJobQueue!.close()
     ]);
     QueueService.instance = null;
     log.info('queue service closed');
@@ -82,5 +89,9 @@ export class QueueService implements IQueueService {
 
   public getNotificationTrimJobQueue(): NotificationTrimJobQueue {
     return this.notificationTrimJobQueue!;
+  }
+
+  public getPostViewsJobQueue(): PostViewsJobQueue {
+    return this.postViewsJobQueue!;
   }
 }

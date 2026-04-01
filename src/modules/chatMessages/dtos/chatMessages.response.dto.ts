@@ -19,8 +19,3 @@ export function toChatMessageDto(m: IChatMessage): ChatMessageResponseDTO {
     createdAt: m.createdAt.toISOString()
   };
 }
-
-export interface ChatMessagesPageResponseDTO {
-  messages: ChatMessageResponseDTO[];
-  nextCursor: string | null;
-}

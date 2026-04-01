@@ -65,8 +65,3 @@ export function toNotificationListItem(doc: INotification): NotificationListItem
     payload: doc.payload as NotificationPayloadDTO
   };
 }
-
-export interface NotificationsPageDTO {
-  notifications: NotificationListItemDTO[];
-  nextCursor: string | null;
-}

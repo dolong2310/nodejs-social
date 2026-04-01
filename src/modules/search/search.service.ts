@@ -1,5 +1,4 @@
-import { config } from '@/config/generalConfig';
-import { CACHE_KEYS } from '@/constants/cache.constant';
+import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseService } from '@/modules/base/base.service';
 import { BlockRepository } from '@/modules/blocks/blocks.repository';
@@ -106,7 +105,7 @@ export class SearchService extends BaseService implements ISearchService {
   }: SearchQueryDTO & {
     userId?: string;
   }): Promise<[IUser[], number]> {
-    const ttl = config.searchCache.ttlSeconds;
+    const ttl = CACHE_TTL.SEARCH_USERS;
 
     const load = async (): Promise<[IUser[], number]> => {
       const usersPromise = this.searchRepository.findUsers({

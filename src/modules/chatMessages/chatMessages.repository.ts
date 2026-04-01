@@ -1,4 +1,5 @@
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { ChatMessageSchema, IChatAttachment, IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
@@ -12,11 +13,7 @@ export interface IChatMessageRepository {
     attachments?: IChatAttachment[]
   ): Promise<IChatMessage>;
   findById(messageId: string): Promise<IChatMessage | null>;
-  findPageBeforeCursor(
-    chatId: string,
-    limit: number,
-    before?: { createdAt: Date; _id: string }
-  ): Promise<IChatMessage[]>;
+  findPageBeforeCursor(chatId: string, limit: number, before?: DateIdCursor): Promise<IChatMessage[]>;
 }
 
 @Injectable()
@@ -45,11 +42,7 @@ export class ChatMessageRepository extends BaseRepository implements IChatMessag
     return this.db.chatMessages.findOne({ _id: new ObjectId(messageId) });
   }
 
-  async findPageBeforeCursor(
-    chatId: string,
-    limit: number,
-    before?: { createdAt: Date; _id: string }
-  ): Promise<IChatMessage[]> {
+  async findPageBeforeCursor(chatId: string, limit: number, before?: DateIdCursor): Promise<IChatMessage[]> {
     const chatOid = new ObjectId(chatId);
     const filter: Filter<IChatMessage> = { chatId: chatOid };
     if (before) {

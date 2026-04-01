@@ -3,6 +3,7 @@
  */
 
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { FriendRequestSchema, IFriendRequest } from '@/modules/friends/friendRequests.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
@@ -12,16 +13,8 @@ export interface IFriendRequestRepository {
   countOutgoingRequestsCreatedOnUtcDay(fromUserId: string, dayStart: Date, dayEndExclusive: Date): Promise<number>;
   insertPendingRequest(fromUserId: string, toUserId: string): Promise<IFriendRequest>;
   deleteDirectedRequest(fromUserId: string, toUserId: string): Promise<number>;
-  listIncomingForUser(
-    toUserId: string,
-    limit: number,
-    cursor?: { createdAt: Date; _id: string }
-  ): Promise<IFriendRequest[]>;
-  listOutgoingForUser(
-    fromUserId: string,
-    limit: number,
-    cursor?: { createdAt: Date; _id: string }
-  ): Promise<IFriendRequest[]>;
+  listIncomingForUser(toUserId: string, limit: number, cursor?: DateIdCursor): Promise<IFriendRequest[]>;
+  listOutgoingForUser(fromUserId: string, limit: number, cursor?: DateIdCursor): Promise<IFriendRequest[]>;
   deleteAllRequestsInvolvingUsers(userA: string, userB: string): Promise<void>;
   findPendingByDirectedPair(fromUserId: string, toUserId: string): Promise<IFriendRequest | null>;
 }
@@ -61,11 +54,7 @@ export class FriendRequestRepository extends BaseRepository implements IFriendRe
     return result.deletedCount;
   }
 
-  async listIncomingForUser(
-    toUserId: string,
-    limit: number,
-    cursor?: { createdAt: Date; _id: string }
-  ): Promise<IFriendRequest[]> {
+  async listIncomingForUser(toUserId: string, limit: number, cursor?: DateIdCursor): Promise<IFriendRequest[]> {
     const toOid = new ObjectId(toUserId);
     const filter: Record<string, unknown> = { toUserId: toOid };
     if (cursor) {
@@ -76,11 +65,7 @@ export class FriendRequestRepository extends BaseRepository implements IFriendRe
     return items as IFriendRequest[];
   }
 
-  async listOutgoingForUser(
-    fromUserId: string,
-    limit: number,
-    cursor?: { createdAt: Date; _id: string }
-  ): Promise<IFriendRequest[]> {
+  async listOutgoingForUser(fromUserId: string, limit: number, cursor?: DateIdCursor): Promise<IFriendRequest[]> {
     const fromOid = new ObjectId(fromUserId);
     const filter: Record<string, unknown> = { fromUserId: fromOid };
     if (cursor) {

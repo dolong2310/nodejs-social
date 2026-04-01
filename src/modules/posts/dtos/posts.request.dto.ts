@@ -1,6 +1,6 @@
 import { IMedia } from '@/interfaces/types/media.type';
 import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
-import { PaginationQueryDTO } from '@/shared/dtos/common.request.dto';
+import { CursorPaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class CreatePostRequestDTO {
@@ -57,6 +57,6 @@ export interface GetPostsParamsDTO extends ParamsDictionary {
 export interface GetNewFeedsPayloadDTO {
   userId: string;
   friendUserIds: string[];
-  page: PaginationQueryDTO['page'];
-  limit: PaginationQueryDTO['limit'];
+  cursor?: CursorPaginationQueryDTO['cursor'];
+  limit: CursorPaginationQueryDTO['limit'];
 }

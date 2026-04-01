@@ -5,6 +5,7 @@
  */
 
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { CreatePostRequestDTO } from '@/modules/posts/dtos/posts.request.dto';
 import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
@@ -32,19 +33,19 @@ export interface IPostRepository {
     blockedAuthorIds: string[];
     /** Extra posts to include (e.g. engaged-with-blocked-author); visibility still enforced by caller context. */
     extraVisiblePostIds?: string[];
-    page: number;
+    cursor?: DateIdCursor;
     limit: number;
   }): Promise<PostNewFeedResponseDTO[]>;
+  findGuestPosts(payload: { cursor?: DateIdCursor; limit: number }): Promise<PostNewFeedResponseDTO[]>;
   countPosts(payload: {
     userId: string;
     friendUserIds: string[];
     blockedAuthorIds: string[];
     extraVisiblePostIds?: string[];
   }): Promise<number>;
-  findGuestPosts(payload: { page: number; limit: number }): Promise<PostNewFeedResponseDTO[]>;
   countGuestPosts(): Promise<number>;
   findPostsType(payload: {
-    page: number;
+    cursor?: DateIdCursor;
     limit: number;
     postId: string;
     type: EPostType;
@@ -69,6 +70,7 @@ export interface IPostRepository {
     userId?: string;
     date: Date;
   }): Promise<UpdateResult<IPost>>;
+  incrementViewsByIds(postIds: string[], isAuthenticatedViewer: boolean): Promise<number>;
   findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]>;
 }
 
@@ -82,10 +84,14 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     const v = new ObjectId(viewerId);
     const p = new ObjectId(postId);
     const [like, bookmark, comment] = await Promise.all([
+      // Tìm like của viewer với post (likes.findOne)
       this.db.likes.findOne({ userId: v, postId: p }, { projection: { _id: 1 } }),
+      // Tìm bookmark của viewer với post (bookmarks.findOne)
       this.db.bookmarks.findOne({ userId: v, postId: p }, { projection: { _id: 1 } }),
+      // Tìm comment mà viewer comment vào post đó (posts.findOne với parentId = postId và type = COMMENT)
       this.db.posts.findOne({ userId: v, parentId: p, type: EPostType.COMMENT }, { projection: { _id: 1 } })
     ]);
+    // Nếu có ít nhất 1 trong 3 loại tương tác thì trả true
     return like !== null || bookmark !== null || comment !== null;
   }
 
@@ -295,52 +301,35 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     friendUserIds,
     blockedAuthorIds,
     extraVisiblePostIds,
-    page,
+    cursor,
     limit
   }: {
     userId: string;
     friendUserIds: string[];
     blockedAuthorIds: string[];
     extraVisiblePostIds?: string[];
-    page: number;
+    cursor?: DateIdCursor;
     limit: number;
   }): Promise<PostNewFeedResponseDTO[]> {
     const viewerOid = new ObjectId(userId);
     const blocked = blockedAuthorIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
     const friendIds = friendUserIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
 
-    /**
-     * Authenticated home feed (FEED-01, FEED-02, BLCK-02):
-     * - All eligible `public` posts (any author except blocked), plus
-     * - Viewer’s own posts (any audience), plus
-     * - Mutual friends’ `friends-only` posts (authors in friendIds, not blocked).
-     * - Plus posts the viewer engaged with whose author is blocked (D-11) — author redacted in service layer.
-     */
-    const orBranches: Record<string, unknown>[] = [
-      {
-        audience: EPostAudience.PUBLIC,
-        userId: { $nin: blocked }
-      },
-      { userId: viewerOid },
-      {
-        audience: EPostAudience.FRIENDS_ONLY,
-        userId: { $in: friendIds, $nin: blocked }
-      }
-    ];
-    if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
-      orBranches.push({ _id: { $in: extraVisiblePostIds.map((id) => new ObjectId(id)) } });
-    }
-    const match: Record<string, unknown> = { $or: orBranches };
+    const match = this.buildFeedMatch({
+      viewerOid,
+      blocked,
+      friendIds,
+      extraVisiblePostIds,
+      cursor
+    });
 
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
-      skip: limit * (page - 1),
-      limit,
+      limit: limit + 1,
       includeAuthor: true
     });
 
-    const posts = await this.db.posts.aggregate<PostNewFeedResponseDTO>(pipelineGetNewFeeds).toArray();
-    return posts;
+    return this.db.posts.aggregate<PostNewFeedResponseDTO>(pipelineGetNewFeeds).toArray();
   }
 
   async countPosts({
@@ -377,20 +366,22 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     return this.count(this.db.posts, match);
   }
 
-  async findGuestPosts({ page, limit }: { page: number; limit: number }): Promise<PostNewFeedResponseDTO[]> {
-    const match = {
+  async findGuestPosts({ cursor, limit }: { cursor?: DateIdCursor; limit: number }): Promise<PostNewFeedResponseDTO[]> {
+    const match: Record<string, unknown> = {
       audience: EPostAudience.PUBLIC
     };
+    if (cursor) {
+      const cursorId = new ObjectId(cursor._id);
+      match.$or = [{ createdAt: { $lt: cursor.createdAt } }, { createdAt: cursor.createdAt, _id: { $lt: cursorId } }];
+    }
 
     const pipelineGetGuestNewFeeds = buildBasePostPipeline({
       match,
-      skip: limit * (page - 1),
-      limit,
+      limit: limit + 1,
       includeAuthor: true
     });
 
-    const posts = await this.db.posts.aggregate<PostNewFeedResponseDTO>(pipelineGetGuestNewFeeds).toArray();
-    return posts;
+    return this.db.posts.aggregate<PostNewFeedResponseDTO>(pipelineGetGuestNewFeeds).toArray();
   }
 
   async countGuestPosts(): Promise<number> {
@@ -403,25 +394,28 @@ export class PostRepository extends BaseRepository implements IPostRepository {
   }
 
   async findPostsType({
-    page,
+    cursor,
     limit,
     postId,
     type
   }: {
-    page: number;
+    cursor?: DateIdCursor;
     limit: number;
     postId: string;
     type: EPostType;
   }): Promise<PostDetailResponseDTO[]> {
-    const match = {
+    const match: Record<string, unknown> = {
       parentId: new ObjectId(postId),
       type
     };
+    if (cursor) {
+      const cursorId = new ObjectId(cursor._id);
+      match.$or = [{ createdAt: { $lt: cursor.createdAt } }, { createdAt: cursor.createdAt, _id: { $lt: cursorId } }];
+    }
 
     const pipelineGetPostsType = buildBasePostPipeline({
       match,
-      skip: limit * (page - 1),
-      limit,
+      limit: limit + 1,
       includeAuthor: false
     });
 
@@ -517,6 +511,21 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     );
   }
 
+  async incrementViewsByIds(postIds: string[], isAuthenticatedViewer: boolean): Promise<number> {
+    if (postIds.length === 0) {
+      return 0;
+    }
+    const ids = postIds.map((id) => new ObjectId(id));
+    const res = await this.db.posts.updateMany(
+      { _id: { $in: ids } },
+      {
+        $inc: isAuthenticatedViewer ? { userViews: 1 } : { guestViews: 1 },
+        $currentDate: { updatedAt: true }
+      }
+    );
+    return res.modifiedCount;
+  }
+
   async findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]> {
     if (hashtags.length === 0) return [];
 
@@ -535,6 +544,49 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     // Tránh loop find one and update vì N + 1 query (nhiều round-trip).
     await this.db.hashtags.bulkWrite(ops, { ordered: false });
 
-    return this.db.hashtags.find({ name: { $in: hashtags } }).toArray();
+    return this.db.hashtags.find({ name: { $in: hashtags } }, { projection: { _id: 1, name: 1 } }).toArray();
+  }
+
+  private buildFeedMatch({
+    viewerOid,
+    blocked,
+    friendIds,
+    extraVisiblePostIds,
+    cursor
+  }: {
+    viewerOid: ObjectId;
+    blocked: ObjectId[];
+    friendIds: ObjectId[];
+    extraVisiblePostIds?: string[];
+    cursor?: DateIdCursor;
+  }): Record<string, unknown> {
+    const orBranches: Record<string, unknown>[] = [
+      {
+        audience: EPostAudience.PUBLIC,
+        userId: { $nin: blocked }
+      },
+      { userId: viewerOid },
+      {
+        audience: EPostAudience.FRIENDS_ONLY,
+        userId: { $in: friendIds, $nin: blocked }
+      }
+    ];
+    if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
+      orBranches.push({ _id: { $in: extraVisiblePostIds.map((id) => new ObjectId(id)) } });
+    }
+
+    const base: Record<string, unknown> = { $or: orBranches };
+    if (!cursor) {
+      return base;
+    }
+    const cursorId = new ObjectId(cursor._id);
+    return {
+      $and: [
+        base,
+        {
+          $or: [{ createdAt: { $lt: cursor.createdAt } }, { createdAt: cursor.createdAt, _id: { $lt: cursorId } }]
+        }
+      ]
+    };
   }
 }

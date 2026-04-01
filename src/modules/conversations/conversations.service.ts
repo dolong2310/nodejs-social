@@ -1,4 +1,5 @@
 import { Injectable } from '@/decorators/injectable.decorator';
+import { ICursorPaginationResult } from '@/interfaces/types/cursor.type';
 import { BlockRepository } from '@/modules/blocks/blocks.repository';
 import { ConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
 import { EConversationMemberRole, IConversationMember } from '@/modules/conversations/conversationMember.schema';
@@ -39,6 +40,7 @@ import { FriendsService } from '@/modules/friends/friends.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { SharedConversationsService } from '@/shared/services/shared-conversations.service';
 import { decodeConversationListCursor, encodeConversationListCursor } from '@/utils/conversation-cursor.util';
+import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 import { MongoServerError } from 'mongodb';
 
 export interface IConversationsService {
@@ -48,7 +50,7 @@ export interface IConversationsService {
     userId: string,
     limit: number,
     cursor?: string
-  ): Promise<{ conversations: ConversationSummaryResponseDTO[]; nextCursor: string | null }>;
+  ): Promise<ICursorPaginationResult<ConversationSummaryResponseDTO>>;
   getConversationDetail(userId: string, conversationId: string): Promise<ConversationDetailResponseDTO>;
   patchConversation(
     userId: string,
@@ -214,15 +216,8 @@ export class ConversationsService extends SharedConversationsService implements 
     userId: string,
     limit: number,
     cursor?: string
-  ): Promise<{ conversations: ConversationSummaryResponseDTO[]; nextCursor: string | null }> {
-    let decoded: { updatedAt: Date; conversationId: string } | undefined;
-    if (cursor) {
-      try {
-        decoded = decodeConversationListCursor(cursor);
-      } catch {
-        throw ConversationInvalidCursorException;
-      }
-    }
+  ): Promise<ICursorPaginationResult<ConversationSummaryResponseDTO>> {
+    const decoded = decodeCursorOrThrow(cursor, decodeConversationListCursor, ConversationInvalidCursorException);
 
     // giới hạn kích thước trang trong khoảng an toàn (1-100), tránh gửi limit quá lớn.
     const page = Math.min(100, Math.max(1, limit));
@@ -269,7 +264,7 @@ export class ConversationsService extends SharedConversationsService implements 
       }
     }
 
-    return { conversations, nextCursor: next };
+    return { items: conversations, nextCursor: next };
   }
 
   /**

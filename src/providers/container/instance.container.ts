@@ -58,6 +58,7 @@ import { RedisService } from '@/providers/database/redis/redis.service';
 import { QueueInstance } from '@/providers/queue/queue.instance';
 import { EmailJobQueue } from '@/providers/queue/queues/email.queue';
 import { NotificationTrimJobQueue } from '@/providers/queue/queues/notification-trim.queue';
+import { PostViewsJobQueue } from '@/providers/queue/queues/post-views.queue';
 import { VideoHLSJobQueue } from '@/providers/queue/queues/video-hls.queue';
 import { S3Service } from '@/shared/services/s3.service';
 import { TokenService } from '@/shared/services/token.service';
@@ -141,6 +142,7 @@ export class Container extends BaseContainer implements IContainer {
     this.bind(EmailJobQueue, mq.getEmailJobQueue());
     this.bind(VideoHLSJobQueue, mq.getVideoHLSJobQueue());
     this.bind(NotificationTrimJobQueue, mq.getNotificationTrimJobQueue());
+    this.bind(PostViewsJobQueue, mq.getPostViewsJobQueue());
   }
 
   private initializeRepositories(): void {

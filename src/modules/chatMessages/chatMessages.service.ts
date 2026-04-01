@@ -1,4 +1,5 @@
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor, ICursorPaginationResult } from '@/interfaces/types/cursor.type';
 import { BlockRepository } from '@/modules/blocks/blocks.repository';
 import {
   ChatAttachmentTooLargeException,
@@ -10,17 +11,14 @@ import {
 import { ChatMessageRepository } from '@/modules/chatMessages/chatMessages.repository';
 import { IChatAttachment, IChatMessage } from '@/modules/chatMessages/chatMessages.schema';
 import { MarkChatReadBodyDTO, SendChatMessageBodyDTO } from '@/modules/chatMessages/dtos/chatMessages.request.dto';
-import {
-  ChatMessageResponseDTO,
-  ChatMessagesPageResponseDTO,
-  toChatMessageDto
-} from '@/modules/chatMessages/dtos/chatMessages.response.dto';
+import { ChatMessageResponseDTO, toChatMessageDto } from '@/modules/chatMessages/dtos/chatMessages.response.dto';
 import { ConversationMemberRepository } from '@/modules/conversations/conversationMember.repository';
 import { ConversationRepository } from '@/modules/conversations/conversations.repository';
 import { EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { SharedConversationsService } from '@/shared/services/shared-conversations.service';
 import { decodeMessageCursor, encodeMessageCursor } from '@/utils/conversation-cursor.util';
+import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 
 export interface IRealtimeChatEmitter {
   emitMessageCreated(conversationIdHex: string, memberUserIdHexes: string[], message: ChatMessageResponseDTO): void;
@@ -43,7 +41,7 @@ export interface IChatMessagesService {
     conversationId: string,
     limit: number,
     cursor?: string
-  ): Promise<ChatMessagesPageResponseDTO>;
+  ): Promise<ICursorPaginationResult<ChatMessageResponseDTO>>;
   markRead(userId: string, conversationId: string, body: MarkChatReadBodyDTO): Promise<void>;
 }
 
@@ -178,20 +176,15 @@ export class ChatMessagesService extends SharedConversationsService implements I
     conversationId: string,
     limit: number,
     cursor?: string
-  ): Promise<ChatMessagesPageResponseDTO> {
+  ): Promise<ICursorPaginationResult<ChatMessageResponseDTO>> {
     // Người xem phải là thành viên của conversation.
     await this.assertMember(conversationId, userId);
 
-    let before: { createdAt: Date; _id: string } | undefined;
-    if (cursor) {
-      try {
-        // Decode chuỗi cursor (base64url JSON { t: timestamp, i: messageId }) thành { createdAt, _id } — điểm neo “tin cũ nhất trong trang trước”.
-        // Vì sao: Repository cần thời gian + _id để truy vấn ổn định khi nhiều tin cùng createdAt (trùng millisecond).
-        before = decodeMessageCursor(cursor);
-      } catch {
-        throw ChatInvalidCursorException;
-      }
-    }
+    const before: DateIdCursor | undefined = decodeCursorOrThrow(
+      cursor,
+      decodeMessageCursor,
+      ChatInvalidCursorException
+    );
 
     // Lấy số tin nhắn trên mỗi trang (giới hạn 100).
     const page = Math.min(100, Math.max(1, limit));
@@ -208,7 +201,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
         : null;
 
     return {
-      messages: messages.map(toChatMessageDto),
+      items: messages.map(toChatMessageDto),
       nextCursor: next
     };
   }

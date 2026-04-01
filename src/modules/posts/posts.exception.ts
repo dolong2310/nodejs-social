@@ -30,6 +30,9 @@ export const ParentIdMustBeNullException = new BadRequestError(VALIDATION_ERROR_
 export const HashtagsMustBeArrayOfStringsException = new BadRequestError(
   VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS
 );
+export const HashtagsCountMustBeBetween0To20Exception = new BadRequestError(
+  VALIDATION_ERROR_MESSAGE.HASHTAGS_COUNT_MUST_BE_BETWEEN_0_TO_20
+);
 export const MentionsMustBeArrayOfValidUserIdsException = new BadRequestError(
   VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS
 );
