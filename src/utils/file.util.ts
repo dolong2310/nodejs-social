@@ -84,7 +84,7 @@ export const handleUploadVideo = async (req: Request) => {
   });
 
   return new Promise<File[]>((resolve, reject) => {
-    form.parse(req, (err, fields, files) => {
+    form.parse(req, async (err, fields, files) => {
       if (err) {
         return reject(err);
       }
@@ -95,12 +95,18 @@ export const handleUploadVideo = async (req: Request) => {
 
       const videoFiles = files.video as File[];
 
-      videoFiles.forEach((file) => {
-        const extension = getExtensionFromFullname(file.originalFilename as string);
-        fs.renameSync(file.filepath, `${file.filepath}.${extension}`);
-        file.newFilename = `${file.newFilename}.${extension}`;
-        file.filepath = `${file.filepath}.${extension}`;
-      });
+      try {
+        for (const file of videoFiles) {
+          const extension = getExtensionFromFullname(file.originalFilename as string);
+          const newFilePath = `${file.filepath}.${extension}`;
+
+          await fs.promises.rename(file.filepath, newFilePath);
+          file.newFilename = `${file.newFilename}.${extension}`;
+          file.filepath = newFilePath;
+        }
+      } catch (e) {
+        return reject(e);
+      }
 
       resolve(videoFiles);
     });
@@ -133,7 +139,7 @@ export const handleUploadVideoHLS = async (req: Request) => {
   });
 
   return new Promise<File[]>((resolve, reject) => {
-    form.parse(req, (err, fields, files) => {
+    form.parse(req, async (err, fields, files) => {
       if (err) {
         return reject(err);
       }
@@ -144,29 +150,53 @@ export const handleUploadVideoHLS = async (req: Request) => {
 
       const videoFiles = files.video as File[];
 
-      videoFiles.forEach((file) => {
-        const extension = getExtensionFromFullname(file.originalFilename as string);
-        fs.renameSync(file.filepath, `${file.filepath}.${extension}`);
-        file.newFilename = `${file.newFilename}.${extension}`;
-        file.filepath = `${file.filepath}.${extension}`;
-      });
+      try {
+        for (const file of videoFiles) {
+          const extension = getExtensionFromFullname(file.originalFilename as string);
+          const newFilePath = `${file.filepath}.${extension}`;
+
+          await fs.promises.rename(file.filepath, newFilePath);
+          file.newFilename = `${file.newFilename}.${extension}`;
+          file.filepath = newFilePath;
+        }
+      } catch (e) {
+        return reject(e);
+      }
 
       resolve(videoFiles);
     });
   });
 };
 
-export const getFiles = (dir: string, files: string[] = []): string[] => {
-  const fileList = fs.readdirSync(dir);
-  for (const file of fileList) {
-    const name = `${dir}/${file}`;
-    if (fs.statSync(name).isDirectory()) {
-      getFiles(name, files);
-    } else {
-      files.push(name);
+/**
+ * Giả sử:
+ * dir = /hls/vid123
+ * Trong đó có:
+ * - master.m3u8
+ * - v0/0.ts
+ * - v0/1.ts
+ * - sub/v1.ts
+ * Thì output: [ "/hls/vid123/master.m3u8", "/hls/vid123/v0/0.ts", "/hls/vid123/v0/1.ts", "/hls/vid123/sub/v1.ts" ]
+ */
+export const getFiles = async (dir: string): Promise<string[]> => {
+  const result: string[] = [];
+
+  const walk = async (currentDir: string) => {
+    const fileList = await fs.promises.readdir(currentDir);
+    for (const file of fileList) {
+      const fullPath = path.join(currentDir, file);
+      const stat = await fs.promises.stat(fullPath);
+
+      if (stat.isDirectory()) {
+        await walk(fullPath);
+      } else {
+        result.push(fullPath);
+      }
     }
-  }
-  return files;
+  };
+
+  await walk(dir);
+  return result;
 };
 
 export const getSwaggerDefinition = (): swaggerJSDoc.Options['definition'] => {

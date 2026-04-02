@@ -22,7 +22,7 @@ import path from 'path';
 export interface IMediaController {
   getStaticImage(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): void;
   getStaticVideo(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): void;
-  getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): void;
+  getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): Promise<void>;
   getStaticVideoHLSMaster(req: Request<Pick<VideoHLSParamsDTO, 'id'>>, res: Response, next: NextFunction): void;
   getStaticVideoHLSSegment(req: Request<VideoHLSParamsDTO>, res: Response, next: NextFunction): void;
   uploadImage(req: Request, res: Response, next: NextFunction): Promise<void>;
@@ -61,19 +61,48 @@ export class MediaController extends BaseController implements IMediaController 
   }
 
   @AutoBind()
-  getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response) {
+  async getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): Promise<void> {
     const { filename } = req.params;
-    const range = req.headers.range;
-    if (!range) {
+    const rangeHeader = req.headers.range;
+    if (!rangeHeader) {
       throw RequestedRangeNotSatisfiableException;
     }
+
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
-    const videoSize = fs.statSync(videoPath).size;
+
+    const videoStat = await fs.promises.stat(videoPath);
+    const videoSize = videoStat.size;
+
+    // chunkSize là size mặc định khi client request dạng `bytes=start-`
     const chunkSize = 10 ** 6;
-    const start = Number(range.replace(/\D/g, ''));
-    const end = Math.min(start + chunkSize, videoSize - 1);
+
+    // Ví dụ hợp lệ:
+    // - bytes=0-
+    // - bytes=0-499
+    const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
+    if (!match) {
+      throw RequestedRangeNotSatisfiableException;
+    }
+
+    const start = Number(match[1]);
+    const endFromHeader = match[2] ? Number(match[2]) : null;
+
+    if (!Number.isFinite(start) || start < 0 || start >= videoSize) {
+      throw RequestedRangeNotSatisfiableException;
+    }
+
+    let end: number;
+    if (endFromHeader !== null && Number.isFinite(endFromHeader)) {
+      if (endFromHeader < start) {
+        throw RequestedRangeNotSatisfiableException;
+      }
+      end = Math.min(endFromHeader, videoSize - 1);
+    } else {
+      end = Math.min(start + chunkSize - 1, videoSize - 1);
+    }
+
     const contentLength = end - start + 1;
-    const contentType = mime.getType(videoPath) || 'video/*';
+    const contentType = mime.getType(videoPath) || 'application/octet-stream';
     const headers = {
       'Content-Range': `bytes ${start}-${end}/${videoSize}`,
       'Accept-Ranges': 'bytes',
@@ -81,15 +110,18 @@ export class MediaController extends BaseController implements IMediaController 
       'Content-Type': contentType
     };
     res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, headers);
+
     const videoStream = fs.createReadStream(videoPath, { start, end });
     videoStream.pipe(res);
-    videoStream.on('end', () => {
+
+    videoStream.on('error', () => {
+      // Nếu đã gửi headers thì tránh gọi next(error) vì dễ "headers already sent"
+      if (!res.headersSent) {
+        next(StaticVideoStreamInternalServerErrorException);
+        return;
+      }
       res.end();
     });
-    videoStream.on('error', () => {
-      throw StaticVideoStreamInternalServerErrorException;
-    });
-    return videoStream;
   }
 
   @AutoBind()

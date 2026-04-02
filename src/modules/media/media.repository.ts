@@ -45,7 +45,7 @@ export class MediaRepository extends BaseRepository implements IMediaRepository 
     const result = await this.db.videoStatuses.updateOne(
       { name },
       {
-        $set: { status, message },
+        $set: { status, message: message ?? '' },
         $currentDate: { updatedAt: true }
       }
     );

@@ -6,7 +6,8 @@ import { CompleteMultipartUploadCommandOutput, GetObjectCommandOutput, PutObject
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Response } from 'express';
-import { readFileSync } from 'fs';
+import { createReadStream } from 'fs';
+import { stat } from 'fs/promises';
 import mime from 'mime-types';
 
 const log = LoggerInstance.getLogger().child({ module: 's3' });
@@ -49,14 +50,18 @@ export class S3Service implements IS3Service {
     contentType: string;
   }): Promise<CompleteMultipartUploadCommandOutput> {
     try {
+      const { size } = await stat(filepath);
+
       const parallelUploads3 = new Upload({
         client: this.s3,
 
         params: {
           Bucket: envConfig.AWS_S3_BUCKET_NAME,
           Key: filename,
-          Body: readFileSync(filepath),
-          ContentType: contentType // nếu không có contentType thì sẽ tự động download file khi upload
+          // Body: readFileSync(filepath),
+          Body: createReadStream(filepath), // dùng createReadStream thay vì readFileSync để tránh block event-loop và giảm RAM khi upload file lớn.
+          ContentType: contentType,
+          ContentLength: size // giúp multipart upload hoạt động ổn định với stream
         },
         // (optional) tags
         tags: [],

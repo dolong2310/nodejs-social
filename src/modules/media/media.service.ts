@@ -7,6 +7,7 @@ import { MediaRepository } from '@/modules/media/media.repository';
 import { VideoHLSJobQueue } from '@/providers/queue/queues/video-hls.queue';
 import { IVideoStatus } from '@/shared/models/videoStatus.schema';
 import { S3Service } from '@/shared/services/s3.service';
+import { mapWithConcurrency } from '@/utils/concurrency.util';
 import { getNameFromFullname, handleUploadImage, handleUploadVideo, handleUploadVideoHLS } from '@/utils/file.util';
 import { Request } from 'express';
 import fs from 'fs/promises';
@@ -31,120 +32,172 @@ export class MediaService implements IMediaService {
 
   async uploadImage(req: Request) {
     const files = await handleUploadImage(req);
-    return Promise.all<IMedia>(
-      files.map(async (file) => {
-        const newName = getNameFromFullname(file.newFilename);
-        const newPath = path.resolve(UPLOAD_DIR_IMAGE, `${newName}.jpg`);
-        await sharp(file.filepath).jpeg().toFile(newPath);
+    const concurrency = 2;
 
-        const result = await this.s3Service.uploadFile({
-          filename: 'images/' + newName,
-          filepath: newPath,
-          contentType: mime.getType(newPath) ?? 'application/octet-stream'
-        });
+    return mapWithConcurrency(files, concurrency, async (file) => {
+      const newName = getNameFromFullname(file.newFilename);
+      const newPath = path.resolve(UPLOAD_DIR_IMAGE, `${newName}.jpg`);
+      await sharp(file.filepath).jpeg().toFile(newPath);
 
-        await Promise.all([fs.unlink(file.filepath), fs.unlink(newPath)]);
+      const result = await this.s3Service.uploadFile({
+        filename: 'images/' + newName,
+        filepath: newPath,
+        contentType: mime.getType(newPath) ?? 'application/octet-stream'
+      });
 
-        return {
-          url: result.Location ?? '',
-          type: EMediaType.IMAGE
-        };
-        // const url = config.client.url;
-        // return { url: `${url}/static/images/${newName}.jpg`, type: EMediaType.IMAGE };
-      })
-    );
+      await Promise.all([fs.unlink(file.filepath), fs.unlink(newPath)]);
+
+      return {
+        url: result.Location ?? '',
+        type: EMediaType.IMAGE
+      };
+    });
+    // return Promise.all<IMedia>(
+    //   files.map(async (file) => {
+    //     const newName = getNameFromFullname(file.newFilename);
+    //     const newPath = path.resolve(UPLOAD_DIR_IMAGE, `${newName}.jpg`);
+    //     await sharp(file.filepath).jpeg().toFile(newPath);
+
+    //     const result = await this.s3Service.uploadFile({
+    //       filename: 'images/' + newName,
+    //       filepath: newPath,
+    //       contentType: mime.getType(newPath) ?? 'application/octet-stream'
+    //     });
+
+    //     await Promise.all([fs.unlink(file.filepath), fs.unlink(newPath)]);
+
+    //     return {
+    //       url: result.Location ?? '',
+    //       type: EMediaType.IMAGE
+    //     };
+    //     // const url = config.client.url;
+    //     // return { url: `${url}/static/images/${newName}.jpg`, type: EMediaType.IMAGE };
+    //   })
+    // );
   }
 
   async uploadVideo(req: Request) {
     const files = await handleUploadVideo(req);
-    return Promise.all<IMedia>(
-      files.map(async (file) => {
-        const newName = getNameFromFullname(file.newFilename);
+    const concurrency = 2;
 
-        const result = await this.s3Service.uploadFile({
-          filename: 'videos/' + newName,
-          filepath: file.filepath,
-          contentType: mime.getType(file.filepath) ?? 'video/mp4'
-        });
+    return mapWithConcurrency(files, concurrency, async (file) => {
+      const newName = getNameFromFullname(file.newFilename);
+      const result = await this.s3Service.uploadFile({
+        filename: 'videos/' + newName,
+        filepath: file.filepath,
+        contentType: mime.getType(file.filepath) ?? 'video/mp4'
+      });
 
-        await fs.unlink(file.filepath);
+      await fs.unlink(file.filepath);
 
-        return {
-          url: result.Location ?? '',
-          type: EMediaType.VIDEO
-        };
+      return {
+        url: result.Location ?? '',
+        type: EMediaType.VIDEO
+      };
+    });
+    // return Promise.all<IMedia>(
+    //   files.map(async (file) => {
+    //     const newName = getNameFromFullname(file.newFilename);
 
-        // const url = config.client.url;
-        // return { url: `${url}/static/videos/${newName}.mp4`, type: EMediaType.VIDEO };
-      })
-    );
+    //     const result = await this.s3Service.uploadFile({
+    //       filename: 'videos/' + newName,
+    //       filepath: file.filepath,
+    //       contentType: mime.getType(file.filepath) ?? 'video/mp4'
+    //     });
+
+    //     await fs.unlink(file.filepath);
+
+    //     return {
+    //       url: result.Location ?? '',
+    //       type: EMediaType.VIDEO
+    //     };
+
+    //     // const url = config.client.url;
+    //     // return { url: `${url}/static/videos/${newName}.mp4`, type: EMediaType.VIDEO };
+    //   })
+    // );
   }
 
   async uploadVideoHLS(req: Request) {
     const files = await handleUploadVideoHLS(req);
-    return Promise.all<IMedia>(
-      files.map(async (file) => {
-        const newName = getNameFromFullname(file.newFilename);
-        const idName = getNameFromFullname(file.newFilename.split('/').pop() as string);
-        await this.mediaRepository.createVideoStatus({ name: idName, status: EEncodingVideoStatus.PENDING });
-        await this.videoHLSJobQueue.add({ filepath: file.filepath, idName });
-        return { url: `${config.client.url}/static/videos-hls/${newName}/master.m3u8`, type: EMediaType.VIDEO_HLS };
-        // Deprecated in-memory queue (replaced by BullMQ):
-        // this.queueService.enqueue({
-        //   item: file.filepath,
-        //   onStart: async () => {
-        //     await this.mediaRepository.createVideoStatus({ name: idName, status: EEncodingVideoStatus.PENDING });
-        //   }
-        // });
-        // this.queueService.startProcessing({
-        //   task: async (filepath) => {
-        //     const currentIdName = getNameFromFullname(path.basename(filepath));
-        //     await encodeHLSWithMultipleVideoStreams(filepath);
-        //     await fs.unlink(filepath);
+    const concurrency = 2;
 
-        //     const folderPath = path.resolve(UPLOAD_DIR_VIDEO, currentIdName);
-        //     const filepaths = getFiles(folderPath); // lấy tất cả các file trong folder, vì khi encode hls sẽ tạo ra các file như m3u8, folder v0, ts,...
+    return mapWithConcurrency(files, concurrency, async (file) => {
+      const newName = getNameFromFullname(file.newFilename);
+      const idName = getNameFromFullname(file.newFilename.split('/').pop() as string);
+      await this.mediaRepository.createVideoStatus({ name: idName, status: EEncodingVideoStatus.PENDING });
+      void this.videoHLSJobQueue.add({ filepath: file.filepath, idName }).catch(async (err) => {
+        await this.mediaRepository.updateVideoStatus({
+          name: idName,
+          status: EEncodingVideoStatus.FAILED,
+          message: (err instanceof Error ? err.message : err?.message) ?? 'Enqueue video HLS job failed'
+        });
+      });
+      return { url: `${config.client.url}/static/videos-hls/${newName}/master.m3u8`, type: EMediaType.VIDEO_HLS };
+    });
+    // return Promise.all<IMedia>(
+    //   files.map(async (file) => {
+    //     const newName = getNameFromFullname(file.newFilename);
+    //     const idName = getNameFromFullname(file.newFilename.split('/').pop() as string);
+    //     await this.mediaRepository.createVideoStatus({ name: idName, status: EEncodingVideoStatus.PENDING });
+    //     await this.videoHLSJobQueue.add({ filepath: file.filepath, idName });
+    //     return { url: `${config.client.url}/static/videos-hls/${newName}/master.m3u8`, type: EMediaType.VIDEO_HLS };
+    //     // Deprecated in-memory queue (replaced by BullMQ):
+    //     // this.queueService.enqueue({
+    //     //   item: file.filepath,
+    //     //   onStart: async () => {
+    //     //     await this.mediaRepository.createVideoStatus({ name: idName, status: EEncodingVideoStatus.PENDING });
+    //     //   }
+    //     // });
+    //     // this.queueService.startProcessing({
+    //     //   task: async (filepath) => {
+    //     //     const currentIdName = getNameFromFullname(path.basename(filepath));
+    //     //     await encodeHLSWithMultipleVideoStreams(filepath);
+    //     //     await fs.unlink(filepath);
 
-        //     await Promise.all(
-        //       filepaths.map(async (_filepath) => {
-        //         const filename = 'videos-hls' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
-        //         return this.s3Service.uploadFile({
-        //           filename,
-        //           filepath: _filepath,
-        //           contentType: mime.getType(_filepath) ?? 'video/mp4'
-        //         });
-        //       })
-        //     );
+    //     //     const folderPath = path.resolve(UPLOAD_DIR_VIDEO, currentIdName);
+    //     //     const filepaths = getFiles(folderPath); // lấy tất cả các file trong folder, vì khi encode hls sẽ tạo ra các file như m3u8, folder v0, ts,...
 
-        //     // await Promise.all([fs.unlink(filepath), fs.rmdir(folderPath)]);
-        //     await fs.rm(folderPath, { recursive: true, force: true });
+    //     //     await Promise.all(
+    //     //       filepaths.map(async (_filepath) => {
+    //     //         const filename = 'videos-hls' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
+    //     //         return this.s3Service.uploadFile({
+    //     //           filename,
+    //     //           filepath: _filepath,
+    //     //           contentType: mime.getType(_filepath) ?? 'video/mp4'
+    //     //         });
+    //     //       })
+    //     //     );
 
-        //     return currentIdName;
-        //   },
-        //   onProcess: async (filepath) => {
-        //     const currentIdName = getNameFromFullname(path.basename(filepath));
-        //     await this.mediaRepository.updateVideoStatus({
-        //       name: currentIdName,
-        //       status: EEncodingVideoStatus.PROCESSING
-        //     });
-        //   },
-        //   onSuccess: async (currentIdName) => {
-        //     await this.mediaRepository.updateVideoStatus({
-        //       name: currentIdName,
-        //       status: EEncodingVideoStatus.SUCCESS
-        //     });
-        //   },
-        //   onError: async (error, item) => {
-        //     const currentIdName = getNameFromFullname(path.basename(item));
-        //     await this.mediaRepository.updateVideoStatus({
-        //       name: currentIdName,
-        //       status: EEncodingVideoStatus.FAILED,
-        //       message: error.message
-        //     });
-        //   }
-        // });
-      })
-    );
+    //     //     // await Promise.all([fs.unlink(filepath), fs.rmdir(folderPath)]);
+    //     //     await fs.rm(folderPath, { recursive: true, force: true });
+
+    //     //     return currentIdName;
+    //     //   },
+    //     //   onProcess: async (filepath) => {
+    //     //     const currentIdName = getNameFromFullname(path.basename(filepath));
+    //     //     await this.mediaRepository.updateVideoStatus({
+    //     //       name: currentIdName,
+    //     //       status: EEncodingVideoStatus.PROCESSING
+    //     //     });
+    //     //   },
+    //     //   onSuccess: async (currentIdName) => {
+    //     //     await this.mediaRepository.updateVideoStatus({
+    //     //       name: currentIdName,
+    //     //       status: EEncodingVideoStatus.SUCCESS
+    //     //     });
+    //     //   },
+    //     //   onError: async (error, item) => {
+    //     //     const currentIdName = getNameFromFullname(path.basename(item));
+    //     //     await this.mediaRepository.updateVideoStatus({
+    //     //       name: currentIdName,
+    //     //       status: EEncodingVideoStatus.FAILED,
+    //     //       message: error.message
+    //     //     });
+    //     //   }
+    //     // });
+    //   })
+    // );
   }
 
   getVideoStatusByName(name: string): Promise<IVideoStatus | null> {

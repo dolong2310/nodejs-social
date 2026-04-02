@@ -7,6 +7,7 @@ import { LoggerInstance } from '@/providers/logger/instance.logger';
 import { IVideoHLSJobResult, QUEUE_NAMES } from '@/providers/queue/types';
 import { S3Service } from '@/shared/services/s3.service';
 import { getFiles } from '@/utils/file.util';
+import { mapWithConcurrency } from '@/utils/concurrency.util';
 import { encodeHLSWithMultipleVideoStreams } from '@/utils/video.util';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 import fs from 'fs/promises';
@@ -41,18 +42,18 @@ export class VideoHLSWorker implements IVideoHLSWorker {
     await fs.unlink(filepath);
 
     const folderPath = path.resolve(UPLOAD_DIR_VIDEO, idName);
-    const filepaths = getFiles(folderPath);
+    const filepaths = await getFiles(folderPath);
+    const concurrency = 2;
 
-    await Promise.all(
-      filepaths.map((_filepath) => {
-        const filename = 'videos-hls' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
-        return this.s3Service.uploadFile({
-          filename,
-          filepath: _filepath,
-          contentType: mime.getType(_filepath) ?? 'video/mp4'
-        });
-      })
-    );
+    // Upload các segment sang S3 với giới hạn concurrency để tránh bão hòa network/CPU.
+    await mapWithConcurrency(filepaths, concurrency, async (_filepath) => {
+      const filename = 'videos-hls' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
+      await this.s3Service.uploadFile({
+        filename,
+        filepath: _filepath,
+        contentType: mime.getType(_filepath) ?? 'video/mp4'
+      });
+    });
 
     await fs.rm(folderPath, { recursive: true, force: true });
     await job.updateProgress(100);
