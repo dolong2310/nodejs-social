@@ -5,6 +5,7 @@
  */
 
 import { Injectable } from '@/decorators/injectable.decorator';
+import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { EMediaType } from '@/modules/media/media.enum';
 import { EPostAudience } from '@/modules/posts/posts.enum';
@@ -16,40 +17,25 @@ import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
 import { Document, ObjectId } from 'mongodb';
 
 export interface ISearchRepository {
-  findPosts(payload: {
+  findPostsForSearch(payload: {
     userId?: string;
     query: string;
     type?: ESearchType;
     people?: ESearchPeople;
-    page: number;
     limit: number;
+    cursor?: DateIdCursor;
     findFriendUserIds(userId: string): Promise<string[]>;
     blockedAuthorIds?: string[];
     extraVisiblePostIds?: string[];
   }): Promise<PostDetailResponseDTO[]>;
-  countPosts(payload: {
-    userId?: string;
-    query: string;
-    type?: ESearchType;
-    people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<string[]>;
-    blockedAuthorIds?: string[];
-    extraVisiblePostIds?: string[];
-  }): Promise<number>;
-  findUsers(payload: {
+  findUsersForSearch(payload: {
     userId?: string;
     query: string;
     people?: ESearchPeople;
-    page: number;
     limit: number;
+    cursor?: DateIdCursor;
     findFriendUserIds(userId: string): Promise<string[]>;
   }): Promise<IUser[]>;
-  countUsers(payload: {
-    userId?: string;
-    query: string;
-    people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<string[]>;
-  }): Promise<number>;
 }
 
 @Injectable()
@@ -58,65 +44,48 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     super(db);
   }
 
-  async findPosts({
-    page,
+  async findPostsForSearch({
     limit,
+    cursor,
     ...payload
   }: {
     userId?: string;
     query: string;
     type?: ESearchType;
     people?: ESearchPeople;
-    page: number;
     limit: number;
+    cursor?: DateIdCursor;
     findFriendUserIds(userId: string): Promise<string[]>;
     blockedAuthorIds?: string[];
     extraVisiblePostIds?: string[];
   }): Promise<PostDetailResponseDTO[]> {
-    const match = await this._getPostMatch(payload);
+    const baseMatch = await this._getPostMatch(payload);
+    const match = this._mergeCreatedAtIdCursor(baseMatch, cursor);
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
-      skip: limit * (page - 1),
-      limit,
+      limit: limit + 1,
       includeAuthor: true
     });
-
-    const posts = await this.db.posts.aggregate<PostDetailResponseDTO>(pipelineGetNewFeeds).toArray();
-    return posts;
+    return this.db.posts.aggregate<PostDetailResponseDTO>(pipelineGetNewFeeds).toArray();
   }
 
-  async countPosts(payload: {
-    userId?: string;
-    query: string;
-    type?: ESearchType;
-    people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<string[]>;
-    blockedAuthorIds?: string[];
-    extraVisiblePostIds?: string[];
-  }): Promise<number> {
-    const match = await this._getPostMatch(payload);
-    return this.count(this.db.posts, match);
-  }
-
-  async findUsers({
-    page,
+  async findUsersForSearch({
     limit,
+    cursor,
     ...payload
   }: {
     userId?: string;
     query: string;
     people?: ESearchPeople;
-    page: number;
     limit: number;
+    cursor?: DateIdCursor;
     findFriendUserIds(userId: string): Promise<string[]>;
   }): Promise<IUser[]> {
-    // Tìm kiếm users theo query (tìm kiếm theo name, username, email)
-    // Nếu có userId (đang login) thì có thể filter theo `people`; không thì chỉ tìm tất cả users
-
-    const match = await this._getUserMatch(payload);
-
+    const baseMatch = await this._getUserMatch(payload);
+    const match = this._mergeCreatedAtIdCursor(baseMatch, cursor);
     const pipeline: Document[] = [
       { $match: match },
+      { $sort: { createdAt: -1, _id: -1 } },
       {
         $project: {
           password: 0,
@@ -124,23 +93,21 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
           forgotPasswordToken: 0
         }
       },
-      { $skip: limit * (page - 1) },
-      { $limit: limit }
+      { $limit: limit + 1 }
     ];
-
-    const users = await this.db.users.aggregate<IUser>(pipeline).toArray();
-    return users;
+    return this.db.users.aggregate<IUser>(pipeline).toArray();
   }
 
-  async countUsers(payload: {
-    userId?: string;
-    query: string;
-    people?: ESearchPeople;
-    findFriendUserIds(userId: string): Promise<string[]>;
-  }): Promise<number> {
-    const match = await this._getUserMatch(payload);
-    const totalUsers = await this.db.users.countDocuments(match);
-    return totalUsers;
+  private _mergeCreatedAtIdCursor(base: Record<string, unknown>, cursor?: DateIdCursor): Record<string, unknown> {
+    if (!cursor) {
+      return base;
+    }
+    const cursorId = new ObjectId(cursor._id);
+    // Ý nghĩa nghiệp vụ: đảm bảo khi nhiều post có cùng createdAt, việc paging vẫn không bị trùng/miss do dùng thêm _id làm tie-breaker.
+    const cursorFilter = {
+      $or: [{ createdAt: { $lt: cursor.createdAt } }, { createdAt: cursor.createdAt, _id: { $lt: cursorId } }]
+    };
+    return { $and: [base, cursorFilter] };
   }
 
   private async _getPostMatch({
@@ -163,6 +130,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     const andClauses: Record<string, unknown>[] = [];
 
     if (query) {
+      // tìm kiếm theo text trong các trường của post
       andClauses.push({
         $text: {
           $search: query
@@ -171,6 +139,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     }
 
     if (type) {
+      // tìm kiếm theo type của post
       if ([ESearchType.VIDEO, ESearchType.VIDEO_HLS].includes(type)) {
         andClauses.push({ 'media.type': { $in: [EMediaType.VIDEO, EMediaType.VIDEO_HLS] } });
       } else if (type === ESearchType.IMAGE) {
@@ -178,11 +147,15 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       }
     }
 
+    // Nếu đang đăng nhập thì hiển thị post PUBLIC và post FRIENDS_ONLY (bạn bè) (không bị block)
+    // Nếu không đăng nhập thì chỉ hiển thị post PUBLIC
     if (userId) {
       const viewerOid = new ObjectId(userId);
       const blocked = (blockedAuthorIds ?? []).filter((id) => id !== userId).map((id) => new ObjectId(id));
-      const friendIds = (await findFriendUserIds(userId)).filter((id) => id !== userId).map((id) => new ObjectId(id));
+      const friendHexes = await findFriendUserIds(userId);
+      const friendIds = friendHexes.filter((id) => id !== userId).map((id) => new ObjectId(id));
 
+      // Chỉ hiển thị post PUBLIC và post FRIENDS_ONLY (bạn bè) (không bị block)
       const orVisibility: Record<string, unknown>[] = [
         {
           audience: EPostAudience.PUBLIC,
@@ -194,19 +167,21 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
           userId: { $in: friendIds, $nin: blocked }
         }
       ];
+      // nếu viewer từng tương tác (like/bookmark/comment) với bài của các tác giả bị block, thì vẫn lấy ra postId của các bài đó để hiển thị (Unknown user)
       if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
         orVisibility.push({ _id: { $in: extraVisiblePostIds.map((id) => new ObjectId(id)) } });
       }
       andClauses.push({ $or: orVisibility });
 
       if (people) {
+        // tìm kiếm theo bạn bè và không phải bạn bè
         if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
-          const friendHexes = await findFriendUserIds(userId);
           const friendOids = friendHexes.map((id) => new ObjectId(id));
           andClauses.push({
             userId: people === ESearchPeople.FRIENDS ? { $in: friendOids } : { $nin: friendOids }
           });
         } else if (people === ESearchPeople.ONLY_ME) {
+          // tìm kiếm theo chính mình
           andClauses.push({ userId: { $eq: viewerOid } });
         }
       }
@@ -234,17 +209,20 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     const match: Record<string, unknown> = {};
 
     if (query) {
+      // tìm kiếm theo text trong các trường của user
       match['$text'] = {
         $search: query
       };
     }
 
     if (people && userId) {
+      // tìm kiếm theo bạn bè và không phải bạn bè
       if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
         const friendHexes = await findFriendUserIds(userId);
         const friendOids = friendHexes.map((id) => new ObjectId(id));
         match['_id'] = people === ESearchPeople.FRIENDS ? { $in: friendOids } : { $nin: friendOids };
       } else if (people === ESearchPeople.ONLY_ME) {
+        // tìm kiếm theo chính mình
         match['_id'] = { $eq: new ObjectId(userId) };
       }
     }

@@ -6,7 +6,7 @@ import { protectIfHasBearerToken } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { SearchController } from '@/modules/search/search.controller';
 import { SearchValidation } from '@/modules/search/search.validation';
-import { validatePaginationQuery } from '@/shared/middlewares/common.middleware';
+import { validateCursorPaginationQuery } from '@/shared/middlewares/common.middleware';
 import { appLimiter } from '@/shared/middlewares/limiter.middleware';
 import { asyncHandler } from '@/utils/handler.util';
 
@@ -23,7 +23,7 @@ export class SearchRoute extends BaseRoute {
       '/',
       appLimiter,
       protectIfHasBearerToken,
-      validatePaginationQuery,
+      validateCursorPaginationQuery,
       searchValidation,
       asyncHandler(search)
     );

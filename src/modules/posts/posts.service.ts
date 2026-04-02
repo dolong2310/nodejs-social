@@ -65,6 +65,8 @@ export interface IPostsService {
   hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean>;
   /** Post ids to include in feed/search when author is blocked but viewer had prior engagement (D-11). */
   getExtraVisiblePostIdsForBlockedEngagement(userId: string, blockedAuthorIds: string[]): Promise<string[]>;
+  /** Block graph (either direction) with same short Redis TTL as feed — reuse for search. */
+  listBlockedUserIdsEitherDirectionCached(userId: string): Promise<string[]>;
 }
 
 @Injectable()
@@ -245,6 +247,10 @@ export class PostsService extends BaseService implements IPostsService {
       () => this.blockRepository.listUserIdsBlockedInEitherDirection(userId),
       CACHE_TTL.BLOCKED_USER_IDS
     );
+  }
+
+  listBlockedUserIdsEitherDirectionCached(userId: string): Promise<string[]> {
+    return this.getBlockedIdsCached(userId);
   }
 
   findPostById(postId: string): Promise<IPost | null> {

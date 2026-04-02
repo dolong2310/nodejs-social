@@ -1,8 +1,8 @@
 import { config } from '@/config/generalConfig';
-import { SearchQueryDTO } from '@/modules/search/dtos/search.request.dto';
+import { SearchCursorQueryDTO } from '@/modules/search/dtos/search.request.dto';
 import { createHash } from 'crypto';
 
-export type SearchUsersCacheKeyParts = SearchQueryDTO & {
+export type SearchUsersCacheKeyParts = SearchCursorQueryDTO & {
   userId?: string;
 };
 export type BlockedEngagementCacheKeyParts = {
@@ -20,7 +20,7 @@ export const CACHE_KEYS = {
   searchUsers: (parts: SearchUsersCacheKeyParts): string => {
     const fingerprint = JSON.stringify(parts);
     const hash = createHash('sha256').update(fingerprint).digest('hex').slice(0, 40);
-    return `social:search:users:v1:${hash}`;
+    return `social:search:users:v2:${hash}`;
   },
   blockedEngagementPostIds: (parts: BlockedEngagementCacheKeyParts): string => {
     const fingerprint = JSON.stringify(parts);

@@ -2,7 +2,7 @@ import { AutoBind } from '@/decorators';
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseController } from '@/modules/base/base.controller';
 import { PostDetailResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
-import { SearchQueryDTO } from '@/modules/search/dtos/search.request.dto';
+import { SearchCursorQueryDTO } from '@/modules/search/dtos/search.request.dto';
 import { ESearchType } from '@/modules/search/search.enum';
 import { SearchService } from '@/modules/search/search.service';
 import { IUser } from '@/modules/users/users.schema';
@@ -10,7 +10,7 @@ import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ISearchController {
-  search(req: Request<ParamsDictionary, object, object, SearchQueryDTO>, res: Response): Promise<void>;
+  search(req: Request<ParamsDictionary, object, object, SearchCursorQueryDTO>, res: Response): Promise<void>;
 }
 
 @Injectable()
@@ -20,17 +20,17 @@ export class SearchController extends BaseController implements ISearchControlle
   }
 
   @AutoBind()
-  async search(req: Request<ParamsDictionary, object, object, SearchQueryDTO>, res: Response) {
-    const { query = '', type, people, page = '1', limit = '10' } = req.query;
+  async search(req: Request<ParamsDictionary, object, object, SearchCursorQueryDTO>, res: Response) {
+    const { query = '', type, people, cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    const [results, totalItems] = await [
+    const { items, nextCursor } = await [
       this.searchService.searchPosts({
         userId,
         query,
         type,
         people,
-        page,
+        cursor,
         limit
       }),
       this.searchService.searchUsers({
@@ -38,19 +38,15 @@ export class SearchController extends BaseController implements ISearchControlle
         query,
         type,
         people,
-        page,
+        cursor,
         limit
       })
     ][Number(type === ESearchType.USER)];
 
-    this.sendPaginatedResponse<PostDetailResponseDTO[] | IUser[]>({
+    this.sendCursorPaginatedResponse<PostDetailResponseDTO | IUser>({
       res,
-      data: results,
-      pagination: {
-        page,
-        limit,
-        totalItems: totalItems
-      },
+      items,
+      nextCursor,
       message: 'Search successfully'
     });
   }
