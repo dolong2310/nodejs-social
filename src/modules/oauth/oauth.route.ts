@@ -1,7 +1,3 @@
-/*
- * This file defines the oauth routes for google login.
- */
-
 import { BaseRoute } from '@/modules/base/base.route';
 import { OAuthController } from '@/modules/oauth/oauth.controller';
 import { appLimiter } from '@/shared/middlewares/limiter.middleware';

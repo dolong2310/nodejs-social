@@ -1,9 +1,3 @@
-/*
- * Post Repository
- * This file contains the PostRepository class which implements IPostRepository interface.
- * It provides methods to interact with the post data in the database.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
@@ -12,26 +6,18 @@ import { PostDetailResponseDTO, PostNewFeedResponseDTO } from '@/modules/posts/d
 import { EPostAudience, EPostType } from '@/modules/posts/posts.enum';
 import { IPost, PostSchema } from '@/modules/posts/posts.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { HashtagSchema, IHashtag } from '@/shared/models/hashtag.schema';
+import { HashtagSchema, IHashtag } from '@/modules/posts/hashtag.schema';
 import { buildBasePostPipeline } from '@/utils/posts.pipeline.util';
-import { AnyBulkWriteOperation, FindOneAndUpdateOptions, ObjectId, UpdateResult } from 'mongodb';
+import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 
 export interface IPostRepository {
   findById(id: string): Promise<PostDetailResponseDTO>;
-  /**
-   * True if viewer has post-level engagement: like, bookmark, or a COMMENT child on this post.
-   * Used for BLCK-02 / D-11 (blocked pair + prior engagement → content visible, author redacted).
-   */
   hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean>;
-  /**
-   * Post ids whose author is in `authorIds` and where `viewerId` has engaged (like, bookmark, or comment on that post).
-   */
   findPostIdsWhereViewerEngagedWithAuthors(viewerId: string, authorIds: string[]): Promise<string[]>;
   findPosts(payload: {
     userId: string;
     friendUserIds: string[];
     blockedAuthorIds: string[];
-    /** Extra posts to include (e.g. engaged-with-blocked-author); visibility still enforced by caller context. */
     extraVisiblePostIds?: string[];
     cursor?: DateIdCursor;
     limit: number;
@@ -52,10 +38,7 @@ export interface IPostRepository {
   }): Promise<PostDetailResponseDTO[]>;
   countPostsType(payload: { postId: string; type: EPostType }): Promise<number>;
   findPostById(postId: string): Promise<IPost | null>;
-  findOneAndUpdate(
-    payload: { postId: string; userId?: string },
-    options?: FindOneAndUpdateOptions
-  ): Promise<IPost | null>;
+  increaseViews(payload: { postId: string; userId?: string }): Promise<IPost | null>;
   createPost(payload: {
     userId: string;
     body: Omit<CreatePostRequestDTO, 'hashtags'> & { hashtags: ObjectId[] };
@@ -65,11 +48,6 @@ export interface IPostRepository {
     ownerUserId: string,
     patch: { audience: EPostAudience; allowStrangerComments: boolean }
   ): Promise<IPost | null>;
-  updatePosts(payload: {
-    posts: PostDetailResponseDTO[] | PostNewFeedResponseDTO[];
-    userId?: string;
-    date: Date;
-  }): Promise<UpdateResult<IPost>>;
   incrementViewsByIds(postIds: string[], isAuthenticatedViewer: boolean): Promise<number>;
   findAndUpsertHashtags(hashtags: string[]): Promise<(IHashtag | null)[]>;
 }
@@ -164,7 +142,7 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     const out: string[] = [];
     for (const row of [...fromLikes, ...fromBookmarks, ...fromComments]) {
       const id = row._id;
-      const k = id.toHexString();
+      const k = id.toString();
       if (!seen.has(k)) {
         seen.add(k);
         out.push(k);
@@ -436,14 +414,11 @@ export class PostRepository extends BaseRepository implements IPostRepository {
     return this.db.posts.findOne({ _id: new ObjectId(postId) });
   }
 
-  findOneAndUpdate(
-    { postId, userId }: { postId: string; userId?: string },
-    options?: FindOneAndUpdateOptions
-  ): Promise<IPost | null> {
+  increaseViews({ postId, userId }: { postId: string; userId?: string }): Promise<IPost | null> {
     return this.db.posts.findOneAndUpdate(
       { _id: new ObjectId(postId) },
       { $inc: userId ? { userViews: 1 } : { guestViews: 1 }, $currentDate: { updatedAt: true } },
-      options ?? {}
+      { returnDocument: 'after', projection: { userViews: 1, guestViews: 1, updatedAt: 1 } }
     );
   }
 
@@ -491,24 +466,6 @@ export class PostRepository extends BaseRepository implements IPostRepository {
       { returnDocument: 'after' }
     );
     return updated;
-  }
-
-  updatePosts({
-    posts,
-    userId,
-    date
-  }: {
-    posts: PostDetailResponseDTO[] | PostNewFeedResponseDTO[];
-    userId?: string;
-    date: Date;
-  }): Promise<UpdateResult<IPost>> {
-    return this.db.posts.updateMany(
-      { _id: { $in: posts.map((post) => post._id) } },
-      {
-        $inc: userId ? { userViews: 1 } : { guestViews: 1 },
-        $set: { updatedAt: date }
-      }
-    );
   }
 
   async incrementViewsByIds(postIds: string[], isAuthenticatedViewer: boolean): Promise<number> {

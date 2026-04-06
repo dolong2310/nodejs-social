@@ -1,11 +1,12 @@
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseService } from '@/modules/base/base.service';
+import { BookmarkPostNotFoundException } from '@/modules/bookmarks/bookmarks.exception';
 import { BookmarkRepository } from '@/modules/bookmarks/bookmarks.repository';
 import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/modules/bookmarks/dtos/bookmarks.request.dto';
 import { CreateBookmarkResponseDTO, DeleteBookmarkResponseDTO } from '@/modules/bookmarks/dtos/bookmarks.response.dto';
 
 export interface IBookmarksService {
-  bookmarkPost(payload: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO | null>;
+  bookmarkPost(payload: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO>;
   unbookmarkPost(payload: DeleteBookmarkParamsDTO & { userId: string }): Promise<DeleteBookmarkResponseDTO | null>;
 }
 
@@ -18,9 +19,14 @@ export class BookmarksService extends BaseService implements IBookmarksService {
   async bookmarkPost({
     userId,
     postId
-  }: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO | null> {
+  }: CreateBookmarkRequestDTO & { userId: string }): Promise<CreateBookmarkResponseDTO> {
     const result = await this.bookmarkRepository.findOneAndUpdate({ userId, postId });
-    return result ? new CreateBookmarkResponseDTO(result) : null;
+
+    if (!result) {
+      throw BookmarkPostNotFoundException;
+    }
+
+    return new CreateBookmarkResponseDTO(result);
   }
 
   async unbookmarkPost({

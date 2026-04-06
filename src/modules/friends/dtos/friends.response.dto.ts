@@ -1,6 +1,5 @@
 import { IFriendRequest } from '@/modules/friends/friendRequests.schema';
 
-/** Minimal user fields for friends / request lists (aligns with typical client needs). */
 export class FriendUserSummaryResponseDTO {
   _id: string;
   name: string;

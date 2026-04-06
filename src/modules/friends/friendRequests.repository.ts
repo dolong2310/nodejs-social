@@ -1,13 +1,10 @@
-/*
- * FriendRequestRepository — directed pending requests.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { FriendRequestSchema, IFriendRequest } from '@/modules/friends/friendRequests.schema';
+import { FriendRequestAlreadyPendingException } from '@/modules/friends/friends.exception';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { ObjectId } from 'mongodb';
+import { MongoServerError, ObjectId } from 'mongodb';
 
 export interface IFriendRequestRepository {
   countOutgoingRequestsCreatedOnUtcDay(fromUserId: string, dayStart: Date, dayEndExclusive: Date): Promise<number>;
@@ -37,13 +34,20 @@ export class FriendRequestRepository extends BaseRepository implements IFriendRe
   }
 
   async insertPendingRequest(fromUserId: string, toUserId: string): Promise<IFriendRequest> {
-    const doc = new FriendRequestSchema({
-      fromUserId: new ObjectId(fromUserId),
-      toUserId: new ObjectId(toUserId),
-      createdAt: new Date()
-    });
-    await this.db.friendRequests.insertOne(doc);
-    return doc;
+    try {
+      const doc = new FriendRequestSchema({
+        fromUserId: new ObjectId(fromUserId),
+        toUserId: new ObjectId(toUserId),
+        createdAt: new Date()
+      });
+      await this.db.friendRequests.insertOne(doc);
+      return doc;
+    } catch (error) {
+      if (error instanceof MongoServerError && error.code === 11000) {
+        throw FriendRequestAlreadyPendingException;
+      }
+      throw error;
+    }
   }
 
   async deleteDirectedRequest(fromUserId: string, toUserId: string): Promise<number> {

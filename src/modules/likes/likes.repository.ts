@@ -1,7 +1,3 @@
-/*
- * Like Repository — compound unique (userId, postId), parallel to bookmarks.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/modules/likes/dtos/likes.request.dto';

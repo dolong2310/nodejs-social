@@ -21,16 +21,16 @@ import { decodeMessageCursor, encodeMessageCursor } from '@/utils/conversation-c
 import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 
 export interface IRealtimeChatEmitter {
-  emitMessageCreated(conversationIdHex: string, memberUserIdHexes: string[], message: ChatMessageResponseDTO): void;
+  emitMessageCreated(conversationId: string, memberUserIds: string[], message: ChatMessageResponseDTO): void;
   emitReadUpdated(
-    conversationIdHex: string,
-    memberUserIdHexes: string[],
-    viewerUserIdHex: string,
+    conversationId: string,
+    memberUserIds: string[],
+    viewerUserId: string,
     payload: { lastReadMessageId: string; lastReadAt: string }
   ): void;
 }
 
-/** Max attachment size per file (D-14) — 5 MiB */
+/** Max attachment size per file 5MB */
 export const CHAT_ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024;
 
 export interface IChatMessagesService {
@@ -130,7 +130,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
 
     // Lấy danh sách thành viên trong conversation.
     const membersInConversation = await this.conversationMemberRepository.listMembers(conversationId);
-    const memberIds = membersInConversation.map((m) => m.userId.toHexString());
+    const memberIds = membersInConversation.map((m) => m.userId.toString());
 
     // Đẩy realtime cho mọi người trong phòng.
     if (this.realtimeChatEmitter) {
@@ -147,7 +147,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
       // Một lần lấy mọi user có cạnh block với sender (listUserIdsBlockedInEitherDirection), tránh N lần isBlockedEitherWay trong vòng lặp.
       const blockedWithSender = new Set(await this.blockRepository.listUserIdsBlockedInEitherDirection(userId));
       for (const m of membersInConversation) {
-        const memberId = m.userId.toHexString();
+        const memberId = m.userId.toString();
         // Nếu memberId là người gửi, không tạo thông báo.
         if (memberId === userId) continue;
         // Nếu người gửi đã block thành viên này, không tạo thông báo.
@@ -197,7 +197,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
     // Lần gọi sau client gửi nextCursor → server lại findPageBeforeCursor(..., before) → load tiếp block tin cũ hơn nữa.
     const next =
       hasMore && messages.length > 0
-        ? encodeMessageCursor(messages[messages.length - 1].createdAt, messages[messages.length - 1]._id.toHexString())
+        ? encodeMessageCursor(messages[messages.length - 1].createdAt, messages[messages.length - 1]._id.toString())
         : null;
 
     return {
@@ -220,7 +220,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
       // Kiểm tra messageId có hợp lệ không.
       // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
       const found = await this.chatMessageRepository.findById(messageId);
-      if (!found || found.chatId.toHexString() !== conversationId) {
+      if (!found || found.chatId.toString() !== conversationId) {
         throw ChatConversationNotFoundException;
       }
       msg = found;
@@ -231,10 +231,10 @@ export class ChatMessagesService extends SharedConversationsService implements I
         return;
       }
       msg = latest[0];
-      messageId = msg._id.toHexString();
+      messageId = msg._id.toString();
       // Kiểm tra messageId có hợp lệ không.
       // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
-      if (msg.chatId.toHexString() !== conversationId) {
+      if (msg.chatId.toString() !== conversationId) {
         throw ChatConversationNotFoundException;
       }
     }
@@ -250,7 +250,7 @@ export class ChatMessagesService extends SharedConversationsService implements I
     if (this.realtimeChatEmitter) {
       // Lấy danh sách thành viên trong conversation.
       const membersInConversation = await this.conversationMemberRepository.listMembers(conversationId);
-      const memberIds = membersInConversation.map((m) => m.userId.toHexString());
+      const memberIds = membersInConversation.map((m) => m.userId.toString());
       // Đẩy realtime cho mọi người trong phòng.
       this.realtimeChatEmitter.emitReadUpdated(conversationId, memberIds, userId, {
         lastReadMessageId: messageId,

@@ -24,28 +24,28 @@ export interface ConversationDetailResponseDTO extends ConversationSummaryRespon
   members: ConversationMemberRowDTO[];
 }
 
-export function toConversationSummary(conv: IConversation, peerUserIdHex?: string): ConversationSummaryResponseDTO {
+export function toConversationSummary(conv: IConversation, peerUserId?: string): ConversationSummaryResponseDTO {
   const base: ConversationSummaryResponseDTO = {
-    id: conv._id.toHexString(),
+    id: conv._id.toString(),
     type: conv.type,
-    createdBy: conv.createdBy.toHexString(),
+    createdBy: conv.createdBy.toString(),
     name: conv.name,
-    avatarMediaId: conv.avatarMediaId?.toHexString() ?? null,
+    avatarMediaId: conv.avatarMediaId?.toString() ?? null,
     updatedAt: conv.updatedAt.toISOString(),
     createdAt: conv.createdAt.toISOString()
   };
-  if (peerUserIdHex) {
-    base.peerUserId = peerUserIdHex;
+  if (peerUserId) {
+    base.peerUserId = peerUserId;
   }
   return base;
 }
 
 export function toConversationMemberRow(m: IConversationMember): ConversationMemberRowDTO {
   return {
-    userId: m.userId.toHexString(),
+    userId: m.userId.toString(),
     role: m.role,
     joinedAt: m.joinedAt.toISOString(),
-    lastReadMessageId: m.lastReadMessageId?.toHexString() ?? null,
+    lastReadMessageId: m.lastReadMessageId?.toString() ?? null,
     lastReadAt: m.lastReadAt?.toISOString() ?? null
   };
 }

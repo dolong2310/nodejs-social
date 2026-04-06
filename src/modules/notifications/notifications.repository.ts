@@ -14,7 +14,7 @@ export interface INotificationRepository {
     limit: number,
     before?: DateIdCursor,
     unreadOnly?: boolean,
-    /** Hide notifications whose actor is blocked with viewer (D-14). */
+    /** Hide notifications whose actor is blocked with viewer. */
     actorUserIdNin?: string[]
   ): Promise<INotification[]>;
   markReadByIds(recipientUserId: string, ids: string[]): Promise<number>;

@@ -1,5 +1,6 @@
 export * from './dtos/posts.request.dto';
 export * from './dtos/posts.response.dto';
+export * from './hashtag.schema';
 export * from './posts.controller';
 export * from './posts.enum';
 export * from './posts.exception';

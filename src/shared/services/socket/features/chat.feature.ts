@@ -115,7 +115,7 @@ export class ChatFeature implements SocketFeature {
     const members = await this.conversationMemberRepository.listMembers(convId);
     let anyMemberOnline = false;
     for (const member of members) {
-      const userId = member.userId.toHexString();
+      const userId = member.userId.toString();
       const sockets = await io.in(`user:${userId}`).fetchSockets();
       if (sockets.length > 0) {
         anyMemberOnline = true;

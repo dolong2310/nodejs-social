@@ -189,7 +189,7 @@ async function main() {
       bio: '',
       location: '',
       website: '',
-      username: `uat-smoke-${recipientId.toHexString().slice(0, 8)}`,
+      username: `uat-smoke-${recipientId.toString().slice(0, 8)}`,
       avatar: '',
       coverPhoto: '',
       createdAt: now,
@@ -197,7 +197,7 @@ async function main() {
     });
     const tokenService = new TokenService();
     accessToken = tokenService.signAccessTokenSync({
-      userId: recipientId.toHexString(),
+      userId: recipientId.toString(),
       type: ETokenType.ACCESS_TOKEN
     });
   }
@@ -209,10 +209,10 @@ async function main() {
     const initialLen = listJson.data!.notifications.length;
 
     const t0 = new Date('2026-01-15T10:00:00.000Z').getTime();
-    const actorUserId = new ObjectId().toHexString();
-    const peerId = new ObjectId().toHexString();
-    const chatId = new ObjectId().toHexString();
-    const messageId = new ObjectId().toHexString();
+    const actorUserId = new ObjectId().toString();
+    const peerId = new ObjectId().toString();
+    const chatId = new ObjectId().toString();
+    const messageId = new ObjectId().toString();
 
     const types: NotificationType[] = [
       'friend_request',
@@ -259,7 +259,7 @@ async function main() {
     ({ status, body: listJson } = await fetchList(accessToken, '?limit=50'));
     if (status !== 200) throw new Error(`GET for test5 ${status}`);
     assertListShape(listJson.data);
-    const seededSet = new Set(docs.map((d) => d._id.toHexString()));
+    const seededSet = new Set(docs.map((d) => d._id.toString()));
     const seededRows = listJson.data!.notifications.filter((n) => seededSet.has(n._id));
     if (seededRows.length !== 6) throw new Error('test5: expected 6 seeded rows in list');
     const typeSet = new Set(seededRows.map((r) => r.type));
@@ -290,10 +290,10 @@ async function main() {
     } while (cursor !== null);
 
     for (const id of idsToDelete.slice(0, 6)) {
-      if (!seen.has(id.toHexString())) throw new Error(`seed id missing from paged results: ${id}`);
+      if (!seen.has(id.toString())) throw new Error(`seed id missing from paged results: ${id}`);
     }
 
-    const seededUnreadHex = new Set(idsToDelete.slice(3, 6).map((id) => id.toHexString()));
+    const seededUnreadHex = new Set(idsToDelete.slice(3, 6).map((id) => id.toString()));
     const unreadAllIds: string[] = [];
     cursor = null;
     do {
@@ -330,9 +330,9 @@ async function main() {
       }
     }
 
-    const idSingle = idsToDelete[5].toHexString();
-    const idBatchA = idsToDelete[3].toHexString();
-    const idBatchB = idsToDelete[4].toHexString();
+    const idSingle = idsToDelete[5].toString();
+    const idBatchA = idsToDelete[3].toString();
+    const idBatchB = idsToDelete[4].toString();
 
     ({ status, body: listJson } = await fetchList(accessToken, '?limit=50'));
     if (status !== 200) throw new Error(`GET before mark-one ${status}`);
@@ -354,7 +354,7 @@ async function main() {
     if (status !== 200) throw new Error(`GET after batch read ${status}`);
     assertListShape(listJson.data);
     for (const id of idsToDelete.slice(0, 6)) {
-      if (readStateById(listJson.data, id.toHexString()) !== true) {
+      if (readStateById(listJson.data, id.toString()) !== true) {
         throw new Error(`expected all six seeds read, failed at ${id}`);
       }
     }
@@ -386,8 +386,8 @@ async function main() {
     ({ status, body: listJson } = await fetchList(accessToken, '?limit=50'));
     if (status !== 200) throw new Error(`GET after mark-all ${status}`);
     assertListShape(listJson.data);
-    const extraA = extraUnread[0]._id.toHexString();
-    const extraB = extraUnread[1]._id.toHexString();
+    const extraA = extraUnread[0]._id.toString();
+    const extraB = extraUnread[1]._id.toString();
     if (readStateById(listJson.data, extraA) !== true || readStateById(listJson.data, extraB) !== true) {
       throw new Error('expected extras read after mark-all');
     }
@@ -408,7 +408,7 @@ async function main() {
       bio: '',
       location: '',
       website: '',
-      username: `uat-snd-${senderId.toHexString().slice(0, 8)}`,
+      username: `uat-snd-${senderId.toString().slice(0, 8)}`,
       avatar: '',
       coverPhoto: '',
       createdAt: nowS,
@@ -416,7 +416,7 @@ async function main() {
     });
     const tokenService = new TokenService();
     senderToken = tokenService.signAccessTokenSync({
-      userId: senderId.toHexString(),
+      userId: senderId.toString(),
       type: ETokenType.ACCESS_TOKEN
     });
 
@@ -429,7 +429,7 @@ async function main() {
         Authorization: `Bearer ${senderToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ toUserId: recipientId.toHexString() })
+      body: JSON.stringify({ toUserId: recipientId.toString() })
     });
     const frJson = await fr.json();
     if (fr.status !== 201) throw new Error(`send friend request ${fr.status}: ${JSON.stringify(frJson)}`);
@@ -450,7 +450,7 @@ async function main() {
       read: true,
       createdAt: new Date(t0 + 200 * 1000),
       type: 'friend_request',
-      actor: { userId: blockPeerId.toHexString(), displayName: 'Blocked Actor' },
+      actor: { userId: blockPeerId.toString(), displayName: 'Blocked Actor' },
       payload: { fromUserId: peerId }
     });
     idsToDelete.push(hiddenDoc._id);
@@ -461,7 +461,7 @@ async function main() {
     ({ status, body: listJson } = await fetchList(accessToken, '?limit=100'));
     if (status !== 200) throw new Error(`GET for block test ${status}`);
     assertListShape(listJson.data);
-    if (listJson.data!.notifications.some((n) => n._id === hiddenDoc._id.toHexString())) {
+    if (listJson.data!.notifications.some((n) => n._id === hiddenDoc._id.toString())) {
       throw new Error('test7: hidden notification should not appear when actor is blocked');
     }
 
@@ -469,7 +469,7 @@ async function main() {
     ({ status, body: listJson } = await fetchList(accessToken, '?limit=100'));
     if (status !== 200) throw new Error(`GET after unblock ${status}`);
     assertListShape(listJson.data);
-    if (!listJson.data!.notifications.some((n) => n._id === hiddenDoc._id.toHexString())) {
+    if (!listJson.data!.notifications.some((n) => n._id === hiddenDoc._id.toString())) {
       throw new Error('test7: notification should reappear after block removed');
     }
 

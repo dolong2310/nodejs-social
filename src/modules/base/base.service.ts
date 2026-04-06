@@ -1,10 +1,3 @@
-/*
- * BaseService class for common service functionality.
- * This class provides methods for error handling, field validation, string sanitization,
- * and email validation. It is intended to be extended by specific service classes.
- * It uses a custom AppError class for error management.
- */
-
 export abstract class BaseService {
   /**
    * In-memory cache with TTL and max-entries cap.

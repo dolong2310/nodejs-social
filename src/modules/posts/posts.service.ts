@@ -26,12 +26,13 @@ import { LoggerInstance } from '@/providers/logger/instance.logger';
 import { PostViewsJobQueue } from '@/providers/queue/queues/post-views.queue';
 import { CursorPaginationQueryDTO } from '@/shared/dtos/common.request.dto';
 import { SharedInvalidCursorException } from '@/shared/exceptions/cursor.exception';
-import { IHashtag } from '@/shared/models/hashtag.schema';
+import { IHashtag } from '@/modules/posts/hashtag.schema';
 import { redactNewFeedAuthor, redactPostRowAuthorForBlock } from '@/utils/block-redaction.util';
 import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 import { decodePostFeedCursor, encodePostFeedCursor } from '@/utils/post-feed-cursor.util';
 
 const log = LoggerInstance.getLogger().child({ module: 'posts-service' });
+
 type GetPostsTypePayload = {
   userId?: string;
   postId: string;
@@ -61,11 +62,8 @@ export interface IPostsService {
     posts: T[];
     userId?: string;
   }): Promise<T[]>;
-  /** Like, bookmark, or comment on the given post (BLCK-02 / D-11). */
   hasViewerEngagedWithPost(viewerId: string, postId: string): Promise<boolean>;
-  /** Post ids to include in feed/search when author is blocked but viewer had prior engagement (D-11). */
   getExtraVisiblePostIdsForBlockedEngagement(userId: string, blockedAuthorIds: string[]): Promise<string[]>;
-  /** Block graph (either direction) with same short Redis TTL as feed — reuse for search. */
   listBlockedUserIdsEitherDirectionCached(userId: string): Promise<string[]>;
 }
 
@@ -127,7 +125,7 @@ export class PostsService extends BaseService implements IPostsService {
     // Với bài nào thuộc blocked author nhưng được "nới quyền xem" do đã tương tác trước đó
     const blockedIds = new Set(blockedForEngagement);
     for (const post of posts) {
-      if (post.author && blockedIds.has(post.author._id.toHexString())) {
+      if (post.author && blockedIds.has(post.author._id.toString())) {
         // Ẩn danh tác giả (redactNewFeedAuthor(post) để thay author thành Unknown user)
         redactNewFeedAuthor(post);
       }
@@ -137,7 +135,7 @@ export class PostsService extends BaseService implements IPostsService {
     const updatedPosts = await this.updatePostsViews<PostNewFeedResponseDTO>({ posts, userId });
 
     const last = posts[posts.length - 1];
-    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toHexString()) : null;
+    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toString()) : null;
     return { items: updatedPosts, nextCursor };
   }
 
@@ -157,7 +155,7 @@ export class PostsService extends BaseService implements IPostsService {
     const updatedPosts = await this.updatePostsViews<PostNewFeedResponseDTO>({ posts });
 
     const last = posts[posts.length - 1];
-    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toHexString()) : null;
+    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toString()) : null;
     return { items: updatedPosts, nextCursor };
   }
 
@@ -191,7 +189,7 @@ export class PostsService extends BaseService implements IPostsService {
         if (engaged) {
           const blockedHex = new Set(blockedIds);
           for (const p of posts) {
-            if (blockedHex.has(p.userId.toHexString())) {
+            if (blockedHex.has(p.userId.toString())) {
               // Ẩn thông tin tác giả của từng row bị block (đổi sang “Unknown user” sentinel), giữ nội dung post.
               redactPostRowAuthorForBlock(p);
             }
@@ -204,7 +202,7 @@ export class PostsService extends BaseService implements IPostsService {
     const updatedPosts = await this.updatePostsViews<PostDetailResponseDTO>({ posts, userId });
 
     const last = posts[posts.length - 1];
-    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toHexString()) : null;
+    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toString()) : null;
     return { items: updatedPosts, nextCursor };
   }
 
@@ -274,10 +272,7 @@ export class PostsService extends BaseService implements IPostsService {
   }: GetPostDetailParamsDTO & {
     userId?: string;
   }): Promise<Pick<IPost, 'userViews' | 'guestViews' | 'updatedAt'> | null> {
-    return this.postRepository.findOneAndUpdate(
-      { postId, userId },
-      { returnDocument: 'after', projection: { userViews: 1, guestViews: 1, updatedAt: 1 } }
-    );
+    return this.postRepository.increaseViews({ postId, userId });
   }
 
   async createPost({ userId, body }: { userId: string; body: CreatePostRequestDTO }): Promise<IPost> {
@@ -304,7 +299,7 @@ export class PostsService extends BaseService implements IPostsService {
     if (!existing) {
       throw PostNotFoundException;
     }
-    if (existing.userId.toHexString() !== userId) {
+    if (existing.userId.toString() !== userId) {
       throw OnlyOwnerCanUpdatePostSettingsException;
     }
     const updated = await this.postRepository.updatePostAudienceAndStrangerComments(postId, userId, {
@@ -330,7 +325,7 @@ export class PostsService extends BaseService implements IPostsService {
     const date = new Date();
     void this.postViewsJobQueue
       .add({
-        postIds: posts.map((post) => post._id.toHexString()),
+        postIds: posts.map((post) => post._id.toString()),
         isAuthenticatedViewer: Boolean(userId)
       })
       .catch((err: unknown) => {
@@ -361,7 +356,7 @@ export class PostsService extends BaseService implements IPostsService {
     }
 
     // Kiểm tra block 2 chiều
-    if (await this.blockRepository.isBlockedEitherWay(viewerId, parent.userId.toHexString())) {
+    if (await this.blockRepository.isBlockedEitherWay(viewerId, parent.userId.toString())) {
       throw CannotEngagePostBlockedException;
     }
 

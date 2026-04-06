@@ -56,7 +56,7 @@ export function notificationSummary(n: INotification): string {
 
 export function toNotificationListItem(doc: INotification): NotificationListItemDTO {
   return {
-    _id: doc._id.toHexString(),
+    _id: doc._id.toString(),
     read: doc.read,
     createdAt: doc.createdAt.toISOString(),
     type: doc.type,

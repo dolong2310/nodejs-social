@@ -84,7 +84,7 @@ export class NotificationsService extends BaseService implements INotificationsS
       throw NotificationActorUserNotFoundException;
     }
     const actor = {
-      userId: user._id.toHexString(),
+      userId: user._id.toString(),
       displayName: user.name,
       avatar: user.avatar
     };
@@ -120,7 +120,7 @@ export class NotificationsService extends BaseService implements INotificationsS
    */
   private async persistAndEmit(recipientId: string, doc: INotification): Promise<void> {
     await this.notificationRepository.insertOne(doc);
-    await this.trimIfNeeded(doc.recipientId.toHexString());
+    await this.trimIfNeeded(doc.recipientId.toString());
     this.emitToRecipient(recipientId, doc);
   }
 
@@ -143,8 +143,8 @@ export class NotificationsService extends BaseService implements INotificationsS
       previewText = undefined;
     }
     return {
-      chatId: message.chatId.toHexString(),
-      messageId: message._id.toHexString(),
+      chatId: message.chatId.toString(),
+      messageId: message._id.toString(),
       previewKind,
       previewText
     };
@@ -222,7 +222,7 @@ export class NotificationsService extends BaseService implements INotificationsS
     await this.notificationRepository.insertMany(docs);
 
     for (const doc of docs) {
-      this.emitToRecipient(doc.recipientId.toHexString(), doc);
+      this.emitToRecipient(doc.recipientId.toString(), doc);
     }
 
     void this.notificationTrimJobQueue.add({ recipientUserIds: recipients }).catch(() => {});
@@ -235,7 +235,7 @@ export class NotificationsService extends BaseService implements INotificationsS
   async recordAddedToGroup(inviteeUserId: string, inviterUserId: string, conv: IConversation): Promise<void> {
     const actor = await this.buildActor(inviterUserId);
     const payload: IAddedToGroupNotificationPayload = {
-      chatId: conv._id.toHexString(),
+      chatId: conv._id.toString(),
       chatName: conv.name
     };
     const doc = new NotificationSchema({
@@ -282,7 +282,7 @@ export class NotificationsService extends BaseService implements INotificationsS
     const slice = rows.slice(0, pageSize);
     const next =
       hasMore && slice.length > 0
-        ? encodeNotificationCursor(slice[slice.length - 1].createdAt, slice[slice.length - 1]._id.toHexString())
+        ? encodeNotificationCursor(slice[slice.length - 1].createdAt, slice[slice.length - 1]._id.toString())
         : null;
 
     return {

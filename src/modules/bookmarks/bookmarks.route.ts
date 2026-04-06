@@ -1,7 +1,3 @@
-/*
- * This file defines the bookmarks routes for creating bookmark, deleting bookmark.
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { BookmarksController } from '@/modules/bookmarks/bookmarks.controller';

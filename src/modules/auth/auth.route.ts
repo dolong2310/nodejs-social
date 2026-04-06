@@ -1,7 +1,3 @@
-/*
- * This file defines the authentication routes for user signup, signin, token refresh, and logout.
- */
-
 import { AuthController } from '@/modules/auth/auth.controller';
 import { protect } from '@/modules/auth/auth.middleware';
 import { AuthValidation } from '@/modules/auth/auth.validation';

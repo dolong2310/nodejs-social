@@ -6,17 +6,15 @@ import { IMedia } from '@/interfaces/types/media.type';
 import { BaseController } from '@/modules/base/base.controller';
 import { FilenameParamsDTO, VideoHLSParamsDTO } from '@/modules/media/dtos/media.request.dto';
 import {
-  RequestedRangeNotSatisfiableException,
   StaticMediaNotFoundException,
   StaticVideoStreamInternalServerErrorException,
   VideoNotFoundException
 } from '@/modules/media/media.exception';
 import { MediaService } from '@/modules/media/media.service';
-import { IVideoStatus } from '@/shared/models/videoStatus.schema';
+import { IVideoStatus } from '@/modules/media/videoStatus.schema';
 import { S3Service } from '@/shared/services/s3.service';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
-import mime from 'mime';
 import path from 'path';
 
 export interface IMediaController {
@@ -63,53 +61,15 @@ export class MediaController extends BaseController implements IMediaController 
   @AutoBind()
   async getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): Promise<void> {
     const { filename } = req.params;
-    const rangeHeader = req.headers.range;
-    if (!rangeHeader) {
-      throw RequestedRangeNotSatisfiableException;
-    }
+    const { videoPath, videoSize, start, end, contentLength, contentType } =
+      await this.mediaService.getStaticVideoStream(filename, req.headers.range);
 
-    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
-
-    const videoStat = await fs.promises.stat(videoPath);
-    const videoSize = videoStat.size;
-
-    // chunkSize là size mặc định khi client request dạng `bytes=start-`
-    const chunkSize = 10 ** 6;
-
-    // Ví dụ hợp lệ:
-    // - bytes=0-
-    // - bytes=0-499
-    const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
-    if (!match) {
-      throw RequestedRangeNotSatisfiableException;
-    }
-
-    const start = Number(match[1]);
-    const endFromHeader = match[2] ? Number(match[2]) : null;
-
-    if (!Number.isFinite(start) || start < 0 || start >= videoSize) {
-      throw RequestedRangeNotSatisfiableException;
-    }
-
-    let end: number;
-    if (endFromHeader !== null && Number.isFinite(endFromHeader)) {
-      if (endFromHeader < start) {
-        throw RequestedRangeNotSatisfiableException;
-      }
-      end = Math.min(endFromHeader, videoSize - 1);
-    } else {
-      end = Math.min(start + chunkSize - 1, videoSize - 1);
-    }
-
-    const contentLength = end - start + 1;
-    const contentType = mime.getType(videoPath) || 'application/octet-stream';
-    const headers = {
+    res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, {
       'Content-Range': `bytes ${start}-${end}/${videoSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': contentLength.toString(),
       'Content-Type': contentType
-    };
-    res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, headers);
+    });
 
     const videoStream = fs.createReadStream(videoPath, { start, end });
     videoStream.pipe(res);

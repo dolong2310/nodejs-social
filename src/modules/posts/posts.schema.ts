@@ -7,7 +7,6 @@ export interface IPost {
   userId: ObjectId;
   type: EPostType;
   audience: EPostAudience;
-  /** When missing on legacy documents, treat as true at read time (see aggregations / constructor). */
   allowStrangerComments: boolean;
   content: string;
   parentId: ObjectId | null;
@@ -58,7 +57,6 @@ export class PostSchema {
     this.userId = userId;
     this.type = type;
     this.audience = audience;
-    // Legacy docs without this field: default open comments from strangers on public posts.
     this.allowStrangerComments = allowStrangerComments ?? true;
     this.content = content;
     this.parentId = parentId;

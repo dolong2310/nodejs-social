@@ -24,8 +24,8 @@ export class BlocksController extends BaseController implements IBlocksControlle
 
   @AutoBind()
   async blockUser(req: Request<ParamsDictionary, object, BlockUserBodyDTO>, res: Response) {
-    const blockerUserId = this.getUserId(req);
     const dto = new BlockUserBodyDTO(req.body);
+    const blockerUserId = this.getUserId(req);
     await this.blocksService.blockUser(blockerUserId, dto.userId);
     this.sendResponse({
       res,

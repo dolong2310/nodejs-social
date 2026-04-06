@@ -1,7 +1,3 @@
-/*
- * social DB, list + mark read.
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { NotificationsController } from '@/modules/notifications/notifications.controller';

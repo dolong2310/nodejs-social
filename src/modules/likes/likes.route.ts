@@ -1,7 +1,3 @@
-/*
- * Likes routes — same engagement gates as bookmarks (verified + visibility + block).
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { LikesController } from '@/modules/likes/likes.controller';

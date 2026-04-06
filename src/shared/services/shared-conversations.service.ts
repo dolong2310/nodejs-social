@@ -16,9 +16,9 @@ export class SharedConversationsService extends BaseService {
     if (conv.type !== EConversationType.DIRECT || !conv.userIdLow || !conv.userIdHigh) {
       throw SharedConversationNotFoundException;
     }
-    return conv.userIdLow.toHexString() === viewerUserId
-      ? conv.userIdHigh!.toHexString()
-      : conv.userIdLow!.toHexString();
+    return conv.userIdLow.toString() === viewerUserId
+      ? conv.userIdHigh!.toString()
+      : conv.userIdLow!.toString();
   }
 
   /**

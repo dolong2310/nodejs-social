@@ -1,23 +1,12 @@
-/*
- * Media Repository
- * This file contains the MediaRepository class which implements IMediaRepository interface.
- * It provides methods to interact with the media data in the database.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { EEncodingVideoStatus } from '@/modules/media/media.enum';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { IVideoStatus, VideoStatusSchema } from '@/shared/models/videoStatus.schema';
-import { UpdateResult } from 'mongodb';
+import { IVideoStatus, VideoStatusSchema } from '@/modules/media/videoStatus.schema';
 
 export interface IMediaRepository {
   createVideoStatus(payload: { name: string; status: EEncodingVideoStatus }): Promise<IVideoStatus>;
-  updateVideoStatus(payload: {
-    name: string;
-    status: EEncodingVideoStatus;
-    message?: string;
-  }): Promise<UpdateResult<IVideoStatus>>;
+  updateVideoStatus(payload: { name: string; status: EEncodingVideoStatus; message?: string }): Promise<boolean>;
   findVideoStatusByName(name: string): Promise<IVideoStatus | null>;
 }
 
@@ -41,7 +30,7 @@ export class MediaRepository extends BaseRepository implements IMediaRepository 
     name: string;
     status: EEncodingVideoStatus;
     message?: string;
-  }): Promise<UpdateResult<IVideoStatus>> {
+  }): Promise<boolean> {
     const result = await this.db.videoStatuses.updateOne(
       { name },
       {
@@ -49,7 +38,7 @@ export class MediaRepository extends BaseRepository implements IMediaRepository 
         $currentDate: { updatedAt: true }
       }
     );
-    return result;
+    return result.modifiedCount > 0;
   }
 
   findVideoStatusByName(name: string): Promise<IVideoStatus | null> {

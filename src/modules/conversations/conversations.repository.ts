@@ -4,14 +4,13 @@ import { BaseRepository } from '@/modules/base/base.repository';
 import { ConversationSchema, EConversationType, IConversation } from '@/modules/conversations/conversations.schema';
 import { normalizeFriendshipPair } from '@/modules/friends/friendship.repository';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { ObjectId } from 'mongodb';
+import { MongoServerError, ObjectId } from 'mongodb';
 
 export interface IConversationRepository {
   findById(conversationId: string): Promise<IConversation | null>;
   findByIds(conversationIds: string[]): Promise<IConversation[]>;
   findDirectByUserPair(userA: string, userB: string): Promise<IConversation | null>;
-  insertConversation(doc: IConversation): Promise<IConversation>;
-  /** Atomic create: group conversation + initial members (MongoDB multi-document transaction). */
+  insertConversation(createdBy: string, peerId: string): Promise<IConversation | null>;
   insertGroupConversationWithMembers(group: IConversation, members: IConversationMember[]): Promise<void>;
   updateConversation(
     conversationId: string,
@@ -45,9 +44,26 @@ export class ConversationRepository extends BaseRepository implements IConversat
     });
   }
 
-  async insertConversation(doc: IConversation): Promise<IConversation> {
-    await this.db.conversations.insertOne(doc);
-    return doc;
+  async insertConversation(createdBy: string, peerId: string): Promise<IConversation | null> {
+    try {
+      const a = new ObjectId(createdBy);
+      const b = new ObjectId(peerId);
+      const { userIdLow, userIdHigh } = normalizeFriendshipPair(a, b);
+      const doc = new ConversationSchema({
+        type: EConversationType.DIRECT,
+        createdBy: a,
+        userIdLow,
+        userIdHigh
+      });
+      await this.db.conversations.insertOne(doc);
+      return doc;
+    } catch (error) {
+      // Xử lý race condition khi 2 request cùng tạo
+      if (error instanceof MongoServerError && error.code === 11000) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async insertGroupConversationWithMembers(group: IConversation, members: IConversationMember[]): Promise<void> {
@@ -56,18 +72,6 @@ export class ConversationRepository extends BaseRepository implements IConversat
       if (members.length > 0) {
         await this.db.conversationMembers.insertMany(members, { session });
       }
-    });
-  }
-
-  static createDirectDocument(createdBy: string, peerId: string): IConversation {
-    const a = new ObjectId(createdBy);
-    const b = new ObjectId(peerId);
-    const { userIdLow, userIdHigh } = normalizeFriendshipPair(a, b);
-    return new ConversationSchema({
-      type: EConversationType.DIRECT,
-      createdBy: a,
-      userIdLow,
-      userIdHigh
     });
   }
 

@@ -13,7 +13,6 @@ import { FriendsService } from '@/modules/friends/friends.service';
 import { FriendshipRepository } from '@/modules/friends/friendship.repository';
 import { UserRepository } from '@/modules/users/users.repository';
 import { IUser } from '@/modules/users/users.schema';
-import { MongoServerError } from 'mongodb';
 
 export interface IBlocksService {
   blockUser(blockerUserId: string, blockedUserId: string): Promise<void>;
@@ -45,7 +44,7 @@ export class BlocksService extends BaseService implements IBlocksService {
 
   private toFriendUserRow(user: IUser): FriendUserRow {
     return {
-      _id: user._id.toHexString(),
+      _id: user._id.toString(),
       name: user.name,
       username: user.username,
       avatar: user.avatar
@@ -69,14 +68,7 @@ export class BlocksService extends BaseService implements IBlocksService {
     await this.friendshipRepository.deleteFriendshipPair(blockerUserId, blockedUserId);
     await this.friendRequestRepository.deleteAllRequestsInvolvingUsers(blockerUserId, blockedUserId);
 
-    try {
-      await this.blockRepository.createBlock(blockerUserId, blockedUserId);
-    } catch (e) {
-      if (e instanceof MongoServerError && e.code === 11000) {
-        throw BlockAlreadyExistsException;
-      }
-      throw e;
-    }
+    await this.blockRepository.createBlock(blockerUserId, blockedUserId);
 
     await Promise.all([
       this.friendsService.invalidateFriendCache(blockerUserId),
@@ -100,14 +92,14 @@ export class BlocksService extends BaseService implements IBlocksService {
     page: string,
     limit: string
   ): Promise<{ users: FriendUserRow[]; total: number }> {
-    const blockedHexes = await this.blockRepository.listBlockedUserIdsForBlocker(blockerUserId);
-    const sorted = [...blockedHexes].sort((a, b) => Buffer.compare(Buffer.from(a, 'hex'), Buffer.from(b, 'hex')));
+    const blockedIds = await this.blockRepository.listBlockedUserIdsForBlocker(blockerUserId);
+    const sorted = [...blockedIds].sort((a, b) => Buffer.compare(Buffer.from(a, 'hex'), Buffer.from(b, 'hex')));
     const total = sorted.length;
     const { skip, limitNum } = this.parsePageLimit(page, limit);
     const pageIds = sorted.slice(skip, skip + limitNum);
     const users = await this.userRepository.findManyByIds(pageIds);
-    const byHex = new Map(users.map((u) => [u._id.toHexString(), u]));
-    const ordered = pageIds.map((id) => byHex.get(id)).filter((u): u is IUser => Boolean(u));
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const ordered = pageIds.map((id) => userMap.get(id)).filter((u): u is IUser => Boolean(u));
     return { users: ordered.map((u) => this.toFriendUserRow(u)), total };
   }
 }

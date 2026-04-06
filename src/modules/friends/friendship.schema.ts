@@ -1,10 +1,5 @@
 import { ObjectId } from 'mongodb';
 
-/**
- * Undirected friendship edge on the social DB (D-04).
- * Invariant: `userIdLow` and `userIdHigh` must satisfy `userIdLow < userIdHigh` by BSON ObjectId
- * byte order (see `normalizeFriendshipPair` in friendship repository). Enforce before insert.
- */
 export interface IFriendship {
   _id: ObjectId;
   userIdLow: ObjectId;

@@ -6,7 +6,10 @@ import { EEmailTemplate } from '@/interfaces/types/mail.type';
 import {
   EmailAlreadyExistsException,
   InvalidEmailOrPasswordException,
-  InvalidTokenAuthFailureException
+  InvalidTokenAuthFailureException,
+  InvalidTokenBadRequestException,
+  UserAlreadyVerifiedException,
+  UserNotFoundException
 } from '@/modules/auth/auth.exception';
 import {
   ChangePasswordRequestDTO,
@@ -33,7 +36,7 @@ import { UserRepository } from '@/modules/users/users.repository';
 import { IUser } from '@/modules/users/users.schema';
 import { RedisService } from '@/providers/database/redis/redis.service';
 import { EmailJobQueue } from '@/providers/queue/queues/email.queue';
-import { IRefreshToken } from '@/shared/models/refreshToken.schema';
+import { IRefreshToken } from '@/modules/auth/refreshToken.schema';
 import { TokenService } from '@/shared/services/token.service';
 import { comparePassword, hashPassword } from '@/utils/password.util';
 import { ObjectId } from 'mongodb';
@@ -43,14 +46,14 @@ export interface IAuthService {
   register(body: RegisterRequestDTO, options: { autoLogin: true }): Promise<AuthTokenPair>;
   register(body: RegisterRequestDTO, options?: { autoLogin?: false }): Promise<RegisterResponseDTO>;
   register(body: RegisterRequestDTO, options?: { autoLogin?: boolean }): Promise<RegisterResponseDTO | AuthTokenPair>;
-  login(body: LoginRequestDTO, user: IUser): Promise<AuthTokenPair>;
-  logout(refreshToken: LogoutRequestDTO): Promise<LogoutResponseDTO>;
-  refreshToken(payload: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<AuthTokenPair>;
-  verifyEmail(userId: string): Promise<VerifyEmailResponseDTO>;
-  resendVerifyEmail(payload: { userId: string; name: string; email: string }): Promise<ResendVerifyEmailResponseDTO>;
-  forgotPassword(
-    payload: ForgotPasswordRequestDTO & { userId: string; name: string }
-  ): Promise<ForgotPasswordResponseDTO>;
+  login(body: LoginRequestDTO): Promise<AuthTokenPair>;
+  logout(body: LogoutRequestDTO & { type: ETokenType }): Promise<LogoutResponseDTO>;
+  refreshToken(
+    body: RefreshTokenRequestDTO & { userId: string; exp: number; type: ETokenType }
+  ): Promise<AuthTokenPair>;
+  verifyEmail({ userId, token }: { userId: string; token: string }): Promise<VerifyEmailResponseDTO>;
+  resendVerifyEmail(userId: string): Promise<ResendVerifyEmailResponseDTO>;
+  forgotPassword(payload: ForgotPasswordRequestDTO): Promise<ForgotPasswordResponseDTO>;
   resetPassword(payload: ResetPasswordRequestDTO & { userId: string }): Promise<ResetPasswordResponseDTO>;
   changePassword(payload: ChangePasswordRequestDTO & { userId: string }): Promise<ChangePasswordResponseDTO>;
   createAuthSession(user: IUser): Promise<AuthTokenPair>;
@@ -104,7 +107,7 @@ export class AuthService extends BaseService implements IAuthService {
     });
 
     const hashedPassword = await hashPassword(password);
-    const newUser = await this.userRepository.create({
+    const newUser = await this.userRepository.createUser({
       userId: userId.toString(),
       name,
       email,
@@ -122,16 +125,26 @@ export class AuthService extends BaseService implements IAuthService {
     return new RegisterResponseDTO(newUser);
   }
 
-  async login({ password }: LoginRequestDTO, user: IUser): Promise<AuthTokenPair> {
-    const isPasswordValid = await comparePassword(password, user.password);
+  async login({ email, password }: LoginRequestDTO): Promise<AuthTokenPair> {
+    const existingUser = await this.userRepository.findByEmail(email);
+
+    if (!existingUser) {
+      throw InvalidEmailOrPasswordException;
+    }
+
+    const isPasswordValid = await comparePassword(password, existingUser.password);
     if (!isPasswordValid) {
       throw InvalidEmailOrPasswordException;
     }
 
-    return this.createAuthSession(user);
+    return this.createAuthSession(existingUser);
   }
 
-  async logout({ refreshToken }: LogoutRequestDTO): Promise<LogoutResponseDTO> {
+  async logout({ type, refreshToken }: LogoutRequestDTO & { type: ETokenType }): Promise<LogoutResponseDTO> {
+    if (type !== ETokenType.REFRESH_TOKEN) {
+      throw InvalidTokenAuthFailureException;
+    }
+
     const deleted = await this.userRepository.deleteRefreshToken(refreshToken);
     if (!deleted) {
       throw InvalidTokenAuthFailureException;
@@ -142,8 +155,13 @@ export class AuthService extends BaseService implements IAuthService {
   async refreshToken({
     userId,
     refreshToken,
-    exp
-  }: RefreshTokenRequestDTO & { userId: string; exp: number }): Promise<AuthTokenPair> {
+    exp,
+    type
+  }: RefreshTokenRequestDTO & { userId: string; exp: number; type: ETokenType }): Promise<AuthTokenPair> {
+    if (type !== ETokenType.REFRESH_TOKEN) {
+      throw InvalidTokenAuthFailureException;
+    }
+
     const [newAccessToken, newRefreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -167,31 +185,47 @@ export class AuthService extends BaseService implements IAuthService {
     };
   }
 
-  async verifyEmail(userId: string): Promise<VerifyEmailResponseDTO> {
+  async verifyEmail({ userId, token }: { userId: string; token: string }): Promise<VerifyEmailResponseDTO> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw UserNotFoundException;
+    }
+
+    if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
+      throw UserAlreadyVerifiedException;
+    }
+
+    if (user.emailVerificationToken !== token) {
+      throw InvalidTokenBadRequestException;
+    }
+
     await this.userRepository.markEmailVerified(userId);
     await this.redisService.del(CACHE_KEYS.user(userId));
     return { message: 'Email verified successfully' };
   }
 
-  async resendVerifyEmail({
-    userId,
-    name,
-    email
-  }: {
-    userId: string;
-    name: string;
-    email: string;
-  }): Promise<ResendVerifyEmailResponseDTO> {
+  async resendVerifyEmail(userId: string): Promise<ResendVerifyEmailResponseDTO> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw UserNotFoundException;
+    }
+
+    if (user.verificationStatus === EUserVerificationStatus.VERIFIED) {
+      throw UserAlreadyVerifiedException;
+    }
+
     const emailVerificationToken = await this.tokenService.signEmailVerificationToken({
       userId: userId.toString(),
       type: ETokenType.EMAIL_VERIFICATION_TOKEN
     });
 
     await this.emailJobQueue.add({
-      toAddress: email,
+      toAddress: user.email,
       subject: 'Email Verification',
       body: {
-        name,
+        name: user.name,
         url: `${envConfig.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`,
         expiresIn: '1 hour',
         appName: 'Social Media App',
@@ -208,14 +242,15 @@ export class AuthService extends BaseService implements IAuthService {
     };
   }
 
-  async forgotPassword({
-    userId,
-    name,
-    email
-  }: ForgotPasswordRequestDTO & {
-    userId: string;
-    name: string;
-  }): Promise<ForgotPasswordResponseDTO> {
+  async forgotPassword({ email }: ForgotPasswordRequestDTO): Promise<ForgotPasswordResponseDTO> {
+    const existingUser = await this.userRepository.findByEmailIncludeNameAndEmail(email);
+
+    if (!existingUser) {
+      throw InvalidEmailOrPasswordException;
+    }
+
+    const userId = existingUser._id.toString();
+
     const forgotPasswordToken = await this.tokenService.signForgotPasswordToken({
       userId,
       type: ETokenType.FORGOT_PASSWORD_TOKEN
@@ -225,7 +260,7 @@ export class AuthService extends BaseService implements IAuthService {
       toAddress: email,
       subject: 'Forgot Password',
       body: {
-        name,
+        name: existingUser.name,
         url: `${envConfig.FRONTEND_URL}/reset-password?token=${forgotPasswordToken}`,
         expiresIn: '1 hour',
         appName: 'Social Media App',
@@ -243,9 +278,20 @@ export class AuthService extends BaseService implements IAuthService {
   }
 
   async resetPassword({
+    token,
     userId,
     password
   }: ResetPasswordRequestDTO & { userId: string }): Promise<ResetPasswordResponseDTO> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw UserNotFoundException;
+    }
+
+    if (user.forgotPasswordToken !== token) {
+      throw InvalidTokenBadRequestException;
+    }
+
     const hashedPassword = await hashPassword(password);
 
     await this.userRepository.resetPassword(userId, hashedPassword);
@@ -260,18 +306,7 @@ export class AuthService extends BaseService implements IAuthService {
   }: ChangePasswordRequestDTO & { userId: string }): Promise<ChangePasswordResponseDTO> {
     const hashedPassword = await hashPassword(password);
 
-    await this.userRepository.findOneAndUpdate(
-      userId,
-      { password: hashedPassword },
-      {
-        returnDocument: 'after',
-        projection: {
-          password: 0,
-          emailVerificationToken: 0,
-          forgotPasswordToken: 0
-        }
-      }
-    );
+    await this.userRepository.changePassword(userId, { password: hashedPassword });
     await this.redisService.del(CACHE_KEYS.user(userId));
 
     return { message: 'Password changed successfully' };

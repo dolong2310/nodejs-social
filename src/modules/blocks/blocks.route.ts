@@ -1,7 +1,3 @@
-/*
- * Block / unblock / list blocked users.
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { BlocksController } from '@/modules/blocks/blocks.controller';

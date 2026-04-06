@@ -41,7 +41,6 @@ import { NotificationsService } from '@/modules/notifications/notifications.serv
 import { SharedConversationsService } from '@/shared/services/shared-conversations.service';
 import { decodeConversationListCursor, encodeConversationListCursor } from '@/utils/conversation-cursor.util';
 import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
-import { MongoServerError } from 'mongodb';
 
 export interface IConversationsService {
   getOrCreateDirect(userId: string, body: CreateDirectConversationBodyDTO): Promise<ConversationSummaryResponseDTO>;
@@ -128,7 +127,7 @@ export class ConversationsService extends SharedConversationsService implements 
     const existing = await this.conversationRepository.findDirectByUserPair(userId, body.peerUserId);
     if (existing) {
       // assertMember để chắc chắn người gọi thực sự là member của phòng
-      await this.assertMember(existing._id.toHexString(), userId);
+      await this.assertMember(existing._id.toString(), userId);
       return toConversationSummary(existing, this.directPeer(existing, userId));
     }
 
@@ -144,24 +143,20 @@ export class ConversationsService extends SharedConversationsService implements 
       throw ConversationPeerBlockedException;
     }
 
-    // tạo document vì hàm insertOne không trả về document được tạo
-    const doc = ConversationRepository.createDirectDocument(userId, body.peerUserId);
-    try {
-      await this.conversationRepository.insertConversation(doc);
-    } catch (e) {
+    const doc = await this.conversationRepository.insertConversation(userId, body.peerUserId);
+
+    if (!doc) {
       // Xử lý race condition khi 2 request cùng tạo
-      if (e instanceof MongoServerError && e.code === 11000) {
-        const again = await this.conversationRepository.findDirectByUserPair(userId, body.peerUserId);
-        if (again) {
-          await this.assertMember(again._id.toHexString(), userId);
-          return toConversationSummary(again, this.directPeer(again, userId));
-        }
+      const again = await this.conversationRepository.findDirectByUserPair(userId, body.peerUserId);
+      if (again) {
+        await this.assertMember(again._id.toString(), userId);
+        return toConversationSummary(again, this.directPeer(again, userId));
       }
-      throw e;
+      throw ConversationNotFoundException;
     }
 
     // thêm 2 member vào phòng direct
-    const convId = doc._id.toHexString();
+    const convId = doc._id.toString();
     await Promise.all([
       this.conversationMemberRepository.insertMember(
         ConversationMemberRepository.newMember(convId, userId, EConversationMemberRole.MEMBER)
@@ -194,7 +189,7 @@ export class ConversationsService extends SharedConversationsService implements 
 
     // tạo document vì hàm insertOne không trả về document được tạo
     const group = ConversationRepository.createGroupDocument(userId, body.name);
-    const groupId = group._id.toHexString();
+    const groupId = group._id.toString();
     // thêm admin và members vào group
     const members: IConversationMember[] = [
       ConversationMemberRepository.newMember(groupId, userId, EConversationMemberRole.ADMIN),
@@ -230,11 +225,11 @@ export class ConversationsService extends SharedConversationsService implements 
         ? // Nếu còn dữ liệu, mã hóa updatedAt và conversationId của phần tử cuối trong slice làm cursor cho request phân trang sau.
           encodeConversationListCursor(
             slice[slice.length - 1].updatedAt,
-            slice[slice.length - 1].conversationId.toHexString()
+            slice[slice.length - 1].conversationId.toString()
           )
         : null;
 
-    const ids = slice.map((r) => r.conversationId.toHexString());
+    const ids = slice.map((r) => r.conversationId.toString());
     const uniqueIds = Array.from(new Set(ids));
 
     // Batch fetch để tránh N+1: 1 query conversations + 1 query membership.
@@ -243,12 +238,12 @@ export class ConversationsService extends SharedConversationsService implements 
       this.conversationMemberRepository.findMemberships(uniqueIds, userId)
     ]);
 
-    const convById = new Map(convs.map((conv) => [conv._id.toHexString(), conv]));
-    const memberChatIds = new Set(memberships.map((member) => member.chatId.toHexString()));
+    const convById = new Map(convs.map((conv) => [conv._id.toString(), conv]));
+    const memberChatIds = new Set(memberships.map((member) => member.chatId.toString()));
 
     const conversations: ConversationSummaryResponseDTO[] = [];
     for (const row of slice) {
-      const convId = row.conversationId.toHexString();
+      const convId = row.conversationId.toString();
       // Kiểm tra phòng chat có tồn tại không
       const conv = convById.get(convId);
       if (!conv) continue;
@@ -354,7 +349,7 @@ export class ConversationsService extends SharedConversationsService implements 
     }
 
     // kiểm tra người tạo group có phải là bạn bè của người được mời không
-    const creatorFriend = await this.friendsService.isFriendOf(conv.createdBy.toHexString(), inviteeUserId);
+    const creatorFriend = await this.friendsService.isFriendOf(conv.createdBy.toString(), inviteeUserId);
     if (!creatorFriend) {
       throw ConversationInviteNotFriendException;
     }
@@ -421,8 +416,8 @@ export class ConversationsService extends SharedConversationsService implements 
       userId,
       targetUserId
     ]);
-    const actor = memberships.find((m) => m.userId.toHexString() === userId);
-    const target = memberships.find((m) => m.userId.toHexString() === targetUserId);
+    const actor = memberships.find((m) => m.userId.toString() === userId);
+    const target = memberships.find((m) => m.userId.toString() === targetUserId);
 
     // kiểm tra user có phải là member của conversation không
     if (!actor) {
@@ -484,8 +479,8 @@ export class ConversationsService extends SharedConversationsService implements 
       userId,
       targetUserId
     ]);
-    const actor = memberships.find((m) => m.userId.toHexString() === userId);
-    const target = memberships.find((m) => m.userId.toHexString() === targetUserId);
+    const actor = memberships.find((m) => m.userId.toString() === userId);
+    const target = memberships.find((m) => m.userId.toString() === targetUserId);
     // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
     if (!actor) {
       throw ConversationNotMemberException;
@@ -549,8 +544,8 @@ export class ConversationsService extends SharedConversationsService implements 
       userId,
       body.newAdminUserId
     ]);
-    const actor = memberships.find((m) => m.userId.toHexString() === userId);
-    const newAdmin = memberships.find((m) => m.userId.toHexString() === body.newAdminUserId);
+    const actor = memberships.find((m) => m.userId.toString() === userId);
+    const newAdmin = memberships.find((m) => m.userId.toString() === body.newAdminUserId);
 
     // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
     if (!actor) {

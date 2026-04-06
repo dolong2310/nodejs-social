@@ -21,7 +21,6 @@ export interface ISearchService {
   searchUsers(payload: SearchCursorQueryDTO & { userId?: string }): Promise<ICursorPaginationResult<IUser>>;
 }
 
-/** Search uses `findFriendUserIds` for `people` query filter (mutual friends via FriendsService). */
 @Injectable()
 export class SearchService extends BaseService implements ISearchService {
   constructor(
@@ -73,8 +72,8 @@ export class SearchService extends BaseService implements ISearchService {
     if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
       const blockedIds = new Set(blockedAuthorIds.filter((id) => id !== userId));
       for (const p of posts) {
-        const row = p as PostDetailResponseDTO & { author?: { _id: { toHexString(): string } } };
-        if (row.author && blockedIds.has(row.author._id.toHexString())) {
+        const row = p as PostDetailResponseDTO & { author?: { _id: { toString(): string } } };
+        if (row.author && blockedIds.has(row.author._id.toString())) {
           redactNewFeedAuthor(row as unknown as PostNewFeedResponseDTO);
         }
       }
@@ -84,7 +83,7 @@ export class SearchService extends BaseService implements ISearchService {
     const updatedPosts = await this.postsService.updatePostsViews<PostDetailResponseDTO>({ posts, userId });
 
     const last = posts[posts.length - 1];
-    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toHexString()) : null;
+    const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toString()) : null;
     return { items: updatedPosts, nextCursor };
   }
 
@@ -110,8 +109,7 @@ export class SearchService extends BaseService implements ISearchService {
       const hasMore = rows.length > numLimit;
       const users = rows.slice(0, numLimit);
       const last = users[users.length - 1];
-      const nextCursor =
-        hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toHexString()) : null;
+      const nextCursor = hasMore && last?.createdAt ? encodePostFeedCursor(last.createdAt, last._id.toString()) : null;
       return { items: users, nextCursor };
     };
 

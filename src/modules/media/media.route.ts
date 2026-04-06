@@ -1,7 +1,3 @@
-/*
- * This file defines the media routes for uploading images, videos, and video streams.
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { MediaController } from '@/modules/media/media.controller';

@@ -34,7 +34,6 @@ export class CreatePostRequestDTO {
   }
 }
 
-/** Owner PATCH: both fields required (D-06). */
 export class PatchPostRequestDTO {
   audience: EPostAudience;
   allowStrangerComments: boolean;

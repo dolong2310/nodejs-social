@@ -1,7 +1,6 @@
 import { AutoBind } from '@/decorators';
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseController } from '@/modules/base/base.controller';
-import { BookmarkPostNotFoundException } from '@/modules/bookmarks/bookmarks.exception';
 import { BookmarksService } from '@/modules/bookmarks/bookmarks.service';
 import { CreateBookmarkRequestDTO, DeleteBookmarkParamsDTO } from '@/modules/bookmarks/dtos/bookmarks.request.dto';
 import { CreateBookmarkResponseDTO, DeleteBookmarkResponseDTO } from '@/modules/bookmarks/dtos/bookmarks.response.dto';
@@ -29,10 +28,6 @@ export class BookmarksController extends BaseController implements IBookmarksCon
       userId,
       postId: dto.postId
     });
-
-    if (!bookmark) {
-      throw BookmarkPostNotFoundException;
-    }
 
     this.sendResponse<CreateBookmarkResponseDTO>({
       res,

@@ -6,3 +6,4 @@ export * from './media.repository';
 export * from './media.route';
 export * from './media.service';
 export * from './static.route';
+export * from './videoStatus.schema';

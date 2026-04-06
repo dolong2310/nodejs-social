@@ -1,7 +1,3 @@
-/*
- * Friends graph: requests, accept/decline/revoke, list friends, unfriend.
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { FriendsController } from '@/modules/friends/friends.controller';

@@ -171,7 +171,7 @@ const seedFriendshipsForViewer = async (viewerId: ObjectId, candidatePeerIds: Ob
   const seen = new Set<string>();
   const peers = candidatePeerIds.filter((peerId) => {
     if (peerId.equals(viewerId)) return false;
-    const k = peerId.toHexString();
+    const k = peerId.toString();
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
@@ -180,7 +180,7 @@ const seedFriendshipsForViewer = async (viewerId: ObjectId, candidatePeerIds: Ob
   const results = await Promise.all(
     peers.map((peerId) => {
       const { userIdLow, userIdHigh } = normalizeFriendshipPair(viewerId, peerId);
-      console.log(`Friendship edge ${userIdLow.toHexString()} — ${userIdHigh.toHexString()}`);
+      console.log(`Friendship edge ${userIdLow.toString()} — ${userIdHigh.toString()}`);
       return db.friendships.insertOne(
         new FriendshipSchema({
           userIdLow,

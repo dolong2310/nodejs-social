@@ -11,9 +11,9 @@ export interface ChatMessageResponseDTO {
 
 export function toChatMessageDto(m: IChatMessage): ChatMessageResponseDTO {
   return {
-    id: m._id.toHexString(),
-    chatId: m.chatId.toHexString(),
-    senderId: m.senderId.toHexString(),
+    id: m._id.toString(),
+    chatId: m.chatId.toString(),
+    senderId: m.senderId.toString(),
     text: m.text,
     attachments: m.attachments,
     createdAt: m.createdAt.toISOString()

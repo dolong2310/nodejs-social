@@ -312,7 +312,7 @@ export class PostsValidation implements IPostsValidation {
 
     // block hai chiều — mặc định 403; nếu viewer đã engage với post này thì cho xem và redact author.
     if (!isOwner) {
-      const blocked = await this.blockRepository.isBlockedEitherWay(userId, post.userId.toHexString());
+      const blocked = await this.blockRepository.isBlockedEitherWay(userId, post.userId.toString());
       if (blocked) {
         const engaged = await this.postsService.hasViewerEngagedWithPost(userId, post._id.toString());
         if (!engaged) {

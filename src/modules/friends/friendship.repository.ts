@@ -1,26 +1,21 @@
-/*
- * FriendshipRepository — undirected friend edges (normalized userIdLow/userIdHigh).
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { FriendshipPairRequiresDistinctUserIdsException } from '@/modules/friends/friends.exception';
 import { FriendshipSchema, IFriendship } from '@/modules/friends/friendship.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { ObjectId } from 'mongodb';
+import { MongoServerError, ObjectId } from 'mongodb';
 
 export interface IFriendshipRepository {
   findFriendUserIdsForUser(userId: string): Promise<string[]>;
   listFriendUserIdsForUserByCursor(userId: string, limit: number, cursor?: string): Promise<string[]>;
   findFriendshipPair(userIdA: string, userIdB: string): Promise<IFriendship | null>;
-  /** Count undirected friend edges between `userId` and any id in `otherUserIds` (distinct peers). */
   countFriendshipsWithUserAmongOthers(userId: string, otherUserIds: string[]): Promise<number>;
-  insertFriendship(userIdA: string, userIdB: string): Promise<void>;
+  insertFriendship(userIdA: string, userIdB: string): Promise<IFriendship | null>;
   deleteFriendshipPair(userIdA: string, userIdB: string): Promise<number>;
 }
 
 /**
- * Map two user ids to canonical storage order (D-04).
+ * Map two user ids to canonical storage order.
  * Ordering uses BSON ObjectId byte order (`Buffer.compare(a.id, b.id)`), not string `localeCompare`.
  */
 export function normalizeFriendshipPair(a: ObjectId, b: ObjectId): { userIdLow: ObjectId; userIdHigh: ObjectId } {
@@ -46,7 +41,7 @@ export class FriendshipRepository extends BaseRepository implements IFriendshipR
     ]);
     const fromLow = asLow.map((d) => d.userIdHigh).filter(Boolean) as ObjectId[];
     const fromHigh = asHigh.map((d) => d.userIdLow).filter(Boolean) as ObjectId[];
-    return [...fromLow, ...fromHigh].map((id) => id.toHexString());
+    return [...fromLow, ...fromHigh].map((id) => id.toString());
   }
 
   async findFriendshipPair(userIdA: string, userIdB: string): Promise<IFriendship | null> {
@@ -75,7 +70,7 @@ export class FriendshipRepository extends BaseRepository implements IFriendshipR
     ];
 
     const rows = await this.db.friendships.aggregate<{ friendId: ObjectId }>(pipeline).toArray();
-    return rows.map((row) => row.friendId.toHexString());
+    return rows.map((row) => row.friendId.toString());
   }
 
   /**
@@ -96,10 +91,19 @@ export class FriendshipRepository extends BaseRepository implements IFriendshipR
     });
   }
 
-  async insertFriendship(userIdA: string, userIdB: string): Promise<void> {
-    const { userIdLow, userIdHigh } = normalizeFriendshipPair(new ObjectId(userIdA), new ObjectId(userIdB));
-    const doc = new FriendshipSchema({ userIdLow, userIdHigh, createdAt: new Date() });
-    await this.db.friendships.insertOne(doc);
+  async insertFriendship(userIdA: string, userIdB: string): Promise<IFriendship | null> {
+    try {
+      const { userIdLow, userIdHigh } = normalizeFriendshipPair(new ObjectId(userIdA), new ObjectId(userIdB));
+      const doc = new FriendshipSchema({ userIdLow, userIdHigh, createdAt: new Date() });
+      await this.db.friendships.insertOne(doc);
+      return doc;
+    } catch (error) {
+      // có thể đụng unique index (Mongo error 11000) nếu friendship đã tồn tại do race condition.
+      if (error instanceof MongoServerError && error.code === 11000) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async deleteFriendshipPair(userIdA: string, userIdB: string): Promise<number> {

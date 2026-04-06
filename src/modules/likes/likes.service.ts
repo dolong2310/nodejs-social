@@ -2,10 +2,11 @@ import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseService } from '@/modules/base/base.service';
 import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/modules/likes/dtos/likes.request.dto';
 import { CreateLikeResponseDTO, DeleteLikeResponseDTO } from '@/modules/likes/dtos/likes.response.dto';
+import { LikePostNotFoundException } from '@/modules/likes/likes.exception';
 import { LikeRepository } from '@/modules/likes/likes.repository';
 
 export interface ILikesService {
-  likePost(payload: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO | null>;
+  likePost(payload: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO>;
   unlikePost(payload: DeleteLikeParamsDTO & { userId: string }): Promise<DeleteLikeResponseDTO | null>;
 }
 
@@ -15,9 +16,14 @@ export class LikesService extends BaseService implements ILikesService {
     super();
   }
 
-  async likePost({ userId, postId }: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO | null> {
+  async likePost({ userId, postId }: CreateLikeRequestDTO & { userId: string }): Promise<CreateLikeResponseDTO> {
     const result = await this.likeRepository.findOneAndUpdate({ userId, postId });
-    return result ? new CreateLikeResponseDTO(result) : null;
+
+    if (!result) {
+      throw LikePostNotFoundException;
+    }
+
+    return new CreateLikeResponseDTO(result);
   }
 
   async unlikePost({

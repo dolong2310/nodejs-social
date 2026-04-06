@@ -1,24 +1,18 @@
-/*
- * User Repository
- * This file contains the UserRepository class which implements IUserRepository interface.
- * It provides methods to interact with the user data in the database.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { RegisterRequestDTO } from '@/modules/auth/dtos/auth.request.dto';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { EUserVerificationStatus } from '@/modules/users/users.enum';
 import { IUser, UserSchema } from '@/modules/users/users.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { IRefreshToken, RefreshTokenSchema } from '@/shared/models/refreshToken.schema';
-import { FindOneAndUpdateOptions, FindOneOptions, ObjectId, UpdateResult } from 'mongodb';
+import { IRefreshToken, RefreshTokenSchema } from '@/modules/auth/refreshToken.schema';
+import { ObjectId } from 'mongodb';
 
 export interface IUserRepository {
   findRefreshToken(token: string): Promise<IRefreshToken | null>;
   createRefreshToken(token: string, userId: string): Promise<IRefreshToken>;
   deleteRefreshToken(token: string): Promise<boolean>;
   rotateRefreshToken(oldToken: string, newToken: string, userId: string): Promise<boolean>;
-  create(
+  createUser(
     data: RegisterRequestDTO & {
       userId: string;
       emailVerificationToken: string;
@@ -26,15 +20,18 @@ export interface IUserRepository {
       username: string;
     }
   ): Promise<IUser>;
-  markEmailVerified(id: string): Promise<UpdateResult<IUser>>;
-  updateEmailVerificationToken(id: string, emailVerificationToken: string): Promise<UpdateResult<IUser>>;
-  updateForgotPasswordToken(id: string, forgotPasswordToken: string): Promise<UpdateResult<IUser>>;
-  resetPassword(id: string, password: string): Promise<UpdateResult<IUser>>;
-  findOneAndUpdate(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<IUser | null>;
-  findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null>;
-  findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null>;
-  findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null>;
-  findManyByIds(ids: string[], projection?: Record<string, 0 | 1>): Promise<IUser[]>;
+  markEmailVerified(id: string): Promise<boolean>;
+  updateEmailVerificationToken(id: string, emailVerificationToken: string): Promise<boolean>;
+  updateForgotPasswordToken(id: string, forgotPasswordToken: string): Promise<boolean>;
+  resetPassword(id: string, password: string): Promise<boolean>;
+  updateMe(id: string, data: Partial<IUser>): Promise<IUser | null>;
+  changePassword(id: string, data: Partial<IUser>): Promise<IUser | null>;
+  findById<T = IUser>(id: string): Promise<T | null>;
+  findByEmail<T = IUser>(email: string): Promise<T | null>;
+  findByEmailIncludeNameAndEmail<T = IUser>(email: string): Promise<T | null>;
+  findByUsername<T = IUser>(username: string): Promise<T | null>;
+  findManyByIds(ids: string[]): Promise<IUser[]>;
+  findManyByIdsIncludeNameAndUsernameAndAvatar(ids: string[]): Promise<IUser[]>;
 }
 
 @Injectable()
@@ -76,7 +73,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return result.modifiedCount > 0;
   }
 
-  async create(
+  async createUser(
     data: RegisterRequestDTO & {
       userId: string;
       emailVerificationToken: string;
@@ -98,7 +95,7 @@ export class UserRepository extends BaseRepository implements IUserRepository {
     return newUser;
   }
 
-  async markEmailVerified(id: string): Promise<UpdateResult<IUser>> {
+  async markEmailVerified(id: string): Promise<boolean> {
     const result = await this.db.users.updateOne(
       { _id: new ObjectId(id) },
       {
@@ -109,10 +106,10 @@ export class UserRepository extends BaseRepository implements IUserRepository {
         $currentDate: { updatedAt: true } // giá trị được cập nhật tại thời điểm mongodb update document (chênh lệch với service vì nó chạy sau)
       }
     );
-    return result;
+    return result.modifiedCount > 0;
   }
 
-  async updateEmailVerificationToken(id: string, emailVerificationToken: string): Promise<UpdateResult<IUser>> {
+  async updateEmailVerificationToken(id: string, emailVerificationToken: string): Promise<boolean> {
     const result = await this.db.users.updateOne(
       { _id: new ObjectId(id) },
       {
@@ -122,10 +119,10 @@ export class UserRepository extends BaseRepository implements IUserRepository {
         $currentDate: { updatedAt: true }
       }
     );
-    return result;
+    return result.modifiedCount > 0;
   }
 
-  async updateForgotPasswordToken(id: string, forgotPasswordToken: string): Promise<UpdateResult<IUser>> {
+  async updateForgotPasswordToken(id: string, forgotPasswordToken: string): Promise<boolean> {
     const result = await this.db.users.updateOne(
       { _id: new ObjectId(id) },
       {
@@ -135,10 +132,10 @@ export class UserRepository extends BaseRepository implements IUserRepository {
         $currentDate: { updatedAt: true }
       }
     );
-    return result;
+    return result.modifiedCount > 0;
   }
 
-  async resetPassword(id: string, password: string): Promise<UpdateResult<IUser>> {
+  async resetPassword(id: string, password: string): Promise<boolean> {
     const result = await this.db.users.updateOne(
       { _id: new ObjectId(id) },
       {
@@ -149,10 +146,10 @@ export class UserRepository extends BaseRepository implements IUserRepository {
         $currentDate: { updatedAt: true }
       }
     );
-    return result;
+    return result.modifiedCount > 0;
   }
 
-  async findOneAndUpdate(id: string, data: Partial<IUser>, options?: FindOneAndUpdateOptions): Promise<IUser | null> {
+  async updateMe(id: string, data: Partial<IUser>): Promise<IUser | null> {
     const result = await this.db.users.findOneAndUpdate(
       { _id: new ObjectId(id) },
       {
@@ -161,24 +158,56 @@ export class UserRepository extends BaseRepository implements IUserRepository {
           updatedAt: true
         }
       },
-      options ?? {}
+      {
+        returnDocument: 'after',
+        projection: {
+          password: 0,
+          emailVerificationToken: 0,
+          forgotPasswordToken: 0
+        }
+      }
     );
     return result;
   }
 
-  findById<T = IUser>(id: string, options?: FindOneOptions): Promise<T | null> {
-    return this.db.users.findOne<T>({ _id: new ObjectId(id) }, options ?? {});
+  async changePassword(id: string, data: Partial<IUser>): Promise<IUser | null> {
+    const result = await this.db.users.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      {
+        $set: data,
+        $currentDate: {
+          updatedAt: true
+        }
+      },
+      {
+        returnDocument: 'after',
+        projection: {
+          password: 0,
+          emailVerificationToken: 0,
+          forgotPasswordToken: 0
+        }
+      }
+    );
+    return result;
   }
 
-  findByEmail<T = IUser>(email: string, options?: FindOneOptions): Promise<T | null> {
-    return this.db.users.findOne<T>({ email }, options ?? {});
+  findById<T = IUser>(id: string): Promise<T | null> {
+    return this.db.users.findOne<T>({ _id: new ObjectId(id) });
   }
 
-  findByUsername<T = IUser>(username: string, options?: FindOneOptions): Promise<T | null> {
-    return this.db.users.findOne<T>({ username }, options ?? {});
+  findByEmail<T = IUser>(email: string): Promise<T | null> {
+    return this.db.users.findOne<T>({ email });
   }
 
-  async findManyByIds(ids: string[], projection?: Record<string, 0 | 1>): Promise<IUser[]> {
+  findByEmailIncludeNameAndEmail<T = IUser>(email: string): Promise<T | null> {
+    return this.db.users.findOne<T>({ email }, { projection: { name: 1, email: 1 } });
+  }
+
+  findByUsername<T = IUser>(username: string): Promise<T | null> {
+    return this.db.users.findOne<T>({ username });
+  }
+
+  async findManyByIds(ids: string[]): Promise<IUser[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -187,6 +216,30 @@ export class UserRepository extends BaseRepository implements IUserRepository {
       return [];
     }
     const oids = unique.map((id) => new ObjectId(id));
-    return this.db.users.find({ _id: { $in: oids } }, projection ? { projection } : undefined).toArray();
+    return this.db.users.find({ _id: { $in: oids } }).toArray();
+  }
+
+  async findManyByIdsIncludeNameAndUsernameAndAvatar(ids: string[]): Promise<IUser[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const unique = [...new Set(ids)].filter((id) => ObjectId.isValid(id));
+    if (unique.length === 0) {
+      return [];
+    }
+    const oids = unique.map((id) => new ObjectId(id));
+    return this.db.users
+      .find(
+        { _id: { $in: oids } },
+        {
+          projection: {
+            _id: 1,
+            name: 1,
+            username: 1,
+            avatar: 1
+          }
+        }
+      )
+      .toArray();
   }
 }

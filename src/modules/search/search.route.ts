@@ -1,7 +1,3 @@
-/*
- * This file defines the search routes for searching posts and users.
- */
-
 import { protectIfHasBearerToken } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { SearchController } from '@/modules/search/search.controller';

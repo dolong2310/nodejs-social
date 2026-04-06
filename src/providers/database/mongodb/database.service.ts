@@ -11,9 +11,9 @@ import { INotification } from '@/modules/notifications/notifications.schema';
 import { IPost } from '@/modules/posts/posts.schema';
 import { IUser } from '@/modules/users/users.schema';
 import { LoggerInstance } from '@/providers/logger/instance.logger';
-import { IHashtag } from '@/shared/models/hashtag.schema';
-import { IRefreshToken } from '@/shared/models/refreshToken.schema';
-import { IVideoStatus } from '@/shared/models/videoStatus.schema';
+import { IHashtag } from '@/modules/posts/hashtag.schema';
+import { IRefreshToken } from '@/modules/auth/refreshToken.schema';
+import { IVideoStatus } from '@/modules/media/videoStatus.schema';
 import { ClientSession, Collection, Db, Document, MongoClient } from 'mongodb';
 import { ConnectionService } from '../connection.abstract';
 

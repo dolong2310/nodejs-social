@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
 
-/** Block relationship on social DB (D-13). Unique on (blockerId, blockedId). */
 export interface IBlock {
   _id: ObjectId;
   blockerId: ObjectId;

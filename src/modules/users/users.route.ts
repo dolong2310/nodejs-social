@@ -1,7 +1,3 @@
-/*
- * This file defines the users routes for getting user profile, updating user profile, and getting user profile by username.
- */
-
 import { optionalProtect, protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { UsersController } from '@/modules/users/users.controller';

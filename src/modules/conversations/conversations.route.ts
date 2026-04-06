@@ -1,7 +1,3 @@
-/*
- * Conversations: direct / group / messages / read / get / patch / invite / leave / kick / patch role / transfer admin.
- */
-
 import { protect } from '@/modules/auth/auth.middleware';
 import { BaseRoute } from '@/modules/base/base.route';
 import { ChatMessagesController } from '@/modules/chatMessages/chatMessages.controller';

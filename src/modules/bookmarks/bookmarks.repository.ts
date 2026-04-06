@@ -1,9 +1,3 @@
-/*
- * Bookmark Repository
- * This file contains the BookmarkRepository class which implements IBookmarkRepository interface.
- * It provides methods to interact with the bookmark data in the database.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseRepository } from '@/modules/base/base.repository';
 import { BookmarkSchema, IBookmark } from '@/modules/bookmarks/bookmarks.schema';

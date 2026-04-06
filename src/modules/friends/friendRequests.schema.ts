@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
 
-/** Directed pending friend request (D-05, D-06). Accept/decline/revoke = delete row. */
 export interface IFriendRequest {
   _id: ObjectId;
   fromUserId: ObjectId;

@@ -1,8 +1,9 @@
 import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseRepository } from '@/modules/base/base.repository';
+import { BlockAlreadyExistsException } from '@/modules/blocks/blocks.exception';
 import { BlockSchema } from '@/modules/blocks/blocks.schema';
 import { DatabaseService } from '@/providers/database/mongodb/database.service';
-import { ObjectId } from 'mongodb';
+import { MongoServerError, ObjectId } from 'mongodb';
 
 export interface IBlockRepository {
   isBlockedEitherWay(aUserId: string, bUserId: string): Promise<boolean>;
@@ -12,7 +13,7 @@ export interface IBlockRepository {
   listBlockedUserIdsForBlocker(blockerUserId: string): Promise<string[]>;
 }
 
-function dedupeHexIds(ids: string[]): string[] {
+function dedupeIds(ids: string[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const id of ids) {
@@ -54,16 +55,23 @@ export class BlockRepository extends BaseRepository implements IBlockRepository 
       this.db.blocks.distinct('blockedId', { blockerId: viewerId }),
       this.db.blocks.distinct('blockerId', { blockedId: viewerId })
     ]);
-    const hex = [...(asBlocker as ObjectId[]), ...(asBlocked as ObjectId[])].map((id) => id.toHexString());
-    return dedupeHexIds(hex);
+    const ids = [...asBlocker, ...asBlocked].map((id) => id.toString());
+    return dedupeIds(ids);
   }
 
   async createBlock(blockerUserId: string, blockedUserId: string): Promise<void> {
-    const doc = new BlockSchema({
-      blockerId: new ObjectId(blockerUserId),
-      blockedId: new ObjectId(blockedUserId)
-    });
-    await this.db.blocks.insertOne(doc);
+    try {
+      const doc = new BlockSchema({
+        blockerId: new ObjectId(blockerUserId),
+        blockedId: new ObjectId(blockedUserId)
+      });
+      await this.db.blocks.insertOne(doc);
+    } catch (error) {
+      if (error instanceof MongoServerError && error.code === 11000) {
+        throw BlockAlreadyExistsException;
+      }
+      throw error;
+    }
   }
 
   async deleteBlock(blockerUserId: string, blockedUserId: string): Promise<number> {
@@ -76,6 +84,6 @@ export class BlockRepository extends BaseRepository implements IBlockRepository 
 
   async listBlockedUserIdsForBlocker(blockerUserId: string): Promise<string[]> {
     const ids = await this.db.blocks.distinct('blockedId', { blockerId: new ObjectId(blockerUserId) });
-    return (ids as ObjectId[]).map((id) => id.toHexString());
+    return ids.map((id) => id.toString());
   }
 }

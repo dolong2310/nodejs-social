@@ -1,9 +1,3 @@
-/**
- * Friend-request **daily send cap** (FRND-05 / D-07) uses the **UTC calendar day**
- * (`Date.UTC` year/month/day at midnight, window length 86400000 ms), not the server's
- * local timezone and not per-user local timezones.
- */
-
 import { CACHE_KEYS, CACHE_TTL } from '@/constants/cache.constant';
 import { AutoBind } from '@/decorators/autoBind.decorator';
 import { Injectable } from '@/decorators/injectable.decorator';
@@ -16,7 +10,6 @@ import {
   AlreadyFriendsException,
   CannotSendFriendRequestToYourselfException,
   FriendActionBlockedException,
-  FriendRequestAlreadyPendingException,
   FriendRequestDailyLimitExceededException,
   FriendUserNotFoundException,
   InvalidCursorException,
@@ -31,7 +24,6 @@ import { RedisService } from '@/providers/database/redis/redis.service';
 import { decodeCursorOrThrow } from '@/utils/cursor-pagination.util';
 import { decodeFriendListCursor, encodeFriendListCursor } from '@/utils/friend-cursor.util';
 import { decodeFriendRequestCursor, encodeFriendRequestCursor } from '@/utils/friendRequest-cursor.util';
-import { MongoServerError } from 'mongodb';
 
 /** User fields returned in friend / pending-request lists. */
 export interface FriendUserRow {
@@ -91,7 +83,7 @@ export class FriendsService extends BaseService implements IFriendsService {
 
   private toFriendUserRow(user: IUser): FriendUserRow {
     return {
-      _id: user._id.toHexString(),
+      _id: user._id.toString(),
       name: user.name,
       username: user.username,
       avatar: user.avatar
@@ -187,19 +179,12 @@ export class FriendsService extends BaseService implements IFriendsService {
     // - nếu đang có request B->A pending, hệ thống vẫn cho phép A gửi A->B (tạo 2 request ngược chiều cùng lúc).
     // - DB chỉ chống trùng cùng chiều (A->B) chứ không chống "ngược chiều".
     // - đây là lựa chọn nghiệp vụ (có hệ thống sẽ tự chuyển thành "accept" hoặc chặn, nhưng ở đây thì không).
-    try {
-      const created = await this.friendRequestRepository.insertPendingRequest(myUserId, toUserId);
-      // invalidate cache của người gửi
-      await this.invalidateFriendCache(myUserId);
-      // notification "friend request" cho người nhận
-      await this.notificationsService.recordFriendRequest(toUserId, myUserId);
-      return created;
-    } catch (e) {
-      if (e instanceof MongoServerError && e.code === 11000) {
-        throw FriendRequestAlreadyPendingException;
-      }
-      throw e;
-    }
+    const created = await this.friendRequestRepository.insertPendingRequest(myUserId, toUserId);
+    // invalidate cache của người gửi
+    await this.invalidateFriendCache(myUserId);
+    // notification "friend request" cho người nhận
+    await this.notificationsService.recordFriendRequest(toUserId, myUserId);
+    return created;
   }
 
   async acceptIncomingRequest(myUserId: string, fromUserId: string): Promise<void> {
@@ -222,19 +207,14 @@ export class FriendsService extends BaseService implements IFriendsService {
       throw FriendActionBlockedException;
     }
 
-    // Bọc try/catch vì có thể đụng unique index (Mongo error 11000) nếu friendship đã tồn tại do race condition.
-    try {
-      await this.friendshipRepository.insertFriendship(fromUserId, myUserId);
-    } catch (e) {
-      if (e instanceof MongoServerError && e.code === 11000) {
-        // nếu đã tồn tại friendship, xóa request và invalidate cache
-        await Promise.all([
-          this.friendRequestRepository.deleteDirectedRequest(fromUserId, myUserId),
-          this.invalidateBoth(myUserId, fromUserId)
-        ]);
-        return;
-      }
-      throw e;
+    const doc = await this.friendshipRepository.insertFriendship(fromUserId, myUserId);
+    if (!doc) {
+      // nếu đã tồn tại friendship, xóa request và invalidate cache
+      await Promise.all([
+        this.friendRequestRepository.deleteDirectedRequest(fromUserId, myUserId),
+        this.invalidateBoth(myUserId, fromUserId)
+      ]);
+      return;
     }
 
     await Promise.all([
@@ -287,7 +267,7 @@ export class FriendsService extends BaseService implements IFriendsService {
     // tạo map từ ID hex string đến user object để tránh lookup lại DB
     // Vì query $in ở DB không đảm bảo giữ thứ tự đầu vào, nên phải map lại theo idStrings.
     // - Đảm bảo response đúng thứ tự phân trang đã tính
-    const idToUserMap = new Map(users.map((u) => [u._id.toHexString(), u]));
+    const idToUserMap = new Map(users.map((u) => [u._id.toString(), u]));
     // sắp xếp lại danh sách user theo thứ tự idStrings
     const ordered = slice.map((id) => idToUserMap.get(id)).filter((u): u is IUser => Boolean(u));
     // tạo cursor cho trang tiếp theo
@@ -313,19 +293,14 @@ export class FriendsService extends BaseService implements IFriendsService {
     const hasMore = items.length > pageSize;
     const slice = items.slice(0, pageSize);
 
-    const idStrings = slice.map((r) => r.fromUserId.toHexString());
-    const users = await this.userRepository.findManyByIds(idStrings, {
-      _id: 1,
-      name: 1,
-      username: 1,
-      avatar: 1
-    });
-    const byHex = new Map(users.map((u) => [u._id.toHexString(), u]));
-    const ordered = idStrings.map((id) => byHex.get(id)).filter((u): u is IUser => Boolean(u));
+    const idStrings = slice.map((r) => r.fromUserId.toString());
+    const users = await this.userRepository.findManyByIdsIncludeNameAndUsernameAndAvatar(idStrings);
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const ordered = idStrings.map((id) => userMap.get(id)).filter((u): u is IUser => Boolean(u));
 
     const last = slice[slice.length - 1];
     const nextCursor =
-      hasMore && last ? encodeFriendRequestCursor(last.createdAt ?? new Date(0), last._id.toHexString()) : null;
+      hasMore && last ? encodeFriendRequestCursor(last.createdAt ?? new Date(0), last._id.toString()) : null;
 
     return { items: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
   }
@@ -347,19 +322,14 @@ export class FriendsService extends BaseService implements IFriendsService {
     const hasMore = items.length > pageSize;
     const slice = items.slice(0, pageSize);
 
-    const idStrings = slice.map((r) => r.toUserId.toHexString());
-    const users = await this.userRepository.findManyByIds(idStrings, {
-      _id: 1,
-      name: 1,
-      username: 1,
-      avatar: 1
-    });
-    const byHex = new Map(users.map((u) => [u._id.toHexString(), u]));
-    const ordered = idStrings.map((id) => byHex.get(id)).filter((u): u is IUser => Boolean(u));
+    const idStrings = slice.map((r) => r.toUserId.toString());
+    const users = await this.userRepository.findManyByIdsIncludeNameAndUsernameAndAvatar(idStrings);
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const ordered = idStrings.map((id) => userMap.get(id)).filter((u): u is IUser => Boolean(u));
 
     const last = slice[slice.length - 1];
     const nextCursor =
-      hasMore && last ? encodeFriendRequestCursor(last.createdAt ?? new Date(0), last._id.toHexString()) : null;
+      hasMore && last ? encodeFriendRequestCursor(last.createdAt ?? new Date(0), last._id.toString()) : null;
 
     return { items: ordered.map((u) => this.toFriendUserRow(u)), nextCursor };
   }

@@ -3,7 +3,6 @@ import { Injectable } from '@/decorators/injectable.decorator';
 import { BaseController } from '@/modules/base/base.controller';
 import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/modules/likes/dtos/likes.request.dto';
 import { CreateLikeResponseDTO, DeleteLikeResponseDTO } from '@/modules/likes/dtos/likes.response.dto';
-import { LikePostNotFoundException } from '@/modules/likes/likes.exception';
 import { LikesService } from '@/modules/likes/likes.service';
 import { Created } from '@/providers/httpResponses/success.response';
 import { Request, Response } from 'express';
@@ -29,10 +28,6 @@ export class LikesController extends BaseController implements ILikesController 
       userId,
       postId: dto.postId
     });
-
-    if (!like) {
-      throw LikePostNotFoundException;
-    }
 
     this.sendResponse<CreateLikeResponseDTO>({
       res,

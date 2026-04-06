@@ -1,9 +1,3 @@
-/*
- * Search Repository
- * This file contains the SearchRepository class which implements ISearchRepository interface.
- * It provides methods to interact with the search data in the database.
- */
-
 import { Injectable } from '@/decorators/injectable.decorator';
 import { DateIdCursor } from '@/interfaces/types/cursor.type';
 import { BaseRepository } from '@/modules/base/base.repository';
@@ -152,8 +146,8 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     if (userId) {
       const viewerOid = new ObjectId(userId);
       const blocked = (blockedAuthorIds ?? []).filter((id) => id !== userId).map((id) => new ObjectId(id));
-      const friendHexes = await findFriendUserIds(userId);
-      const friendIds = friendHexes.filter((id) => id !== userId).map((id) => new ObjectId(id));
+      const friendIds = await findFriendUserIds(userId);
+      const friendIdsFriendsOnly = friendIds.filter((id) => id !== userId).map((id) => new ObjectId(id));
 
       // Chỉ hiển thị post PUBLIC và post FRIENDS_ONLY (bạn bè) (không bị block)
       const orVisibility: Record<string, unknown>[] = [
@@ -164,7 +158,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
         { userId: viewerOid },
         {
           audience: EPostAudience.FRIENDS_ONLY,
-          userId: { $in: friendIds, $nin: blocked }
+          userId: { $in: friendIdsFriendsOnly, $nin: blocked }
         }
       ];
       // nếu viewer từng tương tác (like/bookmark/comment) với bài của các tác giả bị block, thì vẫn lấy ra postId của các bài đó để hiển thị (Unknown user)
@@ -176,7 +170,7 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
       if (people) {
         // tìm kiếm theo bạn bè và không phải bạn bè
         if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
-          const friendOids = friendHexes.map((id) => new ObjectId(id));
+          const friendOids = friendIds.map((id) => new ObjectId(id));
           andClauses.push({
             userId: people === ESearchPeople.FRIENDS ? { $in: friendOids } : { $nin: friendOids }
           });
@@ -218,8 +212,8 @@ export class SearchRepository extends BaseRepository implements ISearchRepositor
     if (people && userId) {
       // tìm kiếm theo bạn bè và không phải bạn bè
       if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
-        const friendHexes = await findFriendUserIds(userId);
-        const friendOids = friendHexes.map((id) => new ObjectId(id));
+        const friendIds = await findFriendUserIds(userId);
+        const friendOids = friendIds.map((id) => new ObjectId(id));
         match['_id'] = people === ESearchPeople.FRIENDS ? { $in: friendOids } : { $nin: friendOids };
       } else if (people === ESearchPeople.ONLY_ME) {
         // tìm kiếm theo chính mình

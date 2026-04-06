@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "users object validation (aligned with UserSchema constructor + userRepository.create)",
+    "title": "users object validation (aligned with UserSchema constructor + userRepository.createUser)",
     "bsonType": "object",
     "required": [
       "_id",

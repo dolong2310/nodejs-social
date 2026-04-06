@@ -1,8 +1,3 @@
-/*
- * This file contains the BaseController class which provides common methods for handling requests and responses.
- * It includes methods for validation error handling, error handling, sending responses, pagination, user ID retrieval, and cookie management.
- */
-
 import { isProduction } from '@/config/envConfig';
 import { MissingAuthenticatedUserException } from '@/modules/base/base.exception';
 import { Created, OK, SuccessResponseParams } from '@/providers/httpResponses/success.response';

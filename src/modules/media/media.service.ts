@@ -1,11 +1,12 @@
 import { config } from '@/config/generalConfig';
-import { UPLOAD_DIR_IMAGE } from '@/constants/file.constant';
+import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/constants/file.constant';
 import { Injectable } from '@/decorators/injectable.decorator';
 import { IMedia } from '@/interfaces/types/media.type';
 import { EEncodingVideoStatus, EMediaType } from '@/modules/media/media.enum';
+import { RequestedRangeNotSatisfiableException } from '@/modules/media/media.exception';
 import { MediaRepository } from '@/modules/media/media.repository';
 import { VideoHLSJobQueue } from '@/providers/queue/queues/video-hls.queue';
-import { IVideoStatus } from '@/shared/models/videoStatus.schema';
+import { IVideoStatus } from '@/modules/media/videoStatus.schema';
 import { S3Service } from '@/shared/services/s3.service';
 import { mapWithConcurrency } from '@/utils/concurrency.util';
 import { getNameFromFullname, handleUploadImage, handleUploadVideo, handleUploadVideoHLS } from '@/utils/file.util';
@@ -14,8 +15,10 @@ import fs from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
 import sharp from 'sharp';
+import { IStaticVideoStreamPayload } from '@/modules/media/dtos/media.response.dto';
 
 export interface IMediaService {
+  getStaticVideoStream(filename: string, rangeHeader: string | undefined): Promise<IStaticVideoStreamPayload>;
   uploadImage(req: Request): Promise<IMedia[]>;
   uploadVideo(req: Request): Promise<IMedia[]>;
   uploadVideoHLS(req: Request): Promise<IMedia[]>;
@@ -29,6 +32,50 @@ export class MediaService implements IMediaService {
     private readonly s3Service: S3Service,
     private readonly videoHLSJobQueue: VideoHLSJobQueue
   ) {}
+
+  async getStaticVideoStream(filename: string, rangeHeader: string | undefined): Promise<IStaticVideoStreamPayload> {
+    if (!rangeHeader) {
+      throw RequestedRangeNotSatisfiableException;
+    }
+
+    const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
+    const videoStat = await fs.stat(videoPath);
+    const videoSize = videoStat.size;
+
+    const chunkSize = 10 ** 6;
+    const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
+    if (!match) {
+      throw RequestedRangeNotSatisfiableException;
+    }
+
+    const start = Number(match[1]);
+    const endFromHeader = match[2] ? Number(match[2]) : null;
+
+    if (!Number.isFinite(start) || start < 0 || start >= videoSize) {
+      throw RequestedRangeNotSatisfiableException;
+    }
+
+    let end: number;
+    if (endFromHeader !== null && Number.isFinite(endFromHeader)) {
+      if (endFromHeader < start) {
+        throw RequestedRangeNotSatisfiableException;
+      }
+      end = Math.min(endFromHeader, videoSize - 1);
+    } else {
+      end = Math.min(start + chunkSize - 1, videoSize - 1);
+    }
+
+    const contentLength = end - start + 1;
+    const contentType = mime.getType(videoPath) || 'application/octet-stream';
+    return {
+      videoPath,
+      videoSize,
+      start,
+      end,
+      contentLength,
+      contentType
+    };
+  }
 
   async uploadImage(req: Request) {
     const files = await handleUploadImage(req);
