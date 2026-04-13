@@ -23,6 +23,7 @@ export abstract class ValueObject<Props> {
   }
 
   protected abstract validate(props: ValueObjectProps<Props>): void;
+
   static isValueObject(obj: unknown): obj is ValueObject<unknown> {
     return obj instanceof ValueObject;
   }

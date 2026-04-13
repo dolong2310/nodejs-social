@@ -4,18 +4,18 @@ import type { EntityId } from '@/modules/core/types/general.type';
 export class UniqueEntityID {
   protected readonly id: EntityId;
 
-  constructor(_id?: EntityId) {
-    this.id = _id || generatePrefixId('entity');
+  constructor(id?: EntityId) {
+    this.id = id || generatePrefixId('entity');
   }
 
-  equals(_id?: UniqueEntityID): boolean {
-    if (!_id) {
+  equals(id?: UniqueEntityID): boolean {
+    if (!id) {
       return false;
     }
-    if (!(_id instanceof this.constructor)) {
+    if (!(id instanceof this.constructor)) {
       return false;
     }
-    return _id.toValue() === this.id;
+    return id.toValue() === this.id;
   }
 
   toString() {
