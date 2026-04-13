@@ -1,0 +1,30 @@
+{
+  "$jsonSchema": {
+    "title": "conversationMembers / IConversationMember (ConversationMemberEntity; chat DB)",
+    "bsonType": "object",
+    "required": ["_id", "conversationId", "userId", "role", "joinedAt"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "conversationId": {
+        "bsonType": "objectId",
+        "description": "Conversation _id (field name conversationId in BSON)"
+      },
+      "userId": { "bsonType": "objectId" },
+      "role": {
+        "bsonType": "string",
+        "enum": ["admin", "manager", "member"],
+        "description": "EConversationMemberRole"
+      },
+      "joinedAt": { "bsonType": "date" },
+      "lastReadMessageId": {
+        "bsonType": ["objectId", "null"],
+        "description": "Set by updateReadState; absent until first mark-read"
+      },
+      "lastReadAt": {
+        "bsonType": ["date", "null"],
+        "description": "Set with lastReadMessageId"
+      }
+    },
+    "additionalProperties": false
+  }
+}

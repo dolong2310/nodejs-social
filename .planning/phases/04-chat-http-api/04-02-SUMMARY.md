@@ -28,7 +28,7 @@ key-files:
 
 key-decisions:
   - "Direct chats: partial unique index on sorted pair (userA, userB) when type=direct."
-  - "Messages live in chat DB collection `messages` with chatId + createdAt cursor ordering."
+  - "Messages live in chat DB collection `messages` with conversationId + createdAt cursor ordering."
 
 requirements-completed: []
 

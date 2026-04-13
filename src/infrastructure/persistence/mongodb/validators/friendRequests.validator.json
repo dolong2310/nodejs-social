@@ -1,0 +1,14 @@
+{
+  "$jsonSchema": {
+    "title": "friendRequests (FriendRequestEntity + friendRequest.repository)",
+    "bsonType": "object",
+    "required": ["_id", "fromUserId", "toUserId", "createdAt"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "fromUserId": { "bsonType": "objectId" },
+      "toUserId": { "bsonType": "objectId" },
+      "createdAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

@@ -10,7 +10,7 @@ requires:
 provides:
   - ChatMessageRepository; ChatMessagesService (POST/GET messages, PATCH read)
   - Cursor pagination for messages; block guard on sending in direct chats
-  - Routes nested under `/api/chats/:chatId/messages` and read endpoint order before `GET /:chatId`
+  - Routes nested under `/api/chats/:conversationId/messages` and read endpoint order before `GET /:conversationId`
 affects: [chat-http-api]
 
 tech-stack:

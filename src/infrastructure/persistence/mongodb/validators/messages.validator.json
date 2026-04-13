@@ -1,0 +1,35 @@
+{
+  "$jsonSchema": {
+    "title": "messages / IChatMessage (ChatMessageEntity; chat DB collection `messages`)",
+    "bsonType": "object",
+    "required": ["_id", "conversationId", "senderId", "createdAt"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "conversationId": { "bsonType": "objectId" },
+      "senderId": { "bsonType": "objectId" },
+      "createdAt": { "bsonType": "date" },
+      "text": {
+        "bsonType": "string",
+        "description": "Optional; API requires non-empty text and/or attachments (CHAT_MESSAGE_EMPTY)"
+      },
+      "attachments": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "required": ["key", "mime", "size"],
+          "properties": {
+            "key": { "bsonType": "string" },
+            "mime": { "bsonType": "string" },
+            "size": {
+              "bsonType": ["int", "long", "double"],
+              "description": "IChatAttachment.size (bytes)"
+            },
+            "url": { "bsonType": "string" }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "additionalProperties": false
+  }
+}

@@ -20,14 +20,14 @@ Constants: `SOCKET_ROOM_USER_PREFIX` = `user:`, `SOCKET_ROOM_CHAT_PREFIX` = `cha
 | `chat:unsubscribe` | `{ conversationId: string }` | `socket.leave('chat:' + conversationId)`. |
 | `chat:typing` | `{ conversationId: string, typing: boolean }` | Member check; ephemeral broadcast to `chat:<conversationId>` only. **D-12, D-13** |
 
-**Removed (breaking):** `sendMessage`, `receiveMessage` — use REST `POST /api/chats/:chatId/messages` only. **D-08**
+**Removed (breaking):** `sendMessage`, `receiveMessage` — use REST `POST /api/chats/:conversationId/messages` only. **D-08**
 
 ## Server → client events
 
 | Event | When | Payload (summary) |
 |-------|------|-------------------|
-| `chat:message:new` | After DB insert + touch from HTTP `sendMessage`. **D-09, D-10, SOCK-03** | `{ message: <ChatMessageResponseDTO> }` — same shape as HTTP message JSON (`id`, `chatId`, `senderId`, `text?`, `attachments?`, `createdAt`). |
-| `chat:read:updated` | After successful PATCH read. **D-07, SOCK-03** | `{ chatId, userId, lastReadMessageId, lastReadAt }` (ISO string for `lastReadAt`). |
+| `chat:message:new` | After DB insert + touch from HTTP `sendMessage`. **D-09, D-10, SOCK-03** | `{ message: <ChatMessageResponseDTO> }` — same shape as HTTP message JSON (`id`, `conversationId`, `senderId`, `text?`, `attachments?`, `createdAt`). |
+| `chat:read:updated` | After successful PATCH read. **D-07, SOCK-03** | `{ conversationId, userId, lastReadMessageId, lastReadAt }` (ISO string for `lastReadAt`). |
 | `chat:typing` | Typing indicator | `{ conversationId, userId, typing }` — `userId` from JWT only. |
 | `presence:user` | Mutual friend connect/disconnect. **D-01, D-02** | `{ userId, online: boolean }` |
 | `presence:chat` | After subscribe or when chat online aggregate changes. **D-03** | `{ conversationId, anyMemberOnline: boolean }` |

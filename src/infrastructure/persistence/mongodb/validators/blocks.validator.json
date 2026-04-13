@@ -1,0 +1,14 @@
+{
+  "$jsonSchema": {
+    "title": "blocks (BlockEntity + block.repository)",
+    "bsonType": "object",
+    "required": ["_id", "blockerId", "blockedId", "createdAt"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "blockerId": { "bsonType": "objectId" },
+      "blockedId": { "bsonType": "objectId" },
+      "createdAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

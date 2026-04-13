@@ -15,7 +15,7 @@ score: 5/5
 
 | # | Truth | Status | Evidence (high level) |
 |---|--------|--------|------------------------|
-| 1 | Audience literals `public` \| `friends-only` \| `only-me`; create requires `allowStrangerComments` | ✓ | `EPostAudience`, `CreatePostRequestDTO`, validations, `PostSchema` |
+| 1 | Audience literals `public` \| `friends-only` \| `only-me`; create requires `allowStrangerComments` | ✓ | `EPostAudience`, `CreatePostRequestDTO`, validations, `PostEntity` |
 | 2 | Owner PATCH audience + stranger flag | ✓ | `PATCH /posts/:postId`, `PatchPostRequestDTO`, `updatePostAudienceAndStrangerComments` |
 | 3 | Guest feed public-only; auth feed merged + `createdAt` desc + BLCK-02 | ✓ | `PostRepository.findPosts` / `countPosts`, `buildBasePostPipeline` `$sort` |
 | 4 | Stranger engagement on public gated by `allowStrangerComments` for comment/repost/quote | ✓ | `PostsService.assertThreadedEngagementAllowed` |

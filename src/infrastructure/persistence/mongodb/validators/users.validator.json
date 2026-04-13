@@ -1,0 +1,85 @@
+{
+  "$jsonSchema": {
+    "title": "users object validation (aligned with UserEntity constructor + userRepository.createUser)",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "name",
+      "email",
+      "password",
+      "dateOfBirth",
+      "verificationStatus",
+      "emailVerificationToken",
+      "forgotPasswordToken",
+      "createdAt",
+      "updatedAt",
+      "bio",
+      "location",
+      "website",
+      "username",
+      "avatar",
+      "coverPhoto"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "name": {
+        "bsonType": "string"
+      },
+      "email": {
+        "bsonType": "string"
+      },
+      "password": {
+        "bsonType": "string",
+        "description": "bcrypt hash from hashPassword()"
+      },
+      "dateOfBirth": {
+        "bsonType": "date"
+      },
+      "verificationStatus": {
+        "bsonType": "string",
+        "enum": ["verified", "unverified", "banned"],
+        "description": "EUserVerificationStatus"
+      },
+      "emailVerificationToken": {
+        "bsonType": "string",
+        "description": "JWT or empty string after verify"
+      },
+      "forgotPasswordToken": {
+        "bsonType": "string",
+        "description": "JWT or empty string when cleared"
+      },
+      "createdAt": {
+        "bsonType": "date"
+      },
+      "updatedAt": {
+        "bsonType": "date"
+      },
+      "bio": {
+        "bsonType": "string",
+        "description": "Default '' from UserEntity"
+      },
+      "location": {
+        "bsonType": "string",
+        "description": "Default '' from UserEntity"
+      },
+      "website": {
+        "bsonType": "string",
+        "description": "Default '' from UserEntity"
+      },
+      "username": {
+        "bsonType": "string"
+      },
+      "avatar": {
+        "bsonType": "string",
+        "description": "Default '' from UserEntity"
+      },
+      "coverPhoto": {
+        "bsonType": "string",
+        "description": "Default '' from UserEntity"
+      }
+    },
+    "additionalProperties": false
+  }
+}

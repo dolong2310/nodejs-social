@@ -71,7 +71,7 @@
 
 Phase 6 aligns Socket.IO with Phase 4 HTTP chat and Phase 5 notifications: **identity from JWT only** (SOCK-01), **conversation rooms + per-user rooms** for fan-out (SOCK-02), and **database write before any chat/read-related emit** (SOCK-03). The current `SocketService` already validates access tokens at handshake and on each packet, and mirrors Phase 5’s `ISocketUserEmitter` pattern for notifications — but it **stores one socket id per user** (`Map<userId, socket.id>`), which violates multi-tab/device sync (D-05), and it still exposes **`sendMessage` / `receiveMessage` with client-trusted `senderId`**, which matches CONCERNS.md P1 and must be removed.
 
-**Standard remediation:** use Socket.IO **rooms** so every connection `join`s a stable per-user room (e.g. `user:<userId>`) and optionally `chat:<chatId>` after server-side membership checks. Emit with `io.to(room).emit(...)` so all tabs receive personal and in-chat events without custom socket-id maps. Hook **`ChatMessagesService.sendMessage`** and **`markRead`** after successful persistence to emit; keep **message creation only on REST** — sockets deliver only.
+**Standard remediation:** use Socket.IO **rooms** so every connection `join`s a stable per-user room (e.g. `user:<userId>`) and optionally `chat:<conversationId>` after server-side membership checks. Emit with `io.to(room).emit(...)` so all tabs receive personal and in-chat events without custom socket-id maps. Hook **`ChatMessagesService.sendMessage`** and **`markRead`** after successful persistence to emit; keep **message creation only on REST** — sockets deliver only.
 
 **Primary recommendation:** Replace the one-socket map with **per-user room fan-out**, remove legacy chat socket events, and inject a narrow **realtime emitter port** into `ChatMessagesService` (same style as `NotificationsService.bindSocketEmitter`) so HTTP services own persist-then-emit ordering.
 
@@ -143,7 +143,7 @@ io.on('connection', (socket) => {
 
 ### Pattern 2: Conversation room after membership check (SOCK-02)
 
-**What:** Client requests join (e.g. `chat:subscribe` with `chatId`). Server loads membership via `IChatMemberRepository` (same rules as HTTP). On success: `socket.join('chat:' + chatId)`.
+**What:** Client requests join (e.g. `chat:subscribe` with `conversationId`). Server loads membership via `IChatMemberRepository` (same rules as HTTP). On success: `socket.join('chat:' + conversationId)`.
 
 **When to use:** Message delivery to everyone currently viewing the thread; typing broadcasts; optional group online aggregate updates to room.
 
@@ -151,7 +151,7 @@ io.on('connection', (socket) => {
 
 ### Pattern 3: Persist-then-emit for messages and read (SOCK-03)
 
-**What:** In `ChatMessagesService.sendMessage`, after `insertMessage` and `touchUpdatedAt`, call realtime emit with **`toChatMessageDto(msg)`** (D-10). Target: `io.to('chat:' + chatId)` and optionally `io.to('user:' + memberId)` for members not in room (planner — discretion); minimum is conversation room for open clients + user room for cross-tab if spec requires.
+**What:** In `ChatMessagesService.sendMessage`, after `insertMessage` and `touchUpdatedAt`, call realtime emit with **`toChatMessageDto(msg)`** (D-10). Target: `io.to('chat:' + conversationId)` and optionally `io.to('user:' + memberId)` for members not in room (planner — discretion); minimum is conversation room for open clients + user room for cross-tab if spec requires.
 
 **What (read):** After `updateReadState` in `markRead`, emit a read-receipt event to `chat:` room (others + own tabs per D-07).
 
@@ -241,7 +241,7 @@ Message persistence (emit **after** this block):
 Read persistence (emit **after** `updateReadState`):
 
 ```155:178:src/services/chatMessages.service.ts
-  async markRead(userId: string, chatId: string, body: MarkChatReadBodyDTO): Promise<void> {
+  async markRead(userId: string, conversationId: string, body: MarkChatReadBodyDTO): Promise<void> {
     // ...
     await this.chatMemberRepository.updateReadState(cid, viewerOid, messageId, at);
   }
@@ -291,7 +291,7 @@ Notification emit pattern to preserve:
 
 2. **Read receipt payload shape**
    - What we know: D-07 requires others + self tabs.
-   - What’s unclear: Minimal `{ chatId, userId, lastReadMessageId }` vs full DTO.
+   - What’s unclear: Minimal `{ conversationId, userId, lastReadMessageId }` vs full DTO.
    - Recommendation: Minimal + timestamps matching HTTP if any.
 
 3. **Friend presence subscriber list cost**

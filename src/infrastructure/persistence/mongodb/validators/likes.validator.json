@@ -1,0 +1,14 @@
+{
+  "$jsonSchema": {
+    "title": "likes (LikeEntity + like.repository upsert)",
+    "bsonType": "object",
+    "required": ["_id", "userId", "postId", "createdAt"],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "userId": { "bsonType": "objectId" },
+      "postId": { "bsonType": "objectId" },
+      "createdAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

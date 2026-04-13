@@ -1,16 +1,17 @@
-import { TokenPayload } from '@/interfaces/types/token.type';
-import { PostDetailResponseDTO } from '@/modules/posts/dtos/posts.response.dto';
-import { IUser } from '@/modules/users/users.schema';
+import { TokenPayload } from '@/domain/value-objects/token.value-object';
+
+import { PostDetailResponseDTO } from '@/application/dtos/post/post.result.dto';
+import { UserResultDTO } from '@/application/dtos/user/user.result.dto';
+
 import 'express';
 import type { Logger } from 'pino';
 
 declare module 'express' {
   interface Request {
-    user?: IUser;
+    user?: UserResultDTO;
     postDetail?: PostDetailResponseDTO;
     tokenPayload?: TokenPayload;
-    /** Raw refresh JWT from httpOnly cookie (set by refresh-token / logout cookie validation). */
-    refreshTokenJwt?: string;
+    refreshTokenJwt?: string; // Raw refresh JWT from httpOnly cookie (set by refresh-token / logout cookie validation).
     log: Logger;
   }
 

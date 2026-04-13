@@ -668,7 +668,7 @@ components:
       type: object
       properties:
         id: { $ref: '#/components/schemas/MongoId' }
-        chatId: { $ref: '#/components/schemas/MongoId' }
+        conversationId: { $ref: '#/components/schemas/MongoId' }
         senderId: { $ref: '#/components/schemas/MongoId' }
         text: { type: string }
         attachments:
@@ -885,17 +885,17 @@ components:
         friendUserId: { $ref: '#/components/schemas/MongoId' }
     NotificationPayloadNewMessage:
       type: object
-      required: [chatId, messageId, previewKind]
+      required: [conversationId, messageId, previewKind]
       properties:
-        chatId: { $ref: '#/components/schemas/MongoId' }
+        conversationId: { $ref: '#/components/schemas/MongoId' }
         messageId: { $ref: '#/components/schemas/MongoId' }
         previewText: { type: string }
         previewKind: { type: string, enum: [text, attachment, mixed] }
     NotificationPayloadAddedToGroup:
       type: object
-      required: [chatId]
+      required: [conversationId]
       properties:
-        chatId: { $ref: '#/components/schemas/MongoId' }
+        conversationId: { $ref: '#/components/schemas/MongoId' }
         chatName: { type: string }
     NotificationListItem:
       type: object

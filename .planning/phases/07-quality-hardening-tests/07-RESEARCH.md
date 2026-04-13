@@ -124,7 +124,7 @@ All protected chat/friends routes use **`userVerifiedValidation`** (`src/routes/
 1. **Auth:** `POST /api/auth/register` ×2 → `POST /api/auth/login` ×2 (login works before verify — `auth.service.ts` does not block unverified on login) → verify each user via `/api/auth/verify-email` as above → retain **Bearer accessToken**.
 2. **Bearer check:** Any `protect` route proves D-01(b); e.g. `GET /api/users/me` if available, or first friends call below.
 3. **Friend:** A: `POST /api/friends/requests` with B’s user id → B: `POST /api/friends/requests/:fromUserId/accept` (`src/routes/friends.route.ts`).
-4. **Chat HTTP (text-only):** A: `POST /api/chats/direct` with B’s peer id (`src/routes/chats.route.ts`) → `POST /api/chats/:chatId/messages` with text body per `sendMessageBody` validation → `GET /api/chats/:chatId/messages` (cursor optional per contract).
+4. **Chat HTTP (text-only):** A: `POST /api/chats/direct` with B’s peer id (`src/routes/chats.route.ts`) → `POST /api/chats/:conversationId/messages` with text body per `sendMessageBody` validation → `GET /api/chats/:conversationId/messages` (cursor optional per contract).
 
 ## Socket.IO test approach (D-03)
 
@@ -278,7 +278,7 @@ const socket = ioc(`http://127.0.0.1:${port}`, {
 
 2. **Email/Bull queue trong register có cần mock không?**
    - What we know: `auth.service.ts` enqueue email job on register.
-   - Recommendation: Nếu worker chạy ngoài test process gây noise, mock `IEmailJobQueue` trong test container hoặc dùng Redis DB tách.
+   - Recommendation: Nếu worker chạy ngoài test process gây noise, mock `IEmailQueue` trong test container hoặc dùng Redis DB tách.
 
 ## Validation Architecture
 
