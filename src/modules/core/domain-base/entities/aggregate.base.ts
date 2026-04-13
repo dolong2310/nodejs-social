@@ -1,7 +1,7 @@
 import { Entity } from '@/modules/core/domain-base/entities/entity.base';
 import { DomainEvent } from '@/modules/core/domain-base/events/domain-event.base';
 import type { EmitDomainEvents } from '@/modules/core/domain-base/events/domain-event.types';
-import type { LoggerPort } from '@/modules/core/infra-base/logger/logger.port';
+import type { LoggerPort } from '@/modules/core/infrastructure-base/logger/logger.port';
 import type { Emitter } from 'mitt';
 
 export abstract class AggregateRoot<Props> extends Entity<Props> {

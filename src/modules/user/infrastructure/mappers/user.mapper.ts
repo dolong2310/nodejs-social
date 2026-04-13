@@ -1,5 +1,5 @@
 import { UniqueEntityID } from '@/modules/core/domain-base/entities/unique-entity';
-import type { Mapper } from '@/modules/core/infra-base/mapper.base';
+import type { Mapper } from '@/modules/core/infrastructure-base/mapper.base';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { type UserModel, userSchema } from '@/modules/user/domain/repositories/user.model';
 import { UserMetadata } from '@/modules/user/domain/value-objects/user-metadata.value-object';
