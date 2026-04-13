@@ -5,14 +5,14 @@ import type { LoggerPort } from '@/modules/core/infrastructure-base/logger/logge
 import type { Emitter } from 'mitt';
 
 export abstract class AggregateRoot<Props> extends Entity<Props> {
-  #domainEvents: DomainEvent[] = [];
+  private _domainEvents: DomainEvent[] = [];
 
   get domainEvents() {
-    return this.#domainEvents;
+    return this._domainEvents;
   }
 
   set domainEvents(domainEvents: DomainEvent[]) {
-    this.#domainEvents = domainEvents;
+    this._domainEvents = domainEvents;
   }
 
   protected addEvent(domainEvent: DomainEvent | DomainEvent[]): void {
@@ -34,7 +34,7 @@ export abstract class AggregateRoot<Props> extends Entity<Props> {
       );
       return emitter.emitAsync(event.constructor.name, event);
     });
-    for await (const event of promiseEvents) {
+    for (const event of promiseEvents) {
       await event;
     }
     this.clearEvents();

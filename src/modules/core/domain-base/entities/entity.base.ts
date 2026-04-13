@@ -20,18 +20,18 @@ export interface CreateEntityProps<T> extends MarkOptional<BaseEntityProps, 'cre
 }
 
 export abstract class Entity<Props> {
-  #id: UniqueEntityID;
-  readonly #createdAt: Date;
-  readonly #props: Props;
-  #updatedAt: Date;
+  private _id: UniqueEntityID;
+  private readonly _createdAt: Date;
+  private readonly _props: Props;
+  private _updatedAt: Date;
 
   constructor({ id, props, createdAt, updatedAt }: CreateEntityProps<Props>) {
-    this.#id = id;
-    this.#validateProps(props);
+    this._id = id;
+    this._validateProps(props);
     const now = new Date();
-    this.#createdAt = createdAt || now;
-    this.#updatedAt = updatedAt || now;
-    this.#props = props;
+    this._createdAt = createdAt || now;
+    this._updatedAt = updatedAt || now;
+    this._props = props;
     this.validate();
   }
 
@@ -40,23 +40,23 @@ export abstract class Entity<Props> {
   }
 
   get id(): UniqueEntityID {
-    return this.#id;
+    return this._id;
   }
 
   get createdAt(): Date {
-    return this.#createdAt;
+    return this._createdAt;
   }
 
   get updatedAt(): Date {
-    return this.#updatedAt;
+    return this._updatedAt;
   }
 
   getProps(): Props & BaseEntityProps {
     const clone = {
       id: this.id,
-      createdAt: this.#createdAt,
-      updatedAt: this.#updatedAt,
-      ...this.#props
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      ...this._props
     };
     return Object.freeze(clone);
   }
@@ -68,11 +68,10 @@ export abstract class Entity<Props> {
    */
   toObject() {
     const clone = convertPropsToObject(this.getProps());
-
     const result = {
       id: this.id,
-      createdAt: this.#createdAt,
-      updatedAt: this.#updatedAt,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
       ...clone
     };
     return Object.freeze(result);
@@ -83,12 +82,12 @@ export abstract class Entity<Props> {
    */
   abstract validate(): void;
 
-  #validateProps(props: Props) {
+  private _validateProps(props: Props) {
     const MAX_PROPS = 32;
     invariant(!isEmpty(props), new ArgumentNotProvidedException('Entity props should not be empty'));
     invariant(typeof props === 'object', new ArgumentInvalidException('Entity props should be an object'));
     invariant(
-      Object.keys(props as any).length <= MAX_PROPS,
+      Object.keys(props as Record<string, unknown>).length <= MAX_PROPS,
       new ArgumentOutOfRangeException(`The entity props count must smaller than ${MAX_PROPS} properties`)
     );
   }

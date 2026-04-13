@@ -17,7 +17,7 @@ export abstract class ValueObject<Props> {
   protected readonly props: ValueObjectProps<Props>;
 
   constructor(props: ValueObjectProps<Props>) {
-    this.#validateProps(props);
+    this._validateProps(props);
     this.validate(props);
     this.props = props;
   }
@@ -36,21 +36,21 @@ export abstract class ValueObject<Props> {
    * Convert value obj to get raw properties
    */
   raw() {
-    if (this.#isDomainPrimitive(this.props)) {
+    if (this._isDomainPrimitive(this.props)) {
       return this.props.value;
     }
     const clone = convertPropsToObject(this.props);
     return Object.freeze(clone);
   }
 
-  #validateProps(props: ValueObjectProps<Props>) {
+  private _validateProps(props: ValueObjectProps<Props>) {
     invariant(
-      !(isEmpty(props) || (this.#isDomainPrimitive(props) && isEmpty(props.value))),
+      !(isEmpty(props) || (this._isDomainPrimitive(props) && isEmpty(props.value))),
       new ArgumentNotProvidedException('Property cannot be empty')
     );
   }
 
-  #isDomainPrimitive(obj: unknown): obj is DomainPrimitive<Props & (Primitives | Date)> {
+  private _isDomainPrimitive(obj: unknown): obj is DomainPrimitive<Props & (Primitives | Date)> {
     if (Object.prototype.hasOwnProperty.call(obj, 'value')) return true;
     return false;
   }
