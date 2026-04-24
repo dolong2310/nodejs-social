@@ -1,11 +1,8 @@
-import { S3ObjectNotFoundException } from '@/application/errors/s3.error';
 import { IFileStorage } from '@/application/ports/file-storage.port';
-import { ILogger } from '@/application/ports/logger.port';
+import { LoggerPort } from '@/application/ports/logger.port';
 import { IMimeService } from '@/application/ports/mime.port';
 import { IS3Service, IUploadFileResult } from '@/application/ports/s3.port';
-
 import { envConfig } from '@/bootstrap/config/env.config';
-
 import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -13,10 +10,10 @@ import { Response } from 'express';
 
 export class S3Service implements IS3Service {
   private readonly s3: S3;
-  private readonly log: ILogger;
+  private readonly log: LoggerPort;
 
   constructor(
-    private readonly logger: ILogger,
+    private readonly logger: LoggerPort,
     private readonly fileStorage: IFileStorage,
     private readonly mimeService: IMimeService
   ) {
@@ -99,12 +96,12 @@ export class S3Service implements IS3Service {
       });
 
       if (!s3Object.Body) {
-        throw S3ObjectNotFoundException;
+        throw new Error('S3 object not found');
       }
 
       (s3Object.Body as NodeJS.ReadableStream).pipe(response);
     } catch {
-      throw S3ObjectNotFoundException;
+      throw new Error('S3 object not found');
     }
   }
 }

@@ -1,5 +1,4 @@
 import { ISocketConnection, ISocketServer } from '@/application/ports/socket.port';
-
 import { Server, Socket } from 'socket.io';
 
 export class SocketIOConnection implements ISocketConnection {
@@ -43,6 +42,6 @@ export class SocketIOServer implements ISocketServer {
 
   async fetchSocketsInRoom(room: string): Promise<ISocketConnection[]> {
     const sockets = await this.io.in(room).fetchSockets();
-    return sockets.map((s) => new SocketIOConnection(s as unknown as Socket));
+    return sockets.map((socket) => new SocketIOConnection(socket as unknown as Socket));
   }
 }

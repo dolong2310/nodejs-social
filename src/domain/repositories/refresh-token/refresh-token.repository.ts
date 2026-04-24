@@ -1,14 +1,13 @@
-import { IRefreshToken } from '@/domain/entities/refresh-token.entity';
+import { RefreshTokenEntity } from '@/domain/entities/refresh-token/refresh-token.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 import {
   ICreateRefreshTokenInput,
-  IDeleteRefreshTokenInput,
-  IFindRefreshTokenInput,
   IRotateRefreshTokenInput
-} from '@/domain/repositories/refresh-token/refresh-token.interface';
+} from '@/domain/repositories/refresh-token/refresh-token.repository.type';
 
-export interface IRefreshTokenRepository {
-  findRefreshToken(data: IFindRefreshTokenInput): Promise<IRefreshToken | null>;
-  createRefreshToken(data: ICreateRefreshTokenInput): Promise<IRefreshToken>;
-  deleteRefreshToken(data: IDeleteRefreshTokenInput): Promise<boolean>;
+export interface RefreshTokenRepositoryPort extends RepositoryPort<RefreshTokenEntity> {
+  findRefreshToken(token: string): Promise<RefreshTokenEntity | null>;
+  createRefreshToken(data: ICreateRefreshTokenInput): Promise<RefreshTokenEntity>;
+  deleteRefreshToken(token: string): Promise<boolean>;
   rotateRefreshToken(data: IRotateRefreshTokenInput): Promise<boolean>;
 }

@@ -1,5 +1,8 @@
-import { IAuthService } from '@/application/ports/auth.port';
-
+import { ForgotPasswordInPort } from '@/application/use-cases/auth/forgot-password/forgot-password.in-port';
+import { LoginEmailInPort } from '@/application/use-cases/auth/login-email/login-email.in-port';
+import { LogoutInPort } from '@/application/use-cases/auth/logout/logout.in-port';
+import { RefreshTokenInPort } from '@/application/use-cases/auth/refresh-token/refresh-token.in-port';
+import { RegisterInPort } from '@/application/use-cases/auth/register/register.in-port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
@@ -8,28 +11,20 @@ import {
 import { BaseController } from '@/presentation/http/controllers/base.controller';
 import { AutoBind } from '@/presentation/http/decorators/autoBind.decorator';
 import {
-  ChangePasswordRequestDTO,
   ForgotPasswordRequestDTO,
   LoginRequestDTO,
   LogoutRequestDTO,
   RefreshTokenRequestDTO,
-  RegisterRequestDTO,
-  ResetPasswordRequestDTO,
-  VerifyEmailRequestDTO
+  RegisterRequestDTO
 } from '@/presentation/http/dtos/auth/auth.request.dto';
 import {
-  ChangePasswordResponseDTO,
   ForgotPasswordResponseDTO,
   LoginResponseDTO,
   LogoutResponseDTO,
   RefreshTokenResponseDTO,
-  RegisterResponseDTO,
-  ResendVerifyEmailResponseDTO,
-  ResetPasswordResponseDTO,
-  VerifyEmailResponseDTO
+  RegisterResponseDTO
 } from '@/presentation/http/dtos/auth/auth.response.dto';
 import { Created } from '@/presentation/http/responses/success.response';
-
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -38,15 +33,17 @@ export interface IAuthController {
   login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response): Promise<void>;
   logout(req: Request, res: Response): Promise<void>;
   refreshToken(req: Request, res: Response): Promise<void>;
-  verifyEmail(req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response): Promise<void>;
-  resendVerifyEmail(req: Request, res: Response): Promise<void>;
   forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response): Promise<void>;
-  resetPassword(req: Request<ParamsDictionary, object, ResetPasswordRequestDTO>, res: Response): Promise<void>;
-  changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response): Promise<void>;
 }
 
 export class AuthController extends BaseController implements IAuthController {
-  constructor(private readonly authService: IAuthService) {
+  constructor(
+    private readonly registerUC: RegisterInPort,
+    private readonly loginEmailUC: LoginEmailInPort,
+    private readonly logoutUC: LogoutInPort,
+    private readonly refreshTokenUC: RefreshTokenInPort,
+    private readonly forgotPasswordUC: ForgotPasswordInPort
+  ) {
     super();
   }
 
@@ -54,7 +51,7 @@ export class AuthController extends BaseController implements IAuthController {
   async register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response) {
     const dto = new RegisterRequestDTO(req.body);
 
-    const user = await this.authService.register(dto);
+    const user = await this.registerUC.execute(dto);
 
     this.sendResponse<RegisterResponseDTO>({
       res,
@@ -68,7 +65,7 @@ export class AuthController extends BaseController implements IAuthController {
   async login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response) {
     const dto = new LoginRequestDTO(req.body);
 
-    const { accessToken, refreshToken } = await this.authService.login(dto);
+    const { accessToken, refreshToken } = await this.loginEmailUC.execute(dto);
 
     this.setCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
       ...refreshTokenCookieSharedOptions,
@@ -84,11 +81,9 @@ export class AuthController extends BaseController implements IAuthController {
 
   @AutoBind()
   async logout(req: Request, res: Response) {
-    const dto = new LogoutRequestDTO(req.refreshTokenJwt!);
-    const type = req.tokenPayload!.type;
+    const dto = new LogoutRequestDTO(req[REFRESH_TOKEN_COOKIE_NAME]!);
 
-    const { message } = await this.authService.logout({
-      type,
+    await this.logoutUC.execute({
       refreshToken: dto.refreshToken
     });
 
@@ -96,20 +91,16 @@ export class AuthController extends BaseController implements IAuthController {
 
     this.sendResponse<LogoutResponseDTO>({
       res,
-      message
+      message: 'Logout successfully'
     });
   }
 
   @AutoBind()
   async refreshToken(req: Request, res: Response) {
-    const dto = new RefreshTokenRequestDTO(req.refreshTokenJwt!);
-    const { userId, exp, type } = req.tokenPayload!;
+    const dto = new RefreshTokenRequestDTO(req[REFRESH_TOKEN_COOKIE_NAME]!);
 
-    const { accessToken, refreshToken } = await this.authService.refreshToken({
-      refreshToken: dto.refreshToken,
-      userId,
-      exp,
-      type
+    const { accessToken, refreshToken } = await this.refreshTokenUC.execute({
+      refreshToken: dto.refreshToken
     });
 
     this.setCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
@@ -125,65 +116,14 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async verifyEmail(req: Request<ParamsDictionary, object, VerifyEmailRequestDTO>, res: Response) {
-    const dto = new VerifyEmailRequestDTO(req.body);
-    const userId = this.getUserId(req);
-
-    const { message } = await this.authService.verifyEmail({ userId, token: dto.token });
-
-    this.sendResponse<VerifyEmailResponseDTO>({
-      res,
-      message
-    });
-  }
-
-  @AutoBind()
-  async resendVerifyEmail(req: Request, res: Response) {
-    const userId = this.getUserId(req);
-
-    const { message } = await this.authService.resendVerifyEmail({ userId });
-
-    this.sendResponse<ResendVerifyEmailResponseDTO>({
-      res,
-      message
-    });
-  }
-
-  @AutoBind()
   async forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response) {
     const dto = new ForgotPasswordRequestDTO(req.body);
 
-    const { message } = await this.authService.forgotPassword(dto);
+    await this.forgotPasswordUC.execute(dto);
 
     this.sendResponse<ForgotPasswordResponseDTO>({
       res,
-      message
-    });
-  }
-
-  @AutoBind()
-  async resetPassword(req: Request<ParamsDictionary, object, ResetPasswordRequestDTO>, res: Response) {
-    const dto = new ResetPasswordRequestDTO(req.body);
-    const userId = this.getUserId(req);
-
-    const { message } = await this.authService.resetPassword({ ...dto, userId });
-
-    this.sendResponse<ResetPasswordResponseDTO>({
-      res,
-      message
-    });
-  }
-
-  @AutoBind()
-  async changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response) {
-    const dto = new ChangePasswordRequestDTO(req.body);
-    const userId = this.getUserId(req);
-
-    const { message } = await this.authService.changePassword({ ...dto, userId });
-
-    this.sendResponse<ChangePasswordResponseDTO>({
-      res,
-      message
+      message: 'Forgot password successfully'
     });
   }
 }

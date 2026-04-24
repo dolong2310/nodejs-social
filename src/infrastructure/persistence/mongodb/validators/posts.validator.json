@@ -72,7 +72,7 @@
             },
             "type": {
               "bsonType": "string",
-              "enum": ["image", "video", "video-hls"],
+              "enum": ["image", "video", "video-stream"],
               "description": "EMediaType"
             }
           }

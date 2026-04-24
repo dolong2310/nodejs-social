@@ -2,8 +2,9 @@ import express, { Router } from 'express';
 
 export abstract class BaseRoute {
   protected router: Router;
+  protected abstract readonly pathName: string;
 
-  constructor(protected readonly basePath: string) {
+  constructor() {
     this.router = express.Router();
   }
 
@@ -12,8 +13,8 @@ export abstract class BaseRoute {
   }
 
   public getPath(): string {
-    return this.basePath;
+    return this.pathName;
   }
 
-  protected abstract initializeRoutes(): void;
+  protected abstract createRoutes(): void;
 }

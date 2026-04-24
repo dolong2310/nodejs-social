@@ -1,13 +1,11 @@
-import { IUser } from '@/domain/entities/user.entity';
+import { SearchPostsInPort } from '@/application/use-cases/search/search-posts/search-posts.in-port';
+import { SearchUsersInPort } from '@/application/use-cases/search/search-users/search-users.in-port';
 import { ESearchType } from '@/domain/enums/search.enum';
-
-import { ISearchService } from '@/application/ports/search.port';
-
 import { BaseController } from '@/presentation/http/controllers/base.controller';
 import { AutoBind } from '@/presentation/http/decorators/autoBind.decorator';
-import { PostDetailResponseDTO } from '@/presentation/http/dtos/post/posts.response.dto';
+import { PostDetailWithAuthorResponseDTO } from '@/presentation/http/dtos/post/post.response.dto';
 import { SearchCursorQueryDTO } from '@/presentation/http/dtos/search/search.request.dto';
-
+import { UserResponseDTO } from '@/presentation/http/dtos/user/user.response.dto';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -16,7 +14,10 @@ export interface ISearchController {
 }
 
 export class SearchController extends BaseController implements ISearchController {
-  constructor(private readonly searchService: ISearchService) {
+  constructor(
+    private readonly searchPostsUC: SearchPostsInPort,
+    private readonly searchUsersUC: SearchUsersInPort
+  ) {
     super();
   }
 
@@ -25,26 +26,34 @@ export class SearchController extends BaseController implements ISearchControlle
     const { query = '', type, people, cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    const { items, nextCursor } = await [
-      this.searchService.searchPosts({
-        userId,
-        query,
-        type,
-        people,
-        cursor,
-        limit: Number(limit)
-      }),
-      this.searchService.searchUsers({
-        userId,
-        query,
-        type,
-        people,
-        cursor,
-        limit: Number(limit)
-      })
-    ][Number(type === ESearchType.USER)];
+    let items: PostDetailWithAuthorResponseDTO[] | UserResponseDTO[];
+    let nextCursor: string | null;
 
-    this.sendCursorPaginatedResponse<PostDetailResponseDTO | IUser>({
+    if (type === ESearchType.USER) {
+      const result = await this.searchUsersUC.execute({
+        userId,
+        query,
+        type,
+        people,
+        cursor,
+        limit: Number(limit)
+      });
+      items = result.items;
+      nextCursor = result.nextCursor;
+    } else {
+      const result = await this.searchPostsUC.execute<PostDetailWithAuthorResponseDTO>({
+        userId,
+        query,
+        type,
+        people,
+        cursor,
+        limit: Number(limit)
+      });
+      items = result.items;
+      nextCursor = result.nextCursor;
+    }
+
+    this.sendCursorPaginatedResponse<PostDetailWithAuthorResponseDTO | UserResponseDTO>({
       res,
       items,
       nextCursor,

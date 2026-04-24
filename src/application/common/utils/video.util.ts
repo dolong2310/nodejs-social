@@ -133,12 +133,12 @@ const encodeMax720 = async ({
     '-master_pl_name',
     'master.m3u8',
     '-f',
-    'hls',
-    '-hls_time',
+    'stream',
+    '-stream_time',
     '6',
-    '-hls_list_size',
+    '-stream_list_size',
     '0',
-    '-hls_segment_filename',
+    '-stream_segment_filename',
     slash(outputSegmentPath),
     slash(outputPath)
   );
@@ -190,12 +190,12 @@ const encodeMax1080 = async ({
     '-master_pl_name',
     'master.m3u8',
     '-f',
-    'hls',
-    '-hls_time',
+    'stream',
+    '-stream_time',
     '6',
-    '-hls_list_size',
+    '-stream_list_size',
     '0',
-    '-hls_segment_filename',
+    '-stream_segment_filename',
     slash(outputSegmentPath),
     slash(outputPath)
   );
@@ -253,12 +253,12 @@ const encodeMax1440 = async ({
     '-master_pl_name',
     'master.m3u8',
     '-f',
-    'hls',
-    '-hls_time',
+    'stream',
+    '-stream_time',
     '6',
-    '-hls_list_size',
+    '-stream_list_size',
     '0',
-    '-hls_segment_filename',
+    '-stream_segment_filename',
     slash(outputSegmentPath),
     slash(outputPath)
   );
@@ -316,12 +316,12 @@ const encodeMaxOriginal = async ({
     '-master_pl_name',
     'master.m3u8',
     '-f',
-    'hls',
-    '-hls_time',
+    'stream',
+    '-stream_time',
     '6',
-    '-hls_list_size',
+    '-stream_list_size',
     '0',
-    '-hls_segment_filename',
+    '-stream_segment_filename',
     slash(outputSegmentPath),
     slash(outputPath)
   );
@@ -330,7 +330,7 @@ const encodeMaxOriginal = async ({
   return true;
 };
 
-export const encodeHLSWithMultipleVideoStreams = async (inputPath: string) => {
+export const encodeStreamWithMultipleVideoStreams = async (inputPath: string) => {
   const [bitrate, resolution] = await Promise.all([getBitrate(inputPath), getResolution(inputPath)]);
   const parent_folder = path.join(inputPath, '..');
   const outputSegmentPath = path.join(parent_folder, 'v%v/fileSequence%d.ts');

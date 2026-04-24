@@ -1,0 +1,36 @@
+import { BaseEntityProps } from '@/domain/entities/base/base.entity';
+import type { MarkOptional, Prettify } from 'ts-essentials';
+
+export interface UserProps {
+  name: string;
+  email: string;
+  password: string;
+  birthday: Date;
+  roleId: string;
+  status: EUserStatus;
+  totpSecret?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  username?: string;
+  avatar?: string;
+  coverPhoto?: string;
+}
+
+// Properties that are needed for a user retrieval
+export interface UserFullProps extends Prettify<UserProps & Omit<BaseEntityProps, 'id'> & { id: string }> {}
+
+// Remove sensitive data from the user props
+export interface UserSafeProps extends Omit<UserFullProps, 'password' | 'totpSecret'> {}
+
+export interface UserRecordProps extends Pick<UserFullProps, 'id' | 'name' | 'username' | 'avatar'> {}
+
+// Properties that are needed for a user creation
+export interface CreateUserProps extends MarkOptional<UserProps, 'status'> {}
+
+export enum EUserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  BANNED = 'BANNED',
+  UNKNOWN = 'UNKNOWN' // transform unknown user
+}

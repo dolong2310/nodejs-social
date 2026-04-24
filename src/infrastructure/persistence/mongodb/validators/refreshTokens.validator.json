@@ -20,7 +20,7 @@
       },
       "exp": {
         "bsonType": "date",
-        "description": "Optional. DatabaseService.createRefreshTokensIndex defines TTL on exp; app insert path does not set exp yet — include when you wire TTL in code."
+        "description": "Optional. Database.createRefreshTokensIndex defines TTL on exp; app insert path does not set exp yet — include when you wire TTL in code."
       }
     },
     "additionalProperties": false

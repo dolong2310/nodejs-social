@@ -11,12 +11,12 @@
 // import { FriendshipEntity } from '../src/modules/friends/friendship.schema.js';
 // import { EMediaType } from '../src/modules/media/media.enum.js';
 // import { CreatePostRequestDTO } from '../src/modules/posts/dtos/posts.request.dto.js';
-// import { EPostAudience, EPostType } from '../src/modules/posts/posts.enum.js';
+// import { EPostAudience, EPostType } from '../src/modules/posts/post.type.js';
 // import { PostRepository } from '../src/modules/posts/posts.repository.js';
 // import { IPost } from '../src/modules/posts/posts.schema.js';
-// import { EUserVerificationStatus } from '../src/modules/users/users.enum.js';
+// import { EUserStatus } from '../src/modules/users/user.type.js';
 // import { UserEntity } from '../src/modules/users/users.schema.js';
-// import { DatabaseService } from '../src/infrastructure/persistence/mongodb/database.service.js';
+// import { Database } from '../src/infrastructure/persistence/mongodb/database.service.js';
 // import { TokenService } from '../src/shared/services/token.service.js';
 // import { hashPassword } from '../src/utils/password.util.js';
 // import { appConfig } from '../src/config/app.config.js';
@@ -29,7 +29,7 @@
 // const MENTION_PER_POST = 10;
 // const MEDIA_PER_POST = 10;
 
-// const db = new DatabaseService({
+// const db = new Database({
 //   uri: envConfig.DATABASE_URI,
 //   databaseName: envConfig.DATABASE_NAME,
 //   chatDatabaseName: envConfig.DATABASE_CHAT_NAME
@@ -41,7 +41,7 @@
 //     email: faker.internet.email(),
 //     password: PASSWORD,
 //     confirmPassword: PASSWORD,
-//     dateOfBirth: faker.date.birthdate({ min: 18, max: 60, mode: 'age' }).toISOString()
+//     birthday: faker.date.birthdate({ min: 18, max: 60, mode: 'age' }).toISOString()
 //   };
 //   return user;
 // };
@@ -109,7 +109,7 @@
 //   if (randomType === EPostType.POST) {
 //     parentId = null;
 //   } else {
-//     // REPOST / COMMENT / QUOTE → phải có parentId là postId của bài viết cha (post gốc)
+//     // REPOST / COMMENT / QUOTE => phải có parentId là postId của bài viết cha (post gốc)
 //     parentId = faker.helpers.arrayElement(parentPostIds);
 //   }
 
@@ -131,11 +131,11 @@
 //   console.log('Creating users...');
 //   const createdUsers = await Promise.all(
 //     userBodies.map(async (userBody) => {
-//       // random verificationStatus
+//       // random status
 //       const randomVerificationStatus = faker.helpers.arrayElement([
-//         EUserVerificationStatus.VERIFIED,
-//         EUserVerificationStatus.UNVERIFIED,
-//         EUserVerificationStatus.BANNED
+//         EUserStatus.ACTIVE,
+//         EUserStatus.INACTIVE,
+//         EUserStatus.BANNED
 //       ]);
 
 //       const user = await db.users.insertOne(
@@ -143,13 +143,13 @@
 //           ...userBody,
 //           username: `user-${new ObjectId().toString()}`,
 //           password: await hashPassword(userBody.password),
-//           dateOfBirth: new Date(userBody.dateOfBirth),
-//           verificationStatus: randomVerificationStatus
+//           birthday: new Date(userBody.birthday),
+//           status: randomVerificationStatus
 //         })
 //       );
 
 //       // update emailVerificationToken if user is unverified
-//       if (randomVerificationStatus === EUserVerificationStatus.UNVERIFIED) {
+//       if (randomVerificationStatus === EUserStatus.INACTIVE) {
 //         const tokenService = new TokenService(appConfig);
 //         const emailVerificationToken = await tokenService.signEmailVerificationToken({
 //           userId: user.insertedId.toString(),

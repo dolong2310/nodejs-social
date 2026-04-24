@@ -4,12 +4,14 @@ import { BaseRoute } from '@/presentation/http/routes/base.route';
 import { asyncHandler } from '@/presentation/http/utils/async-handler.util';
 
 export class OAuthRoute extends BaseRoute {
+  protected override readonly pathName = '/oauth';
+
   constructor(private readonly oauthController: IOAuthController) {
-    super('/oauth');
-    this.initializeRoutes();
+    super();
+    this.createRoutes();
   }
 
-  protected initializeRoutes(): void {
+  protected override createRoutes(): void {
     const { getGoogleAuthUrl, googleLogin } = this.oauthController;
 
     this.router.get('/google/url', appLimiter, getGoogleAuthUrl);

@@ -3,10 +3,10 @@ import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/module
 import { invariant } from '@/modules/core/helpers/invariant';
 
 export interface IUserMetadata {
-  // openPlatform: string;
-  // utmCampaign: string;
-  // utmMedium: string;
-  // utmSource: string;
+  openPlatform: string;
+  utmCampaign: string;
+  utmMedium: string;
+  utmSource: string;
 }
 
 export class UserMetadata extends ValueObject<IUserMetadata> {

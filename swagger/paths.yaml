@@ -371,11 +371,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /media/upload-video-hls:
+  /media/upload-video-stream:
     post:
       tags: [media]
-      summary: Upload video HLS
-      operationId: uploadVideoHLS
+      summary: Upload video Stream
+      operationId: uploadVideoStream
       security: [{ bearerAuth: [] }]
       requestBody:
         content:
@@ -1118,7 +1118,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [post, user, image, video, video-hls]
+            enum: [post, user, image, video, video-stream]
         - name: people
           in: query
           schema:
@@ -1558,11 +1558,11 @@ paths:
           description: Partial content
         '404':
           description: Không tìm thấy file
-  /static/videos-hls/{id}/master.m3u8:
+  /static/videos-stream/{id}/master.m3u8:
     get:
       tags: [static]
-      summary: Lấy HLS master playlist
-      operationId: getStaticVideoHLSMaster
+      summary: Lấy Stream master playlist
+      operationId: getStaticVideoStreamMaster
       parameters:
         - name: id
           in: path
@@ -1571,14 +1571,14 @@ paths:
             type: string
       responses:
         '200':
-          description: HLS master playlist
+          description: Stream master playlist
         '404':
           description: Không tìm thấy
-  /static/videos-hls/{id}/{version}/{segment}:
+  /static/videos-stream/{id}/{version}/{segment}:
     get:
       tags: [static]
-      summary: Lấy HLS segment
-      operationId: getStaticVideoHLSSegment
+      summary: Lấy Stream segment
+      operationId: getStaticVideoStreamSegment
       parameters:
         - name: id
           in: path
@@ -1597,6 +1597,6 @@ paths:
             type: string
       responses:
         '200':
-          description: HLS segment
+          description: Stream segment
         '404':
           description: Không tìm thấy

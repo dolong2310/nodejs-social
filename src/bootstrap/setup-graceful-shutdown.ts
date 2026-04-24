@@ -1,12 +1,13 @@
-import { Closable } from '@/bootstrap/types/lifecycle';
+import { Database } from '@/infrastructure/persistence/mongodb/database';
+import { Redis } from '@/infrastructure/persistence/redis/redis';
 import { Server as HttpServer } from 'http';
 
-export function setupGracefulShutdown(httpServer: HttpServer, resources: Closable[]): void {
+export function setupGracefulShutdown(httpServer: HttpServer, resources: { database: Database; redis: Redis }): void {
   const shutdown = async (signal: string) => {
     console.log({ signal }, 'shutting down gracefully');
 
     httpServer.close(async () => {
-      await Promise.allSettled(resources.map((resource) => Promise.resolve(resource.close())));
+      await Promise.allSettled([resources.database.disconnect(), resources.redis.disconnect()]);
 
       console.log('all connections closed');
       process.exit(0);

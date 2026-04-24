@@ -19,7 +19,8 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "test": "node --import ./tests/setup/register-argv.mjs ./node_modules/vitest/vitest.mjs run"
+    "test": "node --import ./tests/setup/register-argv.mjs ./node_modules/vitest/vitest.mjs run",
+    "seed:permissions": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/permissions.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1009.0",
@@ -32,6 +33,7 @@
     "bullmq": "^5.71.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1",
@@ -47,6 +49,7 @@
     "minimist": "^1.2.8",
     "mitt": "^3.0.1",
     "mongodb": "^7.1.0",
+    "otpauth": "^9.5.0",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "rate-limit-redis": "^4.3.1",

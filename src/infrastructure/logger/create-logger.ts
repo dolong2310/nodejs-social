@@ -1,10 +1,7 @@
-import { ILogger } from '@/application/ports/logger.port';
-
-import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-
+import { LoggerPort } from '@/application/ports/logger.port';
 import { appConfig } from '@/bootstrap/config/app.config';
 import { isDevelopment } from '@/bootstrap/config/env.config';
-
+import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { randomUUID } from 'node:crypto';
 import pino, { type Logger as PinoLogger, type LoggerOptions as PinoLoggerOptions } from 'pino';
 import pinoHttp, { type HttpLogger as PinoHttpLogger } from 'pino-http';
@@ -13,7 +10,7 @@ interface ILoggerGetter {
   getHttpLogger(): PinoHttpLogger;
 }
 
-class Logger implements ILogger, ILoggerGetter {
+class Logger implements LoggerPort, ILoggerGetter {
   private pinoLogger: PinoLogger;
   private httpLogger: PinoHttpLogger;
 
@@ -36,15 +33,7 @@ class Logger implements ILogger, ILoggerGetter {
       level: appConfig.logs.level,
       mixin: logContextMixin,
       redact: {
-        paths: [
-          'req.headers.authorization',
-          'req.headers.cookie',
-          '*.password',
-          '*.accessToken',
-          '*.refreshToken',
-          '*.emailToken',
-          '*.forgotPasswordToken'
-        ],
+        paths: ['req.headers.authorization', 'req.headers.cookie', '*.password', '*.accessToken', '*.refreshToken'],
         remove: true
       },
       serializers: {

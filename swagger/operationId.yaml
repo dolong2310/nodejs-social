@@ -2,10 +2,10 @@
 # Các operationId được định nghĩa trong paths.yaml
 # Auth: register | login | logout | refreshToken | verifyEmail | resendVerifyEmail | forgotPassword | resetPassword | changePassword
 # Users: getMe | updateMe | getUserProfile
-# googleLogin | uploadImage | uploadVideo | uploadVideoHLS | getVideoStatus
+# googleLogin | uploadImage | uploadVideo | uploadVideoStream | getVideoStatus
 # getNewFeeds | createPost | getPostDetail | getPostsType
 # createBookmark | deleteBookmark | search
 # Friends: listFriends | sendFriendRequest | listIncomingFriendRequests | listOutgoingFriendRequests | acceptFriendRequest | declineFriendRequest | revokeOutgoingFriendRequest | unfriendUser
 # Blocks: listBlockedUsers | blockUser | unblockUser
-# createConversation | getConversations
-# getStaticImage | getStaticVideoStream | getStaticVideoHLSMaster | getStaticVideoHLSSegment
+# createDirectConversation | getConversations
+# getStaticImage | getStaticVideoStream | getStaticVideoStreamMaster | getStaticVideoStreamSegment

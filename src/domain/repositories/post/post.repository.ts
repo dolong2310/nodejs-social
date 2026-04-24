@@ -1,40 +1,16 @@
-import { IHashtag } from '@/domain/entities/hashtag.entity';
-import { IPost } from '@/domain/entities/post.entity';
+import { PostEntity } from '@/domain/entities/post/post.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 import {
-  ICountPostsInput,
-  ICountPostsTypeInput,
   ICreatePostInput,
-  IFindAndUpsertHashtagsInput,
-  IFindGuestPostsInput,
-  IFindPostByIdInput,
-  IFindPostIdsWhereViewerInteractedWithAuthorsInput,
-  IFindPostIdsWhereViewerInteractedWithAuthorsOutput,
-  IFindPostsInput,
-  IFindPostsTypeInput,
   IIncreasePostViewsInput,
   IIncreasePostsViewsInput,
-  IIsViewerInteractedWithPostInput,
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput,
   IUpdatePostAudienceAndStrangerCommentsInput
-} from '@/domain/repositories/post/post.interface';
+} from '@/domain/repositories/post/post.repository.type';
 
-export interface IPostRepository {
-  isViewerInteractedWithPost(data: IIsViewerInteractedWithPostInput): Promise<boolean>;
-  findPostDetailById(data: IFindPostByIdInput): Promise<IPostDetailOutput>;
-  findPostIdsWhereViewerInteractedWithAuthors(
-    data: IFindPostIdsWhereViewerInteractedWithAuthorsInput
-  ): Promise<IFindPostIdsWhereViewerInteractedWithAuthorsOutput>;
-  findPosts(data: IFindPostsInput): Promise<IPostDetailWithAuthorOutput[]>;
-  findGuestPosts(data: IFindGuestPostsInput): Promise<IPostDetailWithAuthorOutput[]>;
-  findPostsType(data: IFindPostsTypeInput): Promise<IPostDetailOutput[]>;
-  findPostById(data: IFindPostByIdInput): Promise<IPost | null>;
-  createPost(data: ICreatePostInput): Promise<IPost>;
-  updatePostAudienceAndStrangerComments(data: IUpdatePostAudienceAndStrangerCommentsInput): Promise<IPost | null>;
-  increasePostViews(data: IIncreasePostViewsInput): Promise<IPost | null>;
+export interface PostRepositoryPort extends RepositoryPort<PostEntity> {
+  findPostById(id: string): Promise<PostEntity | null>;
+  createPost(data: ICreatePostInput): Promise<PostEntity>;
+  updatePostAudienceAndStrangerComments(data: IUpdatePostAudienceAndStrangerCommentsInput): Promise<PostEntity | null>;
+  increasePostViews(data: IIncreasePostViewsInput): Promise<PostEntity | null>;
   increasePostsViews(data: IIncreasePostsViewsInput): Promise<number>;
-  countPosts(data: ICountPostsInput): Promise<number>;
-  countGuestPosts(): Promise<number>;
-  countPostsType(data: ICountPostsTypeInput): Promise<number>;
-  findAndUpsertHashtags(data: IFindAndUpsertHashtagsInput): Promise<(IHashtag | null)[]>;
 }

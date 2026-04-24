@@ -3,24 +3,32 @@ import { protect } from '@/presentation/http/middlewares/auth.middleware';
 import { appLimiter } from '@/presentation/http/middlewares/limiter.middleware';
 import { BaseRoute } from '@/presentation/http/routes/base.route';
 import { asyncHandler } from '@/presentation/http/utils/async-handler.util';
-import { IUsersValidation } from '@/presentation/http/validators/users.validator';
+import { IUserValidator } from '@/presentation/http/validators/user.validator';
 
 export class MediaRoute extends BaseRoute {
+  protected override readonly pathName = '/media';
+
   constructor(
     private readonly mediaController: IMediaController,
-    private readonly usersValidation: IUsersValidation
+    private readonly userValidator: IUserValidator
   ) {
-    super('/media');
-    this.initializeRoutes();
+    super();
+    this.createRoutes();
   }
 
-  protected initializeRoutes(): void {
-    const { uploadImage, uploadVideo, uploadVideoHLS, getVideoStatus } = this.mediaController;
-    const { userVerifiedValidation } = this.usersValidation;
+  protected override createRoutes(): void {
+    const { uploadImage, uploadVideo, uploadVideoStream, getVideoStatus } = this.mediaController;
+    const { userVerifiedValidator } = this.userValidator;
 
-    this.router.post('/upload-image', appLimiter, protect, userVerifiedValidation, asyncHandler(uploadImage));
-    this.router.post('/upload-video', appLimiter, protect, userVerifiedValidation, asyncHandler(uploadVideo));
-    this.router.post('/upload-video-hls', appLimiter, protect, userVerifiedValidation, asyncHandler(uploadVideoHLS));
-    this.router.get('/video-status/:id', appLimiter, protect, userVerifiedValidation, asyncHandler(getVideoStatus));
+    this.router.post('/upload-image', appLimiter, protect, userVerifiedValidator, asyncHandler(uploadImage));
+    this.router.post('/upload-video', appLimiter, protect, userVerifiedValidator, asyncHandler(uploadVideo));
+    this.router.post(
+      '/upload-video-stream',
+      appLimiter,
+      protect,
+      userVerifiedValidator,
+      asyncHandler(uploadVideoStream)
+    );
+    this.router.get('/video-status/:id', appLimiter, protect, userVerifiedValidator, asyncHandler(getVideoStatus));
   }
 }

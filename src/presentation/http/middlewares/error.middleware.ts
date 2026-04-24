@@ -1,7 +1,6 @@
 import { ErrorResponse } from '@/presentation/http/responses/error.response';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/responses/http-message.constant';
 import { HTTP_STATUS } from '@/presentation/http/responses/http-status.constant';
-
 import { NextFunction, Request, Response } from 'express';
 
 export const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {

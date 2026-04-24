@@ -1,20 +1,17 @@
-import { IConversation } from '@/domain/entities/conversation.entity';
+import { ConversationEntity } from '@/domain/entities/conversation/conversation.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 import {
-  ICreateConversationInput,
-  ICreateGroupConversationWithMembersInput,
-  IFindConversationByIdInput,
-  IFindConversationsByIdsInput,
-  IFindDirectConversationByUserPairInput,
+  ICreateGroupConversationInput,
   ITouchUpdatedAtInput,
   IUpdateConversationInput
-} from '@/domain/repositories/conversation/conversation.interface';
+} from '@/domain/repositories/conversation/conversation.repository.type';
 
-export interface IConversationRepository {
-  findConversationById(data: IFindConversationByIdInput): Promise<IConversation | null>;
-  findConversationsByIds(data: IFindConversationsByIdsInput): Promise<IConversation[]>;
-  findDirectConversationByUserPair(data: IFindDirectConversationByUserPairInput): Promise<IConversation | null>;
-  createConversation(data: ICreateConversationInput): Promise<IConversation | null>;
-  createGroupConversationWithMembers(data: ICreateGroupConversationWithMembersInput): Promise<IConversation>;
-  updateConversation(data: IUpdateConversationInput): Promise<IConversation | null>;
-  touchUpdatedAt(data: ITouchUpdatedAtInput): Promise<void>;
+export interface ConversationRepositoryPort extends RepositoryPort<ConversationEntity> {
+  findConversationById(id: string): Promise<ConversationEntity | null>;
+  findConversationsByIds(ids: string[]): Promise<ConversationEntity[]>;
+  findDirectConversationByUserPair(userIdA: string, userIdB: string): Promise<ConversationEntity | null>;
+  createDirectConversation(createdBy: string, peerId: string): Promise<ConversationEntity | null>;
+  createGroupConversation(data: ICreateGroupConversationInput): Promise<ConversationEntity>;
+  updateConversation(id: string, data: IUpdateConversationInput): Promise<ConversationEntity | null>;
+  touchUpdatedAt(id: string, data: ITouchUpdatedAtInput): Promise<void>;
 }

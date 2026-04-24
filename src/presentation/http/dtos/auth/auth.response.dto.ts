@@ -1,39 +1,53 @@
-import { UserResponseDTO } from '@/presentation/http/dtos/user/users.response.dto';
+import { UserResponseDTO } from '@/presentation/http/dtos/user/user.response.dto';
 
 export class RegisterResponseDTO extends UserResponseDTO {}
 
-/** Internal token pair (AuthService / OAuth); refresh only sent via httpOnly cookie at HTTP layer. */
-export interface AuthTokenPairResponseDTO {
+export class LoginResponseDTO {
   accessToken: string;
-  refreshToken: string;
+
+  constructor(accessToken: string) {
+    this.accessToken = accessToken;
+  }
 }
 
-export interface LoginResponseDTO {
-  accessToken: string;
-}
-
-export interface LogoutResponseDTO {
+export class LogoutResponseDTO {
   message: string;
+
+  constructor(message: string) {
+    this.message = message;
+  }
 }
 
-export interface RefreshTokenResponseDTO extends LoginResponseDTO {}
+export class RefreshTokenResponseDTO extends LoginResponseDTO {}
 
-export interface VerifyEmailResponseDTO {
+export class VerifyEmailResponseDTO {
   message: string;
+
+  constructor(message: string) {
+    this.message = message;
+  }
 }
 
-export interface ResendVerifyEmailResponseDTO {
+export class ResendVerifyEmailResponseDTO {
   message: string;
+
+  constructor(message: string) {
+    this.message = message;
+  }
 }
 
-export interface ForgotPasswordResponseDTO {
+export class ForgotPasswordResponseDTO {
   message: string;
+
+  constructor(message: string) {
+    this.message = message;
+  }
 }
 
-export interface ResetPasswordResponseDTO {
+export class ResetPasswordResponseDTO {
   message: string;
-}
 
-export interface ChangePasswordResponseDTO {
-  message: string;
+  constructor(message: string) {
+    this.message = message;
+  }
 }

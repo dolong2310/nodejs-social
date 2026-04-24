@@ -1,10 +1,7 @@
-import { IPostRepository } from '@/domain/repositories/post/post.repository';
-
-import { ILogger } from '@/application/ports/logger.port';
+import { LoggerPort } from '@/application/ports/logger.port';
 import { IPostViewsJobData, IPostViewsJobResult } from '@/application/ports/post-views-job.port';
-
+import { PostRepositoryPort } from '@/domain/repositories/post/post.repository';
 import { POST_VIEWS_QUEUE_NAME } from '@/infrastructure/queue/post-views/post-views.type';
-
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 
 export interface IPostViewsWorker {
@@ -12,11 +9,11 @@ export interface IPostViewsWorker {
 }
 
 export class PostViewsWorker implements IPostViewsWorker {
-  private readonly log: ILogger;
+  private readonly log: LoggerPort;
 
   constructor(
-    private readonly postRepository: IPostRepository,
-    private readonly logger: ILogger
+    private readonly postRepository: PostRepositoryPort,
+    private readonly logger: LoggerPort
   ) {
     this.log = this.logger.child({ module: 'post-views-worker' });
   }

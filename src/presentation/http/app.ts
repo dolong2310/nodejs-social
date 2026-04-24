@@ -1,10 +1,8 @@
+import { appConfig } from '@/bootstrap/config/app.config';
+import { IContainer } from '@/bootstrap/container';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/constants/file.constant';
 import { errorHandler } from '@/presentation/http/middlewares/error.middleware';
 import { getSwaggerDefinition } from '@/presentation/http/utils/file.util';
-
-import { appConfig } from '@/bootstrap/config/app.config';
-import { IContainer } from '@/bootstrap/container';
-
 import cookieParser from 'cookie-parser';
 import express, { Express, Router } from 'express';
 import helmet from 'helmet';

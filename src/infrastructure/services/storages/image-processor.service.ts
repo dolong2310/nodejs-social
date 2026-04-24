@@ -1,5 +1,4 @@
 import { IImageProcessor } from '@/application/ports/image-processor.port';
-
 import sharp from 'sharp';
 
 export class SharpImageProcessor implements IImageProcessor {

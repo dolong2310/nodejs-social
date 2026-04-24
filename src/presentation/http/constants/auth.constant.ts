@@ -1,5 +1,4 @@
 import { isProduction } from '@/bootstrap/config/env.config';
-
 import type { CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 

@@ -1,4 +1,5 @@
-import { IFriendRequest } from '@/domain/entities/friend-request.entity';
+import { FriendRequestEntity } from '@/domain/entities/friend-request/friend-request.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 import {
   ICountOutgoingRequestsCreatedOnUtcDayInput,
   ICreatePendingRequestInput,
@@ -7,13 +8,13 @@ import {
   IFindPendingRequestByUserPairInput,
   IListIncomingForUserInput,
   IListOutgoingForUserInput
-} from '@/domain/repositories/friend-request/friend-request.interface';
+} from '@/domain/repositories/friend-request/friend-request.repository.type';
 
-export interface IFriendRequestRepository {
-  findPendingRequestByUserPair(data: IFindPendingRequestByUserPairInput): Promise<IFriendRequest | null>;
-  listIncomingForUser(data: IListIncomingForUserInput): Promise<IFriendRequest[]>;
-  listOutgoingForUser(data: IListOutgoingForUserInput): Promise<IFriendRequest[]>;
-  createPendingRequest(data: ICreatePendingRequestInput): Promise<IFriendRequest>;
+export interface FriendRequestRepositoryPort extends RepositoryPort<FriendRequestEntity> {
+  findPendingRequestByUserPair(data: IFindPendingRequestByUserPairInput): Promise<FriendRequestEntity | null>;
+  listIncomingForUser(data: IListIncomingForUserInput): Promise<FriendRequestEntity[]>;
+  listOutgoingForUser(data: IListOutgoingForUserInput): Promise<FriendRequestEntity[]>;
+  createPendingRequest(data: ICreatePendingRequestInput): Promise<FriendRequestEntity>;
   deletePendingRequest(data: IDeletePendingRequestInput): Promise<number>;
   deleteAllRequestsBetweenUsers(data: IDeleteAllRequestsBetweenUsersInput): Promise<void>;
   countOutgoingRequestsCreatedOnUtcDay(data: ICountOutgoingRequestsCreatedOnUtcDayInput): Promise<number>;

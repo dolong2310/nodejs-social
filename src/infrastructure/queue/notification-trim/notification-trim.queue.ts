@@ -1,22 +1,20 @@
-import { ILogger } from '@/application/ports/logger.port';
+import { LoggerPort } from '@/application/ports/logger.port';
 import {
   INotificationTrimJobData,
   INotificationTrimJobResult,
   INotificationTrimQueue
 } from '@/application/ports/notification-trim-job.port';
-
 import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/infrastructure/queue/notification-trim/notification-trim.type';
-
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 // Producer
 export class BullMQNotificationTrimQueue implements INotificationTrimQueue {
   private readonly queue: Queue<INotificationTrimJobData, INotificationTrimJobResult>;
-  private readonly log: ILogger;
+  private readonly log: LoggerPort;
 
   constructor(
     readonly connection: ConnectionOptions,
-    private readonly logger: ILogger
+    private readonly logger: LoggerPort
   ) {
     this.log = this.logger.child({ module: 'notification-trim-queue' });
     this.queue = new Queue<INotificationTrimJobData, INotificationTrimJobResult>(NOTIFICATION_TRIM_QUEUE_NAME, {

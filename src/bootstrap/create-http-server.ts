@@ -1,18 +1,14 @@
-import logger from '@/infrastructure/logger/create-logger';
-import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-
-import { createExpressApp } from '@/presentation/http/app';
-import { initUploadsFolder } from '@/presentation/http/utils/file.util';
-
 import { appConfig } from '@/bootstrap/config/app.config';
-import { createShutdownResources } from '@/bootstrap/resources';
 import { setupContainer } from '@/bootstrap/setup-container';
 import { setupDatabase } from '@/bootstrap/setup-database';
 import { setupGracefulShutdown } from '@/bootstrap/setup-graceful-shutdown';
 import { setupRedis } from '@/bootstrap/setup-redis';
 import { setupSocket } from '@/bootstrap/setup-socket';
 import { setupWorkers } from '@/bootstrap/setup-workers';
-
+import logger from '@/infrastructure/logger/create-logger';
+import requestContextLogger from '@/infrastructure/logger/request-context-logger';
+import { createExpressApp } from '@/presentation/http/app';
+import { initUploadsFolder } from '@/presentation/http/utils/file.util';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import { createServer } from 'http';
@@ -54,8 +50,7 @@ export async function createHttpServer() {
   setupSocket(httpServer, container);
   setupWorkers(container);
 
-  const resources = createShutdownResources(database, redis);
-  setupGracefulShutdown(httpServer, resources);
+  setupGracefulShutdown(httpServer, { database, redis });
 
   app.use(logger.getHttpLogger());
   app.use(requestContextLogger.bindRequestLogContextMiddleware);

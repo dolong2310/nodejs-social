@@ -1,19 +1,16 @@
 import { ESearchPeople, ESearchType } from '@/domain/enums/search.enum';
-
-import { VALIDATION_ERROR_MESSAGE } from '@/application/common/constants/message.constant';
-
+import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/constants/message.constant';
 import { validate } from '@/presentation/http/utils/validation.util';
-
 import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
-export interface ISearchValidation {
-  searchValidation: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface ISearchValidator {
+  searchValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
 }
 
-export class SearchValidation implements ISearchValidation {
-  searchValidation = validate(
+export class SearchValidator implements ISearchValidator {
+  searchValidator = validate(
     checkSchema(
       {
         query: {
@@ -26,7 +23,7 @@ export class SearchValidation implements ISearchValidation {
         type: {
           isIn: {
             options: [
-              [ESearchType.USER, ESearchType.POST, ESearchType.IMAGE, ESearchType.VIDEO, ESearchType.VIDEO_HLS]
+              [ESearchType.USER, ESearchType.POST, ESearchType.IMAGE, ESearchType.VIDEO, ESearchType.VIDEO_STREAM]
             ],
             errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_TYPE_MUST_BE_ONE_OF_THE_FOLLOWING
           },

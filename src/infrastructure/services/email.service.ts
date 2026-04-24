@@ -1,13 +1,8 @@
-import { EEmailTemplate } from '@/domain/enums/mail.enum';
-
-import { InvalidEmailTemplateException } from '@/application/errors/email.error';
 import { IEmailJobData } from '@/application/ports/email-job.port';
 import { IFileStorage } from '@/application/ports/file-storage.port';
-import { ILogger } from '@/application/ports/logger.port';
+import { LoggerPort } from '@/application/ports/logger.port';
 import { IPathService } from '@/application/ports/path.port';
-
 import { envConfig } from '@/bootstrap/config/env.config';
-
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 
 export interface IEmailService {
@@ -16,10 +11,10 @@ export interface IEmailService {
 
 export class EmailService {
   private sesClient: SESClient;
-  private readonly log: ILogger;
+  private readonly log: LoggerPort;
 
   constructor(
-    private readonly logger: ILogger,
+    private readonly logger: LoggerPort,
     private readonly fileStorage: IFileStorage,
     private readonly pathService: IPathService
   ) {
@@ -74,44 +69,30 @@ export class EmailService {
     });
   }
 
-  private async getTemplate(template: EEmailTemplate): Promise<string> {
-    switch (template) {
-      case EEmailTemplate.VERIFY_EMAIL: {
-        const contentBuffer = await this.fileStorage.readFile(this.pathService.resolve('src/views/verify-email.html'));
-        return contentBuffer.toString('utf8');
-      }
-      case EEmailTemplate.FORGOT_PASSWORD: {
-        const contentBuffer = await this.fileStorage.readFile(
-          this.pathService.resolve('src/views/forgot-password-email.html')
-        );
-        return contentBuffer.toString('utf8');
-      }
-      default:
-        throw InvalidEmailTemplateException;
-    }
+  private async getTemplate(): Promise<string> {
+    const contentBuffer = await this.fileStorage.readFile(this.pathService.resolve('src/views/otp.html'));
+    return contentBuffer.toString('utf8');
   }
 
   async sendEmail({
     toAddress,
     subject,
-    body,
-    template
+    body
   }: {
     toAddress: string;
     subject: string;
-    body: { name: string; url: string; expiresIn: string; appName: string; supportUrl: string };
-    template: EEmailTemplate;
+    body: { code: string };
   }): Promise<SendEmailCommandOutput> {
+    const sender = 'Social App';
+    // TIPS: khi gửi email mà không muốn tạo email mới thì chỉ cần thêm +1 vào cuối của email đó (ví dụ: test123@gmail.com -> test123+1@gmail.com)
     const sendEmailCommand = this.createSendEmailCommand({
       fromAddress: envConfig.SES_FROM_ADDRESS,
       toAddresses: toAddress,
       subject,
-      body: (await this.getTemplate(template))
-        .replaceAll('{{name}}', body.name)
-        .replaceAll('{{url}}', body.url)
-        .replaceAll('{{expiresIn}}', body.expiresIn)
-        .replaceAll('{{appName}}', body.appName)
-        .replaceAll('{{supportUrl}}', body.supportUrl)
+      body: (await this.getTemplate())
+        .replaceAll('{{sender}}', sender)
+        .replaceAll('{{subject}}', subject)
+        .replaceAll('{{code}}', body.code)
     });
 
     try {

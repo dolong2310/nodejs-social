@@ -2,23 +2,29 @@ export class RegisterRequestDTO {
   name: string;
   email: string;
   password: string;
-  dateOfBirth: string;
+  birthday: string;
+  code: string;
 
-  constructor(body: { name: string; email: string; password: string; dateOfBirth: string }) {
+  constructor(body: { name: string; email: string; password: string; birthday: string; code: string }) {
     this.name = body.name.trim();
     this.email = body.email.toLowerCase().trim();
     this.password = body.password;
-    this.dateOfBirth = body.dateOfBirth;
+    this.birthday = body.birthday;
+    this.code = body.code;
   }
 }
 
 export class LoginRequestDTO {
   email: string;
   password: string;
+  totpCode?: string;
+  emailOtpCode?: string;
 
-  constructor(body: { email: string; password: string }) {
+  constructor(body: { email: string; password: string; totpCode?: string; emailOtpCode?: string }) {
     this.email = body.email.toLowerCase().trim();
     this.password = body.password;
+    this.totpCode = body.totpCode;
+    this.emailOtpCode = body.emailOtpCode;
   }
 }
 
@@ -38,40 +44,14 @@ export class RefreshTokenRequestDTO {
   }
 }
 
-export class VerifyEmailRequestDTO {
-  token: string;
-
-  constructor(body: { token: string }) {
-    this.token = body.token;
-  }
-}
-
 export class ForgotPasswordRequestDTO {
   email: string;
+  code: string;
+  password: string;
 
-  constructor(body: { email: string }) {
+  constructor(body: { email: string; code: string; password: string }) {
     this.email = body.email.toLowerCase().trim();
-  }
-}
-
-export class ResetPasswordRequestDTO {
-  token: string;
-  password: string;
-  confirmPassword: string;
-
-  constructor(body: { token: string; password: string; confirmPassword: string }) {
-    this.token = body.token;
+    this.code = body.code;
     this.password = body.password;
-    this.confirmPassword = body.confirmPassword;
-  }
-}
-
-export class ChangePasswordRequestDTO {
-  password: string;
-  confirmPassword: string;
-
-  constructor(body: { password: string; confirmPassword: string }) {
-    this.password = body.password;
-    this.confirmPassword = body.confirmPassword;
   }
 }

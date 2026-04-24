@@ -4,27 +4,29 @@ import { validateCursorPaginationQuery } from '@/presentation/http/middlewares/c
 import { appLimiter } from '@/presentation/http/middlewares/limiter.middleware';
 import { BaseRoute } from '@/presentation/http/routes/base.route';
 import { asyncHandler } from '@/presentation/http/utils/async-handler.util';
-import { ISearchValidation } from '@/presentation/http/validators/search.validator';
+import { ISearchValidator } from '@/presentation/http/validators/search.validator';
 
 export class SearchRoute extends BaseRoute {
+  protected override readonly pathName = '/search';
+
   constructor(
     private readonly searchController: ISearchController,
-    private readonly searchValidation: ISearchValidation
+    private readonly searchValidator: ISearchValidator
   ) {
-    super('/search');
-    this.initializeRoutes();
+    super();
+    this.createRoutes();
   }
 
-  protected initializeRoutes(): void {
+  protected override createRoutes(): void {
     const { search } = this.searchController;
-    const { searchValidation } = this.searchValidation;
+    const { searchValidator } = this.searchValidator;
 
     this.router.get(
       '/',
       appLimiter,
       protectIfHasBearerToken,
       validateCursorPaginationQuery,
-      searchValidation,
+      searchValidator,
       asyncHandler(search)
     );
   }

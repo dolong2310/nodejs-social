@@ -1,10 +1,8 @@
-import { DatabaseService } from '@/infrastructure/persistence/mongodb/database.service';
-import { RedisService } from '@/infrastructure/persistence/redis/redis.service';
-
 import Container from '@/bootstrap/container';
+import { Database } from '@/infrastructure/persistence/mongodb/database';
+import { Redis } from '@/infrastructure/persistence/redis/redis';
 
-export function setupContainer(database: DatabaseService, redis: RedisService) {
+export function setupContainer(database: Database, redis: Redis) {
   const container = Container.getOrSet(database, redis);
-
   return container;
 }

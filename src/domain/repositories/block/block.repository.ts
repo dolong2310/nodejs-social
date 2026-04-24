@@ -1,19 +1,10 @@
-import {
-  ICreateBlockInput,
-  IDeleteBlockInput,
-  IIsBlockedEitherWayInput,
-  IListBlockedUserIdsForBlockerInput,
-  IListBlockedUserIdsForBlockerOutput,
-  IListUserIdsBlockedInEitherDirectionInput,
-  IListUserIdsBlockedInEitherDirectionOutput
-} from '@/domain/repositories/block/block.interface';
+import { BlockEntity } from '@/domain/entities/block/block.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 
-export interface IBlockRepository {
-  isBlockedEitherWay(data: IIsBlockedEitherWayInput): Promise<boolean>;
-  listBlockedUserIdsForBlocker(data: IListBlockedUserIdsForBlockerInput): Promise<IListBlockedUserIdsForBlockerOutput>;
-  listUserIdsBlockedInEitherDirection(
-    data: IListUserIdsBlockedInEitherDirectionInput
-  ): Promise<IListUserIdsBlockedInEitherDirectionOutput>;
-  createBlock(data: ICreateBlockInput): Promise<void>;
-  deleteBlock(data: IDeleteBlockInput): Promise<number>;
+export interface BlockRepositoryPort extends RepositoryPort<BlockEntity> {
+  isBlockedEitherWay(userIdA: string, userIdB: string): Promise<boolean>;
+  listBlockedUserIdsForBlocker(blockerId: string): Promise<string[]>;
+  listUserIdsBlockedInEitherDirection(userId: string): Promise<string[]>;
+  createBlock(blockerId: string, blockedId: string): Promise<void>;
+  deleteBlock(blockerId: string, blockedId: string): Promise<number>;
 }

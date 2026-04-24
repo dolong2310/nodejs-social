@@ -1,5 +1,3 @@
-import type { StringEnum } from '@/modules/core/types/general.type';
-
 export class Paginated<T> {
   readonly count: number;
   readonly limit: number;
@@ -25,7 +23,9 @@ export type PaginatedQueryParams = {
 
 export interface RepositoryPort<Entity> {
   findById(id: string): Promise<Entity>;
-  findByKey(key: StringEnum<keyof Entity>): Promise<Entity>;
+  // import type { StringEnum } from '@/modules/core/types/general.type';
+  // findByKey<Key extends StringEnum<keyof Entity>>(key: Key, value: Entity[Key]): Promise<Entity>;
+  findByKey<Key extends keyof Entity & string>(key: Key, value: Entity[Key]): Promise<Entity>;
   findAll(): Promise<Entity[]>;
   findAllByIds(ids: string[]): Promise<Entity[]>;
   findAllPaginated(params: PaginatedQueryParams): Promise<Paginated<Entity>>;
@@ -47,5 +47,5 @@ export interface RepositoryPort<Entity> {
   deleteAllByIds(ids: string[]): Promise<boolean>;
   deleteBulk(entity: Entity): Promise<boolean>;
 
-  transaction<T>(handler: () => Promise<T>): Promise<T>;
+  transaction<T>(handler: () => Promise<T> | T): Promise<T>;
 }

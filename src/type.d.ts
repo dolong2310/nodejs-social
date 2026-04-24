@@ -1,17 +1,16 @@
-import { TokenPayload } from '@/domain/value-objects/token.value-object';
-
 import { PostDetailResponseDTO } from '@/application/dtos/post/post.result.dto';
-import { UserResultDTO } from '@/application/dtos/user/user.result.dto';
-
+import { AccessTokenPayload } from '@/application/services/token/token.service.type';
+import { UserSafeProps } from '@/domain/entities/user/user.type';
+import { REFRESH_TOKEN_COOKIE_NAME } from '@/presentation/http/constants/auth.constant';
 import 'express';
 import type { Logger } from 'pino';
 
 declare module 'express' {
   interface Request {
-    user?: UserResultDTO;
+    user?: UserSafeProps;
     postDetail?: PostDetailResponseDTO;
-    tokenPayload?: TokenPayload;
-    refreshTokenJwt?: string; // Raw refresh JWT from httpOnly cookie (set by refresh-token / logout cookie validation).
+    tokenPayload?: AccessTokenPayload;
+    [REFRESH_TOKEN_COOKIE_NAME]?: string;
     log: Logger;
   }
 

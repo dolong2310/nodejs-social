@@ -12,12 +12,8 @@ export interface IAppConfig {
     algorithm: Algorithm;
     accessTokenSecret: Secret;
     refreshTokenSecret: Secret;
-    emailTokenSecret: Secret;
-    forgotPasswordTokenSecret: Secret;
     accessTokenExpiresIn: StringValue;
     refreshTokenExpiresIn: StringValue;
-    emailTokenExpiresIn: StringValue;
-    forgotPasswordTokenExpiresIn: StringValue;
   };
   logs: {
     level: string;

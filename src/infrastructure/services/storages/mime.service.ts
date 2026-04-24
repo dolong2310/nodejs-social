@@ -1,5 +1,4 @@
 import { IMimeService } from '@/application/ports/mime.port';
-
 import mime from 'mime';
 import mimeTypes from 'mime-types';
 

@@ -1,0 +1,143 @@
+export const APP_ERROR_MESSAGE = {
+  CONTAINER_INSTANCE_NOT_INITIALIZED: 'Container has not been initialized. Call Container.getOrSet() during bootstrap.'
+} as const;
+
+export const VALIDATION_ERROR_MESSAGE = {
+  // Auth errors
+  NAME_IS_REQUIRED: 'Name is required',
+  NAME_MUST_BE_A_STRING: 'Name must be a string',
+  NAME_LENGTH_MUST_BE_FROM_1_TO_100: 'Name length must be from 1 to 100 characters',
+  EMAIL_IS_REQUIRED: 'Email is required',
+  EMAIL_IS_INVALID: 'Email is invalid',
+  EMAIL_ALREADY_EXISTS: 'Email already exists',
+  PASSWORD_IS_REQUIRED: 'Password is required',
+  PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
+  PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50: 'Password length must be from 6 to 50 characters',
+  PASSWORD_MUST_BE_STRONG:
+    'Password must be at least 6 characters long and contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 symbol',
+  CONFIRM_PASSWORD_IS_REQUIRED: 'Confirm password is required',
+  CONFIRM_PASSWORD_MUST_BE_A_STRING: 'Confirm password must be a string',
+  CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50: 'Confirm password length must be from 6 to 50 characters',
+  CONFIRM_PASSWORD_MUST_BE_STRONG:
+    'Confirm password must be at least 6 characters long and contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 symbol',
+  CONFIRM_PASSWORD_MUST_MATCH_PASSWORD: 'Confirm password does not match password',
+  DATE_OF_BIRTH_IS_REQUIRED: 'Date of birth is required',
+  DATE_OF_BIRTH_MUST_BE_ISO8601: 'Date of birth must be ISO8601 format',
+  EMAIL_AND_PASSWORD_ARE_REQUIRED: 'Email and password are required',
+
+  // Token errors
+  TOKEN_MUST_BE_STRING: 'Token must be a string',
+  TOKEN_IS_REQUIRED: 'Token is required',
+  TOKEN_IS_INVALID: 'Token is invalid',
+  NO_TOKEN_PROVIDED: 'No token provided',
+  TOKEN_HAS_EXPIRED: 'Token has expired',
+
+  // User errors
+  INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password',
+  USER_NOT_FOUND: 'User not found',
+  /** D-10: viewer cannot load full profile of a user they are in a two-way block with (when authenticated). */
+  CANNOT_VIEW_USER_PROFILE_BLOCKED: 'Cannot view this profile due to a block between accounts',
+  USER_ALREADY_VERIFIED: 'User already verified',
+  USER_IS_INACTIVE: 'User is inactive',
+  USER_IS_BANNED: 'User is banned',
+  BIO_MUST_BE_A_STRING: 'Bio must be a string',
+  BIO_LENGTH_MUST_BE_FROM_1_TO_500: 'Bio length must be from 1 to 500 characters',
+  LOCATION_MUST_BE_A_STRING: 'Location must be a string',
+  LOCATION_LENGTH_MUST_BE_FROM_1_TO_500: 'Location length must be from 1 to 500 characters',
+  WEBSITE_MUST_BE_A_STRING: 'Website must be a string',
+  WEBSITE_LENGTH_MUST_BE_FROM_1_TO_500: 'Website length must be from 1 to 500 characters',
+  USERNAME_MUST_BE_A_STRING: 'Username must be a string',
+  USERNAME_LENGTH_MUST_BE_FROM_4_TO_15: 'Username length must be from 4 to 15 characters',
+  IMAGE_MUST_BE_A_STRING: 'Image must be a string',
+  IMAGE_LENGTH_MUST_BE_FROM_1_TO_500: 'Image length must be from 1 to 500 characters',
+  USER_ID_IS_REQUIRED: 'User ID is required',
+  USER_ID_MUST_BE_A_STRING: 'User ID must be a string',
+  INVALID_USER_ID: 'Invalid user ID',
+  USERNAME_MUST_BE_4_TO_15_CHARACTERS_LONG_AND_CONTAIN_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES:
+    'Username must be 4 to 15 characters long and contain only letters, numbers and underscores',
+  USERNAME_ALREADY_EXISTS: 'Username already exists',
+
+  // Friends graph
+  CANNOT_SEND_FRIEND_REQUEST_TO_YOURSELF: 'You cannot send a friend request to yourself',
+  ALREADY_FRIENDS: 'You are already friends with this user',
+  FRIEND_REQUEST_ALREADY_PENDING: 'A friend request is already pending for this pair',
+  NO_PENDING_FRIEND_REQUEST: 'No pending friend request found',
+  NO_FRIENDSHIP_WITH_USER: 'You are not friends with this user',
+  FRIEND_ACTION_BLOCKED: 'Cannot perform this action because of a block between users',
+  FRIEND_REQUEST_DAILY_LIMIT_EXCEEDED: 'Daily limit for outgoing friend requests reached (100 per UTC day)',
+  CANNOT_BLOCK_YOURSELF: 'You cannot block yourself',
+  BLOCK_ALREADY_EXISTS: 'A block already exists between you and this user',
+  NO_ACTIVE_BLOCK: 'No active block found for this user',
+
+  // Post errors
+  INVALID_POST_TYPE: 'Invalid post type',
+  INVALID_POST_AUDIENCE: 'Invalid post audience',
+  ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN: 'allowStrangerComments must be a boolean',
+  CONTENT_IS_REQUIRED: 'Content is required',
+  CONTENT_MUST_BE_A_STRING: 'Content must be a string',
+  CONTENT_MUST_BE_EMPTY_STRING: 'Content must be empty string',
+  CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'Content must be a non-empty string',
+  CONTENT_LENGTH_MUST_BE_FROM_1_TO_1000: 'Content length must be from 1 to 1000 characters',
+  PARENT_ID_IS_REQUIRED: 'Parent ID is required',
+  PARENT_ID_MUST_BE_A_VALID_POST_ID: 'Parent ID must be a valid post ID',
+  PARENT_ID_MUST_BE_NULL: 'Parent ID must be null',
+  HASHTAGS_MUST_BE_AN_ARRAY: 'Hashtags must be an array',
+  HASHTAGS_MUST_BE_AN_ARRAY_OF_STRINGS: 'Hashtags must be an array of strings',
+  HASHTAGS_COUNT_MUST_BE_BETWEEN_0_TO_20: 'Hashtags count must be between 0 and 20',
+  MENTIONS_MUST_BE_AN_ARRAY: 'Mentions must be an array',
+  MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS: 'Mentions must be an array of valid user IDs',
+  MEDIA_MUST_BE_AN_ARRAY: 'Media must be an array',
+  MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS: 'Media must be an array of valid media items',
+  ONLY_OWNER_CAN_VIEW_POSTS: 'Only owner can view posts',
+  ONLY_FRIENDS_CAN_VIEW_POSTS: 'Only friends can view posts',
+  ONLY_OWNER_CAN_UPDATE_POST_SETTINGS: 'Only the post author can update audience or comment settings',
+  CANNOT_VIEW_POST_BLOCKED: 'You cannot view this post because of a block between you and the author',
+  CANNOT_ENGAGE_POST_BLOCKED: 'You cannot interact with this post because of a block between you and the author',
+  CANNOT_ENGAGE_WITH_INACCESSIBLE_POST: 'You cannot interact with this post',
+  STRANGER_COMMENTS_NOT_ALLOWED_ON_THIS_POST: 'The author does not allow comments from users who are not friends',
+
+  // Bookmark errors
+  POST_ID_IS_REQUIRED: 'Post ID is required',
+  POST_ID_MUST_BE_A_STRING: 'Post ID must be a string',
+  INVALID_POST_ID: 'Invalid post ID',
+  POST_NOT_FOUND: 'Post not found',
+
+  LIMIT_MUST_BE_BETWEEN_1_TO_100: 'Limit must be between 1 and 100',
+  PAGE_MUST_BE_GREATER_THAN_0: 'Page must be greater than 0',
+
+  // Search errors
+  SEARCH_QUERY_MUST_BE_A_STRING: 'Search query must be a string',
+  MEDIA_TYPE_MUST_BE_ONE_OF_THE_FOLLOWING: 'Media type must be one of the following: image, video, video_stream',
+  PEOPLE_MUST_BE_ONE_OF_THE_FOLLOWING: 'People filter must be one of the following: friends, not_friends, only_me',
+
+  // Conversation errors
+  INVALID_RECEIVER_ID: 'Invalid receiver ID',
+
+  // Conversation errors
+  CONVERSATION_ID_IS_REQUIRED: 'Conversation ID is required',
+  CONVERSATION_ID_MUST_BE_A_STRING: 'Conversation ID must be a string',
+  INVALID_CONVERSATION_ID: 'Invalid conversation ID',
+  CONVERSATION_NOT_FOUND: 'Conversation not found',
+  CONVERSATION_NOT_MEMBER: 'You are not a member of this conversation',
+  CONVERSATION_PEER_NOT_FRIEND: 'You can only start a direct conversation with a friend',
+  CONVERSATION_PEER_BLOCKED: 'Cannot use this conversation due to a block between participants',
+  CONVERSATION_INVITE_NOT_FRIEND_OF_BOTH: 'Invited user must be friends with you and with the group creator',
+  CONVERSATION_CANNOT_KICK: 'You cannot remove this member',
+  CONVERSATION_ROLE_FORBIDDEN: 'This role change is not allowed',
+  CONVERSATION_GROUP_NEEDS_MEMBER: 'Group must include at least one other member',
+  CONVERSATION_INVALID_PEER: 'Invalid peer user',
+  CONVERSATION_MESSAGE_FORBIDDEN: 'You cannot send messages in this conversation',
+  CHAT_MESSAGE_EMPTY: 'Message must include non-empty text and/or attachments',
+  CHAT_ATTACHMENT_TOO_LARGE: 'Each attachment must be 5MB or less',
+  INVALID_CURSOR: 'Invalid cursor',
+  CONVERSATION_USER_ALREADY_MEMBER: 'User is already a member of this conversation',
+  CONVERSATION_DIRECT_NO_KICK: 'Kick is not supported in direct conversations',
+
+  // Media errors
+  VIDEO_NOT_FOUND: 'Video not found'
+} as const;
+
+export const RATE_LIMIT_ERROR_MESSAGE = {
+  TOO_MANY_AUTHENTICATION_ATTEMPTS: 'Too many authentication attempts, please try again later.',
+  TOO_MANY_REQUESTS: 'Too many requests, please try again later.'
+} as const;

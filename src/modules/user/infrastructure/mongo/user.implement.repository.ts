@@ -4,13 +4,13 @@
 // import { MySQLRepositoryBase } from '@/modules/core/infra-base/persistence/repo/repository.mysql.base';
 // import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
 // import type { UserModel } from '@/modules/user/domain/repositories/user.model';
-// import type { IUserRepository } from '@/modules/user/domain/repositories/user.repository';
+// import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 // import type { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
 // import { getDBClient } from './plannet-scale.config';
 
 // export class UserMongoRepository
 //   extends MySQLRepositoryBase<UserEntity, UserModel, { users: UserModel }>
-//   implements IUserRepository
+//   implements UserRepositoryPort
 // {
 //   protected tableName = 'users';
 //   protected db = getDBClient();

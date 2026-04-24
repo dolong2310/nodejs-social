@@ -1,4 +1,4 @@
-export interface IRedisService {
+export interface RedisPort {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   ping(): Promise<void>;

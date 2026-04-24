@@ -1,23 +1,17 @@
-import { ChatFeature } from '@/application/use-cases/socket/chat.feature';
-import { PresenceFeature } from '@/application/use-cases/socket/presence.feature';
-
-import { SocketService } from '@/infrastructure/socket/socket.service';
-
 import { appConfig } from '@/bootstrap/config/app.config';
 import { IContainer } from '@/bootstrap/container';
-
+import { SocketService } from '@/infrastructure/socket/socket.service';
 import { Server as HttpServer } from 'http';
 
 export function setupSocket(httpServer: HttpServer, container: IContainer) {
-  const { tokenService, usersService, friendshipRepository, conversationMemberRepository } = container.getSocketDeps();
+  const { tokenService, userService, presenceFeature, chatFeature } = container.getSocketDeps();
   const socket = new SocketService(httpServer, appConfig, {
     tokenService,
-    usersService,
-    features: [new PresenceFeature(friendshipRepository), new ChatFeature(conversationMemberRepository)]
+    userService,
+    features: [presenceFeature, chatFeature]
   });
 
-  container.bindNotificationsSocket(socket);
-  container.bindRealtimeChatEmitter(socket);
+  container.bindRealtimeEmitter(socket);
 
   socket.run();
 

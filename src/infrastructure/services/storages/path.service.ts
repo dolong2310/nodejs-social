@@ -1,5 +1,4 @@
 import { IPathService } from '@/application/ports/path.port';
-
 import path from 'path';
 
 export class PathService implements IPathService {

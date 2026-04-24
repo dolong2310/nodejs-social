@@ -1,7 +1,6 @@
 import { IFileStorage } from '@/application/ports/file-storage.port';
-
-import fs from 'fs/promises';
 import fsSync from 'fs';
+import fs from 'fs/promises';
 
 export class LocalFileStorage implements IFileStorage {
   async readFile(filepath: string): Promise<Buffer> {

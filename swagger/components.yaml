@@ -42,7 +42,7 @@ components:
     # User schemas
     RegisterRequest:
       type: object
-      required: [name, email, password, confirmPassword, dateOfBirth]
+      required: [name, email, password, confirmPassword, birthday]
       properties:
         name:
           type: string
@@ -59,7 +59,7 @@ components:
           type: string
           format: password
           example: "Password123!"
-        dateOfBirth:
+        birthday:
           type: string
           format: date-time
           description: ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
@@ -69,7 +69,7 @@ components:
         email: "nguyenvana@example.com"
         password: "Password123!"
         confirmPassword: "Password123!"
-        dateOfBirth: "2000-01-15T00:00:00.000Z"
+        birthday: "2000-01-15T00:00:00.000Z"
     LoginRequest:
       type: object
       required: [email, password]
@@ -176,7 +176,7 @@ components:
         name:
           type: string
           example: "Nguyễn Văn A Updated"
-        dateOfBirth:
+        birthday:
           type: string
           format: date-time
           description: ISO 8601 format
@@ -216,7 +216,7 @@ components:
           type: string
           format: email
           example: "nguyenvana@example.com"
-        dateOfBirth:
+        birthday:
           type: string
           format: date-time
           description: ISO 8601 format
@@ -239,7 +239,7 @@ components:
         website:
           type: string
           example: "https://mywebsite.com"
-        verificationStatus:
+        status:
           type: string
           enum: [verified, unverified, banned]
           example: "verified"
@@ -257,10 +257,10 @@ components:
         _id: "507f1f77bcf86cd799439011"
         name: "Nguyễn Văn A"
         email: "nguyenvana@example.com"
-        dateOfBirth: "2000-01-15T00:00:00.000Z"
+        birthday: "2000-01-15T00:00:00.000Z"
         username: "nguyenvana"
         avatar: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
-        verificationStatus: "verified"
+        status: "verified"
         createdAt: "2024-03-15T08:30:00.000Z"
         updatedAt: "2024-03-17T10:45:00.000Z"
     UserSuccessResponse:
@@ -353,7 +353,7 @@ components:
           example: "https://cdn.example.com/images/abc123.jpg"
         type:
           type: string
-          enum: [image, video, video-hls]
+          enum: [image, video, video-stream]
           example: "image"
       example:
         url: "https://cdn.example.com/images/abc123.jpg"
@@ -776,7 +776,7 @@ components:
                     example: "https://cdn.example.com/images/abc123.jpg"
                   type:
                     type: string
-                    enum: [image, video, video-hls]
+                    enum: [image, video, video-stream]
       example:
         message: "Upload successfully"
         statusCode: 200

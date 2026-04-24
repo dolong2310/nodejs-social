@@ -5,7 +5,7 @@ export interface IUserPassword {
   value: string;
 }
 
-export class UserProvider extends ValueObject<IUserPassword> {
+export class UserPassword extends ValueObject<IUserPassword> {
   get value() {
     return this.props.value;
   }

@@ -7,5 +7,5 @@ export interface IUploadedFile {
 export interface IFileUploadService {
   uploadImages(): Promise<IUploadedFile[]>;
   uploadVideos(): Promise<IUploadedFile[]>;
-  uploadVideosHLS(): Promise<IUploadedFile[]>;
+  uploadVideosStream(): Promise<IUploadedFile[]>;
 }

@@ -1,5 +1,4 @@
 import { IFileUploadService, IUploadedFile } from '@/application/ports/file-upload.port';
-
 import { Request } from 'express';
 import formidable, { File } from 'formidable';
 
@@ -38,7 +37,7 @@ export class FormidableFileUploadService implements IFileUploadService {
     });
   }
 
-  async uploadVideosHLS(): Promise<IUploadedFile[]> {
+  async uploadVideosStream(): Promise<IUploadedFile[]> {
     return this.uploadVideos();
   }
 }

@@ -1,55 +1,44 @@
-import { ETokenType } from '@/domain/enums/token.enum';
-import { EUserVerificationStatus } from '@/domain/enums/users.enum';
-import { TokenPayload } from '@/domain/value-objects/token.value-object';
-
 import {
-  SocketEventUnauthorizedError,
-  SocketTokenInvalidException,
-  SocketUnauthorizedException,
-  SocketUserBannedException,
-  SocketUserNotFoundException,
-  SocketUserNotVerifiedException
-} from '@/application/errors/socket.error';
+  UserIsBannedException,
+  UserIsInactiveException,
+  UserNotFoundException
+} from '@/application/exceptions/user.exception';
 import { ISocketContext } from '@/application/ports/socket.port';
-import { ITokenService } from '@/application/ports/token.port';
-import { IUsersService } from '@/application/ports/user.port';
-
+import { AccessTokenPayload, ITokenService } from '@/application/services/token/token.service.type';
+import { IUserService } from '@/application/services/user/user.service';
+import { EUserStatus } from '@/domain/entities/user/user.type';
+import { SocketUnauthorizedError } from '@/presentation/http/exceptions/socket.exception';
 import { ExtendedError, Socket } from 'socket.io';
 
-export type SocketAuthResolver = (socket: Socket) => Promise<ISocketContext>;
-
 export function createSocketAuthResolver(
-  usersService: IUsersService,
+  userService: IUserService,
   tokenService: ITokenService
 ): {
   handshake: (socket: Socket, next: (err?: ExtendedError) => void) => void;
   perEvent: (socket: Socket, next: (err?: Error) => void) => void;
-  resolveContext: SocketAuthResolver;
+  resolveContext: (socket: Socket) => Promise<ISocketContext>;
 } {
   /**
    * verify user từ access token
    */
-  async function verifyFromHandshake(socket: Socket): Promise<{ accessToken: string; decoded: TokenPayload }> {
+  async function verifyFromHandshake(socket: Socket): Promise<{ accessToken: string; decoded: AccessTokenPayload }> {
     const { Authorization } = socket.handshake.auth;
     const accessToken = Authorization?.split(' ')[1];
     if (!accessToken) {
-      throw SocketUnauthorizedException;
+      throw SocketUnauthorizedError;
     }
 
     const decoded = await tokenService.verifyAccessToken(accessToken);
-    if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-      throw SocketTokenInvalidException;
-    }
 
-    const user = await usersService.findUserById({ userId: decoded.userId });
+    const user = await userService.findUserById(decoded.userId);
     if (!user) {
-      throw SocketUserNotFoundException;
+      throw UserNotFoundException;
     }
-    if (user.verificationStatus === EUserVerificationStatus.UNVERIFIED) {
-      throw SocketUserNotVerifiedException;
+    if (user.status === EUserStatus.INACTIVE) {
+      throw UserIsInactiveException;
     }
-    if (user.verificationStatus === EUserVerificationStatus.BANNED) {
-      throw SocketUserBannedException;
+    if (user.status === EUserStatus.BANNED) {
+      throw UserIsBannedException;
     }
 
     return { accessToken, decoded };
@@ -58,18 +47,15 @@ export function createSocketAuthResolver(
   /**
    * verify token type từ existing access token
    */
-  async function verifyExistingAccessToken(socket: Socket): Promise<TokenPayload> {
+  async function verifyExistingAccessToken(socket: Socket): Promise<AccessTokenPayload> {
     const { accessToken } = socket.handshake.auth;
     if (!accessToken) {
-      throw SocketUnauthorizedException;
+      throw SocketUnauthorizedError;
     }
 
     const decoded = await tokenService.verifyAccessToken(accessToken);
-    if (decoded.type !== ETokenType.ACCESS_TOKEN) {
-      throw SocketTokenInvalidException;
-    }
 
-    return decoded as TokenPayload;
+    return decoded as AccessTokenPayload;
   }
 
   return {
@@ -102,7 +88,7 @@ export function createSocketAuthResolver(
           socket.handshake.auth.decoded = decoded;
           next();
         } catch {
-          next(SocketEventUnauthorizedError);
+          next(SocketUnauthorizedError);
         }
       })();
     },
@@ -110,9 +96,9 @@ export function createSocketAuthResolver(
      * lấy ngữ cảnh user (userId) sau khi đã auth
      */
     resolveContext: async (socket) => {
-      const decoded = socket.handshake.auth.decoded as TokenPayload | undefined;
+      const decoded = socket.handshake.auth.decoded as AccessTokenPayload | undefined;
       if (!decoded?.userId) {
-        throw SocketUnauthorizedException;
+        throw SocketUnauthorizedError;
       }
       return { userId: decoded.userId };
     }

@@ -1,18 +1,11 @@
-import { TokenPayload } from '@/domain/value-objects/token.value-object';
-
-import {
-  InvalidTokenAuthFailureException,
-  NoTokenProvidedException,
-  TokenHasExpiredException
-} from '@/application/errors/auth.error';
-import { TokenService } from '@/application/common/use-cases/token.service';
-
-import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-
-import { AuthFailureError } from '@/presentation/http/responses/error.response';
-
+import { TokenService } from '@/application/services/token/token.service';
+import { AccessTokenPayload } from '@/application/services/token/token.service.type';
 import { appConfig } from '@/bootstrap/config/app.config';
-
+import requestContextLogger from '@/infrastructure/logger/request-context-logger';
+import { JwtService } from '@/infrastructure/services/jwt.service';
+import { NoTokenProvidedException, TokenHasExpiredException } from '@/presentation/http/exceptions/auth.exception';
+import { TokenInvalidException } from '@/presentation/http/exceptions/token.exception';
+import { AuthFailureError } from '@/presentation/http/responses/error.response';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import jwt from 'jsonwebtoken';
@@ -107,10 +100,10 @@ export const optionalAuth = (
   };
 };
 
-const _verifyAccessToken = async (token: string): Promise<TokenPayload> => {
+const _verifyAccessToken = async (token: string): Promise<AccessTokenPayload> => {
   try {
     // TODO: need to inject appConfig from container
-    const tokenService = new TokenService(appConfig);
+    const tokenService = new TokenService(new JwtService(), appConfig);
     const payload = await tokenService.verifyAccessToken(token);
     return payload;
   } catch (error) {
@@ -118,9 +111,9 @@ const _verifyAccessToken = async (token: string): Promise<TokenPayload> => {
       throw TokenHasExpiredException;
     }
     if (error instanceof jwt.JsonWebTokenError) {
-      throw InvalidTokenAuthFailureException;
+      throw TokenInvalidException;
     }
-    throw InvalidTokenAuthFailureException;
+    throw TokenInvalidException;
   }
 };
 
@@ -131,5 +124,5 @@ const _mapJwtVerifyError = (error: unknown): Error => {
   if (error instanceof jwt.TokenExpiredError) {
     return TokenHasExpiredException;
   }
-  return InvalidTokenAuthFailureException;
+  return TokenInvalidException;
 };

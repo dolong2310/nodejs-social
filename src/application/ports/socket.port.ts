@@ -23,6 +23,4 @@ export interface ISocketServer {
 
 export interface ISocketFeature {
   mount(server: ISocketServer, socket: ISocketConnection, ctx: ISocketContext): void;
-  // import { Server, Socket } from 'socket.io';
-  // mount(io: Server, socket: Socket, ctx: ISocketContext): void;
 }

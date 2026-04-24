@@ -1,18 +1,15 @@
-import { IFriendship } from '@/domain/entities/friendship.entity';
+import { FriendshipEntity } from '@/domain/entities/friendship/friendship.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 import {
   ICountFriendshipsWithUserAmongOthersInput,
-  ICreateFriendshipInput,
-  IDeleteFriendshipInput,
-  IFindFriendIdsByUserIdInput,
-  IFindFriendshipPairInput,
   IListFriendIdsByCursorInput
-} from '@/domain/repositories/friendship/friendship.interface';
+} from '@/domain/repositories/friendship/friendship.repository.type';
 
-export interface IFriendshipRepository {
-  findFriendIdsByUserId(data: IFindFriendIdsByUserIdInput): Promise<string[]>;
-  findFriendshipPair(data: IFindFriendshipPairInput): Promise<IFriendship | null>;
+export interface FriendshipRepositoryPort extends RepositoryPort<FriendshipEntity> {
+  findFriendIdsByUserId(userId: string): Promise<string[]>;
+  findFriendshipPair(userIdA: string, userIdB: string): Promise<FriendshipEntity | null>;
   listFriendIdsByCursor(data: IListFriendIdsByCursorInput): Promise<string[]>;
-  createFriendship(data: ICreateFriendshipInput): Promise<IFriendship | null>;
-  deleteFriendship(data: IDeleteFriendshipInput): Promise<number>;
+  createFriendship(userIdA: string, userIdB: string): Promise<FriendshipEntity | null>;
+  deleteFriendship(userIdA: string, userIdB: string): Promise<number>;
   countFriendshipsWithUserAmongOthers(data: ICountFriendshipsWithUserAmongOthersInput): Promise<number>;
 }

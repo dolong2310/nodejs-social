@@ -7,8 +7,8 @@
       "name",
       "email",
       "password",
-      "dateOfBirth",
-      "verificationStatus",
+      "birthday",
+      "status",
       "emailVerificationToken",
       "forgotPasswordToken",
       "createdAt",
@@ -34,13 +34,13 @@
         "bsonType": "string",
         "description": "bcrypt hash from hashPassword()"
       },
-      "dateOfBirth": {
+      "birthday": {
         "bsonType": "date"
       },
-      "verificationStatus": {
+      "status": {
         "bsonType": "string",
         "enum": ["verified", "unverified", "banned"],
-        "description": "EUserVerificationStatus"
+        "description": "EUserStatus"
       },
       "emailVerificationToken": {
         "bsonType": "string",

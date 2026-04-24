@@ -1,23 +1,18 @@
-import { INotification } from '@/domain/entities/notification.entity';
+import { NotificationEntity } from '@/domain/entities/notification/notification.entity';
+import { RepositoryPort } from '@/domain/repositories/base/port.repository';
 import {
-  ICountForRecipientInput,
-  IDeleteNotificationsByIdsInput,
   IFindNotificationsInput,
   IFindOldestNotificationIdsForTrimInput,
-  IFindOldestNotificationIdsForTrimOutput,
-  IUpdateAllReadInput,
   IUpdateReadByIdsInput
-} from '@/domain/repositories/notification/notification.interface';
+} from '@/domain/repositories/notification/notification.repository.type';
 
-export interface INotificationRepository {
-  findNotifications(data: IFindNotificationsInput): Promise<INotification[]>;
-  findOldestNotificationIdsForTrim(
-    data: IFindOldestNotificationIdsForTrimInput
-  ): Promise<IFindOldestNotificationIdsForTrimOutput>;
-  createNotification(data: INotification): Promise<INotification>;
-  createNotifications(data: INotification[]): Promise<void>;
+export interface NotificationRepositoryPort extends RepositoryPort<NotificationEntity> {
+  findNotifications(data: IFindNotificationsInput): Promise<NotificationEntity[]>;
+  findOldestNotificationIdsForTrim(data: IFindOldestNotificationIdsForTrimInput): Promise<string[]>;
+  createNotification(data: NotificationEntity): Promise<NotificationEntity>;
+  createNotifications(data: NotificationEntity[]): Promise<void>;
   updateReadByIds(data: IUpdateReadByIdsInput): Promise<number>;
-  updateAllRead(data: IUpdateAllReadInput): Promise<number>;
-  deleteNotificationsByIds(data: IDeleteNotificationsByIdsInput): Promise<number>;
-  countForRecipient(data: ICountForRecipientInput): Promise<number>;
+  updateAllRead(recipientId: string): Promise<number>;
+  deleteNotificationsByIds(ids: string[]): Promise<number>;
+  countForRecipient(recipientId: string): Promise<number>;
 }

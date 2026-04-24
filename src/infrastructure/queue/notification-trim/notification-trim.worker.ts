@@ -1,11 +1,8 @@
-import { INotificationRepository } from '@/domain/repositories/notification/notification.repository';
-
 import { NOTIFICATION_MAX_PER_USER } from '@/application/common/constants/notification.constant';
-import { ILogger } from '@/application/ports/logger.port';
+import { LoggerPort } from '@/application/ports/logger.port';
 import { INotificationTrimJobData, INotificationTrimJobResult } from '@/application/ports/notification-trim-job.port';
-
+import { NotificationRepositoryPort } from '@/domain/repositories/notification/notification.repository';
 import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/infrastructure/queue/notification-trim/notification-trim.type';
-
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 
 export interface INotificationTrimWorker {
@@ -13,23 +10,23 @@ export interface INotificationTrimWorker {
 }
 
 export class NotificationTrimWorker implements INotificationTrimWorker {
-  private readonly log: ILogger;
+  private readonly log: LoggerPort;
 
   constructor(
-    private readonly notificationRepository: INotificationRepository,
-    private readonly logger: ILogger
+    private readonly notificationRepository: NotificationRepositoryPort,
+    private readonly logger: LoggerPort
   ) {
     this.log = this.logger.child({ module: 'notification-trim-worker' });
   }
 
   // TODO: need reuse function from notifications.service.ts
   private async trimRecipient(recipientUserId: string): Promise<void> {
-    const count = await this.notificationRepository.countForRecipient({ recipientId: recipientUserId });
-    const excess = count - NOTIFICATION_MAX_PER_USER;
-    if (excess <= 0) return;
+    const count = await this.notificationRepository.countForRecipient(recipientUserId);
+    const limit = count - NOTIFICATION_MAX_PER_USER;
+    if (limit <= 0) return;
     const ids = await this.notificationRepository.findOldestNotificationIdsForTrim({
       recipientId: recipientUserId,
-      take: excess
+      limit: limit
     });
     await this.notificationRepository.deleteNotificationsByIds(ids);
   }

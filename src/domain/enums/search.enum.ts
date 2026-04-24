@@ -9,5 +9,5 @@ export enum ESearchType {
   USER = 'user',
   IMAGE = 'image',
   VIDEO = 'video',
-  VIDEO_HLS = 'video-hls'
+  VIDEO_STREAM = 'video-stream'
 }

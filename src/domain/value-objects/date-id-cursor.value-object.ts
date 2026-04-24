@@ -1,21 +1,10 @@
-export class DateIdCursor {
-  private _id: string;
-  private _createdAt: Date;
+import { ValueObject } from '@/domain/value-objects/value-object.base';
 
-  get id(): string {
-    return this._id;
-  }
+export interface IDateIdCursor {
+  id: string;
+  createdAt: Date;
+}
 
-  get createdAt(): Date {
-    return this._createdAt;
-  }
-
-  private constructor(id: string, createdAt: Date) {
-    this._id = id;
-    this._createdAt = createdAt;
-  }
-
-  static create(id: string, createdAt: Date): DateIdCursor {
-    return new DateIdCursor(id, createdAt);
-  }
+export class DateIdCursor extends ValueObject<IDateIdCursor> {
+  protected validate(props: IDateIdCursor): void {}
 }

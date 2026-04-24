@@ -1,6 +1,6 @@
-import { IOAuthService } from '@/application/ports/oauth.port';
-
-import { GetGoogleAuthUrlQueryDTO, OAuthGoogleLoginQueryDTO } from '@/presentation/http/dtos/oauth/oauth.request.dto';
+import { GetGoogleAuthUrlInPort } from '@/application/use-cases/auth/get-google-auth-url/get-google-auth-url.in-port';
+import { LoginGoogleInPort } from '@/application/use-cases/auth/login-google/login-google.in-port';
+import { envConfig } from '@/bootstrap/config/env.config';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
@@ -8,9 +8,7 @@ import {
 } from '@/presentation/http/constants/auth.constant';
 import { BaseController } from '@/presentation/http/controllers/base.controller';
 import { AutoBind } from '@/presentation/http/decorators/autoBind.decorator';
-
-import { envConfig } from '@/bootstrap/config/env.config';
-
+import { GetGoogleAuthUrlQueryDTO, OAuthGoogleLoginQueryDTO } from '@/presentation/http/dtos/oauth/oauth.request.dto';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
@@ -20,14 +18,17 @@ export interface IOAuthController {
 }
 
 export class OAuthController extends BaseController implements IOAuthController {
-  constructor(private readonly oauthService: IOAuthService) {
+  constructor(
+    private readonly getGoogleAuthUrlUC: GetGoogleAuthUrlInPort,
+    private readonly googleLoginUC: LoginGoogleInPort
+  ) {
     super();
   }
 
   @AutoBind()
   getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>, res: Response) {
     const { ip, userAgent } = req.query;
-    const url = this.oauthService.getGoogleAuthUrl({ ip, userAgent });
+    const url = this.getGoogleAuthUrlUC.execute({ ip, userAgent });
     this.sendResponse<string>({
       res,
       data: url,
@@ -37,7 +38,8 @@ export class OAuthController extends BaseController implements IOAuthController 
 
   @AutoBind()
   async googleLogin(req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response) {
-    const { refreshToken } = await this.oauthService.googleLogin(req.query);
+    const { state, code } = req.query;
+    const { refreshToken } = await this.googleLoginUC.execute({ state, code });
 
     this.setCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
       ...refreshTokenCookieSharedOptions,

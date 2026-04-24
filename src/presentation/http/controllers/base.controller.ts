@@ -1,10 +1,7 @@
-import { MissingAuthenticatedUserException } from '@/application/errors/base.error';
-
-import { PaginationResponseDTO } from '@/presentation/http/dtos/common/common.response.dto';
-import { Created, OK, SuccessResponseParams } from '@/presentation/http/responses/success.response';
-
 import { isProduction } from '@/bootstrap/config/env.config';
-
+import { PaginationResponseDTO } from '@/presentation/http/dtos/common/common.response.dto';
+import { UserNotFoundException } from '@/presentation/http/exceptions/user.exception';
+import { Created, OK, SuccessResponseParams } from '@/presentation/http/responses/success.response';
 import type { CookieOptions } from 'express';
 import { Request, Response } from 'express';
 
@@ -108,7 +105,7 @@ export abstract class BaseController {
   protected getUserId(req: Request, options?: { optional?: boolean }): string {
     const userId = req.tokenPayload?.userId;
     if (!userId && !options?.optional) {
-      throw MissingAuthenticatedUserException;
+      throw UserNotFoundException;
     }
     return userId || '';
   }

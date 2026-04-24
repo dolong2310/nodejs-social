@@ -45,12 +45,8 @@ export const appConfig: IAppConfig = {
     algorithm: envConfig.JWT_ALGO as Algorithm,
     accessTokenSecret: envConfig.ACCESS_TOKEN_SECRET as Secret,
     refreshTokenSecret: envConfig.REFRESH_TOKEN_SECRET as Secret,
-    emailTokenSecret: envConfig.EMAIL_TOKEN_SECRET as Secret,
-    forgotPasswordTokenSecret: envConfig.FORGOT_PASSWORD_TOKEN_SECRET as Secret,
     accessTokenExpiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN as StringValue,
-    refreshTokenExpiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN as StringValue,
-    emailTokenExpiresIn: envConfig.EMAIL_TOKEN_EXPIRES_IN as StringValue,
-    forgotPasswordTokenExpiresIn: envConfig.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as StringValue
+    refreshTokenExpiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN as StringValue
   },
 
   logs: {

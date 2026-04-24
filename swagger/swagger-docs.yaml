@@ -287,11 +287,11 @@
 #                 $ref: '#/components/schemas/MediaUploadResponse'
 #         '401':
 #           description: Chưa xác thực
-#   /media/upload-video-hls:
+#   /media/upload-video-stream:
 #     post:
 #       tags: [media]
-#       summary: Upload video HLS
-#       operationId: uploadVideoHLS
+#       summary: Upload video Stream
+#       operationId: uploadVideoStream
 #       security: [{ bearerAuth: [] }]
 #       requestBody:
 #         content:
@@ -486,7 +486,7 @@
 #           in: query
 #           schema:
 #             type: string
-#             enum: [post, user, image, video, video-hls]
+#             enum: [post, user, image, video, video-stream]
 #         - name: people
 #           in: query
 #           schema:
@@ -515,7 +515,7 @@
 #     post:
 #       tags: [conversations]
 #       summary: Tạo tin nhắn mới
-#       operationId: createConversation
+#       operationId: createDirectConversation
 #       security: [{ bearerAuth: [] }]
 #       requestBody:
 #         required: true
@@ -607,11 +607,11 @@
 #           description: Partial content
 #         '404':
 #           description: Không tìm thấy file
-#   /static/videos-hls/{id}/master.m3u8:
+#   /static/videos-stream/{id}/master.m3u8:
 #     get:
 #       tags: [static]
-#       summary: Lấy HLS master playlist
-#       operationId: getStaticVideoHLSMaster
+#       summary: Lấy Stream master playlist
+#       operationId: getStaticVideoStreamMaster
 #       parameters:
 #         - name: id
 #           in: path
@@ -620,14 +620,14 @@
 #             type: string
 #       responses:
 #         '200':
-#           description: HLS master playlist
+#           description: Stream master playlist
 #         '404':
 #           description: Không tìm thấy
-#   /static/videos-hls/{id}/{version}/{segment}:
+#   /static/videos-stream/{id}/{version}/{segment}:
 #     get:
 #       tags: [static]
-#       summary: Lấy HLS segment
-#       operationId: getStaticVideoHLSSegment
+#       summary: Lấy Stream segment
+#       operationId: getStaticVideoStreamSegment
 #       parameters:
 #         - name: id
 #           in: path
@@ -646,7 +646,7 @@
 #             type: string
 #       responses:
 #         '200':
-#           description: HLS segment
+#           description: Stream segment
 #         '404':
 #           description: Không tìm thấy
 
@@ -666,7 +666,7 @@
 #     # User schemas
 #     RegisterRequest:
 #       type: object
-#       required: [name, email, password, confirmPassword, dateOfBirth]
+#       required: [name, email, password, confirmPassword, birthday]
 #       properties:
 #         name:
 #           type: string
@@ -683,7 +683,7 @@
 #           type: string
 #           format: password
 #           example: "Password123!"
-#         dateOfBirth:
+#         birthday:
 #           type: string
 #           format: date-time
 #           description: ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
@@ -693,7 +693,7 @@
 #         email: "nguyenvana@example.com"
 #         password: "Password123!"
 #         confirmPassword: "Password123!"
-#         dateOfBirth: "2000-01-15T00:00:00.000Z"
+#         birthday: "2000-01-15T00:00:00.000Z"
 #     LoginRequest:
 #       type: object
 #       required: [email, password]
@@ -798,7 +798,7 @@
 #         name:
 #           type: string
 #           example: "Nguyễn Văn A Updated"
-#         dateOfBirth:
+#         birthday:
 #           type: string
 #           format: date-time
 #           description: ISO 8601 format
@@ -838,7 +838,7 @@
 #           type: string
 #           format: email
 #           example: "nguyenvana@example.com"
-#         dateOfBirth:
+#         birthday:
 #           type: string
 #           format: date-time
 #           description: ISO 8601 format
@@ -861,7 +861,7 @@
 #         website:
 #           type: string
 #           example: "https://mywebsite.com"
-#         verificationStatus:
+#         status:
 #           type: string
 #           enum: [verified, unverified, banned]
 #           example: "verified"
@@ -879,10 +879,10 @@
 #         _id: "507f1f77bcf86cd799439011"
 #         name: "Nguyễn Văn A"
 #         email: "nguyenvana@example.com"
-#         dateOfBirth: "2000-01-15T00:00:00.000Z"
+#         birthday: "2000-01-15T00:00:00.000Z"
 #         username: "nguyenvana"
 #         avatar: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
-#         verificationStatus: "verified"
+#         status: "verified"
 #         createdAt: "2024-03-15T08:30:00.000Z"
 #         updatedAt: "2024-03-17T10:45:00.000Z"
 
@@ -944,7 +944,7 @@
 #           example: "https://cdn.example.com/images/abc123.jpg"
 #         type:
 #           type: string
-#           enum: [image, video, video-hls]
+#           enum: [image, video, video-stream]
 #           example: "image"
 #       example:
 #         url: "https://cdn.example.com/images/abc123.jpg"
@@ -1185,7 +1185,7 @@
 #                 example: "https://cdn.example.com/images/abc123.jpg"
 #               type:
 #                 type: string
-#                 enum: [image, video, video-hls]
+#                 enum: [image, video, video-stream]
 #         message:
 #           type: string
 #           example: "Upload successfully"

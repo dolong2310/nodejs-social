@@ -1,10 +1,8 @@
 import {
   LimitMustBeBetweenOneToHundredException,
   PageMustBeGreaterThanZeroException
-} from '@/application/errors/pagination.error';
-
+} from '@/presentation/http/exceptions/pagination.exception';
 import { validate } from '@/presentation/http/utils/validation.util';
-
 import { NextFunction, Request, Response } from 'express';
 import { checkSchema } from 'express-validator';
 import { pick } from 'lodash-es';

@@ -3,13 +3,10 @@
  * This middleware limits the number of requests to specific routes to prevent abuse.
  */
 
-import { RATE_LIMIT_ERROR_MESSAGE } from '@/application/common/constants/message.constant';
-
+import { isDevelopment } from '@/bootstrap/config/env.config';
+import { RATE_LIMIT_ERROR_MESSAGE } from '@/presentation/http/constants/message.constant';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/responses/http-message.constant';
 import { HTTP_STATUS } from '@/presentation/http/responses/http-status.constant';
-
-import { isDevelopment } from '@/bootstrap/config/env.config';
-
 import { Request, type RequestHandler } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
