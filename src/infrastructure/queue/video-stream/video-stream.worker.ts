@@ -1,17 +1,16 @@
-import { mapWithConcurrency } from '@/application/common/utils/concurrency.util';
-import { encodeStreamWithMultipleVideoStreams } from '@/application/common/utils/video.util';
-import { IFileStorage } from '@/application/ports/file-storage.port';
-import { LoggerPort } from '@/application/ports/logger.port';
-import { IMimeService } from '@/application/ports/mime.port';
-import { IPathService } from '@/application/ports/path.port';
-import { IS3Service } from '@/application/ports/s3.port';
-import { IVideoStreamJobData, IVideoStreamJobResult } from '@/application/ports/video-stream-job.port';
-import { EEncodingVideoStatus } from '@/domain/entities/video-status/video-status.type';
-import { VideoStatusRepositoryPort } from '@/domain/repositories/video-status/video-status.repository';
-import { VIDEO_STREAM_QUEUE_NAME } from '@/infrastructure/queue/video-stream/video-stream.type';
-import { UPLOAD_DIR_VIDEO } from '@/presentation/http/constants/file.constant'; // TODO: move to infrastructure layer
+import { VIDEO_STREAM_QUEUE_NAME } from '@/infrastructure/queue/video-stream/video-stream.queue';
+import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
+import { encodeStreamWithMultipleVideoStreams } from '@/modules/common/utils/video.util';
+import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { StoragePort } from '@/modules/core/application/ports/storage.port';
+import { IVideoStreamJobData, IVideoStreamJobResult } from '@/modules/core/application/ports/video-stream-job.port';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { EEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
+import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant'; // TODO: move to infrastructure layer
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { get } from 'lodash-es';
+import path from 'path';
 
 export interface IVideoStreamWorker {
   run(connection: ConnectionOptions): Worker<IVideoStreamJobData, IVideoStreamJobResult>;
@@ -23,10 +22,8 @@ export class VideoStreamWorker implements IVideoStreamWorker {
 
   constructor(
     private readonly mediaRepository: VideoStatusRepositoryPort,
-    private readonly s3Service: IS3Service,
-    private readonly fileStorage: IFileStorage,
-    private readonly mimeService: IMimeService,
-    private readonly pathService: IPathService,
+    private readonly s3Service: StoragePort,
+    private readonly fileStorage: FileStoragePort,
     private readonly logger: LoggerPort
   ) {
     this.log = this.logger.child({ module: 'video-stream-worker' });
@@ -45,17 +42,17 @@ export class VideoStreamWorker implements IVideoStreamWorker {
 
     await this.fileStorage.delete(filepath);
 
-    const folderPath = this.pathService.resolve(UPLOAD_DIR_VIDEO, idName);
-    const filepaths = await getFiles({ fileStorage: this.fileStorage, pathService: this.pathService, dir: folderPath });
+    const folderPath = path.resolve(UPLOAD_DIR_VIDEO, idName);
+    const filepaths = await getFiles({ fileStorage: this.fileStorage, dir: folderPath });
     const concurrency = 2;
 
     // Upload các segment sang S3 với giới hạn concurrency để tránh bão hòa network/CPU.
     await mapWithConcurrency(filepaths, concurrency, async (_filepath) => {
-      const filename = 'videos-stream' + _filepath.replace(this.pathService.resolve(UPLOAD_DIR_VIDEO), '');
+      const filename = 'videos-stream' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
       await this.s3Service.uploadFile({
         filename,
         filepath: _filepath,
-        contentType: this.mimeService.getType(_filepath, 'video/mp4')
+        contentType: this.fileStorage.getMimeType(_filepath, 'video/mp4')
       });
     });
 
@@ -114,21 +111,13 @@ export class VideoStreamWorker implements IVideoStreamWorker {
  * - sub/v1.ts
  * Thì output: [ "/stream/vid123/master.m3u8", "/stream/vid123/v0/0.ts", "/stream/vid123/v0/1.ts", "/stream/vid123/sub/v1.ts" ]
  */
-async function getFiles({
-  fileStorage,
-  pathService,
-  dir
-}: {
-  fileStorage: IFileStorage;
-  pathService: IPathService;
-  dir: string;
-}): Promise<string[]> {
+async function getFiles({ fileStorage, dir }: { fileStorage: FileStoragePort; dir: string }): Promise<string[]> {
   const result: string[] = [];
 
   const walk = async (currentDir: string) => {
     const fileList = await fileStorage.readdir(currentDir);
     for (const file of fileList) {
-      const fullPath = pathService.join(currentDir, file);
+      const fullPath = path.join(currentDir, file);
       const stat = await fileStorage.stat(fullPath);
 
       if (stat.isDirectory) {

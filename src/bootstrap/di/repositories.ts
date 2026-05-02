@@ -1,55 +1,66 @@
-import { LoggerPort } from '@/application/ports/logger.port';
-import { BlockRepositoryPort } from '@/domain/repositories/block/block.repository';
-import { BookmarkRepositoryPort } from '@/domain/repositories/bookmark/bookmark.repository';
-import { ChatMessageRepositoryPort } from '@/domain/repositories/chat-message/chat-message.repository';
-import { ConversationMemberRepositoryPort } from '@/domain/repositories/conversation-member/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/domain/repositories/conversation/conversation.repository';
-import { FriendRequestRepositoryPort } from '@/domain/repositories/friend-request/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/domain/repositories/friendship/friendship.repository';
-import { HashtagRepositoryPort } from '@/domain/repositories/hashtag/hashtag.repository';
-import { LikeRepositoryPort } from '@/domain/repositories/like/like.repository';
-import { NotificationRepositoryPort } from '@/domain/repositories/notification/notification.repository';
-import { OtpRepositoryPort } from '@/domain/repositories/otp/otp.repository';
-import { PostRepositoryPort } from '@/domain/repositories/post/post.repository';
-import { RefreshTokenRepositoryPort } from '@/domain/repositories/refresh-token/refresh-token.repository';
-import { RoleRepositoryPort } from '@/domain/repositories/role/role.repository';
-import { UserRepositoryPort } from '@/domain/repositories/user/user.repository';
-import { VideoStatusRepositoryPort } from '@/domain/repositories/video-status/video-status.repository';
-import { BlockRepository } from '@/infrastructure/persistence/repositories/block/block.impl.repository';
-import { BlockMapper } from '@/infrastructure/persistence/repositories/block/block.mapper';
-import { BookmarkRepository } from '@/infrastructure/persistence/repositories/bookmark/bookmark.impl.repository';
-import { BookmarkMapper } from '@/infrastructure/persistence/repositories/bookmark/bookmark.mapper';
-import { ChatMessageMapper } from '@/infrastructure/persistence/repositories/chat-message/chat-message.mapper';
-import { ChatMessageRepository } from '@/infrastructure/persistence/repositories/chat-message/chat-messages.impl.repository';
-import { ConversationMemberRepository } from '@/infrastructure/persistence/repositories/conversation-member/conversation-member.impl.repository';
-import { ConversationMemberMapper } from '@/infrastructure/persistence/repositories/conversation-member/conversation-member.mapper';
-import { ConversationRepository } from '@/infrastructure/persistence/repositories/conversation/conversation.impl.repository';
-import { ConversationMapper } from '@/infrastructure/persistence/repositories/conversation/conversation.mapper';
-import { FriendRequestRepository } from '@/infrastructure/persistence/repositories/friend-request/friend-request.impl.repository';
-import { FriendRequestMapper } from '@/infrastructure/persistence/repositories/friend-request/friend-request.mapper';
-import { FriendshipRepository } from '@/infrastructure/persistence/repositories/friendship/friendship.impl.repository';
-import { FriendshipMapper } from '@/infrastructure/persistence/repositories/friendship/friendship.mapper';
-import { HashtagRepository } from '@/infrastructure/persistence/repositories/hashtag/hashtag.impl.repository';
-import { HashtagMapper } from '@/infrastructure/persistence/repositories/hashtag/hashtag.mapper';
-import { LikeRepository } from '@/infrastructure/persistence/repositories/like/like.impl.repository';
-import { LikeMapper } from '@/infrastructure/persistence/repositories/like/like.mapper';
-import { NotificationRepository } from '@/infrastructure/persistence/repositories/notification/notification.impl.repository';
-import { NotificationMapper } from '@/infrastructure/persistence/repositories/notification/notification.mapper';
-import { OtpRepository } from '@/infrastructure/persistence/repositories/otp/otp.impl.repository';
-import { OtpMapper } from '@/infrastructure/persistence/repositories/otp/otp.mapper';
-import { PostRepository } from '@/infrastructure/persistence/repositories/post/post.impl.repository';
-import { PostMapper } from '@/infrastructure/persistence/repositories/post/post.mapper';
-import { RefreshTokenRepository } from '@/infrastructure/persistence/repositories/refresh-token/refresh-token.impl.repository';
-import { RefreshTokenMapper } from '@/infrastructure/persistence/repositories/refresh-token/refresh-token.mapper';
-import { RoleRepository } from '@/infrastructure/persistence/repositories/role/role.impl.repository';
-import { RoleMapper } from '@/infrastructure/persistence/repositories/role/role.mapper';
-import { UserRepository } from '@/infrastructure/persistence/repositories/user/user.impl.repository';
-import { UserMapper } from '@/infrastructure/persistence/repositories/user/user.mapper';
-import { VideoStatusRepository } from '@/infrastructure/persistence/repositories/video-status/video-status.impl.repository';
-import { VideoStatusMapper } from '@/infrastructure/persistence/repositories/video-status/video-status.mapper';
+import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
+import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
+import { OtpMapper } from '@/modules/auth/infrastructure/mappers/otp.mapper';
+import { RefreshTokenMapper } from '@/modules/auth/infrastructure/mappers/refresh-token.mapper';
+import { OtpRepository } from '@/modules/auth/infrastructure/mongo/otp.impl.repository';
+import { RefreshTokenRepository } from '@/modules/auth/infrastructure/mongo/refresh-token.impl.repository';
+import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
+import { BlockMapper } from '@/modules/block/infrastructure/mappers/block.mapper';
+import { BlockRepository } from '@/modules/block/infrastructure/mongo/block.impl.repository';
+import { BookmarkRepositoryPort } from '@/modules/bookmark/domain/repositories/bookmark.repository';
+import { BookmarkMapper } from '@/modules/bookmark/infrastructure/mappers/bookmark.mapper';
+import { BookmarkRepository } from '@/modules/bookmark/infrastructure/mongo/bookmark.impl.repository';
+import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/application/ports/queries/conversation-member-query.repository';
+import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import { ChatMessageMapper } from '@/modules/conversation/infrastructure/mappers/chat-message.mapper';
+import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mappers/conversation-member.mapper';
+import { ConversationMapper } from '@/modules/conversation/infrastructure/mappers/conversation.mapper';
+import { ChatMessageRepository } from '@/modules/conversation/infrastructure/mongo/chat-message.impl.repository';
+import { ConversationMemberQueryRepository } from '@/modules/conversation/infrastructure/mongo/conversation-member-query.impl.repository';
+import { ConversationMemberRepository } from '@/modules/conversation/infrastructure/mongo/conversation-member.impl.repository';
+import { ConversationRepository } from '@/modules/conversation/infrastructure/mongo/conversation.impl.repository';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
+import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
+import { FriendRequestMapper } from '@/modules/friend/infrastructure/mappers/friend-request.mapper';
+import { FriendshipMapper } from '@/modules/friend/infrastructure/mappers/friendship.mapper';
+import { FriendRequestRepository } from '@/modules/friend/infrastructure/mongo/friend-request.impl.repository';
+import { FriendshipRepository } from '@/modules/friend/infrastructure/mongo/friendship.impl.repository';
+import { HashtagRepositoryPort } from '@/modules/hashtag/domain/repositories/hashtag.repository';
+import { HashtagMapper } from '@/modules/hashtag/infrastructure/mappers/hashtag.mapper';
+import { HashtagRepository } from '@/modules/hashtag/infrastructure/mongo/hashtag.impl.repository';
+import { LikeRepositoryPort } from '@/modules/like/domain/repositories/like.repository';
+import { LikeMapper } from '@/modules/like/infrastructure/mappers/like.mapper';
+import { LikeRepository } from '@/modules/like/infrastructure/mongo/like.impl.repository';
+import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import { NotificationMapper } from '@/modules/notification/infrastructure/mappers/notification.mapper';
+import { NotificationRepository } from '@/modules/notification/infrastructure/mongo/notification.impl.repository';
+import { PermissionRepositoryPort } from '@/modules/permission/domain/repositories/permission.repository';
+import { PermissionMapper } from '@/modules/permission/infrastructure/mappers/permission.mapper';
+import { PermissionRepository } from '@/modules/permission/infrastructure/mongo/permission.impl.repository';
+import { PostCommandRepositoryPort } from '@/modules/post/application/ports/command/post-command.repository';
+import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
+import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
+import { PostCommandRepository } from '@/modules/post/infrastructure/mongo/post-command.impl.repository';
+import { PostQueryRepository } from '@/modules/post/infrastructure/mongo/post-query.impl.repository';
+import { PostRepository } from '@/modules/post/infrastructure/mongo/post.impl.repository';
+import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
+import { RoleMapper } from '@/modules/role/infrastructure/mappers/role.mapper';
+import { RoleRepository } from '@/modules/role/infrastructure/mongo/role.impl.repository';
+import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
+import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
+import { UserQueryRepository } from '@/modules/user/infrastructure/mongo/user-query.impl.repository';
+import { UserRepository } from '@/modules/user/infrastructure/mongo/user.impl.repository';
+import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { VideoStatusMapper } from '@/modules/media/infrastructure/mappers/video-status.mapper';
+import { VideoStatusRepository } from '@/modules/media/infrastructure/mongo/video-status.impl.repository';
 import { Db, MongoClient } from 'mongodb';
 
-export type ContainerRepositories = {
+type Repositories = {
   userRepository: UserRepositoryPort;
   refreshTokenRepository: RefreshTokenRepositoryPort;
   bookmarkRepository: BookmarkRepositoryPort;
@@ -66,7 +77,17 @@ export type ContainerRepositories = {
   notificationRepository: NotificationRepositoryPort;
   otpRepository: OtpRepositoryPort;
   roleRepository: RoleRepositoryPort;
+  permissionRepository: PermissionRepositoryPort;
 };
+
+type QueryRepositories = {
+  postQueryRepository: PostQueryRepositoryPort;
+  postCommandRepository: PostCommandRepositoryPort;
+  userQueryRepository: UserQueryRepositoryPort;
+  conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort;
+};
+
+export type ContainerRepositories = Repositories & QueryRepositories;
 
 export function createContainerRepositories(db: Db, dbClient: MongoClient, logger: LoggerPort): ContainerRepositories {
   const userMapper = new UserMapper();
@@ -85,8 +106,9 @@ export function createContainerRepositories(db: Db, dbClient: MongoClient, logge
   const notificationMapper = new NotificationMapper();
   const otpMapper = new OtpMapper();
   const roleMapper = new RoleMapper();
+  const permissionMapper = new PermissionMapper();
 
-  return {
+  const repositories = {
     userRepository: new UserRepository(db, dbClient, userMapper, logger),
     refreshTokenRepository: new RefreshTokenRepository(db, dbClient, refreshTokenMapper, logger),
     bookmarkRepository: new BookmarkRepository(db, dbClient, bookmarkMapper, logger),
@@ -108,6 +130,23 @@ export function createContainerRepositories(db: Db, dbClient: MongoClient, logge
     chatMessageRepository: new ChatMessageRepository(db, dbClient, chatMessageMapper, logger),
     notificationRepository: new NotificationRepository(db, dbClient, notificationMapper, logger),
     otpRepository: new OtpRepository(db, dbClient, otpMapper, logger),
-    roleRepository: new RoleRepository(db, dbClient, roleMapper, logger)
+    roleRepository: new RoleRepository(db, dbClient, roleMapper, logger),
+    permissionRepository: new PermissionRepository(db, dbClient, permissionMapper, logger)
+  };
+
+  const queryRepositories = {
+    postQueryRepository: new PostQueryRepository(db, dbClient, postMapper),
+    userQueryRepository: new UserQueryRepository(db, dbClient, userMapper),
+    conversationMemberQueryRepository: new ConversationMemberQueryRepository(db, dbClient)
+  };
+
+  const commandRepositories = {
+    postCommandRepository: new PostCommandRepository(db, dbClient, postMapper)
+  };
+
+  return {
+    ...repositories,
+    ...queryRepositories,
+    ...commandRepositories
   };
 }

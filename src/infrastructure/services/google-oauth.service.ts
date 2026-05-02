@@ -1,4 +1,4 @@
-import { IGoogleOAuthService, IGoogleUserInfo } from '@/application/ports/google-oauth.out-port';
+import { IGoogleOAuthService, IGoogleUserInfo } from '@/modules/core/application/ports/google-oauth.out-port';
 import { envConfig } from '@/bootstrap/config/env.config';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';

@@ -16,5 +16,6 @@
     "rootDirs": ["./src", "."] // Giúp TS hiểu cấu trúc thư mục khi dùng alias + entry ở root (main.ts)
   },
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*", "main.ts"] // Đường dẫn include cho các file cần build
+  "include": ["src/**/*", "main.ts"], // Đường dẫn include cho các file cần build
+  "exclude": ["src/modules-sample/**/*"] // Loại bỏ folder sample khỏi build
 }

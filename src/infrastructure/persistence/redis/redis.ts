@@ -1,10 +1,10 @@
-import { RedisPort } from '@/application/ports/redis.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import logger from '@/infrastructure/logger/create-logger';
 import RedisClient, { type RedisOptions } from 'ioredis';
 
 const log = logger.child({ module: 'redis' });
 
-export class Redis implements RedisPort {
+export class Redis implements CacheManagerPort {
   private readonly client: RedisClient;
 
   constructor(options: RedisOptions) {

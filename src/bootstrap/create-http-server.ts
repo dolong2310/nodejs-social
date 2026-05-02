@@ -3,33 +3,27 @@ import { setupContainer } from '@/bootstrap/setup-container';
 import { setupDatabase } from '@/bootstrap/setup-database';
 import { setupGracefulShutdown } from '@/bootstrap/setup-graceful-shutdown';
 import { setupRedis } from '@/bootstrap/setup-redis';
-import { setupSocket } from '@/bootstrap/setup-socket';
 import { setupWorkers } from '@/bootstrap/setup-workers';
-import logger from '@/infrastructure/logger/create-logger';
-import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { createExpressApp } from '@/presentation/http/app';
-import { initUploadsFolder } from '@/presentation/http/utils/file.util';
-import cors from 'cors';
+import { createExpressApp } from '@/presentation/http/express/app';
+import { initUploadsFolder } from '@/presentation/http/express/utils/file.util';
+import { createSocketApp } from '@/presentation/socket/socket.app';
 import { rateLimit } from 'express-rate-limit';
-import { createServer } from 'http';
+import { type Server as HttpServer } from 'http';
 import { type RedisReply, RedisStore } from 'rate-limit-redis';
+import { type Server as SocketIOServer } from 'socket.io';
 
-export async function createHttpServer() {
-  const httpServer = createServer();
+initUploadsFolder();
 
-  initUploadsFolder();
-
+export async function createHttpServer(httpServer: HttpServer, io: SocketIOServer) {
   const [database, redis] = await Promise.all([setupDatabase(), setupRedis()]);
 
-  const container = setupContainer(database, redis);
+  const container = setupContainer(database, redis, io);
 
   const app = createExpressApp(container);
 
-  httpServer.on('request', app);
+  createSocketApp(io, container);
 
-  if (appConfig.cors) {
-    app.use(cors(appConfig.cors));
-  }
+  httpServer.on('request', app);
 
   if (appConfig.rateLimit?.enabled) {
     app.use(
@@ -47,16 +41,13 @@ export async function createHttpServer() {
     );
   }
 
-  setupSocket(httpServer, container);
   setupWorkers(container);
 
-  setupGracefulShutdown(httpServer, { database, redis });
-
-  app.use(logger.getHttpLogger());
-  app.use(requestContextLogger.bindRequestLogContextMiddleware);
+  setupGracefulShutdown(httpServer, database, redis);
 
   return {
     server: httpServer,
-    port: appConfig.port
+    port: appConfig.port,
+    container
   };
 }

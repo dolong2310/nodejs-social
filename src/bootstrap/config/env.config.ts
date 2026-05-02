@@ -31,7 +31,6 @@ const ENV_KEYS = [
   // Database
   'DATABASE_URI',
   'DATABASE_NAME',
-  'DATABASE_CHAT_NAME',
 
   // Redis
   'REDIS_HOST',

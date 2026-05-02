@@ -1,29 +1,22 @@
-import { ENTITY_ID_LENGTH } from '@/modules/core/helpers/ids';
-import { UserRoles, UserStatus } from '@/modules/user/domain/entities/user.types';
-import { type InferOutput, boolean, date, email, enum_, minLength, object, optional, pipe, string } from 'valibot';
+import { EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
+import { type InferOutput, date, enum_, minLength, object, optional, pipe, string } from 'valibot';
 
 export const userSchema = object({
-  id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  email: pipe(string(), email()),
-  unverifiedEmail: pipe(string(), email()),
-  isEmailVerified: boolean(),
-  nickname: string(),
-  mobile: string(),
-  birthday: string(),
+  _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   name: string(),
-  avatarUrl: string(),
-  role: enum_(UserRoles),
-  status: enum_(UserStatus),
-  locale: optional(string()),
-  gender: optional(string()),
-  openPlatform: string(),
-  utmCampaign: string(),
-  utmMedium: string(),
-  utmSource: string(),
-  googleId: optional(string()),
-  githubId: optional(string()),
-  facebookId: optional(string()),
-  appleId: optional(string()),
+  email: string(),
+  password: string(),
+  birthday: date(),
+  roleId: string(),
+  status: enum_(EUserStatus),
+  totpSecret: optional(string()),
+  bio: optional(string()),
+  location: optional(string()),
+  website: optional(string()),
+  username: optional(string()),
+  avatar: optional(string()),
+  coverPhoto: optional(string()),
   createdAt: optional(date(), new Date()),
   updatedAt: optional(date(), new Date())
 });

@@ -1,14 +1,14 @@
 import {
   GetSecretKeyResult,
-  IJwtService,
+  JwtPort,
   JwtModuleOptions,
   JwtSecretRequestType,
   JwtSignOptions,
   JwtVerifyOptions
-} from '@/application/ports/jwt.port';
+} from '@/modules/core/application/ports/jwt.port';
 import jwt from 'jsonwebtoken';
 
-export class JwtService implements IJwtService {
+export class JwtService implements JwtPort {
   constructor(private readonly options: JwtModuleOptions = {}) {}
 
   signAsync(payload: string, options?: Omit<JwtSignOptions, keyof jwt.SignOptions>): Promise<string>;

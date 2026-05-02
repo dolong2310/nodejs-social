@@ -1,9 +1,9 @@
-import { IEmailJobData } from '@/application/ports/email-job.port';
-import { IFileStorage } from '@/application/ports/file-storage.port';
-import { LoggerPort } from '@/application/ports/logger.port';
-import { IPathService } from '@/application/ports/path.port';
 import { envConfig } from '@/bootstrap/config/env.config';
+import { IEmailJobData } from '@/modules/core/application/ports/email-job.port';
+import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
+import path from 'path';
 
 export interface IEmailService {
   sendEmail(payload: IEmailJobData): Promise<SendEmailCommandOutput>;
@@ -15,8 +15,7 @@ export class EmailService {
 
   constructor(
     private readonly logger: LoggerPort,
-    private readonly fileStorage: IFileStorage,
-    private readonly pathService: IPathService
+    private readonly fileStorage: FileStoragePort
   ) {
     this.log = this.logger.child({ module: 'email' });
     // Create SES service object.
@@ -70,7 +69,7 @@ export class EmailService {
   }
 
   private async getTemplate(): Promise<string> {
-    const contentBuffer = await this.fileStorage.readFile(this.pathService.resolve('src/views/otp.html'));
+    const contentBuffer = await this.fileStorage.readFile(path.resolve('src/views/otp.html'));
     return contentBuffer.toString('utf8');
   }
 

@@ -4,21 +4,24 @@
  * `npx tsc` chỉ biên dịch, không chạy script — dùng `tsx` như trên hoặc `npm run build` rồi `node dist/...`.
  */
 import { appConfig } from '@/bootstrap/config/app.config';
-import { envConfig } from '@/bootstrap/config/env.config';
-import { EHttpMethod, PermissionFullProps } from '@/domain/entities/permission/permission.type';
-import { ERoleName } from '@/domain/entities/role/role.type';
+// import { envConfig } from '@/bootstrap/config/env.config';
+import { EHttpMethod, PermissionFullProps } from '@/modules/permission/domain/entities/permission.type';
+import { ERoleName } from '@/modules/role/domain/entities/role.type';
 import logger from '@/infrastructure/logger/create-logger';
 import { Database } from '@/infrastructure/persistence/mongodb/database';
-import { PermissionRepository } from '@/infrastructure/persistence/repositories/permission/permission.impl.repository';
-import { PermissionMapper } from '@/infrastructure/persistence/repositories/permission/permission.mapper';
-import { RoleRepository } from '@/infrastructure/persistence/repositories/role/role.impl.repository';
-import { RoleMapper } from '@/infrastructure/persistence/repositories/role/role.mapper';
+import { PermissionRepository } from '@/modules/permission/infrastructure/mongo/permission.impl.repository';
+import { PermissionMapper } from '@/modules/permission/infrastructure/mappers/permission.mapper';
+import { RoleRepository } from '@/modules/role/infrastructure/mongo/role.impl.repository';
+import { RoleMapper } from '@/modules/role/infrastructure/mappers/role.mapper';
 import {
   buildStubHttpRouters,
   permissionModuleTagFromBaseRoutePath
 } from '@/infrastructure/persistence/seed/stub-http-routers.seed';
-import type { BaseRoute } from '@/presentation/http/routes/base.route';
+import type { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import type { Router } from 'express';
+// import dotenv from 'dotenv';
+
+// dotenv.config({ path: '.env.development' });
 
 type AvailableRoute = {
   name: string;
@@ -28,10 +31,10 @@ type AvailableRoute = {
 };
 
 /**
- * Tạm thời: gán toàn bộ permission cho role USER (bạn tự bật lọc sau bằng cách
- * `USER_GETS_ALL_PERMISSIONS = false` + chỉnh `USER_MODULE_ALLOWLIST`).
+ * User chỉ nhận các module trong `USER_MODULE_ALLOWLIST`.
+ * ROLES và PERMISSIONS chỉ dành cho ADMIN.
  */
-const USER_GETS_ALL_PERMISSIONS = true;
+const USER_GETS_ALL_PERMISSIONS = false;
 
 /**
  * Các thẻ module (từ mount `BaseRoute.pathName` trong source) — bao phủ mọi router
@@ -56,7 +59,10 @@ const USER_MODULE_ALLOWLIST: ReadonlySet<string> = new Set([
 
 const VALID_HTTP_METHODS = new Set<string>(Object.values(EHttpMethod));
 
-const databaseService = new Database({ uri: envConfig.DATABASE_URI, databaseName: envConfig.DATABASE_NAME });
+const DATABASE_URI =
+  'mongodb+srv://longdo_user:ulhEbHYI8DiFB57U@nodejs-social.vy5jesg.mongodb.net/?appName=Nodejs-Social';
+const DATABASE_NAME = 'nodejs-social';
+const databaseService = new Database({ uri: DATABASE_URI, databaseName: DATABASE_NAME });
 const permissionRepository = new PermissionRepository(
   databaseService.db,
   databaseService.dbClient,
@@ -67,15 +73,10 @@ const roleRepository = new RoleRepository(databaseService.db, databaseService.db
 
 /** Nối các phần path (có thể từng phần có hoặc không có `/` đầu/cuối) thành một path tuyệt đối bắt đầu bằng `/`. */
 function joinExpressPathSegments(...segments: string[]): string {
-  const joined =
-    segments
-      .map((segment) => segment.replace(/\/$/, ''))
-      .filter((segment) => segment.length > 0)
-      .join('') || '';
-  if (!joined.startsWith('/')) {
-    return `/${joined}`;
-  }
-  return joined;
+  const parts = segments
+    .map((segment) => segment.replace(/^\/+/, '').replace(/\/+$/, ''))
+    .filter((segment) => segment.length > 0);
+  return '/' + parts.join('/');
 }
 
 type ExpressRouteLayer = { route?: { path: string | string[] | RegExp; methods?: Record<string, boolean> } };
@@ -124,7 +125,7 @@ function collectRoutesFromExpressRouter(
 function discoverApiRoutesFromBaseRouteList(baseRouteList: BaseRoute[]): AvailableRoute[] {
   const allDiscoveredRoutes: AvailableRoute[] = [];
   for (const baseRoute of baseRouteList) {
-    const fullMountPath = joinExpressPathSegments(appConfig.api.prefix, baseRoute.getPath());
+    const fullMountPath = joinExpressPathSegments(appConfig.api.prefix, baseRoute.getVersion(), baseRoute.getPath());
     const permissionModuleTag = permissionModuleTagFromBaseRoutePath(baseRoute.getPath());
     collectRoutesFromExpressRouter(
       baseRoute.getRouter() as unknown as Router,
@@ -242,7 +243,7 @@ async function syncPermissions(availableRoutes: AvailableRoute[]) {
   }
 }
 
-async function syncPermissionsToRole(roleName: ERoleName, permissionIds: string[]) {
+async function syncPermissionsToRole(roleName: string, permissionIds: string[]) {
   const role = await roleRepository.findRoleByName(roleName);
   if (!role) {
     throw new Error(`Role ${roleName} not found. Run ensure base roles or seed again.`);

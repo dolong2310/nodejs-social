@@ -1,26 +1,35 @@
-import { BaseRoute } from '@/presentation/http/routes/base.route';
-import { AuthRoute } from '@/presentation/http/routes/auth.route';
-import { BlockRoute } from '@/presentation/http/routes/block.route';
-import { BookmarkRoute } from '@/presentation/http/routes/bookmark.route';
-import { ConversationRoute } from '@/presentation/http/routes/conversation.route';
-import { FriendRoute } from '@/presentation/http/routes/friend.route';
-import { LikeRoute } from '@/presentation/http/routes/like.route';
-import { MediaRoute } from '@/presentation/http/routes/media.route';
-import { NotificationRoute } from '@/presentation/http/routes/notification.route';
-import { OAuthRoute } from '@/presentation/http/routes/oauth.route';
-import { PostRoute } from '@/presentation/http/routes/post.route';
-import { SearchRoute } from '@/presentation/http/routes/search.route';
-import { StaticRoute } from '@/presentation/http/routes/static.route';
-import { UserRoute } from '@/presentation/http/routes/user.route';
-import type { IAuthValidator } from '@/presentation/http/validators/auth.validator';
-import type { IBlockValidator } from '@/presentation/http/validators/block.validator';
-import type { IChatMessageValidator } from '@/presentation/http/validators/chat-message.validator';
-import type { IConversationValidator } from '@/presentation/http/validators/conversation.validator';
-import type { IFriendValidator } from '@/presentation/http/validators/friend.validator';
-import type { INotificationValidator } from '@/presentation/http/validators/notification.validator';
-import type { IPostValidator } from '@/presentation/http/validators/post.validator';
-import type { ISearchValidator } from '@/presentation/http/validators/search.validator';
-import type { IUserValidator } from '@/presentation/http/validators/user.validator';
+import type { IRoleService } from '@/modules/role/application/services/role.service';
+import type { IUserService } from '@/modules/user/application/services/user.service';
+import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
+import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
+import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
+import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
+import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
+import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
+import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
+import { FriendRoute } from '@/presentation/http/express/v1/routes/friend.route';
+import { LikeRoute } from '@/presentation/http/express/v1/routes/like.route';
+import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
+import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
+import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
+import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
+import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
+import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
+import { SearchRoute } from '@/presentation/http/express/v1/routes/search.route';
+import { StaticRoute } from '@/presentation/http/express/v1/routes/static.route';
+import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
+import type { IAuthValidator } from '@/presentation/http/express/v1/validators/auth.validator';
+import type { IBlockValidator } from '@/presentation/http/express/v1/validators/block.validator';
+import type { IChatMessageValidator } from '@/presentation/http/express/v1/validators/chat-message.validator';
+import type { IConversationValidator } from '@/presentation/http/express/v1/validators/conversation.validator';
+import type { IFriendValidator } from '@/presentation/http/express/v1/validators/friend.validator';
+import type { INotificationValidator } from '@/presentation/http/express/v1/validators/notification.validator';
+import type { IPermissionsValidator } from '@/presentation/http/express/v1/validators/permission.validator';
+import type { IPostValidator } from '@/presentation/http/express/v1/validators/post.validator';
+import type { IRolesValidator } from '@/presentation/http/express/v1/validators/role.validator';
+import type { ISearchValidator } from '@/presentation/http/express/v1/validators/search.validator';
+import type { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 import type { RequestHandler } from 'express';
 
 /** Middleware rỗng: chỉ gọi `next()` — dùng khi cần object validator/controller giả cho Express đăng ký route, không thực thi logic. */
@@ -35,7 +44,14 @@ const nextOnlyMiddleware: RequestHandler = (_request, _response, next) => {
 function createNoopValidatorProxyForRouteRegistration<T extends object>(): T {
   return new Proxy({} as T, {
     get(_target, propertyKey: string | symbol) {
-      if (propertyKey === 'userIdValidator' || propertyKey === 'postIdValidator') {
+      if (
+        propertyKey === 'userIdValidator' ||
+        propertyKey === 'postIdValidator' ||
+        propertyKey === 'roleIdParam' ||
+        propertyKey === 'createBodyValidator' ||
+        propertyKey === 'updateBodyValidator' ||
+        propertyKey === 'permissionIdParam'
+      ) {
         return () => nextOnlyMiddleware;
       }
       return nextOnlyMiddleware;
@@ -54,6 +70,10 @@ function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
   });
 }
 
+const noopRoleService = {} as IRoleService;
+const noopUserServiceForAdmin = {} as IUserService;
+const noopAuthGuard = new Proxy({} as AuthGuard, { get: () => nextOnlyMiddleware });
+
 /**
  * Thứ tự giống `buildHttpRouters` để danh sách route trùng runtime.
  */
@@ -67,27 +87,49 @@ export function buildStubHttpRouters(): BaseRoute[] {
   const conversationValidator: IConversationValidator = createNoopValidatorProxyForRouteRegistration();
   const chatMessageValidator: IChatMessageValidator = createNoopValidatorProxyForRouteRegistration();
   const notificationValidator: INotificationValidator = createNoopValidatorProxyForRouteRegistration();
+  const rolesValidator: IRolesValidator = createNoopValidatorProxyForRouteRegistration();
+  const permissionsValidator: IPermissionsValidator = createNoopValidatorProxyForRouteRegistration();
 
   return [
-    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authValidator),
-    new UserRoute(createNoopControllerProxyForRouteRegistration(), userValidator),
-    new BookmarkRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator),
-    new LikeRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator),
-    new MediaRoute(createNoopControllerProxyForRouteRegistration(), userValidator),
+    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authValidator, noopAuthGuard),
+    new UserRoute(createNoopControllerProxyForRouteRegistration(), userValidator, noopAuthGuard),
+    new BookmarkRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator, noopAuthGuard),
+    new LikeRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator, noopAuthGuard),
+    new MediaRoute(createNoopControllerProxyForRouteRegistration(), userValidator, noopAuthGuard),
     new OAuthRoute(createNoopControllerProxyForRouteRegistration()),
-    new PostRoute(createNoopControllerProxyForRouteRegistration(), postValidator, userValidator),
-    new SearchRoute(createNoopControllerProxyForRouteRegistration(), searchValidator),
-    new FriendRoute(createNoopControllerProxyForRouteRegistration(), friendValidator, userValidator),
-    new BlockRoute(createNoopControllerProxyForRouteRegistration(), blocksValidator, userValidator),
+    new PostRoute(createNoopControllerProxyForRouteRegistration(), postValidator, userValidator, noopAuthGuard),
+    new SearchRoute(createNoopControllerProxyForRouteRegistration(), searchValidator, userValidator, noopAuthGuard),
+    new FriendRoute(createNoopControllerProxyForRouteRegistration(), friendValidator, userValidator, noopAuthGuard),
+    new BlockRoute(createNoopControllerProxyForRouteRegistration(), blocksValidator, userValidator, noopAuthGuard),
     new ConversationRoute(
       createNoopControllerProxyForRouteRegistration(),
       conversationValidator,
       createNoopControllerProxyForRouteRegistration(),
       chatMessageValidator,
-      userValidator
+      userValidator,
+      noopAuthGuard
     ),
     new StaticRoute(createNoopControllerProxyForRouteRegistration()),
-    new NotificationRoute(createNoopControllerProxyForRouteRegistration(), notificationValidator, userValidator)
+    new NotificationRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      notificationValidator,
+      userValidator,
+      noopAuthGuard
+    ),
+    new RoleRoute(
+      createNoopControllerProxyForRouteRegistration<IRoleController>(),
+      noopRoleService,
+      noopUserServiceForAdmin,
+      rolesValidator,
+      noopAuthGuard
+    ),
+    new PermissionRoute(
+      createNoopControllerProxyForRouteRegistration<IPermissionController>(),
+      noopRoleService,
+      noopUserServiceForAdmin,
+      permissionsValidator,
+      noopAuthGuard
+    )
   ];
 }
 

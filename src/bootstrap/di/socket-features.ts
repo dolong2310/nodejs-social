@@ -1,20 +1,20 @@
-import { GetConversationPresenceInteractor } from '@/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.interactor';
-import { JoinConversationInteractor } from '@/application/use-cases/realtime/join-conversation/join-conversation.interactor';
-import { LeaveConversationInteractor as LeaveConversationSocketInteractor } from '@/application/use-cases/realtime/leave-conversation/leave-conversation.interactor';
-import { NotifyFriendsOfflineInteractor } from '@/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.interactor';
-import { NotifyFriendsOnlineInteractor } from '@/application/use-cases/realtime/notify-friends-online/notify-friends-online.interactor';
-import { TypingInteractor } from '@/application/use-cases/realtime/typing/typing.interactor';
-import { ConversationMemberRepositoryPort } from '@/domain/repositories/conversation-member/conversation-member.repository';
-import { FriendshipRepositoryPort } from '@/domain/repositories/friendship/friendship.repository';
-import { ChatFeature } from '@/presentation/socket/chat.feature';
-import { PresenceFeature } from '@/presentation/socket/presence.feature';
+import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
+import { GetConversationPresenceInteractor } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.interactor';
+import { JoinConversationInteractor } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.interactor';
+import { LeaveConversationInteractor as LeaveConversationSocketInteractor } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.interactor';
+import { NotifyFriendsOfflineInteractor } from '@/modules/notification/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.interactor';
+import { NotifyFriendsOnlineInteractor } from '@/modules/notification/application/use-cases/realtime/notify-friends-online/notify-friends-online.interactor';
+import { TypingInteractor } from '@/modules/notification/application/use-cases/realtime/typing/typing.interactor';
+import { ChatFeature } from '@/presentation/socket/features/chat.feature';
+import { PresenceFeature } from '@/presentation/socket/features/presence.feature';
 
-export type SocketFeatures = {
+type SocketFeatures = {
   presenceFeature: PresenceFeature;
   chatFeature: ChatFeature;
 };
 
-export type SocketFeaturesContext = {
+type SocketFeaturesContext = {
   friendshipRepository: FriendshipRepositoryPort;
   conversationMemberRepository: ConversationMemberRepositoryPort;
 };

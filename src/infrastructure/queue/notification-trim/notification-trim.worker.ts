@@ -1,8 +1,11 @@
-import { NOTIFICATION_MAX_PER_USER } from '@/application/common/constants/notification.constant';
-import { LoggerPort } from '@/application/ports/logger.port';
-import { INotificationTrimJobData, INotificationTrimJobResult } from '@/application/ports/notification-trim-job.port';
-import { NotificationRepositoryPort } from '@/domain/repositories/notification/notification.repository';
-import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/infrastructure/queue/notification-trim/notification-trim.type';
+import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/infrastructure/queue/notification-trim/notification-trim.queue';
+import {
+  INotificationTrimJobData,
+  INotificationTrimJobResult
+} from '@/modules/core/application/ports/notification-trim-job.port';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { NOTIFICATION_MAX_PER_USER } from '@/modules/notification/application/constants/notification.constant';
+import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 
 export interface INotificationTrimWorker {
@@ -59,7 +62,7 @@ export class NotificationTrimWorker implements INotificationTrimWorker {
   public run(connection: ConnectionOptions): Worker<INotificationTrimJobData, INotificationTrimJobResult> {
     const worker = new Worker<INotificationTrimJobData, INotificationTrimJobResult>(
       NOTIFICATION_TRIM_QUEUE_NAME,
-      this.processNotificationTrimJob,
+      this.processNotificationTrimJob.bind(this),
       { connection, concurrency: 1 }
     );
 

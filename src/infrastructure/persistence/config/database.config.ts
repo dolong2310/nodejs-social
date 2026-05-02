@@ -4,7 +4,6 @@ export const dbConfig = {
   database: {
     uri: envConfig.DATABASE_URI,
     name: envConfig.DATABASE_NAME
-    // chatDatabaseName: envConfig.DATABASE_CHAT_NAME
   },
 
   redis: {

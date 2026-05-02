@@ -1,11 +1,11 @@
-import { IFileUploadService, IUploadedFile } from '@/application/ports/file-upload.port';
+import { FileUploadPort, UploadedFilePort } from '@/modules/core/application/ports/file-upload.port';
 import { Request } from 'express';
 import formidable, { File } from 'formidable';
 
-export class FormidableFileUploadService implements IFileUploadService {
+export class FormidableFileUploadService implements FileUploadPort {
   constructor(private readonly req: Request) {}
 
-  private map(file: File): IUploadedFile {
+  private map(file: File): UploadedFilePort {
     return {
       filepath: file.filepath,
       filename: file.newFilename,
@@ -13,7 +13,7 @@ export class FormidableFileUploadService implements IFileUploadService {
     };
   }
 
-  async uploadImages(): Promise<IUploadedFile[]> {
+  async uploadImages(): Promise<UploadedFilePort[]> {
     const form = formidable({ multiples: true });
 
     return new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ export class FormidableFileUploadService implements IFileUploadService {
     });
   }
 
-  async uploadVideos(): Promise<IUploadedFile[]> {
+  async uploadVideos(): Promise<UploadedFilePort[]> {
     const form = formidable({ multiples: true });
 
     return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ export class FormidableFileUploadService implements IFileUploadService {
     });
   }
 
-  async uploadVideosStream(): Promise<IUploadedFile[]> {
+  async uploadVideosStream(): Promise<UploadedFilePort[]> {
     return this.uploadVideos();
   }
 }

@@ -9,7 +9,7 @@ components:
         message:
           type: string
           description: Thông báo
-          example: "Success"
+          example: 'Success'
         statusCode:
           type: integer
           description: HTTP status code
@@ -24,21 +24,21 @@ components:
         message:
           type: string
           description: Thông báo lỗi
-          example: "Validation error"
+          example: 'Validation error'
         errors:
           type: object
           additionalProperties: true
           description: Chi tiết lỗi theo field (validation errors)
           example: {}
       example:
-        message: "Dữ liệu không hợp lệ"
+        message: 'Dữ liệu không hợp lệ'
         errors: {}
 
     MongoId:
       type: string
-      pattern: "^[a-fA-F0-9]{24}$"
+      pattern: '^[a-fA-F0-9]{24}$'
       description: MongoDB ObjectId (24 ký tự hex)
-      example: "507f1f77bcf86cd799439011"
+      example: '507f1f77bcf86cd799439011'
     # User schemas
     RegisterRequest:
       type: object
@@ -46,30 +46,30 @@ components:
       properties:
         name:
           type: string
-          example: "Nguyễn Văn A"
+          example: 'Nguyễn Văn A'
         email:
           type: string
           format: email
-          example: "nguyenvana@example.com"
+          example: 'nguyenvana@example.com'
         password:
           type: string
           format: password
-          example: "Password123!"
+          example: 'Password123!'
         confirmPassword:
           type: string
           format: password
-          example: "Password123!"
+          example: 'Password123!'
         birthday:
           type: string
           format: date-time
           description: ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
-          example: "2000-01-15T00:00:00.000Z"
+          example: '2000-01-15T00:00:00.000Z'
       example:
-        name: "Nguyễn Văn A"
-        email: "nguyenvana@example.com"
-        password: "Password123!"
-        confirmPassword: "Password123!"
-        birthday: "2000-01-15T00:00:00.000Z"
+        name: 'Nguyễn Văn A'
+        email: 'nguyenvana@example.com'
+        password: 'Password123!'
+        confirmPassword: 'Password123!'
+        birthday: '2000-01-15T00:00:00.000Z'
     LoginRequest:
       type: object
       required: [email, password]
@@ -77,14 +77,14 @@ components:
         email:
           type: string
           format: email
-          example: "nguyenvana@example.com"
+          example: 'nguyenvana@example.com'
         password:
           type: string
           format: password
-          example: "Password123!"
+          example: 'Password123!'
       example:
-        email: "nguyenvana@example.com"
-        password: "Password123!"
+        email: 'nguyenvana@example.com'
+        password: 'Password123!'
     LoginResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -97,12 +97,12 @@ components:
               properties:
                 accessToken:
                   type: string
-                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
       example:
-        message: "Login successfully"
+        message: 'Login successfully'
         statusCode: 200
         data:
-          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.xxx"
+          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEifQ.xxx'
     RegisterResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -111,21 +111,21 @@ components:
             data:
               $ref: '#/components/schemas/UserResponse'
       example:
-        message: "User registered successfully"
+        message: 'User registered successfully'
         statusCode: 201
         data:
-          _id: "507f1f77bcf86cd799439011"
-          name: "Nguyễn Văn A"
-          email: "nguyenvana@example.com"
+          _id: '507f1f77bcf86cd799439011'
+          name: 'Nguyễn Văn A'
+          email: 'nguyenvana@example.com'
     VerifyEmailRequest:
       type: object
       required: [token]
       properties:
         token:
           type: string
-          example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+          example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'
       example:
-        token: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+        token: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'
     ForgotPasswordRequest:
       type: object
       required: [email]
@@ -133,28 +133,28 @@ components:
         email:
           type: string
           format: email
-          example: "nguyenvana@example.com"
+          example: 'nguyenvana@example.com'
       example:
-        email: "nguyenvana@example.com"
+        email: 'nguyenvana@example.com'
     ResetPasswordRequest:
       type: object
       required: [token, password, confirmPassword]
       properties:
         token:
           type: string
-          example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+          example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'
         password:
           type: string
           format: password
-          example: "NewPassword123!"
+          example: 'NewPassword123!'
         confirmPassword:
           type: string
           format: password
-          example: "NewPassword123!"
+          example: 'NewPassword123!'
       example:
-        token: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
-        password: "NewPassword123!"
-        confirmPassword: "NewPassword123!"
+        token: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'
+        password: 'NewPassword123!'
+        confirmPassword: 'NewPassword123!'
     ChangePasswordRequest:
       type: object
       required: [password, confirmPassword]
@@ -162,48 +162,48 @@ components:
         password:
           type: string
           format: password
-          example: "NewPassword123!"
+          example: 'NewPassword123!'
         confirmPassword:
           type: string
           format: password
-          example: "NewPassword123!"
+          example: 'NewPassword123!'
       example:
-        password: "NewPassword123!"
-        confirmPassword: "NewPassword123!"
+        password: 'NewPassword123!'
+        confirmPassword: 'NewPassword123!'
     UpdateMeRequest:
       type: object
       properties:
         name:
           type: string
-          example: "Nguyễn Văn A Updated"
+          example: 'Nguyễn Văn A Updated'
         birthday:
           type: string
           format: date-time
           description: ISO 8601 format
-          example: "2000-01-15T00:00:00.000Z"
+          example: '2000-01-15T00:00:00.000Z'
         bio:
           type: string
-          example: "Full-stack developer | NodeJS enthusiast"
+          example: 'Full-stack developer | NodeJS enthusiast'
         location:
           type: string
-          example: "Hà Nội, Việt Nam"
+          example: 'Hà Nội, Việt Nam'
         website:
           type: string
-          example: "https://mywebsite.com"
+          example: 'https://mywebsite.com'
         username:
           type: string
-          example: "nguyenvana"
+          example: 'nguyenvana'
         avatar:
           type: string
-          example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+          example: 'https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg'
         coverPhoto:
           type: string
-          example: "https://cdn.example.com/covers/507f1f77bcf86cd799439011.jpg"
+          example: 'https://cdn.example.com/covers/507f1f77bcf86cd799439011.jpg'
       example:
-        name: "Nguyễn Văn A Updated"
-        bio: "Full-stack developer | NodeJS enthusiast"
-        location: "Hà Nội, Việt Nam"
-        username: "nguyenvana"
+        name: 'Nguyễn Văn A Updated'
+        bio: 'Full-stack developer | NodeJS enthusiast'
+        location: 'Hà Nội, Việt Nam'
+        username: 'nguyenvana'
     UserResponse:
       type: object
       properties:
@@ -211,58 +211,58 @@ components:
           $ref: '#/components/schemas/MongoId'
         name:
           type: string
-          example: "Nguyễn Văn A"
+          example: 'Nguyễn Văn A'
         email:
           type: string
           format: email
-          example: "nguyenvana@example.com"
+          example: 'nguyenvana@example.com'
         birthday:
           type: string
           format: date-time
           description: ISO 8601 format
-          example: "2000-01-15T00:00:00.000Z"
+          example: '2000-01-15T00:00:00.000Z'
         username:
           type: string
-          example: "nguyenvana"
+          example: 'nguyenvana'
         avatar:
           type: string
-          example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+          example: 'https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg'
         coverPhoto:
           type: string
-          example: "https://cdn.example.com/covers/507f1f77bcf86cd799439011.jpg"
+          example: 'https://cdn.example.com/covers/507f1f77bcf86cd799439011.jpg'
         bio:
           type: string
-          example: "Full-stack developer"
+          example: 'Full-stack developer'
         location:
           type: string
-          example: "Hà Nội"
+          example: 'Hà Nội'
         website:
           type: string
-          example: "https://mywebsite.com"
+          example: 'https://mywebsite.com'
         status:
           type: string
           enum: [verified, unverified, banned]
-          example: "verified"
+          example: 'verified'
         createdAt:
           type: string
           format: date-time
           description: ISO 8601 format
-          example: "2024-03-15T08:30:00.000Z"
+          example: '2024-03-15T08:30:00.000Z'
         updatedAt:
           type: string
           format: date-time
           description: ISO 8601 format
-          example: "2024-03-17T10:45:00.000Z"
+          example: '2024-03-17T10:45:00.000Z'
       example:
-        _id: "507f1f77bcf86cd799439011"
-        name: "Nguyễn Văn A"
-        email: "nguyenvana@example.com"
-        birthday: "2000-01-15T00:00:00.000Z"
-        username: "nguyenvana"
-        avatar: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
-        status: "verified"
-        createdAt: "2024-03-15T08:30:00.000Z"
-        updatedAt: "2024-03-17T10:45:00.000Z"
+        _id: '507f1f77bcf86cd799439011'
+        name: 'Nguyễn Văn A'
+        email: 'nguyenvana@example.com'
+        birthday: '2000-01-15T00:00:00.000Z'
+        username: 'nguyenvana'
+        avatar: 'https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg'
+        status: 'verified'
+        createdAt: '2024-03-15T08:30:00.000Z'
+        updatedAt: '2024-03-17T10:45:00.000Z'
     UserSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -271,12 +271,12 @@ components:
             data:
               $ref: '#/components/schemas/UserResponse'
       example:
-        message: "Get me successfully"
+        message: 'Get me successfully'
         statusCode: 200
         data:
-          _id: "507f1f77bcf86cd799439011"
-          name: "Nguyễn Văn A"
-          username: "nguyenvana"
+          _id: '507f1f77bcf86cd799439011'
+          name: 'Nguyễn Văn A'
+          username: 'nguyenvana'
 
     # Post schemas
     CreatePostRequest:
@@ -286,20 +286,20 @@ components:
         type:
           type: string
           enum: [post, repost, comment, quote]
-          example: "post"
+          example: 'post'
         audience:
           type: string
           enum: [public, friends-only, only-me]
-          example: "public"
+          example: 'public'
         allowStrangerComments:
           type: boolean
           description: Khi audience là public, cho phép người không phải bạn bè bình luận (và tương tự repost/quote theo API).
           example: true
         content:
           type: string
-          example: "Hello world! Đây là bài viết đầu tiên của tôi #nodejs #javascript"
+          example: 'Hello world! Đây là bài viết đầu tiên của tôi #nodejs #javascript'
         parentId:
-          type: [string, "null"]
+          type: [string, 'null']
           description: null khi là bài viết gốc
           example: null
         hashtags:
@@ -307,31 +307,31 @@ components:
           items:
             type: string
           description: Tên hashtags ['javascript', 'nodejs']
-          example: ["nodejs", "javascript"]
+          example: ['nodejs', 'javascript']
         mentions:
           type: array
           items:
             $ref: '#/components/schemas/MongoId'
           description: userId[]
-          example: ["507f1f77bcf86cd799439012"]
+          example: ['507f1f77bcf86cd799439012']
         media:
           type: array
           items:
             $ref: '#/components/schemas/MediaItem'
           example:
-            - url: "https://cdn.example.com/images/abc123.jpg"
-              type: "image"
+            - url: 'https://cdn.example.com/images/abc123.jpg'
+              type: 'image'
       example:
-        type: "post"
-        audience: "public"
+        type: 'post'
+        audience: 'public'
         allowStrangerComments: true
-        content: "Hello world! Đây là bài viết đầu tiên #nodejs #javascript"
+        content: 'Hello world! Đây là bài viết đầu tiên #nodejs #javascript'
         parentId: null
-        hashtags: ["nodejs", "javascript"]
-        mentions: ["507f1f77bcf86cd799439012"]
+        hashtags: ['nodejs', 'javascript']
+        mentions: ['507f1f77bcf86cd799439012']
         media:
-          - url: "https://cdn.example.com/images/abc123.jpg"
-            type: "image"
+          - url: 'https://cdn.example.com/images/abc123.jpg'
+            type: 'image'
     PatchPostRequest:
       type: object
       required: [audience, allowStrangerComments]
@@ -342,7 +342,7 @@ components:
         allowStrangerComments:
           type: boolean
       example:
-        audience: "friends-only"
+        audience: 'friends-only'
         allowStrangerComments: false
     MediaItem:
       type: object
@@ -350,14 +350,14 @@ components:
         url:
           type: string
           format: uri
-          example: "https://cdn.example.com/images/abc123.jpg"
+          example: 'https://cdn.example.com/images/abc123.jpg'
         type:
           type: string
           enum: [image, video, video-stream]
-          example: "image"
+          example: 'image'
       example:
-        url: "https://cdn.example.com/images/abc123.jpg"
-        type: "image"
+        url: 'https://cdn.example.com/images/abc123.jpg'
+        type: 'image'
     PostResponse:
       type: object
       properties:
@@ -376,7 +376,7 @@ components:
         content:
           type: string
         parentId:
-          type: [string, "null"]
+          type: [string, 'null']
         hashtags:
           type: array
           items:
@@ -393,27 +393,27 @@ components:
           type: string
           format: date-time
           description: ISO 8601 format
-          example: "2024-03-17T10:30:00.000Z"
+          example: '2024-03-17T10:30:00.000Z'
         updatedAt:
           type: string
           format: date-time
           description: ISO 8601 format
-          example: "2024-03-17T10:30:00.000Z"
+          example: '2024-03-17T10:30:00.000Z'
       example:
-        _id: "507f1f77bcf86cd799439013"
-        userId: "507f1f77bcf86cd799439011"
-        type: "post"
-        audience: "public"
+        _id: '507f1f77bcf86cd799439013'
+        userId: '507f1f77bcf86cd799439011'
+        type: 'post'
+        audience: 'public'
         allowStrangerComments: true
-        content: "Hello world! Đây là bài viết đầu tiên #nodejs"
+        content: 'Hello world! Đây là bài viết đầu tiên #nodejs'
         parentId: null
         hashtags: []
         mentions: []
         media:
-          - url: "https://cdn.example.com/images/abc123.jpg"
-            type: "image"
-        createdAt: "2024-03-17T10:30:00.000Z"
-        updatedAt: "2024-03-17T10:30:00.000Z"
+          - url: 'https://cdn.example.com/images/abc123.jpg'
+            type: 'image'
+        createdAt: '2024-03-17T10:30:00.000Z'
+        updatedAt: '2024-03-17T10:30:00.000Z'
     PostSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -452,71 +452,52 @@ components:
                   $ref: '#/components/schemas/MongoId'
                 name:
                   type: string
-                  example: "Nguyễn Văn A"
+                  example: 'Nguyễn Văn A'
                 username:
                   type: string
-                  example: "nguyenvana"
+                  example: 'nguyenvana'
                 avatar:
                   type: string
-                  example: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
-    PostsPaginatedResponse:
+                  example: 'https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg'
+    # Feed + search posts: `sendCursorPaginatedResponse` → data.items + data.nextCursor
+    PostFeedCursorSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
         - type: object
           properties:
             data:
               type: object
+              required: [items, nextCursor]
               properties:
-                data:
+                items:
                   type: array
-                  description: Danh sách bài viết (sendPaginatedResponse)
                   items:
                     $ref: '#/components/schemas/PostDetailResponse'
-                page:
-                  type: integer
-                  example: 1
-                limit:
-                  type: integer
-                  example: 10
-                totalItems:
-                  type: integer
-                  example: 25
-                totalPages:
-                  type: integer
-                  example: 3
-                hasNext:
-                  type: boolean
-                  example: true
-                hasPrev:
-                  type: boolean
-                  example: false
+                nextCursor:
+                  type: string
+                  nullable: true
       example:
-        message: "Get new feeds successfully"
+        message: 'Get new feeds successfully'
         statusCode: 200
         data:
-          data:
-            - _id: "507f1f77bcf86cd799439013"
-              userId: "507f1f77bcf86cd799439011"
-              type: "post"
-              audience: "public"
-              content: "Hello world!"
+          items:
+            - _id: '507f1f77bcf86cd799439013'
+              userId: '507f1f77bcf86cd799439011'
+              type: 'post'
+              audience: 'public'
+              content: 'Hello world!'
               author:
-                _id: "507f1f77bcf86cd799439011"
-                name: "Nguyễn Văn A"
-                username: "nguyenvana"
-                avatar: "https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg"
+                _id: '507f1f77bcf86cd799439011'
+                name: 'Nguyễn Văn A'
+                username: 'nguyenvana'
+                avatar: 'https://cdn.example.com/avatars/507f1f77bcf86cd799439011.jpg'
               bookmarkCount: 5
               repostCount: 3
               commentCount: 12
               quoteCount: 1
-              createdAt: "2024-03-17T10:30:00.000Z"
-              updatedAt: "2024-03-17T10:30:00.000Z"
-          page: 1
-          limit: 10
-          totalItems: 25
-          totalPages: 3
-          hasNext: true
-          hasPrev: false
+              createdAt: '2024-03-17T10:30:00.000Z'
+              updatedAt: '2024-03-17T10:30:00.000Z'
+          nextCursor: 'eyJjcmVhdGVkQXQiOi4uLn0'
 
     # Friends & blocks schemas
     FriendUserSummary:
@@ -530,6 +511,163 @@ components:
           type: string
         avatar:
           type: string
+    # Danh sách bạn / lời mời: cursor (`sendCursorPaginatedResponse`)
+    FriendListCursorSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [items, nextCursor]
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FriendUserSummary'
+                nextCursor:
+                  type: string
+                  nullable: true
+    RoleListItem:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/MongoId' }
+        name:
+          type: string
+          pattern: '^[A-Z0-9_]+$'
+          minLength: 1
+          maxLength: 64
+          description: Tên role duy nhất (ví dụ ADMIN, MODERATOR)
+        description: { type: string }
+        isActive: { type: boolean }
+        permissionIds:
+          type: array
+          items: { $ref: '#/components/schemas/MongoId' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateRoleRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Z0-9_]+$'
+          minLength: 1
+          maxLength: 64
+        description: { type: string }
+        isActive: { type: boolean }
+        permissionIds:
+          type: array
+          items: { $ref: '#/components/schemas/MongoId' }
+    UpdateRoleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Z0-9_]+$'
+          minLength: 1
+          maxLength: 64
+        description: { type: string }
+        isActive: { type: boolean }
+        permissionIds:
+          type: array
+          items: { $ref: '#/components/schemas/MongoId' }
+      description: Cập nhật một phần; ít nhất một field nên có giá trị hợp lệ
+    RoleItemSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RoleListItem'
+    RoleListPageSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RoleListItem'
+                page: { type: integer }
+                limit: { type: integer }
+                totalItems: { type: integer }
+                totalPages: { type: integer }
+                hasNext: { type: boolean }
+                hasPrev: { type: boolean }
+    PermissionListItem:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/MongoId' }
+        name: { type: string }
+        description: { type: string }
+        path: { type: string, description: 'Bắt đầu bằng /' }
+        method: { type: string, enum: [GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD] }
+        module:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          example: 'POSTS'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreatePermissionRequest:
+      type: object
+      required: [name, description, path, method, module]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: string }
+        path:
+          type: string
+          description: Đường dẫn API, bắt đầu bằng `/`
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD]
+        module:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          example: 'POSTS'
+    UpdatePermissionRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: string }
+        path: { type: string }
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD]
+        module:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]*$'
+      description: Cập nhật từng phần
+    PermissionItemSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PermissionListItem'
+    PermissionListPageSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PermissionListItem'
+                page: { type: integer }
+                limit: { type: integer }
+                totalItems: { type: integer }
+                totalPages: { type: integer }
+                hasNext: { type: boolean }
+                hasPrev: { type: boolean }
+
+    # GET /blocks — phân trang theo trang (page + limit)
     FriendsUsersPaginatedResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -568,7 +706,7 @@ components:
           $ref: '#/components/schemas/MongoId'
           description: User nhận lời mời
       example:
-        toUserId: "507f1f77bcf86cd799439012"
+        toUserId: '507f1f77bcf86cd799439012'
     FriendRequestRow:
       type: object
       properties:
@@ -594,7 +732,7 @@ components:
           $ref: '#/components/schemas/MongoId'
           description: User bị chặn
       example:
-        userId: "507f1f77bcf86cd799439012"
+        userId: '507f1f77bcf86cd799439012'
     BlockCreatedResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -635,7 +773,7 @@ components:
           $ref: '#/components/schemas/MongoId'
           description: ID bài viết cần bookmark
       example:
-        postId: "507f1f77bcf86cd799439013"
+        postId: '507f1f77bcf86cd799439013'
     CreateLikeRequest:
       type: object
       required: [postId]
@@ -644,7 +782,7 @@ components:
           $ref: '#/components/schemas/MongoId'
           description: ID bài viết cần like
       example:
-        postId: "507f1f77bcf86cd799439013"
+        postId: '507f1f77bcf86cd799439013'
     LikeResponse:
       allOf:
         - $ref: '#/components/schemas/BookmarkResponse'
@@ -656,7 +794,7 @@ components:
             data:
               $ref: '#/components/schemas/LikeResponse'
 
-    # Chat (Phase 4 — `DATABASE_CHAT_NAME`)
+    # Chat
     ChatAttachment:
       type: object
       properties:
@@ -773,16 +911,16 @@ components:
                 properties:
                   url:
                     type: string
-                    example: "https://cdn.example.com/images/abc123.jpg"
+                    example: 'https://cdn.example.com/images/abc123.jpg'
                   type:
                     type: string
                     enum: [image, video, video-stream]
       example:
-        message: "Upload successfully"
+        message: 'Upload successfully'
         statusCode: 200
         data:
-          - url: "https://cdn.example.com/images/abc123.jpg"
-            type: "image"
+          - url: 'https://cdn.example.com/images/abc123.jpg'
+            type: 'image'
     VideoStatusResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -795,76 +933,67 @@ components:
                   $ref: '#/components/schemas/MongoId'
                 name:
                   type: string
-                  example: "video-abc123.mp4"
+                  example: 'video-abc123.mp4'
                 status:
                   type: string
                   enum: [pending, processing, success, failed]
-                  example: "success"
+                  example: 'success'
                 message:
                   type: string
-                  example: ""
+                  example: ''
                 createdAt:
                   type: string
                   format: date-time
                   description: ISO 8601 format
-                  example: "2024-03-17T10:00:00.000Z"
+                  example: '2024-03-17T10:00:00.000Z'
       example:
-        message: "Get video status successfully"
+        message: 'Get video status successfully'
         statusCode: 200
         data:
-          _id: "507f1f77bcf86cd799439015"
-          name: "video-abc123.mp4"
-          status: "success"
-          message: ""
-          createdAt: "2024-03-17T10:00:00.000Z"
+          _id: '507f1f77bcf86cd799439015'
+          name: 'video-abc123.mp4'
+          status: 'success'
+          message: ''
+          createdAt: '2024-03-17T10:00:00.000Z'
 
-    # Search schemas
-    SearchPaginatedResponse:
+    # Search — cursor; `items` là PostDetailResponse[] hoặc UserResponse[] tùy `type`
+    SearchCursorSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
         - type: object
           properties:
             data:
               type: object
+              required: [items, nextCursor]
               properties:
-                data:
+                items:
                   type: array
-                  description: Kết quả (PostDetailResponse[] hoặc User[] tùy query type)
-                page:
-                  type: integer
-                  example: 1
-                limit:
-                  type: integer
-                  example: 10
-                totalItems:
-                  type: integer
-                  example: 15
-                totalPages:
-                  type: integer
-                  example: 2
-                hasNext:
-                  type: boolean
-                  example: true
-                hasPrev:
-                  type: boolean
-                  example: false
+                  description: Bài viết (kèm author) hoặc user — client phân biệt theo `type`
+                  items: {}
+                nextCursor:
+                  type: string
+                  nullable: true
       example:
-        message: "Search successfully"
+        message: 'Search successfully'
         statusCode: 200
         data:
-          data:
-            - _id: "507f1f77bcf86cd799439013"
-              content: "Bài viết về NodeJS"
+          items:
+            - _id: '507f1f77bcf86cd799439013'
+              content: 'Bài viết về NodeJS'
               author:
-                _id: "507f1f77bcf86cd799439011"
-                name: "Nguyễn Văn A"
-                username: "nguyenvana"
-          page: 1
-          limit: 10
-          totalItems: 15
-          totalPages: 2
-          hasNext: true
-          hasPrev: false
+                _id: '507f1f77bcf86cd799439011'
+                name: 'Nguyễn Văn A'
+                username: 'nguyenvana'
+          nextCursor: null
+
+    OAuthUrlSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: string
+              description: URL redirect Google OAuth
 
     NotificationActor:
       type: object

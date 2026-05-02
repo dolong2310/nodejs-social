@@ -1,8 +1,10 @@
-import { IFileStorage } from '@/application/ports/file-storage.port';
+import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
 import fsSync from 'fs';
 import fs from 'fs/promises';
+import mime from 'mime';
+import mimeTypes from 'mime-types';
 
-export class LocalFileStorage implements IFileStorage {
+export class LocalFileStorage implements FileStoragePort {
   async readFile(filepath: string): Promise<Buffer> {
     return await fs.readFile(filepath);
   }
@@ -38,5 +40,13 @@ export class LocalFileStorage implements IFileStorage {
 
   createReadStream(filepath: string, options?: { start?: number; end?: number }): fsSync.ReadStream {
     return fsSync.createReadStream(filepath, options);
+  }
+
+  getMimeType(filepath: string, defaultType?: string): string {
+    return mime.getType(filepath) ?? defaultType ?? 'application/octet-stream';
+  }
+
+  getContentType(filepath: string, defaultType?: string): string {
+    return mimeTypes.lookup(filepath) || defaultType || 'application/octet-stream';
   }
 }

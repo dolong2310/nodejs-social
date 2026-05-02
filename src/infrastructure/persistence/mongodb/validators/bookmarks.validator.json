@@ -2,12 +2,13 @@
   "$jsonSchema": {
     "title": "bookmarks (BookmarkEntity + bookmark.repository upsert)",
     "bsonType": "object",
-    "required": ["_id", "userId", "postId", "createdAt"],
+    "required": ["_id", "userId", "postId", "createdAt", "updatedAt"],
     "properties": {
       "_id": { "bsonType": "objectId" },
       "userId": { "bsonType": "objectId" },
       "postId": { "bsonType": "objectId" },
-      "createdAt": { "bsonType": "date" }
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

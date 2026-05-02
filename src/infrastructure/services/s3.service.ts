@@ -1,21 +1,19 @@
-import { IFileStorage } from '@/application/ports/file-storage.port';
-import { LoggerPort } from '@/application/ports/logger.port';
-import { IMimeService } from '@/application/ports/mime.port';
-import { IS3Service, IUploadFileResult } from '@/application/ports/s3.port';
+import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { StoragePort, IUploadFileResult } from '@/modules/core/application/ports/storage.port';
 import { envConfig } from '@/bootstrap/config/env.config';
 import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Response } from 'express';
 
-export class S3Service implements IS3Service {
+export class S3Service implements StoragePort {
   private readonly s3: S3;
   private readonly log: LoggerPort;
 
   constructor(
     private readonly logger: LoggerPort,
-    private readonly fileStorage: IFileStorage,
-    private readonly mimeService: IMimeService
+    private readonly fileStorage: FileStoragePort
   ) {
     this.log = this.logger.child({ module: 's3' });
     this.s3 = new S3({
@@ -78,7 +76,7 @@ export class S3Service implements IS3Service {
   }
 
   async createPresignedUrl(filename: string): Promise<string> {
-    const contentType = this.mimeService.getContentType(filename, 'application/octet-stream');
+    const contentType = this.fileStorage.getContentType(filename, 'application/octet-stream');
     const command = new PutObjectCommand({
       Bucket: envConfig.AWS_S3_BUCKET_NAME,
       Key: filename,

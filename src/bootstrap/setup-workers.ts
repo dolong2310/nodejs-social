@@ -12,17 +12,15 @@ export function setupWorkers(container: IContainer) {
   const {
     emailService,
     otpRepository,
-    postRepository,
+    postCommandRepository,
     notificationRepository,
     mediaRepository,
     s3Service,
-    fileStorage,
-    mimeService,
-    pathService
+    fileStorage
   } = container.getWorkerDeps();
 
   new EmailWorker(emailService, otpRepository, logger).run(connection);
-  new PostViewsWorker(postRepository, logger).run(connection);
+  new PostViewsWorker(postCommandRepository, logger).run(connection);
   new NotificationTrimWorker(notificationRepository, logger).run(connection);
-  new VideoStreamWorker(mediaRepository, s3Service, fileStorage, mimeService, pathService, logger).run(connection);
+  new VideoStreamWorker(mediaRepository, s3Service, fileStorage, logger).run(connection);
 }

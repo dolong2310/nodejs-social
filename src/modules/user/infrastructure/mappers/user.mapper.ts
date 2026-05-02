@@ -1,76 +1,74 @@
-import { UniqueEntityID } from '@/modules/core/domain-base/entities/unique-entity';
-import type { Mapper } from '@/modules/core/infrastructure-base/mapper.base';
+import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
+import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import { UserFullProps } from '@/modules/user/domain/entities/user.type';
 import { type UserModel, userSchema } from '@/modules/user/domain/repositories/user.model';
-import { UserMetadata } from '@/modules/user/domain/value-objects/user-metadata.value-object';
-import { UserProvider } from '@/modules/user/domain/value-objects/user-providers.value-object';
 import { parse } from 'valibot';
 
-export class UserMapper implements Mapper<UserEntity, UserModel> {
+export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> {
   toPersistence(entity: UserEntity): UserModel {
     const clone = entity.getProps();
     const record: UserModel = {
-      id: clone.id.toString(),
-      email: clone.email,
-      unverifiedEmail: clone.unverifiedEmail,
-      isEmailVerified: clone.isEmailVerified,
-      nickname: clone.nickname,
-      mobile: clone.mobile,
-      birthday: clone.birthday,
+      _id: clone.id.toString(),
       name: clone.name,
-      avatarUrl: clone.avatarUrl,
-      role: clone.role,
+      email: clone.email,
+      password: clone.password,
+      birthday: clone.birthday,
+      roleId: clone.roleId,
       status: clone.status,
-      locale: clone.locale,
-      gender: clone.gender,
-      openPlatform: clone.metadata?.raw()?.openPlatform,
-      utmCampaign: clone.metadata?.raw()?.utmCampaign,
-      utmMedium: clone.metadata?.raw()?.utmMedium,
-      utmSource: clone.metadata?.raw()?.utmSource,
-      googleId: clone.provider?.raw()?.googleId,
-      githubId: clone.provider?.raw()?.githubId,
-      facebookId: clone.provider?.raw()?.facebookId,
-      appleId: clone.provider?.raw()?.appleId,
+      totpSecret: clone.totpSecret,
+      bio: clone.bio,
+      location: clone.location,
+      website: clone.website,
+      username: clone.username,
+      avatar: clone.avatar,
+      coverPhoto: clone.coverPhoto,
       createdAt: clone.createdAt,
       updatedAt: clone.updatedAt
     };
     return parse(userSchema, record);
   }
   toDomain(record: UserModel): UserEntity {
-    const provider = new UserProvider({
-      githubId: record.githubId,
-      googleId: record.githubId,
-      facebookId: record.githubId,
-      appleId: record.githubId
-    });
-    const metadata = new UserMetadata({
-      openPlatform: record.openPlatform,
-      utmCampaign: record.utmCampaign,
-      utmMedium: record.utmMedium,
-      utmSource: record.utmSource
-    });
     const entity = new UserEntity({
-      id: new UniqueEntityID(record.id),
+      id: new UniqueEntityID(record._id),
       createdAt: record.createdAt,
-      updatedAt: record.createdAt,
+      updatedAt: record.updatedAt,
       props: {
-        email: record.email,
-        unverifiedEmail: record.unverifiedEmail,
-        isEmailVerified: record.isEmailVerified,
-        nickname: record.nickname,
-        mobile: record.mobile,
-        birthday: record.birthday,
         name: record.name,
-        avatarUrl: record.avatarUrl,
-        role: record.role,
+        email: record.email,
+        password: record.password,
+        birthday: new Date(record.birthday),
+        roleId: record.roleId,
         status: record.status,
-        locale: record.locale,
-        gender: record.gender,
-        provider,
-        metadata
+        totpSecret: record.totpSecret,
+        bio: record.bio,
+        location: record.location,
+        website: record.website,
+        username: record.username,
+        avatar: record.avatar,
+        coverPhoto: record.coverPhoto
       }
     });
     return entity;
   }
-  toResponse() {}
+  toResponse(record: UserModel): UserFullProps {
+    return {
+      id: record._id,
+      name: record.name,
+      email: record.email,
+      password: record.password,
+      birthday: record.birthday,
+      roleId: record.roleId,
+      status: record.status,
+      totpSecret: record.totpSecret,
+      bio: record.bio,
+      location: record.location,
+      website: record.website,
+      username: record.username,
+      avatar: record.avatar,
+      coverPhoto: record.coverPhoto,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt
+    };
+  }
 }

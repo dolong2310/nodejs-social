@@ -1,0 +1,31 @@
+import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
+import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
+
+export class MediaRoute extends BaseRoute {
+  protected override readonly version = 'v1';
+  protected override readonly pathName = 'media';
+
+  constructor(
+    private readonly mediaController: IMediaController,
+    private readonly userValidator: IUserValidator,
+    private readonly authGuard: AuthGuard
+  ) {
+    super();
+    this.createRoutes();
+  }
+
+  protected override createRoutes(): void {
+    const { uploadImage, uploadVideo, uploadVideoStream, getVideoStatus } = this.mediaController;
+    const { userActiveValidator } = this.userValidator;
+    const { protect } = this.authGuard;
+
+    this.router.post('/upload-image', appLimiter, protect, userActiveValidator, asyncHandler(uploadImage));
+    this.router.post('/upload-video', appLimiter, protect, userActiveValidator, asyncHandler(uploadVideo));
+    this.router.post('/upload-video-stream', appLimiter, protect, userActiveValidator, asyncHandler(uploadVideoStream));
+    this.router.get('/video-status/:id', appLimiter, protect, userActiveValidator, asyncHandler(getVideoStatus));
+  }
+}

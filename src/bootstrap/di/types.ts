@@ -1,39 +1,31 @@
-import { IFileStorage } from '@/application/ports/file-storage.port';
-import { LoggerPort } from '@/application/ports/logger.port';
-import { IMimeService } from '@/application/ports/mime.port';
-import { IPathService } from '@/application/ports/path.port';
-import { RealtimePort } from '@/application/ports/realtime.port';
-import { IS3Service } from '@/application/ports/s3.port';
-import { ITokenService } from '@/application/services/token/token.service.type';
-import { IUserService } from '@/application/services/user/user.service';
-import { NotificationRepositoryPort } from '@/domain/repositories/notification/notification.repository';
-import { OtpRepositoryPort } from '@/domain/repositories/otp/otp.repository';
-import { PostRepositoryPort } from '@/domain/repositories/post/post.repository';
-import { VideoStatusRepositoryPort } from '@/domain/repositories/video-status/video-status.repository';
 import { IEmailService } from '@/infrastructure/services/email.service';
-import { BaseRoute } from '@/presentation/http/routes/base.route';
-import { ChatFeature } from '@/presentation/socket/chat.feature';
-import { PresenceFeature } from '@/presentation/socket/presence.feature';
+import { ITokenService } from '@/modules/auth/application/services/token.service.type';
+import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
+import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { StoragePort } from '@/modules/core/application/ports/storage.port';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import { PostCommandRepositoryPort } from '@/modules/post/application/ports/command/post-command.repository';
+import { IUserService } from '@/modules/user/application/services/user.service';
+import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { ISocketFeature } from '@/presentation/socket/socket.type';
 
 export interface IContainer {
   getRouters(): BaseRoute[];
   getSocketDeps(): {
     tokenService: ITokenService;
     userService: IUserService;
-    presenceFeature: PresenceFeature;
-    chatFeature: ChatFeature;
+    features: ISocketFeature[];
   };
   getWorkerDeps(): {
     emailService: IEmailService;
     otpRepository: OtpRepositoryPort;
-    postRepository: PostRepositoryPort;
+    postCommandRepository: PostCommandRepositoryPort;
     notificationRepository: NotificationRepositoryPort;
     mediaRepository: VideoStatusRepositoryPort;
-    s3Service: IS3Service;
-    fileStorage: IFileStorage;
-    mimeService: IMimeService;
-    pathService: IPathService;
+    s3Service: StoragePort;
+    fileStorage: FileStoragePort;
   };
   getLogger(): LoggerPort;
-  bindRealtimeEmitter(emitter: RealtimePort | null): void;
 }

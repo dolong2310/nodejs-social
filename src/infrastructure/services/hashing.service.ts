@@ -1,9 +1,9 @@
-import { IHashingService } from '@/application/ports/hashing.port';
+import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import bcrypt from 'bcrypt';
 
 const BCRYPT_SALT_ROUNDS = 10;
 
-export class HashingService implements IHashingService {
+export class HashingService implements HashingPort {
   async hash(data: string): Promise<string> {
     return await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
   }

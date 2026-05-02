@@ -1,7 +1,12 @@
-import { LoggerPort } from '@/application/ports/logger.port';
-import { IPostViewsJobData, IPostViewsJobResult, IPostViewsQueue } from '@/application/ports/post-views-job.port';
-import { POST_VIEWS_QUEUE_NAME } from '@/infrastructure/queue/post-views/post-views.type';
+import {
+  IPostViewsJobData,
+  IPostViewsJobResult,
+  IPostViewsQueue
+} from '@/modules/core/application/ports/post-views-job.port';
+import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
+
+export const POST_VIEWS_QUEUE_NAME = 'post-views';
 
 export class BullMQPostViewsQueue implements IPostViewsQueue {
   private readonly queue: Queue<IPostViewsJobData, IPostViewsJobResult>;

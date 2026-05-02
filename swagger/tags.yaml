@@ -1,10 +1,10 @@
 tags:
   - name: auth
-    description: Xác thực - đăng ký, đăng nhập, logout, refresh token, verify email, quên mật khẩu
+    description: Đăng ký, đăng nhập, logout, GET refresh-token (cookie), quên mật khẩu — refresh qua cookie httpOnly
   - name: users
-    description: Quản lý thông tin người dùng - me, cập nhật profile, xem profile
+    description: Profile — GET/PATCH /users/me, GET /users/:username, PUT /users/change-password
   - name: oauth
-    description: Đăng nhập OAuth (Google)
+    description: Google OAuth — GET `/oauth/google/url`, GET `/oauth/google` (callback + Set-Cookie + redirect frontend)
   - name: media
     description: Upload và quản lý media (ảnh, video)
   - name: posts
@@ -23,5 +23,9 @@ tags:
     description: Conversations HTTP (Mongo chat DB) — direct/group, tin nhắn, đã đọc
   - name: notifications
     description: Hộp thông báo in-app (social DB) — list cursor, đánh dấu đã đọc
+  - name: roles
+    description: Vai trò hệ thống (ADMIN, USER) — chỉ tài khoản admin; danh sách + permissionIds
+  - name: permissions
+    description: Bản ghi quyền theo path/method (seed từ route) — chỉ admin
   - name: static
     description: Phục vụ file tĩnh (ảnh, video)
