@@ -1,0 +1,56 @@
+import {
+  CannotDeactivateAdminRoleException,
+  CannotRenameSystemRoleException,
+  RoleNameAlreadyExistsException,
+  RoleNotFoundException
+} from '@/modules/role/application/role.exception';
+import { RoleListItem } from '@/modules/role/application/use-cases/list-roles/list-roles.in-port';
+import { UpdateRoleCommand, UpdateRoleInPort } from '@/modules/role/application/use-cases/update-role/update-role.in-port';
+import { ERoleName } from '@/modules/role/domain/entities/role.type';
+import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
+import { IUpdateRoleInput } from '@/modules/role/domain/repositories/role.repository.type';
+
+export class UpdateRoleInteractor extends UpdateRoleInPort {
+  constructor(private readonly roleRepository: RoleRepositoryPort) {
+    super();
+  }
+
+  async execute(command: UpdateRoleCommand) {
+    const currentRole = await this.roleRepository.findRoleById(command.id);
+    if (!currentRole) {
+      throw RoleNotFoundException;
+    }
+    const currentName = currentRole.getProps().name;
+
+    if (command.name !== undefined && command.name !== currentName) {
+      if (currentRole.isSystemRole()) {
+        throw CannotRenameSystemRoleException;
+      }
+      const existingRole = await this.roleRepository.findRoleByName(command.name);
+      if (existingRole) {
+        throw RoleNameAlreadyExistsException;
+      }
+    }
+
+    // Không được deactive role admin
+    if (currentName === ERoleName.ADMIN && !command.isActive) {
+      throw CannotDeactivateAdminRoleException;
+    }
+
+    const patch: IUpdateRoleInput = {};
+    if (command.name !== undefined) patch.name = command.name;
+    if (command.description !== undefined) patch.description = command.description;
+    if (command.isActive !== undefined) patch.isActive = command.isActive;
+    if (command.permissionIds !== undefined) patch.permissionIds = command.permissionIds;
+
+    if (Object.keys(patch).length === 0) {
+      return new RoleListItem(currentRole.toObject());
+    }
+
+    const updated = await this.roleRepository.updateRole(command.id, patch);
+    if (!updated) {
+      throw RoleNotFoundException;
+    }
+    return new RoleListItem(updated.toObject());
+  }
+}

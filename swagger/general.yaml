@@ -2,16 +2,18 @@ openapi: 3.1.0
 info:
   title: NodeJS Social API
   description: |
-    API documentation cho ứng dụng mạng xã hội NodeJS Social.
+    API documentation cho ứng dụng mạng xã hội NodeJS Social (clean architecture: `src/presentation/http`, use case trong `src/modules/*/application`).
 
     **Base path:** mọi route (trừ tài liệu) nằm dưới prefix `/api` (ví dụ đăng nhập: `POST /api/auth/login`).
     **Swagger UI:** `/api/docs`.
 
-    Xác thực: header `Authorization: Bearer <accessToken>`, hoặc cookie `accessToken` (cookie không mô tả trong OpenAPI).
+    **Auth:** `Authorization: Bearer <accessToken>`. Refresh token chỉ qua cookie httpOnly `refreshToken` — làm mới access: `GET /api/auth/refresh-token` (không body).
 
     **Chuẩn Response:**
-    - Success: `{ message, statusCode, data? }` — SuccessResponse
-    - Error: `{ message, errors }` — ErrorResponse (errors chứa chi tiết validation theo field)
+    - Success: `{ message, statusCode, data? }` — `SuccessResponse`
+    - Lỗi: `{ message, errors }` — `ErrorResponse`
+    - Phân trang cursor (feed, tìm kiếm, bạn bè, …): `data: { items, nextCursor }`
+    - Phân trang trang (ví dụ danh sách block): `data: { data, page, limit, totalItems, totalPages, hasNext, hasPrev }`
   version: 1.0.0
   contact:
     email: support@nodejs-social.com

@@ -1,11 +1,16 @@
-# Danh sách operationId tham chiếu
-# Các operationId được định nghĩa trong paths.yaml
-# Auth: register | login | logout | refreshToken | verifyEmail | resendVerifyEmail | forgotPassword | resetPassword | changePassword
-# Users: getMe | updateMe | getUserProfile
-# googleLogin | uploadImage | uploadVideo | uploadVideoHLS | getVideoStatus
-# getNewFeeds | createPost | getPostDetail | getPostsType
-# createBookmark | deleteBookmark | search
-# Friends: listFriends | sendFriendRequest | listIncomingFriendRequests | listOutgoingFriendRequests | acceptFriendRequest | declineFriendRequest | revokeOutgoingFriendRequest | unfriendUser
-# Blocks: listBlockedUsers | blockUser | unblockUser
-# createConversation | getConversations
-# getStaticImage | getStaticVideoStream | getStaticVideoHLSMaster | getStaticVideoHLSSegment
+# operationId theo `swagger/paths.yaml` (khớp `src/presentation/http/routes/*.route.ts`)
+#
+# auth: register | login | logout | refreshToken | forgotPassword
+# users: getMe | updateMe | getUserProfile | changePassword
+# oauth: getGoogleAuthUrl | googleLogin
+# media: uploadImage | uploadVideo | uploadVideoStream | getVideoStatus
+# posts: getNewFeeds | createPost | getPostDetail | patchPost | getPostsType
+# bookmarks: createBookmark | deleteBookmark
+# likes: createLike | deleteLike
+# friends: listFriends | sendFriendRequest | listIncomingFriendRequests | listOutgoingFriendRequests | acceptFriendRequest | declineFriendRequest | revokeOutgoingFriendRequest | unfriendUser
+# blocks: listBlockedUsers | blockUser | unblockUser
+# search: search
+# conversations: createDirectChat | createGroupChat | listChats | getChatDetail | patchChat | listChatMessages | sendChatMessage | markChatRead | inviteChatMember | leaveChat | kickChatMember | patchChatMemberRole | transferChatAdmin
+# notifications: listNotifications | markNotificationsRead | markOneNotificationRead
+# static: getStaticImage | getStaticVideoStream | getStaticVideoStreamMaster | getStaticVideoStreamSegment
+# rbac (admin): listRoles | createRole | getRole | updateRole | deleteRole | listPermissions | createPermission | getPermission | updatePermission | deletePermission

@@ -1,0 +1,42 @@
+{
+  "$jsonSchema": {
+    "title": "users — aligned with modules/user/infrastructure/mongo/user.model (Valibot userSchema)",
+    "bsonType": "object",
+    "required": ["_id", "name", "email", "password", "birthday", "roleId", "status"],
+    "properties": {
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128,
+        "description": "Entity id (UUID v7, often prefixed e.g. user_)"
+      },
+      "name": { "bsonType": "string" },
+      "email": { "bsonType": "string" },
+      "password": {
+        "bsonType": "string",
+        "description": "Password hash"
+      },
+      "birthday": { "bsonType": "date" },
+      "roleId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "status": {
+        "bsonType": "string",
+        "enum": ["ACTIVE", "INACTIVE", "BANNED", "UNKNOWN"],
+        "description": "EUserStatus"
+      },
+      "totpSecret": { "bsonType": "string" },
+      "bio": { "bsonType": "string" },
+      "location": { "bsonType": "string" },
+      "website": { "bsonType": "string" },
+      "username": { "bsonType": "string" },
+      "avatar": { "bsonType": "string" },
+      "coverPhoto": { "bsonType": "string" },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

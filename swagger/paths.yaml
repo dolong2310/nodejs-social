@@ -77,13 +77,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/refresh-token:
-    post:
+    get:
       tags: [auth]
       summary: Làm mới access token
       operationId: refreshToken
       description: |
-        Đọc refresh từ cookie httpOnly; trả về `accessToken` trong body; refresh mới được set lại qua Set-Cookie. Gọi với `credentials: include` (CORS).
-        Client cần gọi `POST /auth/refresh-token` với cookie (credentials) để lấy `accessToken` trong JSON.
+        Đọc refresh từ cookie httpOnly; trả về `accessToken` trong body; refresh mới được set lại qua Set-Cookie.
+        Gọi với `credentials: include` (CORS). **Method: GET** — không có body.
       security:
         - refreshTokenCookie: []
       responses:
@@ -98,61 +98,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
-  /auth/verify-email:
-    post:
-      tags: [auth]
-      summary: Xác thực email
-      operationId: verifyEmail
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VerifyEmailRequest'
-      responses:
-        '200':
-          description: Xác thực email thành công
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '400':
-          description: Token không hợp lệ hoặc đã xác thực
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: User không tồn tại
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /auth/resend-verify-email:
-    post:
-      tags: [auth]
-      summary: Gửi lại email xác thực
-      operationId: resendVerifyEmail
-      security: [{ bearerAuth: [] }]
-      responses:
-        '200':
-          description: Đã gửi email xác thực
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '401':
-          description: Chưa xác thực
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '400':
-          description: Email đã được xác thực
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
   /auth/forgot-password:
     post:
       tags: [auth]
@@ -173,55 +118,6 @@ paths:
                 $ref: '#/components/schemas/SuccessResponse'
         '404':
           description: Email không tồn tại
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /auth/reset-password:
-    post:
-      tags: [auth]
-      summary: Đặt lại mật khẩu
-      operationId: resetPassword
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResetPasswordRequest'
-      responses:
-        '200':
-          description: Đặt lại mật khẩu thành công
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '400':
-          description: Token không hợp lệ hoặc mật khẩu không khớp
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /auth/change-password:
-    put:
-      tags: [auth]
-      summary: Đổi mật khẩu
-      operationId: changePassword
-      security: [{ bearerAuth: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangePasswordRequest'
-      responses:
-        '200':
-          description: Đổi mật khẩu thành công
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '401':
-          description: Chưa xác thực
           content:
             application/json:
               schema:
@@ -300,8 +196,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /users/change-password:
+    put:
+      tags: [users]
+      summary: Đổi mật khẩu (user đã đăng nhập, đã verify)
+      operationId: changePassword
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==================== OAUTH ====================
+  /oauth/google/url:
+    get:
+      tags: [oauth]
+      summary: Lấy URL ủy quyền Google (PKCE/state)
+      operationId: getGoogleAuthUrl
+      parameters:
+        - name: ip
+          in: query
+          required: true
+          schema: { type: string }
+        - name: userAgent
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: URL đăng nhập Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthUrlSuccessResponse'
   /oauth/google:
     get:
       tags: [oauth]
@@ -371,11 +313,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /media/upload-video-hls:
+  /media/upload-video-stream:
     post:
       tags: [media]
-      summary: Upload video HLS
-      operationId: uploadVideoHLS
+      summary: Upload video Stream
+      operationId: uploadVideoStream
       security: [{ bearerAuth: [] }]
       requestBody:
         content:
@@ -430,26 +372,30 @@ paths:
     get:
       tags: [posts]
       summary: Lấy new feed
-      description: Bearer tùy chọn — có token thì feed merged (public + bạn bè + bài của mình), có block filter; không token thì chỉ public. User chưa verify vẫn đọc được khi gửi token.
+      description: Bearer tùy chọn — có token thì feed merged (public + bạn bè + bài của mình), có block filter; không token thì chỉ public. User chưa verify vẫn đọc được khi gửi token. Phân trang **cursor** (`limit` bắt buộc trong validation, 1–100).
       operationId: getNewFeeds
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
         - name: limit
           in: query
+          required: true
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor (lần sau gửi lại để lấy trang tiếp theo)
+          schema:
+            type: string
       responses:
         '200':
-          description: Thành công
+          description: Thành công — `data.items` + `data.nextCursor`
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostsPaginatedResponse'
+                $ref: '#/components/schemas/PostFeedCursorSuccessResponse'
     post:
       tags: [posts]
       summary: Tạo bài viết mới
@@ -572,23 +518,26 @@ paths:
           required: true
           schema:
             type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
         - name: limit
           in: query
+          required: true
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: Thành công
+          description: Thành công — `data.items` + `data.nextCursor`
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostsPaginatedResponse'
+                $ref: '#/components/schemas/PostFeedCursorSuccessResponse'
         '401':
           description: Token không hợp lệ (khi gửi Authorization)
           content:
@@ -727,23 +676,26 @@ paths:
       operationId: listFriends
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
         - name: limit
           in: query
+          required: true
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: Thành công
+          description: Thành công — `data.items` (FriendUserSummary) + `data.nextCursor`
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+                $ref: '#/components/schemas/FriendListCursorSuccessResponse'
         '401':
           description: Chưa xác thực
           content:
@@ -812,23 +764,26 @@ paths:
       operationId: listIncomingFriendRequests
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
         - name: limit
           in: query
+          required: true
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: Thành công
+          description: Thành công — cursor pagination
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+                $ref: '#/components/schemas/FriendListCursorSuccessResponse'
         '401':
           description: Chưa xác thực
           content:
@@ -842,23 +797,26 @@ paths:
       operationId: listOutgoingFriendRequests
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
         - name: limit
           in: query
+          required: true
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: Thành công
+          description: Thành công — cursor pagination
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FriendsUsersPaginatedResponse'
+                $ref: '#/components/schemas/FriendListCursorSuccessResponse'
         '401':
           description: Chưa xác thực
           content:
@@ -1118,29 +1076,32 @@ paths:
           in: query
           schema:
             type: string
-            enum: [post, user, image, video, video-hls]
+            enum: [post, user, image, video, video-stream]
         - name: people
           in: query
           schema:
             type: string
             enum: [friends, not_friends, only_me]
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
         - name: limit
           in: query
+          required: true
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: Thành công
+          description: Thành công — `data.items` + `data.nextCursor` (bài viết hoặc user tùy `type`)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchPaginatedResponse'
+                $ref: '#/components/schemas/SearchCursorSuccessResponse'
 
   # ==================== CHATS (Phase 4) ====================
   /conversations/direct:
@@ -1515,6 +1476,440 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ==================== ROLES & PERMISSIONS (admin) ====================
+  /roles:
+    get:
+      tags: [roles]
+      summary: Danh sách role
+      description: Chỉ **ADMIN** (so khớp `roleId` với role hệ thống). Phân trang `page` + `limit` (1–100).
+      operationId: listRoles
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Thành công — cùng dạng phân trang với `GET /blocks` (`data.data` là mảng role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleListPageSuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags: [roles]
+      summary: Tạo role
+      description: Chỉ **ADMIN**. Tên `name` phải duy nhất; trùng tên trả 409.
+      operationId: createRole
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Đã tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleItemSuccessResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Tên role đã tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /roles/{roleId}:
+    get:
+      tags: [roles]
+      summary: Chi tiết role
+      description: Chỉ **ADMIN**.
+      operationId: getRole
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleItemSuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [roles]
+      summary: Cập nhật role
+      description: Chỉ **ADMIN**. Không đổi tên/xóa role hệ thống ADMIN/USER; trùng tên → 409.
+      operationId: updateRole
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleItemSuccessResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin hoặc thao tác bị từ chối (role hệ thống)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Tên mới trùng role khác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags: [roles]
+      summary: Xóa role
+      description: Chỉ **ADMIN**. Không xóa role hệ thống ADMIN/USER.
+      operationId: deleteRole
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Đã xóa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin hoặc không thể xóa role hệ thống
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /permissions:
+    get:
+      tags: [permissions]
+      summary: Danh sách permission
+      description: Chỉ **ADMIN**. Phân trang `page` + `limit` (1–100).
+      operationId: listPermissions
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionListPageSuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags: [permissions]
+      summary: Tạo permission
+      description: Chỉ **ADMIN**. Cặp `path` + `method` phải duy nhất; trùng → 409.
+      operationId: createPermission
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePermissionRequest'
+      responses:
+        '201':
+          description: Đã tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionItemSuccessResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Đã tồn tại permission cùng path và method
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /permissions/{permissionId}:
+    get:
+      tags: [permissions]
+      summary: Chi tiết permission
+      description: Chỉ **ADMIN**.
+      operationId: getPermission
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: permissionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionItemSuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [permissions]
+      summary: Cập nhật permission
+      description: Chỉ **ADMIN**. Nếu đổi `path`/`method` thì cặp mới phải chưa tồn tại (409).
+      operationId: updatePermission
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: permissionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePermissionRequest'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionItemSuccessResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Cặp path+method mới trùng permission khác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags: [permissions]
+      summary: Xóa permission
+      description: Chỉ **ADMIN**. Không xóa nếu còn role nào gán (409) — cần gỡ khỏi role trước.
+      operationId: deletePermission
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: permissionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MongoId'
+      responses:
+        '200':
+          description: Đã xóa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Không phải admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Không tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Permission đang được gán cho ít nhất một role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # ==================== STATIC ====================
   /static/images/{filename}:
     get:
@@ -1558,11 +1953,11 @@ paths:
           description: Partial content
         '404':
           description: Không tìm thấy file
-  /static/videos-hls/{id}/master.m3u8:
+  /static/videos-stream/{id}/master.m3u8:
     get:
       tags: [static]
-      summary: Lấy HLS master playlist
-      operationId: getStaticVideoHLSMaster
+      summary: Lấy Stream master playlist
+      operationId: getStaticVideoStreamMaster
       parameters:
         - name: id
           in: path
@@ -1571,14 +1966,14 @@ paths:
             type: string
       responses:
         '200':
-          description: HLS master playlist
+          description: Stream master playlist
         '404':
           description: Không tìm thấy
-  /static/videos-hls/{id}/{version}/{segment}:
+  /static/videos-stream/{id}/{version}/{segment}:
     get:
       tags: [static]
-      summary: Lấy HLS segment
-      operationId: getStaticVideoHLSSegment
+      summary: Lấy Stream segment
+      operationId: getStaticVideoStreamSegment
       parameters:
         - name: id
           in: path
@@ -1597,6 +1992,6 @@ paths:
             type: string
       responses:
         '200':
-          description: HLS segment
+          description: Stream segment
         '404':
           description: Không tìm thấy

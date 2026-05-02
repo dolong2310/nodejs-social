@@ -1,0 +1,46 @@
+{
+  "$jsonSchema": {
+    "title": "conversationMembers — aligned with modules/conversation/infrastructure/mongo/conversation-member.model",
+    "bsonType": "object",
+    "required": ["_id", "conversationId", "userId", "role", "joinedAt"],
+    "properties": {
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "conversationId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "userId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "role": {
+        "bsonType": "string",
+        "enum": ["admin", "manager", "member"],
+        "description": "EConversationMemberRole"
+      },
+      "joinedAt": { "bsonType": "date" },
+      "lastReadMessageId": {
+        "anyOf": [
+          { "bsonType": "null" },
+          {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          }
+        ]
+      },
+      "lastReadAt": {
+        "anyOf": [{ "bsonType": "null" }, { "bsonType": "date" }]
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

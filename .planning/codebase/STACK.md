@@ -1,85 +1,95 @@
 # Technology Stack
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-05-02
 
 ## Languages
 
 **Primary:**
-- TypeScript (strict mode) - API/server code in `src/` with build config in `tsconfig.json`.
+- TypeScript (see `package.json` `typescript` ^5.9) — entire application under `src/`, `tests/`, config files
+- YAML — OpenAPI/Swagger sources in `swagger/` (`paths.yaml`, `components.yaml`, `tags.yaml`, `security.yaml`)
 
 **Secondary:**
-- JavaScript (tooling/config runtime) - Node runtime entry and tool configs in `package.json`, `eslint.config.mts`, `nodemon.json`.
-- YAML - OpenAPI source files in `swagger/` referenced by `src/app.ts`.
+- JSON — MongoDB JSON Schema validators under `src/infrastructure/persistence/mongodb/validators/`
+- Markdown — project docs only; not part of runtime
 
 ## Runtime
 
 **Environment:**
-- Node.js (ESM mode via `"type": "module"`) in `package.json`.
+- Node.js — ESM project (`package.json` `"type": "module"`). No `engines` field in `package.json`; align Node with `@types/node` ^25 used in dev types.
 
 **Package Manager:**
-- npm (script lifecycle + lockfile workflow).
-- Lockfile: present (`package-lock.json`).
+- npm — lockfile: `package-lock.json` present
 
 ## Frameworks
 
 **Core:**
-- Express `^5.2.1` - HTTP API framework in `src/app.ts`.
-- Socket.IO `^4.8.3` - realtime messaging server in `src/services/socket.service.ts`.
+- Express ^5 — HTTP API; app factory in `src/presentation/http/express/app.ts`, bootstrap in `src/index.ts`
+- Socket.IO ^4 — WebSocket/realtime; `src/bootstrap/create-socket-server.ts`, `src/presentation/socket/`
 
 **Testing:**
-- Not detected (no test runner dependency or `test` script in `package.json`).
+- Vitest ^4 — `vitest.config.ts`; integration tests only (`include: ['tests/integration/**/*.test.ts']`)
 
 **Build/Dev:**
-- TypeScript compiler `^5.9.3` - transpilation to `dist/` (`build` script).
-- `tsc-alias` `^1.8.16` - rewrites TS path aliases after build.
-- `tsx` `^4.21.0` + `nodemon` `^3.1.14` - development runtime (`nodemon.json`, `dev` script).
-- ESLint `^10.0.2` + typescript-eslint `^8.56.1` + Prettier `^3.8.1` - code quality formatting/linting.
+- TypeScript compiler — `tsconfig.json` (`target` ES2023, `module` ESNext, `paths` `@/*` → `./src/*`)
+- `tsc-alias` — rewrites path aliases after `tsc` (`package.json` `build` script)
+- `tsx` — runs TypeScript in dev and production start scripts (`package.json` `start:*`)
+- `nodemon` — dev reload; config `nodemon.json` (`exec`: `tsx src/index.ts`)
+- `rimraf` — clean `dist` before build
 
 ## Key Dependencies
 
 **Critical:**
-- `mongodb` `^7.1.0` - primary persistent data store in `src/database/mongodb/database.service.ts`.
-- `jsonwebtoken` `^9.0.3` + `bcrypt` `^6.0.0` - auth/token/password flow in `src/services/token.service.ts`, `src/services/auth.service.ts`.
-- `bullmq` `^5.71.0` - background jobs/workers in `src/queue/`.
+- `mongodb` ^7 — primary database via `MongoClient` in `src/infrastructure/persistence/mongodb/database.ts`
+- `ioredis` ^5 — Redis client; `src/infrastructure/persistence/redis/redis.ts`
+- `bullmq` ^5 — job queues/workers; `src/infrastructure/queue/` (email, video-stream, post-views, notification-trim)
+- `@aws-sdk/client-s3`, `@aws-sdk/lib-storage`, `@aws-sdk/s3-request-presigner` — object storage; `src/infrastructure/services/s3.service.ts`
+- `@aws-sdk/client-ses` — transactional email; `src/infrastructure/services/email.service.ts`
+- `googleapis` — Google APIs; OAuth flow in `src/infrastructure/services/google-oauth.service.ts` (uses `OAuth2Client` from transitive `google-auth-library`)
+- `socket.io` — realtime layer (paired with `socket.io-client` in devDependencies for tests)
+- `jsonwebtoken` — JWT access/refresh; wired via `src/bootstrap/config/app.config.ts`
+- `bcrypt` — password hashing
+- `otpauth` — TOTP/2FA
+- `express-validator` + `valibot` — request validation patterns in presentation layer
+- `pino`, `pino-http` — structured logging; `src/infrastructure/logger/create-logger.ts`
+- `sharp` — image processing (media pipeline)
+- `zx` — spawns **ffmpeg** for video encoding in `src/modules/common/utils/video.util.ts` (external binary, not an npm package)
 
 **Infrastructure:**
-- `ioredis` `^5.10.1` - cache, rate-limit store, queue backend in `src/database/redis/` and `src/app.ts`.
-- AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/client-ses`, `@aws-sdk/lib-storage`) - media storage + outbound email in `src/services/s3.service.ts` and `src/services/email.service.ts`.
-- `swagger-jsdoc` + `swagger-ui-express` - API docs endpoint `/api/docs` in `src/app.ts`.
-- `helmet`, `cors`, `express-rate-limit`, `rate-limit-redis` - transport/security middleware in `src/app.ts`.
+- `express-rate-limit` + `rate-limit-redis` — rate limiting with Redis store (see `src/bootstrap/config/app.config.ts` `rateLimit`)
+- `helmet`, `cors`, `compression`, `cookie-parser` — HTTP middleware in `src/presentation/http/express/app.ts`
+- `formidable` — multipart uploads
+- `mitt` — event emitter patterns where used
+- `swagger-jsdoc`, `swagger-ui-express` — API docs at `/api/docs` (see `createExpressApp` in `src/presentation/http/express/app.ts`)
+- `yaml` — loading swagger definition helpers
+- `date-fns`, `lodash-es`, `uuidv4`, `mime` / `mime-types` — utilities
+
+**Declared but unused in `src/` (as of analysis):**
+- `axios` — listed in `package.json` dependencies; no `import` from `axios` under application sources
 
 ## Configuration
 
 **Environment:**
-- Required env vars are validated at boot in `src/config/envConfig.ts`.
-- Example keys are declared in `.env.example` (database, JWT, Google OAuth, AWS, Redis, rate limit, cache TTL).
+- Load order: `dotenv` reads `.env.${envMode}` or `.env` based on `--env` CLI flag — `src/bootstrap/config/env.config.ts`
+- Required keys are enumerated in `ENV_KEYS` in `src/bootstrap/config/env.config.ts` (throws if missing or empty)
+- Template without secrets: `.env.example` (document existence of per-environment files only; do not commit real `.env.*`)
 
 **Build:**
-- TS compiler + alias config in `tsconfig.json`.
-- Lint + style rules in `eslint.config.mts`.
-- Dev process/watch settings in `nodemon.json`.
+- `tsconfig.json` — compilation to `dist/`
+- `eslint.config.mts` — ESLint flat config with `typescript-eslint`, Prettier integration
+- `.prettierrc` — formatting rules (referenced by ESLint)
 
 ## Platform Requirements
 
 **Development:**
-- Node.js + npm.
-- MongoDB reachable via `DATABASE_URI`.
-- Redis reachable via `REDIS_HOST`/`REDIS_PORT`.
+- Node.js + npm
+- MongoDB instance (`DATABASE_URI`, `DATABASE_NAME`)
+- Redis (`REDIS_*` in `env.config.ts`)
+- **ffmpeg** on `PATH` for video transcoding workers (`video.util.ts`); without it, video encoding jobs fail at runtime
 
 **Production:**
-- Node.js process running `node dist/main.js --env=production` (`package.json`).
-- External infrastructure: MongoDB, Redis, AWS S3, AWS SES, Google OAuth endpoints.
-
-## Build/Test Commands
-
-```bash
-npm run dev           # Run API with nodemon + tsx
-npm run build         # Compile TS to dist + rewrite aliases
-npm run start:prod    # Run compiled app in production env mode
-npm run lint          # Lint codebase
-npm run prettier      # Check formatting
-```
+- Same service dependencies (MongoDB, Redis, AWS credentials for S3/SES, Google OAuth credentials)
+- Process serves HTTP + Socket.IO; optional separate worker processes via `src/bootstrap/setup-workers.ts` pattern for BullMQ consumers
 
 ---
 
-*Stack analysis: 2026-03-21*
+*Stack analysis: 2026-05-02*

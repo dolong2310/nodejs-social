@@ -1,171 +1,136 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-05-02
 
 ## Directory Layout
 
-```text
+```
 nodejs-social/
-├── src/                 # Application source code (API, services, data, infra adapters)
-├── swagger/             # OpenAPI YAML fragments and docs composition files
-├── scripts/             # Utility scripts for local data/testing tasks
-├── uploads/             # Runtime file storage for media assets
-├── dist/                # TypeScript build output
-├── my-docs/             # Project-local documentation artifacts
-├── package.json         # Scripts and dependency manifest
-├── tsconfig.json        # TS compiler + path alias config
-├── eslint.config.mts    # Lint rules and TypeScript ESLint setup
-└── nodemon.json         # Development process restart configuration
+├── src/
+│   ├── index.ts                    # Process entry: HTTP + Socket bootstrap
+│   ├── bootstrap/                  # Composition root, config, DI wiring
+│   ├── infrastructure/             # Shared persistence, queues, loggers, tech services
+│   ├── modules/                    # Feature modules (domain / application / infrastructure)
+│   ├── modules-sample/             # Reference samples — excluded from TS build (tsconfig)
+│   └── presentation/               # HTTP Express + Socket.IO adapters
+├── swagger/                        # OpenAPI YAML fragments for Swagger UI
+├── scripts/                        # Operational TS scripts (e.g. seeds, utilities)
+├── dist/                           # tsc output (build artifact)
+├── vitest.config.ts
+├── tsconfig.json
+├── package.json
+└── nodemon.json
 ```
 
 ## Directory Purposes
 
-**`src/config`:**
-- Purpose: Load environment variables and produce typed runtime configuration.
-- Contains: env parsing and normalized config objects.
-- Key files: `src/config/envConfig.ts`, `src/config/generalConfig.ts`, `src/config/index.ts`
+**`src/bootstrap/`:**
+- Purpose: Start the app, load config, connect Mongo/Redis, build `Container`, register routes and workers.
+- Contains: `create-http-server.ts`, `create-socket-server.ts`, `container.ts`, `setup-*.ts`, `config/`, `di/http-routes.ts`, `di/repositories.ts`, `di/queues.ts`, `di/socket-features.ts`, `di/types.ts`
+- Key files: `src/bootstrap/container.ts`, `src/bootstrap/di/http-routes.ts`
 
-**`src/container`:**
-- Purpose: Manual dependency injection composition root.
-- Contains: singleton container and typed service/repository/controller getters.
-- Key files: `src/container/index.ts`
+**`src/infrastructure/`:**
+- Purpose: Technology-facing code shared across features (not business rules).
+- Contains: `persistence/mongodb/` (`database.ts`, validators), `persistence/redis/`, `persistence/seed/`, `queue/*` (BullMQ workers and connection), `logger/`, `services/` (JWT, S3, email, hashing, OAuth, 2FA, file storage, image processor)
+- Key files: `src/infrastructure/persistence/mongodb/database.ts`, `src/infrastructure/logger/create-logger.ts`
 
-**`src/routes`:**
-- Purpose: Feature route registration and middleware chaining.
-- Contains: one class per route module inheriting `BaseRoute`.
-- Key files: `src/routes/base.route.ts`, `src/routes/auth.route.ts`, `src/routes/posts.route.ts`
+**`src/modules/`:**
+- Purpose: One folder per bounded context with **domain**, **application**, and **infrastructure** subfolders.
+- Contains: Per feature — `domain/`, `application/use-cases/`, `application/services/`, `application/ports/`, `infrastructure/mongo/`, `infrastructure/mappers/`
+- Feature modules: `auth`, `block`, `bookmark`, `common`, `conversation`, `core`, `friend`, `hashtag`, `like`, `media`, `notification`, `permission`, `post`, `role`, `user`
+- Key files: `src/modules/core/domain/entities/base.entity.ts`, `src/modules/core/application/base.usecase.ts`
 
-**`src/controllers`:**
-- Purpose: HTTP-facing orchestration and response shaping.
-- Contains: feature controllers and shared base response helpers.
-- Key files: `src/controllers/base.controller.ts`, `src/controllers/auth.controller.ts`, `src/controllers/posts.controller.ts`
+**`src/modules/common/`:**
+- Purpose: Small shared utilities/constants for modules (e.g. socket helpers) — not the same as `core` (DDD primitives).
 
-**`src/services`:**
-- Purpose: Business logic, cross-module orchestration, cache/queue/s3 interaction.
-- Contains: feature services, socket service, token utilities.
-- Key files: `src/services/auth.service.ts`, `src/services/posts.service.ts`, `src/services/socket.service.ts`
+**`src/presentation/`:**
+- Purpose: Express routes, controllers, DTOs, validators, middleware, HTTP responses; Socket.IO app and realtime features.
+- Contains: `http/express/app.ts`, `v1/routes/`, `v1/controllers/`, `v1/dtos/`, `middlewares/`, `socket/`
+- Key files: `src/presentation/http/express/app.ts`, `src/presentation/socket/socket.app.ts`
 
-**`src/repositories`:**
-- Purpose: MongoDB read/write and aggregation logic.
-- Contains: feature repositories and shared repository helper base class.
-- Key files: `src/repositories/base.repository.ts`, `src/repositories/post.repository.ts`, `src/repositories/user.repository.ts`
+**`src/modules-sample/`:**
+- Purpose: Alternate/sample vertical-slice layout and pedagogy; **excluded** from compilation via `tsconfig.json` `exclude`.
+- Generated: No
+- Committed: Yes (as reference only)
 
-**`src/models/schemas`:**
-- Purpose: Data model interfaces and schema constructors used by repositories.
-- Contains: user/post/follower/bookmark/conversation/etc schema definitions.
-- Key files: `src/models/schemas/user.schema.ts`, `src/models/schemas/post.schema.ts`
+**`swagger/`:**
+- Purpose: YAML specs consumed by `swagger-jsdoc` in `src/presentation/http/express/app.ts`.
 
-**`src/database`:**
-- Purpose: Database and cache infrastructure wrappers.
-- Contains: Mongo singleton/index bootstrap and Redis singleton/client wrapper.
-- Key files: `src/database/mongodb/database.service.ts`, `src/database/redis/redis.service.ts`
-
-**`src/queue`:**
-- Purpose: Background job producers/workers and queue lifecycle management.
-- Contains: queue service singleton, queue classes, worker implementations.
-- Key files: `src/queue/index.ts`, `src/queue/queues/email.queue.ts`, `src/queue/workers/video-hls.worker.ts`
-
-**`src/middlewares`:**
-- Purpose: Cross-route request guards and request-shaping middleware.
-- Contains: auth, error, pagination, limiter middleware.
-- Key files: `src/middlewares/auth.middleware.ts`, `src/middlewares/error.middleware.ts`
-
-**`src/validations`:**
-- Purpose: Feature-specific validation middleware for request payload/params.
-- Contains: auth/users/posts/search validation modules.
-- Key files: `src/validations/auth.validation.ts`, `src/validations/posts.validation.ts`
+**`scripts/`:**
+- Purpose: CLI-style scripts run with `tsx` (seeding, maintenance) — see `package.json` `seed:*` scripts.
 
 ## Key File Locations
 
 **Entry Points:**
-- `src/index.ts`: Process bootstrap and HTTP server start.
-- `src/app.ts`: Application factory; mounts middleware/routes/docs and infra lifecycle.
+- `src/index.ts`: Bootstraps servers and listens on port.
 
 **Configuration:**
-- `src/config/envConfig.ts`: Environment loading and required key enforcement.
-- `src/config/generalConfig.ts`: Canonical runtime config object.
-- `tsconfig.json`: TypeScript compile target and `@/*` alias mapping.
+- `src/bootstrap/config/app.config.ts`: Runtime app config (port, JWT shape, `/api` prefix, CORS, rate limit, logging level).
+- `src/bootstrap/config/env.config.ts`: Environment variable mapping (do not commit secrets; use `.env` locally — file may exist but is not part of structure docs).
+- `tsconfig.json`: Path alias `@/*` → `./src/*`, `exclude` for `src/modules-sample/**/*`.
 
 **Core Logic:**
-- `src/container/index.ts`: Dependency graph construction.
-- `src/services/*.service.ts`: Feature business rules.
-- `src/repositories/*.repository.ts`: Persistence logic and Mongo pipelines.
+- Use cases: `src/modules/*/application/use-cases/**/*.interactor.ts`
+- Application services: `src/modules/*/application/services/*.service.ts`
+- HTTP wiring: `src/bootstrap/di/http-routes.ts`
+
+**Persistence:**
+- Connection and indexes: `src/infrastructure/persistence/mongodb/database.ts`
+- Redis: `src/infrastructure/persistence/redis/redis.ts`
 
 **Testing:**
-- `scripts/test-users.ts`: Script-based data/test utility.
-- `scripts/fake-data.ts`: Local seeding/fake data helper.
-- No dedicated test framework config detected in root (no `jest.config.*` or `vitest.config.*` found).
+- Vitest is configured (`vitest.config.ts`, `npm test` in `package.json` references `tests/setup/register-argv.mjs`); add tests under a `tests/` tree or co-located `*.test.ts` as the project adopts them.
 
 ## Naming Conventions
 
 **Files:**
-- Feature modules use suffix-based naming: `*.route.ts`, `*.controller.ts`, `*.service.ts`, `*.repository.ts`, `*.validation.ts`.
-- DTO files split by request/response under `src/dtos/requests/` and `src/dtos/responses/`.
-- Schema files use `*.schema.ts` under `src/models/schemas/`.
+- Use cases: `<action>.interactor.ts` with matching `<action>.in-port.ts` for the input port type when present.
+- Repositories: `*.repository.ts` (port), `*.impl.repository.ts` (Mongo implementation).
+- Controllers/routes: `*.controller.ts`, `*.route.ts`.
+- Exceptions: `*.exception.ts` at module or presentation level.
 
 **Directories:**
-- Layer-driven top-level folders under `src/` (e.g., `routes`, `controllers`, `services`, `repositories`).
-- Cross-cutting utilities grouped by concern (`constants`, `middlewares`, `logger`, `utils`).
+- Feature modules: lowercase single word (`user`, `post`, `conversation`).
+- Use-case folders: kebab-case action folders (`get-me`, `send-message`, `create-post`).
 
-## Module Boundaries & Topology Guidance
-
-**HTTP Feature Boundary:**
-- Keep feature API wiring in `src/routes/<feature>.route.ts`.
-- Keep protocol-level adaptation in `src/controllers/<feature>.controller.ts`.
-- Keep business logic and side-effect orchestration in `src/services/<feature>.service.ts`.
-- Keep data querying/mutation in `src/repositories/<feature>.repository.ts`.
-
-**Infrastructure Boundary:**
-- Put new external resource lifecycle code in `src/database/` or `src/queue/`.
-- Wire new infra into startup flow in `src/app.ts` and expose through `src/container/index.ts` only after initialization.
-
-**Realtime Boundary:**
-- Keep Socket.IO handshake and event transport in `src/services/socket.service.ts`.
-- Keep persistence-heavy message/conversation business logic in dedicated services/repositories rather than inline socket handlers.
+**Imports:**
+- Use path alias `@/` for all `src/` imports (e.g. `@/modules/user/...`).
 
 ## Where to Add New Code
 
-**New Feature:**
-- Primary code: `src/routes/`, `src/controllers/`, `src/services/`, `src/repositories/`, `src/validations/` using matching `<feature>` filename stem.
-- DTO/models: `src/dtos/requests/`, `src/dtos/responses/`, `src/models/schemas/` as needed.
-- Tests/scripts: place script-style verification in `scripts/` until a formal test runner is introduced.
+**New HTTP feature (new resource or action):**
+1. Add or extend **domain** ports under `src/modules/<feature>/domain/repositories/`.
+2. Implement **Mongo repository** in `src/modules/<feature>/infrastructure/mongo/` and register in `src/bootstrap/di/repositories.ts`.
+3. Add **interactor** under `src/modules/<feature>/application/use-cases/<action>/`.
+4. Wire **controller** method and **route** in `src/presentation/http/express/v1/` and register the interactor in `src/bootstrap/di/http-routes.ts` (follow existing patterns for `AuthRoute`, `UserRoute`, etc.).
+5. Add Swagger fragments under `swagger/` and DTOs/validators under `v1/dtos/` and `v1/validators/`.
 
-**New Component/Module:**
-- Implementation: add to the layer-specific directory under `src/` and register dependencies in `src/container/index.ts`.
+**New module (bounded context):**
+- Create `src/modules/<name>/{domain,application,infrastructure}` mirroring an existing module such as `src/modules/block/` or `src/modules/bookmark/`.
+- Register repositories and services in `src/bootstrap/di/repositories.ts` and `src/bootstrap/container.ts` as needed, then expose HTTP via `http-routes.ts`.
 
 **Utilities:**
-- Shared helpers: `src/utils/`.
-- Shared constants/enums: `src/constants/` and `src/enums/`.
-- Shared types: `src/types/` or `src/type.d.ts` for global declaration augmentation.
+- Cross-feature domain primitives: `src/modules/core/domain/` or `src/modules/core/application/ports/`.
+- Shared non-domain helpers: `src/modules/common/utils/` or a small dedicated module.
 
-## Folder-Level Coupling Notes
+**Socket behavior:**
+- New realtime feature: add a class under `src/presentation/socket/features/`, implement `ISocketFeature` (`src/presentation/socket/socket.type.ts`), register in `src/bootstrap/di/socket-features.ts`.
 
-- `src/app.ts` is the central topology hub; it imports every route and infra module, so cross-cutting changes should start there.
-- `src/container/index.ts` is the dependency hub; introducing a new service/repository/controller requires synchronized edits in initialization and getter sections.
-- `src/repositories/post.repository.ts` is a high-density module with large aggregation pipelines; prefer extracting pipeline builder helpers into `src/utils/` when extending feed logic.
+**Background jobs:**
+- New worker: add under `src/infrastructure/queue/<name>/`, start from `src/bootstrap/setup-workers.ts`, extend `getWorkerDeps()` in `src/bootstrap/di/types.ts` and `src/bootstrap/container.ts` if new dependencies are required.
 
 ## Special Directories
 
 **`dist/`:**
-- Purpose: Compiled JavaScript output.
-- Generated: Yes.
-- Committed: Yes (present in repository).
+- Purpose: TypeScript compile output for production starts (`npm run build`).
+- Generated: Yes
+- Committed: Typically no (verify `.gitignore`)
 
-**`uploads/`:**
-- Purpose: Runtime media storage (images/videos/HLS artifacts).
-- Generated: Yes.
-- Committed: Yes (directory present).
-
-**`swagger/`:**
-- Purpose: API documentation source files consumed by Swagger setup in `src/app.ts`.
-- Generated: No.
-- Committed: Yes.
-
-**`.planning/codebase/`:**
-- Purpose: Generated architecture/quality/tech mapping documents for planning/execution workflows.
-- Generated: Yes.
-- Committed: Yes (workspace planning artifacts).
+**`.planning/`:**
+- Purpose: GSD planning and codebase map artifacts for agents and humans.
+- Generated: By workflow tools
+- Committed: Per team policy
 
 ---
 
-*Structure analysis: 2026-03-21*
+*Structure analysis: 2026-05-02*

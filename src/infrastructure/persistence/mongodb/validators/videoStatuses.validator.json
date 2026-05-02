@@ -1,0 +1,24 @@
+{
+  "$jsonSchema": {
+    "title": "videoStatus collection — aligned with modules/media/infrastructure/mongo/video-status.model (DB collection name: videoStatus)",
+    "bsonType": "object",
+    "required": ["_id", "name", "status"],
+    "properties": {
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "name": { "bsonType": "string" },
+      "status": {
+        "bsonType": "string",
+        "enum": ["pending", "processing", "success", "failed"],
+        "description": "EEncodingVideoStatus"
+      },
+      "message": { "bsonType": "string" },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

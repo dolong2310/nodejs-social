@@ -1,165 +1,158 @@
 # Architecture
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-05-02
 
 ## Pattern Overview
 
-**Overall:** Layered modular monolith (Express API) with manual dependency injection and singleton infrastructure services.
+**Overall:** Layered **hexagonal / clean architecture** with **vertical feature modules** under `src/modules/`, a **shared infrastructure** layer, and **composition-root** wiring in `src/bootstrap/`. HTTP and real-time adapters live in `src/presentation/`.
 
 **Key Characteristics:**
-- Feature-oriented HTTP modules under `src/routes/` with one route class per bounded feature.
-- Strict call chain from transport to persistence: route -> validation/middleware -> controller -> service -> repository -> MongoDB.
-- Infrastructure initialized once at bootstrap (`MongoDB`, `Redis`, `BullMQ`, `Socket.IO`) and reused through singleton wrappers.
+- **Ports and adapters:** Domain defines repository interfaces (ports); `*.impl.repository.ts` in each module’s `infrastructure/mongo/` implements persistence.
+- **Use cases as interactors:** Application logic is expressed as `*.interactor.ts` files implementing `UseCase` from `src/modules/core/application/base.usecase.ts`.
+- **Manual dependency injection:** A singleton `Container` in `src/bootstrap/container.ts` constructs repositories, application services, interactors, HTTP routes, and socket features in one place; `src/bootstrap/di/http-routes.ts` is the main HTTP composition root.
+- **Shared cross-cutting infrastructure:** MongoDB, Redis, BullMQ workers, logging, JWT, S3, email, and file/image helpers live under `src/infrastructure/` (not inside each feature module).
 
 ## Layers
 
-**Bootstrap & Composition Layer:**
-- Purpose: Initialize process-level dependencies and wire middleware/routers/server lifecycle.
-- Location: `src/index.ts`, `src/app.ts`, `src/container/index.ts`
-- Contains: server startup, app factory, DI container assembly, graceful shutdown.
-- Depends on: config, database/redis singletons, queue singleton, route factories.
-- Used by: process entrypoint only (`src/index.ts`).
+**Bootstrap / composition root:**
+- Purpose: Application startup, environment config, wiring the container, workers, and graceful shutdown.
+- Location: `src/bootstrap/`
+- Contains: `create-http-server.ts`, `create-socket-server.ts`, `setup-database.ts`, `setup-redis.ts`, `setup-workers.ts`, `setup-graceful-shutdown.ts`, `container.ts`, `setup-container.ts`, `config/app.config.ts`, `config/env.config.ts`, `di/*`
+- Depends on: All other layers (it imports them to construct the graph).
+- Used by: `src/index.ts`
 
-**Transport Layer (HTTP + Socket):**
-- Purpose: Expose API routes and realtime message events.
-- Location: `src/routes/*.route.ts`, `src/middlewares/*.ts`, `src/services/socket.service.ts`
-- Contains: Express route registration, auth/rate-limit/pagination middleware, Socket.IO auth + event handlers.
-- Depends on: container-provided controllers/services and middleware utilities.
-- Used by: `src/app.ts` via `setupRoutes()` and `SocketService.run()`.
+**Presentation (adapters — HTTP & WebSocket):**
+- Purpose: Translate HTTP/Socket.IO to application calls and back; auth middleware; API versioning; OpenAPI/Swagger.
+- Location: `src/presentation/http/express/`, `src/presentation/socket/`
+- Contains: `app.ts` (Express factory), `v1/routes/*.route.ts`, `v1/controllers/*.controller.ts`, `v1/dtos/`, `v1/validators/`, `middlewares/`, `responses/`, `socket.app.ts`, `realtime-emitter.ts`, `features/chat.feature.ts`, `features/presence.feature.ts`
+- Depends on: Application layer (interactors via controllers), `IContainer`, token/user services for guards and sockets.
+- Used by: Bootstrap when building the HTTP server and socket app.
 
-**Controller Layer:**
-- Purpose: Translate request context to service calls and normalize response envelopes.
-- Location: `src/controllers/*.controller.ts`, `src/controllers/base.controller.ts`
-- Contains: request parsing, pagination response shaping, cookie helper methods, response codes.
-- Depends on: service interfaces and DTOs.
-- Used by: route classes (`src/routes/*.route.ts`).
+**Application (per feature module):**
+- Purpose: Orchestrate domain and ports; implement use cases and coarse application services.
+- Location: `src/modules/<feature>/application/`
+- Contains: `use-cases/**/<name>.interactor.ts`, `use-cases/**/<name>.in-port.ts`, `services/*.service.ts`, `ports/*.port.ts` (outbound ports like email, storage), `ports/queries/*`, `ports/command/*` where needed, `*.exception.ts`
+- Depends on: Domain ports (repository interfaces), `src/modules/core/application/ports/*` (cache, logger, realtime, hashing, storage abstractions).
+- Used by: Presentation controllers and `http-routes.ts` when instantiating interactors.
 
-**Service Layer:**
-- Purpose: Business orchestration, cross-repository logic, cache/queue integration.
-- Location: `src/services/*.service.ts`, `src/services/base.service.ts`
-- Contains: domain use-cases (auth/users/posts/search/media/etc), cache invalidation, token operations.
-- Depends on: repositories, Redis service, queue producers, S3 service.
-- Used by: controllers and selected middleware (`src/middlewares/auth.middleware.ts` for token verification via container token service).
+**Domain (per feature module):**
+- Purpose: Entities, value objects, repository contracts, domain-specific types and exceptions.
+- Location: `src/modules/<feature>/domain/`
+- Contains: `entities/`, `repositories/*.repository.ts` (ports), `value-objects/` where used, types
+- Depends on: `src/modules/core/domain/*` (base entity, exceptions, helpers).
+- Used by: Application layer and infrastructure mappers.
 
-**Persistence Layer:**
-- Purpose: Data access abstraction over Mongo collections and aggregation pipelines.
-- Location: `src/repositories/*.repository.ts`, `src/repositories/base.repository.ts`, `src/models/schemas/*.schema.ts`
-- Contains: CRUD operations, pagination helpers, text/search aggregation pipelines.
-- Depends on: `DatabaseService` collections from `src/database/mongodb/database.service.ts`.
-- Used by: service layer.
+**Infrastructure (shared technical services):**
+- Purpose: MongoDB connection and indexes, Redis client, BullMQ workers, Pino logging, third-party adapters (JWT, S3, SES, hashing, 2FA, Google OAuth helpers).
+- Location: `src/infrastructure/persistence/mongodb/database.ts`, `src/infrastructure/persistence/redis/redis.ts`, `src/infrastructure/queue/*`, `src/infrastructure/logger/*`, `src/infrastructure/services/*`
+- Depends on: Mongo/Redis drivers, AWS SDK, etc.
+- Used by: `Container`, workers, and indirectly by repository implementations.
 
-**Infrastructure Layer:**
-- Purpose: External system adapters and process-scoped resource management.
-- Location: `src/database/**`, `src/queue/**`, `src/logger/**`, `src/config/**`
-- Contains: Mongo index bootstrap, Redis adapter, BullMQ queues/workers, request-context logging, env/config parsing.
-- Depends on: environment configuration and third-party SDKs.
-- Used by: bootstrap/app/container and services.
+**Feature infrastructure (per module):**
+- Purpose: Mongo models, repository implementations, mappers.
+- Location: `src/modules/<feature>/infrastructure/mongo/`, `mappers/`
+- Depends on: Mongo `Db`/`Collection`, domain types.
+- Used by: `src/bootstrap/di/repositories.ts` when building repository instances passed into `Container`.
+
+**Core module (`src/modules/core/`):**
+- Purpose: Shared DDD-style primitives (`Entity`, value object base), shared application ports, base use-case interface, shared repository base for Mongo.
+- Location: `src/modules/core/domain/`, `src/modules/core/application/`, `src/modules/core/infrastructure/persistence/repositories/base.mongo.repository.ts`
+- Used by: All feature modules.
 
 ## Data Flow
 
-**HTTP Request Flow (Core API):**
+**HTTP request (authenticated API):**
 
-1. `src/app.ts` mounts feature routers under `/api` and global middleware (helmet/json/cookie/rate-limit/logging).
-2. A route class (example `src/routes/posts.route.ts`) composes middleware, validation, and controller handlers.
-3. Controller (example `src/controllers/posts.controller.ts`) extracts params/user context and calls a service.
-4. Service (example `src/services/posts.service.ts`) orchestrates repository calls and cross-service dependencies.
-5. Repository (example `src/repositories/post.repository.ts`) executes Mongo queries/aggregations and returns entities/DTOs.
-6. Controller returns standardized success payload through `BaseController.sendResponse` or pagination helper.
+1. `src/index.ts` starts `createSocketServer()` then `createHttpServer()` (`src/bootstrap/create-http-server.ts`).
+2. Express app from `createExpressApp` (`src/presentation/http/express/app.ts`) mounts routers at `${appConfig.api.prefix}/${version}/${path}` (prefix `/api` from `src/bootstrap/config/app.config.ts`).
+3. Route class (`BaseRoute` in `src/presentation/http/express/v1/routes/base.route.ts`) delegates to controller methods.
+4. Controller calls an **interactor** constructed in `src/bootstrap/di/http-routes.ts`.
+5. Interactor uses **application services** and **repository ports** (interfaces).
+6. Repository implementation in `src/modules/<feature>/infrastructure/mongo/*.impl.repository.ts` reads/writes MongoDB via `Db` from `src/infrastructure/persistence/mongodb/database.ts`.
+7. Response flows back through controller helpers (`BaseController` in `src/presentation/http/express/v1/controllers/base.controller.ts`) using DTOs under `v1/dtos/`.
 
-**Background Work Flow (Async Processing):**
+**Caching and rate limiting:**
+- Redis implements `CacheManagerPort` (`src/modules/core/application/ports/cache-manager.port.ts`); used by services where configured.
+- Optional Redis-backed rate limit applies after routes in `create-http-server.ts` when `appConfig.rateLimit.enabled` is true.
 
-1. Bootstrap initializes `QueueService` in `src/app.ts`.
-2. Container pulls queue producers from `QueueService.get()` in `src/container/index.ts`.
-3. Services enqueue jobs (e.g., email/video processing via `src/queue/queues/*.queue.ts`).
-4. BullMQ workers from `src/queue/workers/*.worker.ts` process jobs asynchronously.
+**Real-time (Socket.IO):**
+- `createSocketApp` (`src/presentation/socket/socket.app.ts`) uses `container.getSocketDeps()` for `tokenService`, `userService`, and feature list.
+- Features implement `ISocketFeature` and mount handlers per connection (`src/presentation/socket/features/*.feature.ts`).
 
-**Realtime Flow (Socket):**
-
-1. `SocketService` attaches to `HttpServer` in `src/app.ts`.
-2. Middleware in `src/services/socket.service.ts` verifies access token and loads user state.
-3. Connection handler stores `userId -> socketId` map and relays events (`sendMessage` -> `receiveMessage`).
+**Background jobs:**
+- `setupWorkers` (`src/bootstrap/setup-workers.ts`) starts BullMQ workers (`src/infrastructure/queue/email/`, `post-views/`, `notification-trim/`, `video-stream/`) with dependencies from `container.getWorkerDeps()`.
 
 **State Management:**
-- Request state is transient in Express request object (`req.tokenPayload`, `req.postDetail`).
-- Persistent state is MongoDB.
-- Cache state is Redis via cache-aside (`IRedisService.getOrSet`) in services like `src/services/users.service.ts`.
-- Ephemeral connection state for realtime users lives in memory map inside `SocketService`.
+- No server-side session store for HTTP beyond JWT/cookies as implemented in auth flows; **Redis** used for cache and rate limits; **MongoDB** is system of record; **BullMQ** holds job state.
 
 ## Key Abstractions
 
-**Dependency Injection Container:**
-- Purpose: Centralized object graph creation and lifecycle for repositories/services/controllers/validations.
-- Examples: `src/container/index.ts`
-- Pattern: Singleton service locator with typed getters.
+**`UseCase<Request, Response>`:**
+- Purpose: Contract for every interactor’s `execute` method.
+- Examples: `src/modules/core/application/base.usecase.ts`
+- Pattern: Interactors implement this interface; controllers call `execute`.
 
-**Base Route + Route Factory:**
-- Purpose: Standardize route initialization and container access.
-- Examples: `src/routes/base.route.ts`, `src/routes/auth.route.ts`, `src/routes/posts.route.ts`
-- Pattern: Abstract base class + per-feature subclass + exported factory function.
+**Repository ports (domain):**
+- Purpose: Persistence contracts without Mongo types.
+- Examples: `src/modules/user/domain/repositories/user.repository.ts`, `src/modules/post/domain/repositories/post.repository.ts`
+- Pattern: `*RepositoryPort` or `*Repository` naming; implementations in `infrastructure/mongo/*impl.repository.ts`.
 
-**Base Controller Response Contract:**
-- Purpose: Keep response structure and pagination logic consistent across endpoints.
-- Examples: `src/controllers/base.controller.ts`
-- Pattern: Shared controller superclass with helper methods.
+**Application ports (`src/modules/core/application/ports/`):**
+- Purpose: Cross-cutting abstractions (cache, logger, realtime emission, hashing, storage) so application code does not import infrastructure directly.
+- Examples: `cache-manager.port.ts`, `realtime-emitter.port.ts`, `logger.port.ts`
 
-**Repository + Schema Pairing:**
-- Purpose: Encapsulate Mongo collection operations and object shape constructors.
-- Examples: `src/repositories/post.repository.ts`, `src/models/schemas/post.schema.ts`
-- Pattern: Repository pattern over native MongoDB driver with DTO-focused projections.
+**`IContainer`:**
+- Purpose: Narrow interface for presentation and workers (`getRouters`, `getSocketDeps`, `getWorkerDeps`, `getLogger`).
+- Examples: `src/bootstrap/di/types.ts`, implementation `src/bootstrap/container.ts`
+
+**`BaseRoute` / controllers:**
+- Purpose: Consistent API surface (`version`, `pathName`, `createRoutes`).
+- Examples: `src/presentation/http/express/v1/routes/base.route.ts`, controllers extending `BaseController`
+
+**Domain `Entity<Props>`:**
+- Purpose: Rich domain objects with validation and immutability patterns.
+- Examples: `src/modules/core/domain/entities/base.entity.ts`
 
 ## Entry Points
 
-**Process Entry Point:**
+**Process entry:**
 - Location: `src/index.ts`
-- Triggers: `npm run dev` / compiled runtime start scripts from `package.json`.
-- Responsibilities: Build `AppConfig`, initialize uploads, call `createApp`, listen on port.
+- Triggers: Node process start (`tsx`/`node` via `package.json` scripts after `tsc` build).
+- Responsibilities: Load `reflect-metadata`, create HTTP + Socket.IO server, listen on configured port.
 
-**App Factory:**
-- Location: `src/app.ts`
-- Triggers: Called once from `bootstrap()`.
-- Responsibilities: Connect infra, initialize queues/container, mount middleware/routes/docs, setup shutdown hooks.
+**HTTP server factory:**
+- Location: `src/bootstrap/create-http-server.ts`
+- Triggers: Called from `bootstrap()` in `src/index.ts`
+- Responsibilities: DB + Redis, container, Express app, socket app attachment, optional rate limit, workers, graceful shutdown.
 
-**Realtime Entry Point:**
-- Location: `src/services/socket.service.ts`
-- Triggers: `new SocketService(...).run()` in `src/app.ts`.
-- Responsibilities: Socket auth, connection lifecycle, realtime message relay.
+**Socket server factory:**
+- Location: `src/bootstrap/create-socket-server.ts`
+- Triggers: Called before `createHttpServer` in `src/index.ts`
+- Responsibilities: Raw `http.Server` + `socket.io` Server with CORS from `appConfig`.
+
+**Express application:**
+- Location: `src/presentation/http/express/app.ts`
+- Triggers: `createExpressApp(container)` from `create-http-server.ts`
+- Responsibilities: Security headers, JSON, cookies, CORS, logging, mount versioned routers, static video path, Swagger under API prefix, global `errorHandler`.
 
 ## Error Handling
 
-**Strategy:** Centralized middleware + typed domain errors.
+**Strategy:** Typed HTTP errors extend `ErrorResponse` (`src/presentation/http/express/responses/error.response.ts`); unknown errors become 500 with Pino logging in `errorHandler` (`src/presentation/http/express/middlewares/error.middleware.ts`).
 
 **Patterns:**
-- Route handlers wrapped by `asyncHandler` (`src/utils/handler.util.ts`) to forward async exceptions.
-- Domain errors instantiated in services/middleware (`src/responses/error.response.ts`) and handled globally in `src/middlewares/error.middleware.ts`.
-- Authentication-specific JWT errors mapped to app-level errors in `src/middlewares/auth.middleware.ts`.
+- Controllers and domain/application layers throw or map to `ErrorResponse` / module `*.exception.ts` files where applicable.
+- Global Express middleware catches all errors after routes in `app.ts`.
 
 ## Cross-Cutting Concerns
 
-**Logging:** Pino logger and HTTP logger in `src/logger/index.ts`, request correlation in `src/logger/request-context.ts`.
-**Validation:** Input checks via feature validators in `src/validations/*.validation.ts` and middleware ordering in route definitions.
-**Authentication:** JWT token verification in `src/middlewares/auth.middleware.ts` and socket handshake validation in `src/services/socket.service.ts`.
+**Logging:** Pino via `src/infrastructure/logger/create-logger.ts`, HTTP logging middleware, request context binding (`src/infrastructure/logger/request-context-logger.ts`).
 
-## Coupling Hotspots
+**Validation:** Express-route validators under `src/presentation/http/express/v1/validators/`; Valibot and express-validator appear in dependencies for input validation patterns.
 
-- `src/container/index.ts` is a high-coupling composition root; adding or changing dependencies requires edits in multiple initialization sections.
-- `src/app.ts` directly imports and mounts all route factories, making API surface changes centralized but tightly coupled to bootstrap.
-- `src/repositories/post.repository.ts` concentrates complex aggregation/business projection logic, increasing risk and change blast radius for feed-related features.
-- `src/services/socket.service.ts` performs auth + connection state + event behavior in one class, coupling realtime transport with user auth/business constraints.
+**Authentication:** `AuthGuard` and related middleware (`src/presentation/http/express/middlewares/auth.guard.ts`); JWT verification via `TokenService` / `JwtService` (`src/infrastructure/services/jwt.service.ts`); Socket.IO auth in `socket.app.ts`.
 
-## Architectural Strengths
-
-- Clear layer boundaries and consistent per-feature module shape (`route/controller/service/repository`) across `src/`.
-- Strong startup discipline: infra connect + index initialization + graceful shutdown handled in one place (`src/app.ts` and `src/database/mongodb/database.service.ts`).
-- Typed contracts via DTOs/interfaces reduce accidental runtime shape drift between layers.
-- Cache and queue integrations are explicit at service level, making side effects discoverable.
-
-## Architectural Weaknesses
-
-- Service locator singleton (`Container`) hides explicit constructor wiring at module boundaries and can make testing/mocking harder without reset logic.
-- Some flows duplicate token-validation logic across HTTP middleware and Socket middleware (`src/middlewares/auth.middleware.ts`, `src/services/socket.service.ts`).
-- Domain logic mixed into repository aggregation projections (especially posts/search concerns) increases persistence-layer complexity.
-- Realtime message path currently keeps transient user mapping in-memory (`Map` in `SocketService`), which does not scale horizontally without shared state.
+**API documentation:** Swagger UI mounted at `/api/docs` using specs in `swagger/` (`paths.yaml`, `components.yaml`, etc.) referenced from `app.ts`.
 
 ---
 
-*Architecture analysis: 2026-03-21*
+*Architecture analysis: 2026-05-02*

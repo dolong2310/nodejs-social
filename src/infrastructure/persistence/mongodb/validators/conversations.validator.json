@@ -1,0 +1,91 @@
+{
+  "$jsonSchema": {
+    "title": "conversations — aligned with modules/conversation/infrastructure/mongo/conversation.model; collection `conversations`",
+    "oneOf": [
+      {
+        "bsonType": "object",
+        "title": "direct",
+        "required": ["_id", "type", "createdBy", "userIdLow", "userIdHigh"],
+        "properties": {
+          "_id": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "type": { "bsonType": "string", "enum": ["direct"] },
+          "createdBy": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "name": { "bsonType": "string" },
+          "avatarMediaId": {
+            "anyOf": [
+              { "bsonType": "null" },
+              {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              }
+            ]
+          },
+          "userIdLow": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "userIdHigh": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "createdAt": { "bsonType": "date" },
+          "updatedAt": { "bsonType": "date" }
+        },
+        "additionalProperties": false
+      },
+      {
+        "bsonType": "object",
+        "title": "group",
+        "required": ["_id", "type", "createdBy"],
+        "properties": {
+          "_id": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "type": { "bsonType": "string", "enum": ["group"] },
+          "createdBy": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "name": { "bsonType": "string" },
+          "avatarMediaId": {
+            "anyOf": [
+              { "bsonType": "null" },
+              {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              }
+            ]
+          },
+          "userIdLow": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "userIdHigh": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "createdAt": { "bsonType": "date" },
+          "updatedAt": { "bsonType": "date" }
+        },
+        "additionalProperties": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$jsonSchema": {
+    "title": "friendRequests — aligned with modules/friend/infrastructure/mongo/friend-request.model",
+    "bsonType": "object",
+    "required": ["_id", "fromUserId", "toUserId"],
+    "properties": {
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "fromUserId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "toUserId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

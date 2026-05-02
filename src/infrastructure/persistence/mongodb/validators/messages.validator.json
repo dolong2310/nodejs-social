@@ -1,0 +1,45 @@
+{
+  "$jsonSchema": {
+    "title": "chatMessages — aligned with modules/conversation/infrastructure/mongo/chat-message.model; collection `chatMessages`",
+    "bsonType": "object",
+    "required": ["_id", "conversationId", "senderId"],
+    "properties": {
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "conversationId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "senderId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "text": { "bsonType": "string" },
+      "attachments": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "required": ["key", "mime", "size"],
+          "additionalProperties": false,
+          "properties": {
+            "key": { "bsonType": "string" },
+            "mime": { "bsonType": "string" },
+            "size": {
+              "bsonType": ["int", "long", "double"],
+              "minimum": 0
+            },
+            "url": { "bsonType": "string" }
+          }
+        }
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}

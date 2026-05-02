@@ -1,130 +1,158 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-05-02
 
 ## Test Framework
 
 **Runner:**
-- Not detected in current repository (`package.json` has no `test` script; no `jest.config.*` or `vitest.config.*` files found).
-- Config: Not applicable.
 
-**Assertion Library:**
-- Not detected.
+- **Vitest** `^4.1.0` — listed in `package.json` `devDependencies`.
+- **Config:** `vitest.config.ts` at repository root.
 
-**Run Commands:**
+**Assertion library:**
+
+- Vitest’s built-in **`expect`** API (Vitest is Jest-compatible).
+
+**Environment:**
+
+- **`environment: 'node'`** in `vitest.config.ts` — appropriate for this Express/Mongo/Redis backend.
+
+**Run commands:**
+
 ```bash
-Not configured            # Run all tests
-Not configured            # Watch mode
-Not configured            # Coverage
+npm test
 ```
+
+Resolves to:
+
+```text
+node --import ./tests/setup/register-argv.mjs ./node_modules/vitest/vitest.mjs run
+```
+
+**Important:** The bootstrap file **`tests/setup/register-argv.mjs`** is referenced by `package.json` but is **not present** in the workspace at analysis time. **`npm test` will fail** until that path exists or the script is updated.
 
 ## Test File Organization
 
 **Location:**
-- Automated test directories are not present (`__tests__`, `test`, `*.spec.*`, `*.test.*` not found).
-- Ad-hoc scripts exist under `scripts/` (for example `scripts/test-users.ts`) but this is data/manual utility execution, not an automated test suite.
+
+- Vitest **`include`** glob: **`tests/integration/**/*.test.ts`** only (`vitest.config.ts`). No unit-test glob is configured; **`tests/unit/`** or co-located `*.test.ts` next to `src/` are **not** picked up unless `include` is extended.
 
 **Naming:**
-- No formal test naming pattern detected.
 
-**Structure:**
-```
-scripts/
-  test-users.ts        # Manual MongoDB script
-  fake-data.ts         # Data generation utility
+- Use **`*.test.ts`** under `tests/integration/` to match the config.
+
+**Current state:**
+
+- **No `*.test.ts` files** were found under the repository root at analysis time. The **`tests/`** directory tree is empty or absent — integration tests are **planned by config** but **not implemented** in-tree.
+
+**Structure (recommended when adding tests):**
+
+```text
+tests/
+├── setup/
+│   └── register-argv.mjs    # required by npm test script — create if missing
+└── integration/
+    └── <feature>.test.ts
 ```
 
 ## Test Structure
 
-**Suite Organization:**
-```typescript
-// Not detected: no describe()/it()/test() suites in repository test files.
-```
+**Suite organization:**
 
-**Patterns:**
-- Setup pattern: manual setup within scripts (for example `MongoClient` connect in `scripts/test-users.ts`).
-- Teardown pattern: explicit cleanup (`client.close()` and `process.exit(0)` in `scripts/test-users.ts`).
-- Assertion pattern: not detected (no assertion library in use).
+- Use Vitest’s **`describe` / `it` / `expect`** (or **`test`**) once files exist. No project-specific wrapper utilities were found.
+
+**Concurrency:**
+
+- **`fileParallelism: false`** and **`maxWorkers: 1`** in `vitest.config.ts` — tests run **sequentially**, typical for integration tests that share DB/Redis or global state.
+
+**Timeouts:**
+
+- **`testTimeout`** and **`hookTimeout`:** **60_000** ms each — long-running HTTP or DB setup is expected.
 
 ## Mocking
 
-**Framework:** Not detected.
+**Framework:**
+
+- Vitest provides **`vi`** for mocks/spies when needed (`vi.mock`, `vi.fn`).
 
 **Patterns:**
-```typescript
-// Not detected: no mocking framework usage found.
-```
 
-**What to Mock:**
-- Current state does not define a standard. For future tests, prioritize mocking external boundaries: Redis, MongoDB collections/repositories, queue workers, AWS clients, and email dispatch services (`src/database/*`, `src/queue/*`, `src/services/email.service.ts`, `src/services/s3.service.ts`).
+- Not applicable until tests exist. For HTTP handlers, prefer **`supertest`** (already in `devDependencies`) against the Express app created from the composition root rather than mocking Express internals unless isolating a unit.
 
-**What NOT to Mock:**
-- Keep request validation logic and custom error mapping real (`src/utils/validation.util.ts`, `src/middlewares/error.middleware.ts`) in integration tests to catch contract regressions.
+**HTTP testing dependency:**
+
+- **`supertest`** `^7.2.2` and **`@types/supertest`** — use for end-to-end HTTP assertions once an app instance is obtainable from `src/bootstrap/` wiring (e.g. after `setupContainer` / `createExpressApp` patterns in `src/presentation/http/express/app` and `src/bootstrap/create-http-server.ts`).
+
+**What to mock:**
+
+- **External SaaS** (email, OAuth, S3) in integration tests when credentials are unavailable.
+- **Clock/time** for OTP or token expiry scenarios.
+
+**What NOT to mock:**
+
+- **MongoDB / Redis** in **true** integration tests if the goal is pipeline realism — use test containers or dedicated test databases (not defined in-repo at analysis time).
 
 ## Fixtures and Factories
 
-**Test Data:**
-```typescript
-// Current data setup style is script-based:
-await users.insertOne({
-  name: `user-${index}`,
-  age: Math.floor(Math.random() * 100) + 1,
-  gender: Math.random() > 0.5 ? 'male' : 'female'
-});
-```
+**Test data:**
+
+- **`@faker-js/faker`** is a **runtime dependency** in `package.json` — usable in seeds (`src/infrastructure/persistence/seed/`) and **can** seed integration tests; no dedicated `tests/fixtures/` pattern exists yet.
 
 **Location:**
-- Utility seed/data scripts in `scripts/` (not structured test fixtures).
+
+- Prefer **`tests/fixtures/`** or factory helpers under **`tests/helpers/`** when introducing tests; document shared builders next to integration specs.
 
 ## Coverage
 
-**Requirements:** None enforced (no coverage tool or threshold configuration detected).
+**Requirements:**
 
-**View Coverage:**
+- **None enforced** — no `coverage` script or threshold in `package.json` or `vitest.config.ts` at analysis time.
+
+**View coverage (when enabled):**
+
+Add Vitest coverage config (e.g. `provider: 'v8'`) and run:
+
 ```bash
-Not configured
+npx vitest run --coverage
 ```
 
 ## Test Types
 
-**Unit Tests:**
-- Not currently implemented.
+**Unit tests:**
 
-**Integration Tests:**
-- Not currently implemented as automated suites; behavior is manually exercised via scripts and runtime checks.
+- **Not configured** in `vitest.config.ts` `include`. To add unit tests, extend **`include`** with e.g. `src/**/*.test.ts` or a dedicated `tests/unit/**/*.test.ts` tree.
 
-**E2E Tests:**
-- Not used (no Playwright/Cypress/Supertest suites detected).
+**Integration tests:**
+
+- **Target layout:** `tests/integration/**/*.test.ts` — aligns with sequential workers and 60s timeouts for DB/API flows.
+
+**E2E tests:**
+
+- **Not detected** (no Playwright/Cypress). Socket-heavy behavior would need **`socket.io-client`** (already `devDependencies`) if tested outside HTTP-only paths.
 
 ## Common Patterns
 
-**Async Testing:**
+**Async testing:**
+
 ```typescript
-// Not detected in a test framework context.
+import { describe, it, expect } from 'vitest';
+
+describe('feature', () => {
+  it('does something', async () => {
+    const result = await someAsyncFn();
+    expect(result).toBeDefined();
+  });
+});
 ```
 
-**Error Testing:**
-```typescript
-// Not detected in a test framework context.
-```
+**Alias resolution in tests:**
 
-## Coverage Gaps (Current Risk Areas)
+- **`vitest.config.ts`** defines **`resolve.alias`** `@` → `./src` — imports like `@/bootstrap/...` work in test files the same as application code.
 
-- **Authentication/token lifecycle** (`src/controllers/auth.controller.ts`, `src/services/auth.service.ts`, `src/services/token.service.ts`): high risk for login/refresh/verification regressions.
-- **Validation contracts** (`src/validations/*.ts`, `src/utils/validation.util.ts`): high risk for request schema drift and incorrect error payloads.
-- **Middleware behavior** (`src/middlewares/auth.middleware.ts`, `src/middlewares/error.middleware.ts`, `src/middlewares/limiter.middleware.ts`): high risk for security/rate-limit/error handling regressions.
-- **Repository query correctness** (`src/repositories/*.ts`, `src/database/mongodb/database.service.ts`): medium-high risk around pagination/filter logic.
-- **Queue/background work** (`src/queue/**/*`, `src/services/email.service.ts`, `src/utils/video.ts`): medium risk for delayed operational failures without tests.
+**Error testing:**
 
-## Pragmatic Recommendations (Prioritized)
-
-1. **High:** Add a baseline automated test runner (`vitest` or `jest`) and `npm test` script in `package.json`; integrate with existing TypeScript build path.
-2. **High:** Start with integration tests for top-risk API flows (auth, users, posts) using real Express app bootstrap (`src/app.ts`) and API-level assertions.
-3. **High:** Add CI quality gate requiring lint + build + tests before merge; current repo has no detected workflow automation.
-4. **Medium:** Introduce repository/service unit tests with deterministic fakes for MongoDB/Redis/queue boundaries to catch logic regressions quickly.
-5. **Medium:** Add coverage reporting and minimum threshold (initially modest, then ratchet upward) to prevent untested feature expansion.
-6. **Low:** Replace ad-hoc script-only validation with reusable fixture/factory modules for consistent test data.
+- Assert HTTP status and JSON body when using Supertest; assert **`ErrorResponse`** subclasses or mapped validation errors when invoking handlers or use cases directly.
 
 ---
 
-*Testing analysis: 2026-03-21*
+*Testing analysis: 2026-05-02*

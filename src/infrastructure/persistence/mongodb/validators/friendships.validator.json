@@ -1,0 +1,27 @@
+{
+  "$jsonSchema": {
+    "title": "friendships — aligned with modules/friend/infrastructure/mongo/friendship.model (invariant userIdLow < userIdHigh enforced in domain)",
+    "bsonType": "object",
+    "required": ["_id", "userIdLow", "userIdHigh"],
+    "properties": {
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "userIdLow": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "userIdHigh": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
+  }
+}
