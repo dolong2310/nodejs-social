@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/core/domain/value-objects/media.value-object';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class UpdatePostCommand {
   userId: string;

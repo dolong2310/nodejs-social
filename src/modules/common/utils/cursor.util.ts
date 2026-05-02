@@ -1,4 +1,4 @@
-import { DateIdCursor } from '@/modules/core/domain/value-objects/date-id-cursor.value-object';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
 
 /**
  * Encode cursor chỉ chứa id (không có date) — dùng khi sort theo _id tự nhiên.

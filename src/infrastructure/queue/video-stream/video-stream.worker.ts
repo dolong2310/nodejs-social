@@ -1,10 +1,10 @@
 import { VIDEO_STREAM_QUEUE_NAME } from '@/infrastructure/queue/video-stream/video-stream.queue';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
 import { encodeStreamWithMultipleVideoStreams } from '@/modules/common/utils/video.util';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { IVideoStreamJobData, IVideoStreamJobResult } from '@/modules/core/application/ports/video-stream-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import { IVideoStreamJobData, IVideoStreamJobResult } from '@/modules/media/application/ports/video-stream-job.port';
 import { EEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant'; // TODO: move to infrastructure layer
@@ -89,7 +89,7 @@ export class VideoStreamWorker implements IVideoStreamWorker {
       if (job && attemptsMade >= jobOptsAttempts) {
         await this.mediaRepository
           .updateVideoStatus({ name: idName, status: EEncodingVideoStatus.FAILED, message: message })
-          .catch(() => {});
+          .catch((dbErr) => this.log.error({ err: dbErr, idName }, 'failed to mark video as FAILED in DB'));
       }
     });
 

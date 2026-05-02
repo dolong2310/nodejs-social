@@ -1,5 +1,5 @@
 import { NotificationProps } from '@/modules/notification/domain/entities/notification.type';
-import { DateIdCursor } from '@/modules/core/domain/value-objects/date-id-cursor.value-object';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
 
 export interface IFindNotificationsInput extends Pick<NotificationProps, 'recipientId'> {
   limit: number;

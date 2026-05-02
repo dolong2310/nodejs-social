@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { RefreshTokenEntity } from '@/modules/auth/domain/entities/refresh-token.entity';
 import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
@@ -7,7 +7,7 @@ import {
   IRotateRefreshTokenInput
 } from '@/modules/auth/domain/repositories/refresh-token.repository.type';
 import { RefreshTokenMapper } from '@/modules/auth/infrastructure/mappers/refresh-token.mapper';
-import { RefreshTokenModel } from '@/modules/auth/domain/repositories/refresh-token.model';
+import { RefreshTokenModel } from '@/modules/auth/infrastructure/mongo/refresh-token.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class RefreshTokenRepository

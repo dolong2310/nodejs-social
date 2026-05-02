@@ -1,6 +1,6 @@
-import { UploadedFilePort } from '@/modules/core/application/ports/file-upload.port';
+import { UploadedFilePort } from '@/modules/media/application/ports/file-upload.port';
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EMediaType } from '@/modules/core/domain/enums/media.enum';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 
 export class UploadVideoCommand {
   files: UploadedFilePort[];

@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
@@ -11,9 +11,9 @@ import {
   IUpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.type';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mappers/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/domain/repositories/conversation-member.model';
+import { ConversationMemberModel } from '@/modules/conversation/infrastructure/mongo/conversation-member.model';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/mappers/conversation.mapper';
-import { ConversationModel } from '@/modules/conversation/domain/repositories/conversation.model';
+import { ConversationModel } from '@/modules/conversation/infrastructure/mongo/conversation.model';
 import { normalizeFriendshipPair } from '@/modules/friend/infrastructure/mongo/friendship.impl.repository';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 

@@ -1,8 +1,8 @@
 import { HashtagFullProps } from '@/modules/hashtag/domain/entities/hashtag.type';
 import { EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
-import { ESearchPeople, ESearchType } from '@/modules/core/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/core/domain/value-objects/date-id-cursor.value-object';
+import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
 import { Prettify } from 'ts-essentials';
 
 export interface IIsViewerInteractedWithPostInput {

@@ -1,4 +1,4 @@
-import { FileUploadPort, UploadedFilePort } from '@/modules/core/application/ports/file-upload.port';
+import { FileUploadPort, UploadedFilePort } from '@/modules/media/application/ports/file-upload.port';
 import { Request } from 'express';
 import formidable, { File } from 'formidable';
 

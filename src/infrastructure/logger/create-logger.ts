@@ -1,6 +1,6 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { isDevelopment } from '@/bootstrap/config/env.config';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { randomUUID } from 'node:crypto';
 import pino, { type Logger as PinoLogger, type LoggerOptions as PinoLoggerOptions } from 'pino';

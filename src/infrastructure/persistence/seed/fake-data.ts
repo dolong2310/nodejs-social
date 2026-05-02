@@ -12,8 +12,8 @@ import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.ty
 import { ERoleName } from '@/modules/role/domain/entities/role.type.js';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity.js';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type.js';
-import { EMediaType } from '@/modules/core/domain/enums/media.enum.js';
-import { Media } from '@/modules/core/domain/value-objects/media.value-object.js';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum.js';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object.js';
 import { envConfig } from '@/bootstrap/config/env.config.js';
 import { Database } from '@/infrastructure/persistence/mongodb/database.js';
 import {

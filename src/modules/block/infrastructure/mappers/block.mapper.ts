@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { BlockEntity } from '@/modules/block/domain/entities/block.entity';
-import { BlockModel, blockSchema } from '@/modules/block/domain/repositories/block.model';
+import { BlockModel, blockSchema } from '@/modules/block/infrastructure/mongo/block.model';
 import { parse } from 'valibot';
 
 export class BlockMapper implements Mapper<BlockEntity, BlockModel> {

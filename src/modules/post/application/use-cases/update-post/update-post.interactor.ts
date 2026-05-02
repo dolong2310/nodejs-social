@@ -2,7 +2,7 @@ import {
   OnlyOwnerCanUpdatePostSettingsException,
   PostNotFoundException
 } from '@/modules/post/application/post.exception';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   UpdatePostCommand,
   UpdatePostInPort,

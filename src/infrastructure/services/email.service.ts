@@ -1,7 +1,7 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { IEmailJobData } from '@/modules/core/application/ports/email-job.port';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { IEmailJobData } from '@/modules/auth/application/ports/email-job.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import path from 'path';
 

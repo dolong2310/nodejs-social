@@ -1,75 +1,110 @@
 {
   "$jsonSchema": {
-    "title": "notifications (NotificationEntity + notifications.service payloads)",
+    "title": "notifications — aligned with modules/notification/infrastructure/mongo/notification.model",
     "bsonType": "object",
-    "required": ["_id", "recipientId", "read", "createdAt", "type", "actor", "payload"],
+    "required": ["_id", "recipientId", "read", "type", "actor", "payload"],
     "properties": {
-      "_id": { "bsonType": "objectId" },
-      "recipientId": { "bsonType": "objectId" },
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "recipientId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
       "read": { "bsonType": "bool" },
-      "readAt": { "bsonType": "date", "description": "Set when marked read; absent on insert" },
-      "createdAt": { "bsonType": "date" },
+      "readAt": { "bsonType": "date" },
       "type": {
         "bsonType": "string",
-        "enum": ["friend_request", "friend_accepted", "new_message", "added_to_group"]
+        "enum": ["FRIEND_REQUEST", "FRIEND_ACCEPTED", "NEW_MESSAGE", "ADDED_TO_GROUP"],
+        "description": "ENotificationType"
       },
       "actor": {
         "bsonType": "object",
         "required": ["userId", "displayName"],
+        "additionalProperties": false,
         "properties": {
-          "userId": { "bsonType": "string", "description": "ObjectId hex string" },
+          "userId": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
           "displayName": { "bsonType": "string" },
           "avatar": { "bsonType": "string" }
-        },
-        "additionalProperties": false
+        }
       },
       "payload": {
         "oneOf": [
           {
             "bsonType": "object",
-            "title": "friend_request",
+            "title": "FRIEND_REQUEST",
             "required": ["fromUserId"],
+            "additionalProperties": false,
             "properties": {
-              "fromUserId": { "bsonType": "string" }
-            },
-            "additionalProperties": false
+              "fromUserId": {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              }
+            }
           },
           {
             "bsonType": "object",
-            "title": "friend_accepted",
+            "title": "FRIEND_ACCEPTED",
             "required": ["friendUserId"],
+            "additionalProperties": false,
             "properties": {
-              "friendUserId": { "bsonType": "string" }
-            },
-            "additionalProperties": false
+              "friendUserId": {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              }
+            }
           },
           {
             "bsonType": "object",
-            "title": "new_message",
+            "title": "NEW_MESSAGE",
             "required": ["conversationId", "messageId", "previewKind"],
+            "additionalProperties": false,
             "properties": {
-              "conversationId": { "bsonType": "string" },
-              "messageId": { "bsonType": "string" },
+              "conversationId": {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              },
+              "messageId": {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              },
               "previewText": { "bsonType": "string" },
               "previewKind": {
                 "bsonType": "string",
-                "enum": ["text", "attachment", "mixed"]
+                "enum": ["TEXT", "ATTACHMENT", "MIXED"],
+                "description": "ENewMessagePreviewKind"
               }
-            },
-            "additionalProperties": false
+            }
           },
           {
             "bsonType": "object",
-            "title": "added_to_group",
+            "title": "ADDED_TO_GROUP",
             "required": ["conversationId"],
+            "additionalProperties": false,
             "properties": {
-              "conversationId": { "bsonType": "string" },
+              "conversationId": {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              },
               "chatName": { "bsonType": "string" }
-            },
-            "additionalProperties": false
+            }
           }
         ]
-      }
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

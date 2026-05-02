@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { RoleEntity } from '@/modules/role/domain/entities/role.entity';
-import { RoleModel, roleSchema } from '@/modules/role/domain/repositories/role.model';
+import { RoleModel, roleSchema } from '@/modules/role/infrastructure/mongo/role.model';
 import { parse } from 'valibot';
 
 export class RoleMapper implements Mapper<RoleEntity, RoleModel> {

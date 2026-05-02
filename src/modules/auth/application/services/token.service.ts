@@ -1,4 +1,4 @@
-import { JwtPort } from '@/modules/core/application/ports/jwt.port';
+import { JwtPort } from '@/modules/auth/application/ports/jwt.port';
 import {
   AccessTokenPayload,
   AccessTokenPayloadCreate,

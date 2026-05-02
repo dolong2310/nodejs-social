@@ -1,8 +1,8 @@
-import { IEmailQueue } from '@/modules/core/application/ports/email-job.port';
-import { INotificationTrimQueue } from '@/modules/core/application/ports/notification-trim-job.port';
-import { IPostViewsQueue } from '@/modules/core/application/ports/post-views-job.port';
-import { IVideoStreamQueue } from '@/modules/core/application/ports/video-stream-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
+import { INotificationTrimQueue } from '@/modules/notification/application/ports/notification-trim-job.port';
+import { IPostViewsQueue } from '@/modules/post/application/ports/post-views-job.port';
+import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import { BullMQEmailQueue } from '@/infrastructure/queue/email/email.queue';

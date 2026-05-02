@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { OtpEntity } from '@/modules/auth/domain/entities/otp.entity';
-import { OtpModel, otpSchema } from '@/modules/auth/domain/repositories/otp.model';
+import { OtpModel, otpSchema } from '@/modules/auth/infrastructure/mongo/otp.model';
 import { parse } from 'valibot';
 
 export class OtpMapper implements Mapper<OtpEntity, OtpModel> {

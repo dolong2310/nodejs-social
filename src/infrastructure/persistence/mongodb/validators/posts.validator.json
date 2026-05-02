@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "posts object validation (aligned with PostEntity / IPost)",
+    "title": "posts — aligned with modules/post/infrastructure/mongo/post.model (Valibot postSchema)",
     "bsonType": "object",
     "required": [
       "_id",
@@ -12,20 +12,18 @@
       "parentId",
       "hashtags",
       "mentions",
-      "media",
-      "guestViews",
-      "userViews",
-      "createdAt",
-      "updatedAt"
+      "media"
     ],
     "properties": {
       "_id": {
-        "bsonType": "objectId",
-        "description": "_id must be an ObjectId"
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
       },
       "userId": {
-        "bsonType": "objectId",
-        "description": "author user id"
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
       },
       "type": {
         "bsonType": "string",
@@ -37,29 +35,38 @@
         "enum": ["public", "friends-only", "only-me"],
         "description": "EPostAudience"
       },
-      "allowStrangerComments": {
-        "bsonType": "bool",
-        "description": "If true, strangers who can see the post may comment/repost/quote when audience is public"
-      },
-      "content": {
-        "bsonType": "string"
-      },
+      "allowStrangerComments": { "bsonType": "bool" },
+      "content": { "bsonType": "string" },
       "parentId": {
-        "bsonType": ["objectId", "null"]
+        "anyOf": [
+          { "bsonType": "null" },
+          {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          }
+        ]
       },
       "hashtags": {
         "bsonType": "array",
-        "uniqueItems": true,
-        "items": { "bsonType": "objectId" }
+        "items": {
+          "bsonType": "string",
+          "minLength": 36,
+          "maxLength": 128,
+          "description": "Hashtag document id"
+        }
       },
       "mentions": {
         "bsonType": "array",
-        "uniqueItems": true,
-        "items": { "bsonType": "objectId" }
+        "items": {
+          "bsonType": "string",
+          "minLength": 36,
+          "maxLength": 128,
+          "description": "Mentioned user id"
+        }
       },
       "media": {
         "bsonType": "array",
-        "uniqueItems": true,
         "items": {
           "bsonType": "object",
           "required": ["url", "type"],
@@ -67,8 +74,7 @@
           "properties": {
             "url": {
               "bsonType": "string",
-              "pattern": "^https?://.*",
-              "description": "IMedia.url"
+              "description": "IMedia.url (absolute http(s))"
             },
             "type": {
               "bsonType": "string",
@@ -80,19 +86,14 @@
       },
       "guestViews": {
         "bsonType": ["int", "long", "double"],
-        "minimum": 0,
-        "description": "Node driver may store JS numbers as double; int/long match explicit types"
+        "minimum": 0
       },
       "userViews": {
         "bsonType": ["int", "long", "double"],
         "minimum": 0
       },
-      "createdAt": {
-        "bsonType": "date"
-      },
-      "updatedAt": {
-        "bsonType": "date"
-      }
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

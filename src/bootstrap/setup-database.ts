@@ -8,7 +8,7 @@ export async function setupDatabase() {
   });
 
   await database.connect();
-  // await Promise.all([database.connect(), database.initializeIndexes(), database.initializeConversationIndexes()]);
+  await Promise.all([database.initializeIndexes(), database.initializeConversationIndexes()]);
 
   return database;
 }

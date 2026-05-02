@@ -1,5 +1,5 @@
 import { FriendRequestProps } from '@/modules/friend/domain/entities/friend-request.type';
-import { DateIdCursor } from '@/modules/core/domain/value-objects/date-id-cursor.value-object';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
 
 export interface IFindPendingRequestByUserPairInput extends Pick<FriendRequestProps, 'fromUserId' | 'toUserId'> {}
 

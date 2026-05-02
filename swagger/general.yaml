@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: NodeJS Social API
   description: |
-    API documentation cho ứng dụng mạng xã hội NodeJS Social (clean architecture: `src/presentation/http`, use cases tại `src/application`).
+    API documentation cho ứng dụng mạng xã hội NodeJS Social (clean architecture: `src/presentation/http`, use case trong `src/modules/*/application`).
 
     **Base path:** mọi route (trừ tài liệu) nằm dưới prefix `/api` (ví dụ đăng nhập: `POST /api/auth/login`).
     **Swagger UI:** `/api/docs`.

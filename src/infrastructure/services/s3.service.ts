@@ -1,11 +1,11 @@
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
-import { StoragePort, IUploadFileResult } from '@/modules/core/application/ports/storage.port';
 import { envConfig } from '@/bootstrap/config/env.config';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { IUploadFileResult, StoragePort } from '@/modules/core/application/ports/storage.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Response } from 'express';
+import type { Writable } from 'node:stream';
 
 export class S3Service implements StoragePort {
   private readonly s3: S3;
@@ -85,8 +85,7 @@ export class S3Service implements StoragePort {
     return getSignedUrl(this.s3, command, { expiresIn: 10 }); // 10 seconds
   }
 
-  async sendFileFromS3(res: unknown, filepath: string): Promise<void> {
-    const response = res as Response;
+  async sendFileFromS3(res: Writable, filepath: string): Promise<void> {
     try {
       const s3Object = await this.s3.getObject({
         Bucket: envConfig.AWS_S3_BUCKET_NAME,
@@ -97,7 +96,7 @@ export class S3Service implements StoragePort {
         throw new Error('S3 object not found');
       }
 
-      (s3Object.Body as NodeJS.ReadableStream).pipe(response);
+      (s3Object.Body as NodeJS.ReadableStream).pipe(res);
     } catch {
       throw new Error('S3 object not found');
     }

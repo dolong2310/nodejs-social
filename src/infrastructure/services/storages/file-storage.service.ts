@@ -1,4 +1,4 @@
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import fsSync from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime';

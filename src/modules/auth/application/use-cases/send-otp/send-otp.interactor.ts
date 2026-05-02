@@ -1,4 +1,4 @@
-import { IEmailQueue } from '@/modules/core/application/ports/email-job.port';
+import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
 import { SendOtpCommand, SendOtpInPort } from '@/modules/auth/application/use-cases/send-otp/send-otp.in-port';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';

@@ -1,6 +1,6 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { IPostViewsQueue } from '@/modules/core/application/ports/post-views-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { IPostViewsQueue } from '@/modules/post/application/ports/post-views-job.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constant';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import {

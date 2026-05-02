@@ -1,6 +1,6 @@
-import { EMediaType } from '@/modules/core/domain/enums/media.enum';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { Media } from '@/modules/core/domain/value-objects/media.value-object';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import {

@@ -5,7 +5,7 @@ import {
   JwtSecretRequestType,
   JwtSignOptions,
   JwtVerifyOptions
-} from '@/modules/core/application/ports/jwt.port';
+} from '@/modules/auth/application/ports/jwt.port';
 import jwt from 'jsonwebtoken';
 
 export class JwtService implements JwtPort {

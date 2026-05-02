@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
@@ -14,8 +14,8 @@ import {
   IUpdateRoleInput
 } from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mappers/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/domain/repositories/conversation-member.model';
-import { ConversationModel } from '@/modules/conversation/domain/repositories/conversation.model';
+import { ConversationMemberModel } from '@/modules/conversation/infrastructure/mongo/conversation-member.model';
+import { ConversationModel } from '@/modules/conversation/infrastructure/mongo/conversation.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class ConversationMemberRepository

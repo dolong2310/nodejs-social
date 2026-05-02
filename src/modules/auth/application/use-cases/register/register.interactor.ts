@@ -1,18 +1,18 @@
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { IOtpService } from '@/modules/auth/application/services/otp.service';
-import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
-import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
-import { IRoleService } from '@/modules/role/application/services/role.service';
 import { IAuthService } from '@/modules/auth/application/services/auth.service';
+import { IOtpService } from '@/modules/auth/application/services/otp.service';
 import {
   RegisterCommand,
   RegisterInPort,
   RegisterResult
 } from '@/modules/auth/application/use-cases/register/register.in-port';
+import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
+import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
+import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import { generateId } from '@/modules/core/domain/helpers/ids';
+import { IRoleService } from '@/modules/role/application/services/role.service';
 import { UserAlreadyExistsException } from '@/modules/user/application/user.exception';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
-import { v4 as uuidv4 } from 'uuid'; // TODO: tách hàm util random id
 
 export class RegisterInteractor extends RegisterInPort {
   constructor(
@@ -45,7 +45,7 @@ export class RegisterInteractor extends RegisterInPort {
     const userRoleId = await this.roleService.getUserRoleId();
 
     // 3. Hash password
-    const hashedPassword = password ? await this.hashingService.hash(password) : uuidv4();
+    const hashedPassword = await this.hashingService.hash(password);
 
     // 4. Check existing user and create user
     const existingUserEntity = await this.userRepository.findUserByEmail(email);
@@ -57,7 +57,7 @@ export class RegisterInteractor extends RegisterInPort {
       email,
       password: hashedPassword,
       birthday: new Date(birthday),
-      username: `user-${uuidv4()}`,
+      username: `user-${generateId()}`,
       roleId: userRoleId
     });
     const user = await this.userRepository.insert(userEntity, {

@@ -1,7 +1,7 @@
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { EMediaType } from '@/modules/core/domain/enums/media.enum';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import {
   UploadVideoCommand,
   UploadVideoInPort,

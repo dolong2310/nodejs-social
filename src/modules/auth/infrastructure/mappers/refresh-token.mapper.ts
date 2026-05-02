@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { RefreshTokenEntity } from '@/modules/auth/domain/entities/refresh-token.entity';
-import { RefreshTokenModel, refreshTokenSchema } from '@/modules/auth/domain/repositories/refresh-token.model';
+import { RefreshTokenModel, refreshTokenSchema } from '@/modules/auth/infrastructure/mongo/refresh-token.model';
 import { parse } from 'valibot';
 
 export class RefreshTokenMapper implements Mapper<RefreshTokenEntity, RefreshTokenModel> {

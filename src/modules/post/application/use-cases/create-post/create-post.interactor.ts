@@ -4,7 +4,7 @@ import {
   PostNotFoundException,
   StrangerCommentsNotAllowedException
 } from '@/modules/post/application/post.exception';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { IBlockService } from '@/modules/block/application/services/block.service';
 import { IFriendService } from '@/modules/friend/application/services/friend.service';
 import {

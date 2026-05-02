@@ -1,13 +1,13 @@
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
-import { ImageProcessorPort } from '@/modules/core/application/ports/image-processor.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
 import {
   UploadImageCommand,
   UploadImageInPort,
   UploadImageResult
 } from '@/modules/media/application/use-cases/upload-image/upload-image.in-port';
-import { EMediaType } from '@/modules/core/domain/enums/media.enum';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import path from 'path';
 
 export class UploadImageInteractor extends UploadImageInPort {

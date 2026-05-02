@@ -1,5 +1,5 @@
 import { FormidableFileUploadService } from '@/infrastructure/services/storages/file-upload.service';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
 import { GetStaticVideoStreamInPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.in-port';
 import {

@@ -1,5 +1,5 @@
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { ChatMessageModel, chatMessageSchema } from '@/modules/conversation/domain/repositories/chat-message.model';
+import { ChatMessageModel, chatMessageSchema } from '@/modules/conversation/infrastructure/mongo/chat-message.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';

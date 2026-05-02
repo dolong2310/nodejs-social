@@ -1,20 +1,21 @@
 {
   "$jsonSchema": {
-    "title": "videoStatuses (VideoStatusEntity + media.repository createVideoStatus / updateVideoStatus)",
+    "title": "videoStatus collection — aligned with modules/media/infrastructure/mongo/video-status.model (DB collection name: videoStatus)",
     "bsonType": "object",
-    "required": ["_id", "name", "status", "message", "createdAt", "updatedAt"],
+    "required": ["_id", "name", "status"],
     "properties": {
-      "_id": { "bsonType": "objectId" },
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
       "name": { "bsonType": "string" },
       "status": {
         "bsonType": "string",
         "enum": ["pending", "processing", "success", "failed"],
         "description": "EEncodingVideoStatus"
       },
-      "message": {
-        "bsonType": "string",
-        "description": "Default '' on insert; optional on IVideoStatus but always set in VideoStatusEntity"
-      },
+      "message": { "bsonType": "string" },
       "createdAt": { "bsonType": "date" },
       "updatedAt": { "bsonType": "date" }
     },

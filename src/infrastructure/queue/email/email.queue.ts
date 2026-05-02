@@ -1,5 +1,5 @@
-import { IEmailJobData, IEmailJobResult, IEmailQueue } from '@/modules/core/application/ports/email-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { IEmailJobData, IEmailJobResult, IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 export const EMAIL_QUEUE_NAME = 'email';

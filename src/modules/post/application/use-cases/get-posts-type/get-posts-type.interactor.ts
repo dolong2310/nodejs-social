@@ -1,8 +1,8 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { PostNotFoundException } from '@/modules/post/application/post.exception';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
 import { IBlockService } from '@/modules/block/application/services/block.service';

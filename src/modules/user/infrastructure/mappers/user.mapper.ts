@@ -2,7 +2,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
-import { type UserModel, userSchema } from '@/modules/user/domain/repositories/user.model';
+import { type UserModel, userSchema } from '@/modules/user/infrastructure/mongo/user.model';
 import { parse } from 'valibot';
 
 export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> {

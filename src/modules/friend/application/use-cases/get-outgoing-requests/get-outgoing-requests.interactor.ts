@@ -1,5 +1,5 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import {
   GetOutgoingRequestsInPort,
   GetOutgoingRequestsQuery,

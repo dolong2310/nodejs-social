@@ -1,7 +1,7 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
 import { IBlockService } from '@/modules/block/application/services/block.service';
@@ -40,11 +40,11 @@ export class GetNewFeedsInteractor extends GetNewFeedsInPort {
   }: GetNewFeedsQuery): Promise<GetNewFeedsResult<T>> {
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
 
-    // Same DTO field name as before; values are mutual friend ids from friendships collection.
-    const friendUserIds = await this.friendService.findFriendUserIds(userId);
-
-    // Lấy danh sách user bị block liên quan đến viewer (cache ngắn hạn)
-    const blockedAuthorIds = await this.blockService.getBlockedIdsByUserId(userId);
+    // Lấy song song friend list và blocked list (hai nguồn độc lập nhau)
+    const [friendUserIds, blockedAuthorIds] = await Promise.all([
+      this.friendService.findFriendUserIds(userId),
+      this.blockService.getBlockedIdsByUserId(userId)
+    ]);
 
     // Loại chính userId ra khỏi danh sách block để dùng cho rule "engagement"
     const blockedForInteraction = blockedAuthorIds.filter((id) => id !== userId);

@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { HashtagEntity } from '@/modules/hashtag/domain/entities/hashtag.entity';
-import { HashtagModel, hashtagSchema } from '@/modules/hashtag/domain/repositories/hashtag.model';
+import { HashtagModel, hashtagSchema } from '@/modules/hashtag/infrastructure/mongo/hashtag.model';
 import { parse } from 'valibot';
 
 export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel> {

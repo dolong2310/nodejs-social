@@ -1,12 +1,21 @@
 {
   "$jsonSchema": {
-    "title": "hashtags (post.repository findAndUpsertHashtags $setOnInsert: _id, name, createdAt)",
+    "title": "hashtags — aligned with modules/hashtag/infrastructure/mongo/hashtag.model",
     "bsonType": "object",
-    "required": ["_id", "name", "createdAt"],
+    "required": ["_id", "name"],
     "properties": {
-      "_id": { "bsonType": "objectId" },
-      "name": { "bsonType": "string" },
-      "createdAt": { "bsonType": "date" }
-    }
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "name": {
+        "bsonType": "string",
+        "minLength": 1
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
+    },
+    "additionalProperties": false
   }
 }

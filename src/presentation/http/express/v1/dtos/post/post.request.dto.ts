@@ -1,5 +1,5 @@
 import { CreatePostProps, EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/core/domain/value-objects/media.value-object';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'guestViews' | 'userViews'> {

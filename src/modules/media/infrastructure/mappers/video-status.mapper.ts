@@ -4,7 +4,7 @@ import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.
 import {
   VideoStatusModel,
   videoStatusSchema
-} from '@/modules/media/domain/repositories/video-status.model';
+} from '@/modules/media/infrastructure/mongo/video-status.model';
 import { parse } from 'valibot';
 
 export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusModel> {

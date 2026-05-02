@@ -1,5 +1,5 @@
 import { ExpiredOtpCodeException, InvalidOtpCodeException } from '@/modules/auth/application/otp.exception';
-import { ITwoFactorAuthPort } from '@/modules/core/application/ports/2fa.port';
+import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
 import { OtpEntity } from '@/modules/auth/domain/entities/otp.entity';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';

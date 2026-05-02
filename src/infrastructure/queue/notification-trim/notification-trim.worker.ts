@@ -2,8 +2,8 @@ import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/infrastructure/queue/notificatio
 import {
   INotificationTrimJobData,
   INotificationTrimJobResult
-} from '@/modules/core/application/ports/notification-trim-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+} from '@/modules/notification/application/ports/notification-trim-job.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { NOTIFICATION_MAX_PER_USER } from '@/modules/notification/application/constants/notification.constant';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';

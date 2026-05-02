@@ -1,10 +1,10 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { IUpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.type';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/mappers/video-status.mapper';
-import { VideoStatusModel } from '@/modules/media/domain/repositories/video-status.model';
+import { VideoStatusModel } from '@/modules/media/infrastructure/mongo/video-status.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class VideoStatusRepository

@@ -2,8 +2,8 @@ import {
   IPostViewsJobData,
   IPostViewsJobResult,
   IPostViewsQueue
-} from '@/modules/core/application/ports/post-views-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+} from '@/modules/post/application/ports/post-views-job.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 export const POST_VIEWS_QUEUE_NAME = 'post-views';

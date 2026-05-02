@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
@@ -7,7 +7,7 @@ import {
   IUpdatePostAudienceAndStrangerCommentsInput
 } from '@/modules/post/domain/repositories/post.repository.type';
 import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
-import { PostModel } from '@/modules/post/domain/repositories/post.model';
+import { PostModel } from '@/modules/post/infrastructure/mongo/post.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> implements PostRepositoryPort {

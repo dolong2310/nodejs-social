@@ -21,7 +21,7 @@ import { ChatMessageRepository } from '@/modules/conversation/infrastructure/mon
 import { ConversationMemberQueryRepository } from '@/modules/conversation/infrastructure/mongo/conversation-member-query.impl.repository';
 import { ConversationMemberRepository } from '@/modules/conversation/infrastructure/mongo/conversation-member.impl.repository';
 import { ConversationRepository } from '@/modules/conversation/infrastructure/mongo/conversation.impl.repository';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
 import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
 import { FriendRequestMapper } from '@/modules/friend/infrastructure/mappers/friend-request.mapper';

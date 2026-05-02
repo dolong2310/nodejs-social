@@ -1,4 +1,4 @@
-import { IGoogleOAuthService } from '@/modules/core/application/ports/google-oauth.out-port';
+import { IGoogleOAuthService } from '@/modules/auth/application/ports/google-oauth.out-port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { IRoleService } from '@/modules/role/application/services/role.service';
 import { ERoleName } from '@/modules/role/domain/entities/role.type';

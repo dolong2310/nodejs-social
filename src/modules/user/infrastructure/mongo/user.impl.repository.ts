@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -8,7 +8,7 @@ import {
   IUpdateMeInput
 } from '@/modules/user/domain/repositories/user.repository.type';
 import { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
-import { UserModel } from '@/modules/user/domain/repositories/user.model';
+import { UserModel } from '@/modules/user/infrastructure/mongo/user.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> implements UserRepositoryPort {

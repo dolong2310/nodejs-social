@@ -1,4 +1,4 @@
-import { ITwoFactorAuthPort } from '@/modules/core/application/ports/2fa.port';
+import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { UserAlreadyHas2FAException } from '@/modules/auth/application/otp.exception';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';

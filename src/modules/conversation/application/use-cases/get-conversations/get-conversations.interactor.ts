@@ -10,7 +10,7 @@ import {
 import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 
 export class GetConversationsInteractor extends GetConversationsInPort {
   constructor(

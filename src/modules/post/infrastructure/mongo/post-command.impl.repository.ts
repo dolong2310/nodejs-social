@@ -4,7 +4,7 @@ import {
   IIncreasePostViewsInput,
   IIncreasePostViewsOutput
 } from '@/modules/post/application/ports/command/post-command.type';
-import { PostModel } from '@/modules/post/domain/repositories/post.model';
+import { PostModel } from '@/modules/post/infrastructure/mongo/post.model';
 import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
 import { Collection, Db, MongoClient } from 'mongodb';
 

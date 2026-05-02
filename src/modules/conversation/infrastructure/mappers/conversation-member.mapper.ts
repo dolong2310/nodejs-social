@@ -4,7 +4,7 @@ import { ConversationMemberEntity } from '@/modules/conversation/domain/entities
 import {
   ConversationMemberModel,
   conversationMemberSchema
-} from '@/modules/conversation/domain/repositories/conversation-member.model';
+} from '@/modules/conversation/infrastructure/mongo/conversation-member.model';
 import { parse } from 'valibot';
 
 export class ConversationMemberMapper implements Mapper<ConversationMemberEntity, ConversationMemberModel> {

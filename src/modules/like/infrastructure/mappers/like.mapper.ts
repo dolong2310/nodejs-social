@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { LikeEntity } from '@/modules/like/domain/entities/like.entity';
-import { LikeModel, likeSchema } from '@/modules/like/domain/repositories/like.model';
+import { LikeModel, likeSchema } from '@/modules/like/infrastructure/mongo/like.model';
 import { parse } from 'valibot';
 
 export class LikeMapper implements Mapper<LikeEntity, LikeModel> {

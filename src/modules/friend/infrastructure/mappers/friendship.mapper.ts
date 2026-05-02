@@ -4,7 +4,7 @@ import { FriendshipEntity } from '@/modules/friend/domain/entities/friendship.en
 import {
   FriendshipModel,
   friendshipSchema
-} from '@/modules/friend/domain/repositories/friendship.model';
+} from '@/modules/friend/infrastructure/mongo/friendship.model';
 import { parse } from 'valibot';
 
 export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipModel> {

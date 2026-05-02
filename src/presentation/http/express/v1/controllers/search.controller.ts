@@ -1,4 +1,4 @@
-import { ESearchType } from '@/modules/core/domain/enums/search.enum';
+import { ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { SearchPostsInPort } from '@/modules/post/application/use-cases/search-posts/search-posts.in-port';
 import { SearchUsersInPort } from '@/modules/user/application/use-cases/search-users/search-users.in-port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';

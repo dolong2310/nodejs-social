@@ -1,10 +1,10 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { RoleEntity } from '@/modules/role/domain/entities/role.entity';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { ICreateRoleInput, IListRolesInput, IUpdateRoleInput } from '@/modules/role/domain/repositories/role.repository.type';
 import { RoleMapper } from '@/modules/role/infrastructure/mappers/role.mapper';
-import { RoleModel } from '@/modules/role/domain/repositories/role.model';
+import { RoleModel } from '@/modules/role/infrastructure/mongo/role.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> implements RoleRepositoryPort {

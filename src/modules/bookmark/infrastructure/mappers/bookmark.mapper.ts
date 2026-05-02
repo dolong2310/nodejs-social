@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { BookmarkEntity } from '@/modules/bookmark/domain/entities/bookmark.entity';
-import { BookmarkModel, bookmarkSchema } from '@/modules/bookmark/domain/repositories/bookmark.model';
+import { BookmarkModel, bookmarkSchema } from '@/modules/bookmark/infrastructure/mongo/bookmark.model';
 import { parse } from 'valibot';
 
 export class BookmarkMapper implements Mapper<BookmarkEntity, BookmarkModel> {

@@ -22,6 +22,20 @@ export class ChatFeature implements ISocketFeature {
     private readonly presenceUC: GetConversationPresenceInPort
   ) {}
 
+  /** Kiểm tra song song xem có member nào đang online không */
+  private async checkAnyOnline(io: Server, userIds: string[]): Promise<boolean> {
+    if (userIds.length === 0) return false;
+    const results = await Promise.all(
+      userIds.map((userId) =>
+        io
+          .in(`user:${userId}`)
+          .fetchSockets()
+          .catch(() => [])
+      )
+    );
+    return results.some((sockets) => sockets.length > 0);
+  }
+
   mount(io: Server, socket: Socket, payload: AccessTokenPayload): void {
     socket.on(SOCKET_CLIENT_CHAT_SUBSCRIBE, async (data: { conversationId?: string }) => {
       const res = await this.joinUC.execute({ userId: payload.userId, conversationId: data?.conversationId });
@@ -30,23 +44,11 @@ export class ChatFeature implements ISocketFeature {
       socket.join(chatRoom(res.conversationId));
 
       const userIds = await this.presenceUC.execute({ conversationId: res.conversationId });
-
-      let anyOnline = false;
-      for (const userId of userIds) {
-        const sockets = await io
-          .in(`user:${userId}`)
-          .fetchSockets()
-          .catch(() => []);
-
-        if (sockets.length > 0) {
-          anyOnline = true;
-          break;
-        }
-      }
+      const anyMemberOnline = await this.checkAnyOnline(io, userIds);
 
       io.to(chatRoom(res.conversationId)).emit(SOCKET_SERVER_PRESENCE_CHAT, {
         conversationId: res.conversationId,
-        anyMemberOnline: anyOnline
+        anyMemberOnline
       });
     });
 
@@ -73,25 +75,12 @@ export class ChatFeature implements ISocketFeature {
         if (!room.startsWith(SOCKET_ROOM_CHAT_PREFIX)) continue;
 
         const conversationId = room.replace(SOCKET_ROOM_CHAT_PREFIX, '');
-
         const userIds = await this.presenceUC.execute({ conversationId });
-
-        let anyOnline = false;
-        for (const userId of userIds) {
-          const sockets = await io
-            .in(`user:${userId}`)
-            .fetchSockets()
-            .catch(() => []);
-
-          if (sockets.length > 0) {
-            anyOnline = true;
-            break;
-          }
-        }
+        const anyMemberOnline = await this.checkAnyOnline(io, userIds);
 
         io.to(chatRoom(conversationId)).emit(SOCKET_SERVER_PRESENCE_CHAT, {
           conversationId,
-          anyMemberOnline: anyOnline
+          anyMemberOnline
         });
       }
     });

@@ -1,10 +1,10 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { HashtagEntity } from '@/modules/hashtag/domain/entities/hashtag.entity';
 import { HashtagRepositoryPort } from '@/modules/hashtag/domain/repositories/hashtag.repository';
 import { ICreateHashtagInput } from '@/modules/hashtag/domain/repositories/hashtag.repository.type';
 import { HashtagMapper } from '@/modules/hashtag/infrastructure/mappers/hashtag.mapper';
-import { HashtagModel } from '@/modules/hashtag/domain/repositories/hashtag.model';
+import { HashtagModel } from '@/modules/hashtag/infrastructure/mongo/hashtag.model';
 import { AnyBulkWriteOperation, Db, MongoClient } from 'mongodb';
 
 export class HashtagRepository

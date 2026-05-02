@@ -4,7 +4,7 @@ import { PermissionEntity } from '@/modules/permission/domain/entities/permissio
 import {
   PermissionModel,
   permissionSchema
-} from '@/modules/permission/domain/repositories/permission.model';
+} from '@/modules/permission/infrastructure/mongo/permission.model';
 import { parse } from 'valibot';
 
 export class PermissionMapper implements Mapper<PermissionEntity, PermissionModel> {

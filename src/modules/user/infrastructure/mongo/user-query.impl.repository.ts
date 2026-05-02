@@ -1,9 +1,9 @@
 import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
 import { IFindUsersForSearchInput, UserWithRole } from '@/modules/user/application/ports/queries/user-query.type';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
-import { ESearchPeople } from '@/modules/core/domain/enums/search.enum';
+import { ESearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
-import { UserModel } from '@/modules/user/domain/repositories/user.model';
+import { UserModel } from '@/modules/user/infrastructure/mongo/user.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
 
 /**

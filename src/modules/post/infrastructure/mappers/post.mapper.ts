@@ -2,8 +2,8 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/core/domain/value-objects/media.value-object';
-import { PostModel, postSchema } from '@/modules/post/domain/repositories/post.model';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { PostModel, postSchema } from '@/modules/post/infrastructure/mongo/post.model';
 import { parse } from 'valibot';
 
 export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> {

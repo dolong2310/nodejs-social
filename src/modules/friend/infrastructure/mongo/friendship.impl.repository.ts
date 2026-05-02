@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { FriendshipEntity } from '@/modules/friend/domain/entities/friendship.entity';
 import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
@@ -7,7 +7,7 @@ import {
   IListFriendIdsByCursorInput
 } from '@/modules/friend/domain/repositories/friendship.repository.type';
 import { FriendshipMapper } from '@/modules/friend/infrastructure/mappers/friendship.mapper';
-import { FriendshipModel } from '@/modules/friend/domain/repositories/friendship.model';
+import { FriendshipModel } from '@/modules/friend/infrastructure/mongo/friendship.model';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 
 /**

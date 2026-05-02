@@ -1,4 +1,4 @@
-import { ESearchPeople, ESearchType } from '@/modules/core/domain/enums/search.enum';
+import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { RequestHandler } from 'express';

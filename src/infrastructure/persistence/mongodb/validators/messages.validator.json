@@ -1,34 +1,44 @@
 {
   "$jsonSchema": {
-    "title": "messages / IChatMessage (ChatMessageEntity; chat DB collection `messages`)",
+    "title": "chatMessages — aligned with modules/conversation/infrastructure/mongo/chat-message.model; collection `chatMessages`",
     "bsonType": "object",
-    "required": ["_id", "conversationId", "senderId", "createdAt"],
+    "required": ["_id", "conversationId", "senderId"],
     "properties": {
-      "_id": { "bsonType": "objectId" },
-      "conversationId": { "bsonType": "objectId" },
-      "senderId": { "bsonType": "objectId" },
-      "createdAt": { "bsonType": "date" },
-      "text": {
+      "_id": {
         "bsonType": "string",
-        "description": "Optional; API requires non-empty text and/or attachments (CHAT_MESSAGE_EMPTY)"
+        "minLength": 36,
+        "maxLength": 128
       },
+      "conversationId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "senderId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "text": { "bsonType": "string" },
       "attachments": {
         "bsonType": "array",
         "items": {
           "bsonType": "object",
           "required": ["key", "mime", "size"],
+          "additionalProperties": false,
           "properties": {
             "key": { "bsonType": "string" },
             "mime": { "bsonType": "string" },
             "size": {
               "bsonType": ["int", "long", "double"],
-              "description": "IChatAttachment.size (bytes)"
+              "minimum": 0
             },
             "url": { "bsonType": "string" }
-          },
-          "additionalProperties": false
+          }
         }
-      }
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

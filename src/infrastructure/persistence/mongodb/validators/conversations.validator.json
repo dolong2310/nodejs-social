@@ -1,36 +1,88 @@
 {
   "$jsonSchema": {
-    "title": "conversations / IConversation (ConversationEntity; collection name `conversations` on chat DB)",
+    "title": "conversations — aligned with modules/conversation/infrastructure/mongo/conversation.model; collection `conversations`",
     "oneOf": [
       {
         "bsonType": "object",
         "title": "direct",
-        "required": ["_id", "type", "createdBy", "createdAt", "updatedAt", "userIdLow", "userIdHigh"],
+        "required": ["_id", "type", "createdBy", "userIdLow", "userIdHigh"],
         "properties": {
-          "_id": { "bsonType": "objectId" },
+          "_id": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
           "type": { "bsonType": "string", "enum": ["direct"] },
-          "createdBy": { "bsonType": "objectId" },
-          "createdAt": { "bsonType": "date" },
-          "updatedAt": { "bsonType": "date" },
-          "userIdLow": { "bsonType": "objectId" },
-          "userIdHigh": { "bsonType": "objectId" },
+          "createdBy": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
           "name": { "bsonType": "string" },
-          "avatarMediaId": { "bsonType": ["objectId", "null"] }
+          "avatarMediaId": {
+            "anyOf": [
+              { "bsonType": "null" },
+              {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              }
+            ]
+          },
+          "userIdLow": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "userIdHigh": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "createdAt": { "bsonType": "date" },
+          "updatedAt": { "bsonType": "date" }
         },
         "additionalProperties": false
       },
       {
         "bsonType": "object",
         "title": "group",
-        "required": ["_id", "type", "createdBy", "createdAt", "updatedAt"],
+        "required": ["_id", "type", "createdBy"],
         "properties": {
-          "_id": { "bsonType": "objectId" },
+          "_id": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
           "type": { "bsonType": "string", "enum": ["group"] },
-          "createdBy": { "bsonType": "objectId" },
-          "createdAt": { "bsonType": "date" },
-          "updatedAt": { "bsonType": "date" },
+          "createdBy": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
           "name": { "bsonType": "string" },
-          "avatarMediaId": { "bsonType": ["objectId", "null"] }
+          "avatarMediaId": {
+            "anyOf": [
+              { "bsonType": "null" },
+              {
+                "bsonType": "string",
+                "minLength": 36,
+                "maxLength": 128
+              }
+            ]
+          },
+          "userIdLow": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "userIdHigh": {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          },
+          "createdAt": { "bsonType": "date" },
+          "updatedAt": { "bsonType": "date" }
         },
         "additionalProperties": false
       }

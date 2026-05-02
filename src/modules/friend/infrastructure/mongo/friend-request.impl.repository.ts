@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { FriendRequestEntity } from '@/modules/friend/domain/entities/friend-request.entity';
 import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
@@ -12,7 +12,7 @@ import {
   IListOutgoingForUserInput
 } from '@/modules/friend/domain/repositories/friend-request.repository.type';
 import { FriendRequestMapper } from '@/modules/friend/infrastructure/mappers/friend-request.mapper';
-import { FriendRequestModel } from '@/modules/friend/domain/repositories/friend-request.model';
+import { FriendRequestModel } from '@/modules/friend/infrastructure/mongo/friend-request.model';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 
 export class FriendRequestRepository

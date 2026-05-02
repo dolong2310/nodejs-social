@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { PermissionEntity } from '@/modules/permission/domain/entities/permission.entity';
 import { PermissionRepositoryPort } from '@/modules/permission/domain/repositories/permission.repository';
@@ -9,7 +9,7 @@ import {
   IUpdatePermissionInput
 } from '@/modules/permission/domain/repositories/permission.repository.type';
 import { PermissionMapper } from '@/modules/permission/infrastructure/mappers/permission.mapper';
-import { PermissionModel } from '@/modules/permission/domain/repositories/permission.model';
+import { PermissionModel } from '@/modules/permission/infrastructure/mongo/permission.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class PermissionRepository

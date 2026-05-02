@@ -14,7 +14,8 @@ export const createSocketApp = (io: Server, container: IContainer): Server => {
   io.on('connection', async (socket: Socket) => {
     const decoded = socket.handshake.auth.decoded as AccessTokenPayload | undefined;
     if (!decoded?.userId) {
-      throw new Error('Unauthorized');
+      socket.disconnect(true);
+      return;
     }
 
     socket.join(userRoom(decoded.userId));
@@ -70,7 +71,7 @@ async function socketAuthMiddleware(
 
     const decoded = await tokenService.verifyAccessToken(accessToken);
 
-    const user = await userService.findUserById(decoded.userId);
+    const user = await userService.findUserById(decoded.userId, { querySafe: true });
     if (!user) {
       throw new Error('User not found');
     }

@@ -1,5 +1,5 @@
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { IVideoStreamQueue } from '@/modules/core/application/ports/video-stream-job.port';
+import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
 import {
   UploadVideoStreamCommand,
   UploadVideoStreamInPort,
@@ -8,7 +8,7 @@ import {
 import { IAppConfig } from '@/bootstrap/types/app.type';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
 import { EEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
-import { EMediaType } from '@/modules/core/domain/enums/media.enum';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 
 export class UploadVideoStreamInteractor extends UploadVideoStreamInPort {

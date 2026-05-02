@@ -11,7 +11,7 @@ import {
 import {
   NotificationModel,
   notificationSchema
-} from '@/modules/notification/domain/repositories/notification.model';
+} from '@/modules/notification/infrastructure/mongo/notification.model';
 import { parse } from 'valibot';
 
 export class NotificationMapper implements Mapper<NotificationEntity, NotificationModel> {

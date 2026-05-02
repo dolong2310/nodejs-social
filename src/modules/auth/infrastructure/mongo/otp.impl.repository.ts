@@ -1,11 +1,11 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { OtpEntity } from '@/modules/auth/domain/entities/otp.entity';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 import { ICreateOtpInput } from '@/modules/auth/domain/repositories/otp.repository.type';
 import { OtpMapper } from '@/modules/auth/infrastructure/mappers/otp.mapper';
-import { OtpModel } from '@/modules/auth/domain/repositories/otp.model';
+import { OtpModel } from '@/modules/auth/infrastructure/mongo/otp.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class OtpRepository extends MongoRepositoryBase<OtpEntity, OtpModel> implements OtpRepositoryPort {

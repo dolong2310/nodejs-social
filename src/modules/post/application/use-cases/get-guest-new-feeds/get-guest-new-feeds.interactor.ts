@@ -1,6 +1,6 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
 import { IPostService } from '@/modules/post/application/services/post.service';

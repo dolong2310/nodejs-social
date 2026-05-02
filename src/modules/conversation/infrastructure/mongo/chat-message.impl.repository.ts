@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
@@ -7,7 +7,7 @@ import {
   IFindMessagesInput
 } from '@/modules/conversation/domain/repositories/chat-message.repository.type';
 import { ChatMessageMapper } from '@/modules/conversation/infrastructure/mappers/chat-message.mapper';
-import { ChatMessageModel } from '@/modules/conversation/domain/repositories/chat-message.model';
+import { ChatMessageModel } from '@/modules/conversation/infrastructure/mongo/chat-message.model';
 import { Db, Filter, MongoClient } from 'mongodb';
 
 export class ChatMessageRepository

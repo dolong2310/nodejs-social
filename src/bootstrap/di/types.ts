@@ -1,9 +1,9 @@
 import { IEmailService } from '@/infrastructure/services/email.service';
 import { ITokenService } from '@/modules/auth/application/services/token.service.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { PostCommandRepositoryPort } from '@/modules/post/application/ports/command/post-command.repository';

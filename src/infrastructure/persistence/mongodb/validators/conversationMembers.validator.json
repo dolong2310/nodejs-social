@@ -1,15 +1,24 @@
 {
   "$jsonSchema": {
-    "title": "conversationMembers / IConversationMember (ConversationMemberEntity; chat DB)",
+    "title": "conversationMembers — aligned with modules/conversation/infrastructure/mongo/conversation-member.model",
     "bsonType": "object",
     "required": ["_id", "conversationId", "userId", "role", "joinedAt"],
     "properties": {
-      "_id": { "bsonType": "objectId" },
-      "conversationId": {
-        "bsonType": "objectId",
-        "description": "Conversation _id (field name conversationId in BSON)"
+      "_id": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
       },
-      "userId": { "bsonType": "objectId" },
+      "conversationId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "userId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
       "role": {
         "bsonType": "string",
         "enum": ["admin", "manager", "member"],
@@ -17,13 +26,20 @@
       },
       "joinedAt": { "bsonType": "date" },
       "lastReadMessageId": {
-        "bsonType": ["objectId", "null"],
-        "description": "Set by updateReadState; absent until first mark-read"
+        "anyOf": [
+          { "bsonType": "null" },
+          {
+            "bsonType": "string",
+            "minLength": 36,
+            "maxLength": 128
+          }
+        ]
       },
       "lastReadAt": {
-        "bsonType": ["date", "null"],
-        "description": "Set with lastReadMessageId"
-      }
+        "anyOf": [{ "bsonType": "null" }, { "bsonType": "date" }]
+      },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

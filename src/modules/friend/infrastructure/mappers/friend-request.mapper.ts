@@ -4,7 +4,7 @@ import { FriendRequestEntity } from '@/modules/friend/domain/entities/friend-req
 import {
   FriendRequestModel,
   friendRequestSchema
-} from '@/modules/friend/domain/repositories/friend-request.model';
+} from '@/modules/friend/infrastructure/mongo/friend-request.model';
 import { parse } from 'valibot';
 
 export class FriendRequestMapper implements Mapper<FriendRequestEntity, FriendRequestModel> {

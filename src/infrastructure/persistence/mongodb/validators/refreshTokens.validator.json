@@ -1,27 +1,29 @@
 {
   "$jsonSchema": {
-    "title": "refreshTokens object validation (aligned with RefreshTokenEntity + createRefreshToken)",
+    "title": "refreshTokens — aligned with modules/auth/infrastructure/mongo/refresh-token.model",
     "bsonType": "object",
-    "required": ["_id", "token", "userId", "createdAt"],
+    "required": ["_id", "userId", "token", "expiresAt"],
     "properties": {
       "_id": {
-        "bsonType": "objectId"
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
+      },
+      "userId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
       },
       "token": {
         "bsonType": "string",
-        "description": "JWT refresh token string"
+        "description": "Refresh token string (JWT)"
       },
-      "userId": {
-        "bsonType": "objectId"
-      },
-      "createdAt": {
+      "expiresAt": {
         "bsonType": "date",
-        "description": "Set in RefreshTokenEntity constructor when omitted"
+        "description": "TTL field; index expireAfterSeconds:0 on expiresAt in database.ts"
       },
-      "exp": {
-        "bsonType": "date",
-        "description": "Optional. Database.createRefreshTokensIndex defines TTL on exp; app insert path does not set exp yet — include when you wire TTL in code."
-      }
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

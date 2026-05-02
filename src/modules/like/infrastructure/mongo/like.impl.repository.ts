@@ -1,10 +1,10 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { LikeEntity } from '@/modules/like/domain/entities/like.entity';
 import { LikeRepositoryPort } from '@/modules/like/domain/repositories/like.repository';
 import { ICreateLikeInput, IDeleteLikeInput } from '@/modules/like/domain/repositories/like.repository.type';
 import { LikeMapper } from '@/modules/like/infrastructure/mappers/like.mapper';
-import { LikeModel } from '@/modules/like/domain/repositories/like.model';
+import { LikeModel } from '@/modules/like/infrastructure/mongo/like.model';
 import { Db, MongoClient } from 'mongodb';
 
 export class LikeRepository extends MongoRepositoryBase<LikeEntity, LikeModel> implements LikeRepositoryPort {

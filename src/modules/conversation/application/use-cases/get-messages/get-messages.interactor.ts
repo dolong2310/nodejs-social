@@ -6,7 +6,7 @@ import {
   GetMessagesResult
 } from '@/modules/conversation/application/use-cases/get-messages/get-messages.in-port';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 
 /**
  * Nghiệp vụ tổng thể:

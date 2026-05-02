@@ -4,7 +4,7 @@ import {
 } from '@/modules/notification/application/constants/notification.constant';
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
-import { INotificationTrimQueue } from '@/modules/core/application/ports/notification-trim-job.port';
+import { INotificationTrimQueue } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import {
   RecordAddedToGroupPayload,
@@ -249,7 +249,9 @@ export class NotificationsService implements INotificationsService {
       this.emitToRecipient(entity.getProps().recipientId, entity);
     }
 
-    void this.notificationTrimQueue.add({ recipientUserIds: recipientIds }).catch(() => {});
+    void this.notificationTrimQueue
+      .add({ recipientUserIds: recipientIds })
+      .catch((err) => console.warn('[notification] trim enqueue failed', err));
   }
 
   /**

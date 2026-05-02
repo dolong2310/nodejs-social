@@ -1,9 +1,9 @@
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   INotificationTrimJobData,
   INotificationTrimJobResult,
   INotificationTrimQueue
-} from '@/modules/core/application/ports/notification-trim-job.port';
+} from '@/modules/notification/application/ports/notification-trim-job.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 export const NOTIFICATION_TRIM_QUEUE_NAME = 'notification-trim';

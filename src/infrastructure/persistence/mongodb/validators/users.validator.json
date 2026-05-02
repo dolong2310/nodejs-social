@@ -1,84 +1,41 @@
 {
   "$jsonSchema": {
-    "title": "users object validation (aligned with UserEntity constructor + userRepository.createUser)",
+    "title": "users — aligned with modules/user/infrastructure/mongo/user.model (Valibot userSchema)",
     "bsonType": "object",
-    "required": [
-      "_id",
-      "name",
-      "email",
-      "password",
-      "birthday",
-      "status",
-      "emailVerificationToken",
-      "forgotPasswordToken",
-      "createdAt",
-      "updatedAt",
-      "bio",
-      "location",
-      "website",
-      "username",
-      "avatar",
-      "coverPhoto"
-    ],
+    "required": ["_id", "name", "email", "password", "birthday", "roleId", "status"],
     "properties": {
       "_id": {
-        "bsonType": "objectId"
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128,
+        "description": "Entity id (UUID v7, often prefixed e.g. user_)"
       },
-      "name": {
-        "bsonType": "string"
-      },
-      "email": {
-        "bsonType": "string"
-      },
+      "name": { "bsonType": "string" },
+      "email": { "bsonType": "string" },
       "password": {
         "bsonType": "string",
-        "description": "bcrypt hash from hashPassword()"
+        "description": "Password hash"
       },
-      "birthday": {
-        "bsonType": "date"
+      "birthday": { "bsonType": "date" },
+      "roleId": {
+        "bsonType": "string",
+        "minLength": 36,
+        "maxLength": 128
       },
       "status": {
         "bsonType": "string",
-        "enum": ["verified", "unverified", "banned"],
+        "enum": ["ACTIVE", "INACTIVE", "BANNED", "UNKNOWN"],
         "description": "EUserStatus"
       },
-      "emailVerificationToken": {
-        "bsonType": "string",
-        "description": "JWT or empty string after verify"
-      },
-      "forgotPasswordToken": {
-        "bsonType": "string",
-        "description": "JWT or empty string when cleared"
-      },
-      "createdAt": {
-        "bsonType": "date"
-      },
-      "updatedAt": {
-        "bsonType": "date"
-      },
-      "bio": {
-        "bsonType": "string",
-        "description": "Default '' from UserEntity"
-      },
-      "location": {
-        "bsonType": "string",
-        "description": "Default '' from UserEntity"
-      },
-      "website": {
-        "bsonType": "string",
-        "description": "Default '' from UserEntity"
-      },
-      "username": {
-        "bsonType": "string"
-      },
-      "avatar": {
-        "bsonType": "string",
-        "description": "Default '' from UserEntity"
-      },
-      "coverPhoto": {
-        "bsonType": "string",
-        "description": "Default '' from UserEntity"
-      }
+      "totpSecret": { "bsonType": "string" },
+      "bio": { "bsonType": "string" },
+      "location": { "bsonType": "string" },
+      "website": { "bsonType": "string" },
+      "username": { "bsonType": "string" },
+      "avatar": { "bsonType": "string" },
+      "coverPhoto": { "bsonType": "string" },
+      "createdAt": { "bsonType": "date" },
+      "updatedAt": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

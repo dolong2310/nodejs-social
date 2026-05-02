@@ -1,5 +1,5 @@
 import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
-import { Media } from '@/modules/core/domain/value-objects/media.value-object';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface PostProps {

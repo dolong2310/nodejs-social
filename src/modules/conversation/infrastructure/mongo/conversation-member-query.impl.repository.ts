@@ -3,7 +3,7 @@ import {
   IListConversationsForUserInput,
   IListConversationsForUserOutput
 } from '@/modules/conversation/application/ports/queries/conversation-member-query.type';
-import { ConversationMemberModel } from '@/modules/conversation/domain/repositories/conversation-member.model';
+import { ConversationMemberModel } from '@/modules/conversation/infrastructure/mongo/conversation-member.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
 
 export class ConversationMemberQueryRepository implements ConversationMemberQueryRepositoryPort {

@@ -1,5 +1,8 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { ContainerRepositories } from '@/bootstrap/di/repositories';
+import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
+import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
+import { IGoogleOAuthService } from '@/modules/auth/application/ports/google-oauth.out-port';
 import { IAuthService } from '@/modules/auth/application/services/auth.service';
 import { IOtpService } from '@/modules/auth/application/services/otp.service';
 import { ITokenService } from '@/modules/auth/application/services/token.service.type';
@@ -33,17 +36,11 @@ import { SendMessageInteractor } from '@/modules/conversation/application/use-ca
 import { TransferAdminInteractor } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.interactor';
 import { UpdateConversationInteractor } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.interactor';
 import { UpdateMemberRoleInteractor } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.interactor';
-import { ITwoFactorAuthPort } from '@/modules/core/application/ports/2fa.port';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { IEmailQueue } from '@/modules/core/application/ports/email-job.port';
-import { FileStoragePort } from '@/modules/core/application/ports/file-storage.port';
-import { IGoogleOAuthService } from '@/modules/core/application/ports/google-oauth.out-port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { ImageProcessorPort } from '@/modules/core/application/ports/image-processor.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { IVideoStreamQueue } from '@/modules/core/application/ports/video-stream-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
 import { IFriendService } from '@/modules/friend/application/services/friend.service';
 import { AcceptIncomingRequestInteractor } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.interactor';
 import { DeclineIncomingRequestInteractor } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.interactor';
@@ -55,6 +52,9 @@ import { SendFriendRequestInteractor } from '@/modules/friend/application/use-ca
 import { UnfriendInteractor } from '@/modules/friend/application/use-cases/unfriend/unfriend.interactor';
 import { LikePostInteractor } from '@/modules/like/application/use-cases/like-post/like-post.interactor';
 import { UnlikePostInteractor } from '@/modules/like/application/use-cases/unlike-post/unlike-post.interactor';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
 import { GetStaticVideoStreamInteractor } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.interactor';
 import { GetVideoStatusInteractor } from '@/modules/media/application/use-cases/get-video-status/get-video-status.interactor';
 import { UploadImageInteractor } from '@/modules/media/application/use-cases/upload-image/upload-image.interactor';
@@ -244,14 +244,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     otpService,
     roleService
   );
-  const loginEmailUC = new LoginEmailInteractor(
-    userQueryRepository,
-    userRepository,
-    roleRepository,
-    otpService,
-    hashingService,
-    authService
-  );
+  const loginEmailUC = new LoginEmailInteractor(userQueryRepository, otpService, hashingService, authService);
   const logoutUC = new LogoutInteractor(refreshTokenRepository);
   const refreshTokenUC = new RefreshTokenInteractor(
     refreshTokenRepository,

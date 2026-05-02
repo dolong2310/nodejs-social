@@ -1,3 +1,8 @@
+import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model';
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
+import { LikeModel } from '@/modules/like/infrastructure/mongo/like.model';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import {
   IFindGuestPostsInput,
@@ -10,13 +15,8 @@ import {
   IPostDetailWithAuthorOutput
 } from '@/modules/post/application/ports/queries/post-query.type';
 import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
-import { EMediaType } from '@/modules/core/domain/enums/media.enum';
-import { ESearchPeople, ESearchType } from '@/modules/core/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/core/domain/value-objects/date-id-cursor.value-object';
-import { BookmarkModel } from '@/modules/bookmark/domain/repositories/bookmark.model';
-import { LikeModel } from '@/modules/like/domain/repositories/like.model';
 import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
-import { PostModel } from '@/modules/post/domain/repositories/post.model';
+import { PostModel } from '@/modules/post/infrastructure/mongo/post.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
 
 export class PostQueryRepository implements PostQueryRepositoryPort {
@@ -106,7 +106,6 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               in: {
                 id: '$$mention._id',
                 name: '$$mention.name',
-                email: '$$mention.email',
                 username: '$$mention.username',
                 status: '$$mention.status'
               }
@@ -117,67 +116,51 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       {
         $lookup: {
           from: 'bookmarks',
-          localField: '_id',
-          foreignField: 'postId',
-          pipeline: [
-            {
-              $project: {
-                _id: 1
-              }
-            }
-          ],
-          as: 'bookmarks'
+          let: { rootPostId: '$_id' },
+          pipeline: [{ $match: { $expr: { $eq: ['$postId', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
+          as: 'bookmarkCountLookupResults'
         }
       },
       {
         $lookup: {
           from: 'posts',
-          localField: '_id',
-          foreignField: 'parentId',
-          as: 'post_child'
+          let: { rootPostId: '$_id' },
+          pipeline: [{ $match: { $expr: { $eq: ['$parentId', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
+          as: 'childPostsWithTypeOnly'
         }
       },
       {
         $addFields: {
           bookmarkCount: {
-            $size: '$bookmarks'
+            $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
           },
           repostCount: {
             $size: {
               $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', EPostType.REPOST]
-                }
+                input: '$childPostsWithTypeOnly',
+                as: 'childPost',
+                cond: { $eq: ['$$childPost.type', EPostType.REPOST] }
               }
             }
           },
           commentCount: {
             $size: {
               $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', EPostType.COMMENT]
-                }
+                input: '$childPostsWithTypeOnly',
+                as: 'childPost',
+                cond: { $eq: ['$$childPost.type', EPostType.COMMENT] }
               }
             }
           },
           quoteCount: {
             $size: {
               $filter: {
-                input: '$post_child',
-                as: 'item',
-                cond: {
-                  $eq: ['$$item.type', EPostType.QUOTE]
-                }
+                input: '$childPostsWithTypeOnly',
+                as: 'childPost',
+                cond: { $eq: ['$$childPost.type', EPostType.QUOTE] }
               }
             }
           }
-          // totalViews: {
-          //   $add: ['$userViews', '$guestViews']
-          // }
         }
       },
       {
@@ -188,8 +171,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       {
         $project: {
           _id: 0,
-          bookmarks: 0,
-          post_child: 0
+          bookmarkCountLookupResults: 0,
+          childPostsWithTypeOnly: 0
         }
       }
     ];
@@ -591,7 +574,6 @@ function buildBasePostPipeline({
             in: {
               id: '$$mention._id',
               name: '$$mention.name',
-              email: '$$mention.email',
               username: '$$mention.username',
               status: '$$mention.status'
             }
@@ -602,61 +584,48 @@ function buildBasePostPipeline({
     {
       $lookup: {
         from: 'bookmarks',
-        localField: '_id',
-        foreignField: 'postId',
-        pipeline: [
-          {
-            $project: {
-              _id: 1
-            }
-          }
-        ],
-        as: 'bookmarks'
+        let: { rootPostId: '$_id' },
+        pipeline: [{ $match: { $expr: { $eq: ['$postId', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
+        as: 'bookmarkCountLookupResults'
       }
     },
     {
       $lookup: {
         from: 'posts',
-        localField: '_id',
-        foreignField: 'parentId',
-        as: 'post_child'
+        let: { rootPostId: '$_id' },
+        pipeline: [{ $match: { $expr: { $eq: ['$parentId', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
+        as: 'childPostsWithTypeOnly'
       }
     },
     {
       $addFields: {
         bookmarkCount: {
-          $size: '$bookmarks'
+          $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
         },
         repostCount: {
           $size: {
             $filter: {
-              input: '$post_child',
-              as: 'item',
-              cond: {
-                $eq: ['$$item.type', EPostType.REPOST]
-              }
+              input: '$childPostsWithTypeOnly',
+              as: 'childPost',
+              cond: { $eq: ['$$childPost.type', EPostType.REPOST] }
             }
           }
         },
         commentCount: {
           $size: {
             $filter: {
-              input: '$post_child',
-              as: 'item',
-              cond: {
-                $eq: ['$$item.type', EPostType.COMMENT]
-              }
+              input: '$childPostsWithTypeOnly',
+              as: 'childPost',
+              cond: { $eq: ['$$childPost.type', EPostType.COMMENT] }
             }
           }
         },
         quoteCount: {
           $size: {
             $filter: {
-              input: '$post_child',
-              as: 'item',
-              cond: {
-                $eq: ['$$item.type', EPostType.QUOTE]
-              }
+              input: '$childPostsWithTypeOnly',
+              as: 'childPost',
+              cond: { $eq: ['$$childPost.type', EPostType.QUOTE] }
             }
           }
         }
@@ -670,8 +639,8 @@ function buildBasePostPipeline({
     {
       $project: {
         _id: 0,
-        bookmarks: 0,
-        post_child: 0
+        bookmarkCountLookupResults: 0,
+        childPostsWithTypeOnly: 0
       }
     }
   );

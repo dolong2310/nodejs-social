@@ -1,6 +1,6 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { InvalidCursorException } from '@/modules/core/application/cursor.exception';
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { IFriendService } from '@/modules/friend/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';

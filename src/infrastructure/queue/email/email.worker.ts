@@ -1,7 +1,7 @@
 import { EMAIL_QUEUE_NAME } from '@/infrastructure/queue/email/email.queue';
 import { IEmailService } from '@/infrastructure/services/email.service';
-import { IEmailJobData, IEmailJobResult } from '@/modules/core/application/ports/email-job.port';
-import { LoggerPort } from '@/modules/core/infrastructure/logger/logger.port';
+import { IEmailJobData, IEmailJobResult } from '@/modules/auth/application/ports/email-job.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 import { UnrecoverableError, Worker, type ConnectionOptions, type Job } from 'bullmq';
 
