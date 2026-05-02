@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import argv from 'minimist';
+import { existsSync } from 'node:fs';
 
 const envArgs = argv(process.argv.slice(2));
 const envMode = envArgs.env;
@@ -8,13 +9,12 @@ export const isDevelopment = envMode === 'development';
 export const isStaging = envMode === 'staging';
 export const isProduction = envMode === 'production';
 
-const envFound = dotenv.config({
-  path: envMode ? `.env.${envMode}` : '.env'
-});
-
-if (envFound.error) {
-  // This error should crash whole process
-  throw new Error(`Couldn't find .env.${envMode} file`);
+const envPath = envMode ? `.env.${envMode}` : '.env';
+if (existsSync(envPath)) {
+  const envFound = dotenv.config({ path: envPath });
+  if (envFound.error) {
+    throw new Error(`Failed to read ${envPath}: ${envFound.error.message}`);
+  }
 }
 
 const ENV_KEYS = [
