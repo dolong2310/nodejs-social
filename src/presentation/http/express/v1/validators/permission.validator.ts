@@ -1,3 +1,4 @@
+import { MODULE_TAG_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { EHttpMethod } from '@/modules/permission/domain/entities/permission.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
@@ -8,7 +9,6 @@ import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
 const HTTP_METHODS = Object.values(EHttpMethod);
-const MODULE_TAG_PATTERN = /^[A-Z][A-Z0-9_]*$/;
 
 export interface IPermissionsValidator {
   permissionIdParam(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
@@ -89,7 +89,7 @@ export class PermissionsValidator implements IPermissionsValidator {
             trim: true,
             custom: {
               options: (value: string) => {
-                if (!MODULE_TAG_PATTERN.test(value)) {
+                if (!MODULE_TAG_REGEX.test(value)) {
                   throw new Error(VALIDATION_ERROR_MESSAGE.PERMISSION_MODULE_INVALID);
                 }
                 return true;
@@ -141,7 +141,7 @@ export class PermissionsValidator implements IPermissionsValidator {
             trim: true,
             custom: {
               options: (value: string) => {
-                if (!MODULE_TAG_PATTERN.test(value)) {
+                if (!MODULE_TAG_REGEX.test(value)) {
                   throw new Error(VALIDATION_ERROR_MESSAGE.PERMISSION_MODULE_INVALID);
                 }
                 return true;

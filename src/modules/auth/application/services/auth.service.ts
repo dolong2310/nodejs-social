@@ -1,7 +1,7 @@
-import { ITokenService } from '@/modules/auth/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
 import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
 
-export interface IAuthService {
+export interface AuthServicePort {
   createAuthSession(
     data: {
       userId: string;
@@ -12,10 +12,10 @@ export interface IAuthService {
   ): Promise<{ accessToken: string; refreshToken: string }>;
 }
 
-export class AuthService implements IAuthService {
+export class AuthService implements AuthServicePort {
   constructor(
     private readonly refreshTokenRepository: RefreshTokenRepositoryPort,
-    private readonly tokenService: ITokenService
+    private readonly tokenService: TokenServicePort
   ) {}
 
   async createAuthSession(

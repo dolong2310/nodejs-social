@@ -1,4 +1,4 @@
-import { RequestHandlerType } from '@/presentation/http/express/middlewares/types';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export interface IFriendValidator {

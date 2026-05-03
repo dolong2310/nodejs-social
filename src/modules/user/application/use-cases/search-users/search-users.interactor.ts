@@ -1,7 +1,7 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
 import {
@@ -13,7 +13,7 @@ import {
 export class SearchUsersInteractor extends SearchUsersInPort {
   constructor(
     private readonly userQueryRepository: UserQueryRepositoryPort,
-    private readonly friendService: IFriendService,
+    private readonly friendService: FriendServicePort,
     private readonly cacheManager: CacheManagerPort
   ) {
     super();

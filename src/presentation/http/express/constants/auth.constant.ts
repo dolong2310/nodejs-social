@@ -2,10 +2,8 @@ import { isProduction } from '@/bootstrap/config/env.config';
 import type { CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 
-/** HttpOnly cookie name for JWT refresh token (never returned in JSON). */
 export const REFRESH_TOKEN_COOKIE_NAME = 'refreshToken';
 
-/** Thuộc tính dùng chung cho set/clear refresh cookie (clear phải khớp path/sameSite). */
 export const refreshTokenCookieSharedOptions: Pick<CookieOptions, 'httpOnly' | 'secure' | 'sameSite' | 'path'> = {
   httpOnly: true,
   secure: isProduction,

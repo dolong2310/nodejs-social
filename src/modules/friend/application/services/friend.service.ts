@@ -2,14 +2,14 @@ import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/friend/application/constants/cache.constant';
 import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
 
-export interface IFriendService {
+export interface FriendServicePort {
   invalidateBoth(userIdA: string, userIdB: string): Promise<void>;
   invalidateFriendCache(userId: string): Promise<void>;
   isFriendOf(payload: { userId: string; otherUserId: string }): Promise<boolean>;
   findFriendUserIds(userId: string): Promise<string[]>;
 }
 
-export class FriendService implements IFriendService {
+export class FriendService implements FriendServicePort {
   constructor(
     private readonly friendshipRepository: FriendshipRepositoryPort,
     private readonly cacheManager: CacheManagerPort

@@ -1,5 +1,5 @@
+import { ROLE_NAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { ROLE_NAME_PATTERN } from '@/modules/role/domain/entities/role.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { validate } from '@/presentation/http/express/utils/validation.util';
@@ -50,7 +50,7 @@ export class RolesValidator implements IRolesValidator {
             isLength: { options: { min: 1, max: 64 } },
             custom: {
               options: (value: string) => {
-                if (!ROLE_NAME_PATTERN.test(value)) {
+                if (!ROLE_NAME_REGEX.test(value)) {
                   throw new Error(VALIDATION_ERROR_MESSAGE.ROLE_NAME_INVALID);
                 }
                 return true;
@@ -92,7 +92,7 @@ export class RolesValidator implements IRolesValidator {
             isLength: { options: { min: 1, max: 64 } },
             custom: {
               options: (value: string) => {
-                if (!ROLE_NAME_PATTERN.test(value)) {
+                if (!ROLE_NAME_REGEX.test(value)) {
                   throw new Error(VALIDATION_ERROR_MESSAGE.ROLE_NAME_INVALID);
                 }
                 return true;

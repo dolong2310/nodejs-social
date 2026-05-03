@@ -1,5 +1,5 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { ILikeController } from '@/presentation/http/express/v1/controllers/like.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -14,7 +14,8 @@ export class LikeRoute extends BaseRoute {
     private readonly likeController: ILikeController,
     private readonly userValidator: IUserValidator,
     private readonly postValidator: IPostValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -24,20 +25,21 @@ export class LikeRoute extends BaseRoute {
     const { createLike, deleteLike } = this.likeController;
     const { userActiveValidator } = this.userValidator;
     const { postIdValidator } = this.postValidator;
-    const { protect } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttler.handler();
 
     this.router.post(
       '/',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       postIdValidator('postId', 'body'),
       asyncHandler(createLike)
     );
     this.router.delete(
       '/posts/:postId',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       postIdValidator('postId', 'params'),
       asyncHandler(deleteLike)

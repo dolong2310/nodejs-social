@@ -39,7 +39,6 @@ export class Redis implements CacheManagerPort {
       this.client.disconnect();
       throw error;
     }
-    log.info('connected to redis');
   }
 
   async disconnect(): Promise<void> {

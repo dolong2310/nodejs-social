@@ -1,11 +1,11 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { ContainerRepositories } from '@/bootstrap/di/repositories';
-import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
-import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
-import { IGoogleOAuthService } from '@/modules/auth/application/ports/google-oauth.out-port';
-import { IAuthService } from '@/modules/auth/application/services/auth.service';
-import { IOtpService } from '@/modules/auth/application/services/otp.service';
-import { ITokenService } from '@/modules/auth/application/services/token.service.type';
+import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
+import { EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
+import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-oauth.out-port';
+import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
+import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
+import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
 import { Disable2FAInteractor } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.interactor';
 import { ForgotPasswordInteractor } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.interactor';
 import { GetGoogleAuthUrlInteractor } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.interactor';
@@ -16,13 +16,13 @@ import { RefreshTokenInteractor } from '@/modules/auth/application/use-cases/ref
 import { RegisterInteractor } from '@/modules/auth/application/use-cases/register/register.interactor';
 import { SendOtpInteractor } from '@/modules/auth/application/use-cases/send-otp/send-otp.interactor';
 import { Setup2FAInteractor } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.interactor';
-import { IBlockService } from '@/modules/block/application/services/block.service';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
 import { BlockUserInteractor } from '@/modules/block/application/use-cases/block-user/block-user.interactor';
 import { GetBlockedUserInteractor } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.interactor';
 import { UnblockUserInteractor } from '@/modules/block/application/use-cases/unblock-user/unblock-user.interactor';
 import { BookmarkPostInteractor } from '@/modules/bookmark/application/use-cases/bookmark-post/bookmark-post.interactor';
 import { UnbookmarkPostInteractor } from '@/modules/bookmark/application/use-cases/unbookmark-post/unbookmark-post.interactor';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import { CreateGroupInteractor } from '@/modules/conversation/application/use-cases/create-group/create-group.interactor';
 import { GetConversationDetailInteractor } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.interactor';
 import { GetConversationsInteractor } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.interactor';
@@ -41,7 +41,7 @@ import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import { AcceptIncomingRequestInteractor } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.interactor';
 import { DeclineIncomingRequestInteractor } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.interactor';
 import { GetFriendsInteractor } from '@/modules/friend/application/use-cases/get-friends/get-friends.interactor';
@@ -54,13 +54,13 @@ import { LikePostInteractor } from '@/modules/like/application/use-cases/like-po
 import { UnlikePostInteractor } from '@/modules/like/application/use-cases/unlike-post/unlike-post.interactor';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
-import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
+import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { GetStaticVideoStreamInteractor } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.interactor';
 import { GetVideoStatusInteractor } from '@/modules/media/application/use-cases/get-video-status/get-video-status.interactor';
 import { UploadImageInteractor } from '@/modules/media/application/use-cases/upload-image/upload-image.interactor';
 import { UploadVideoStreamInteractor } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.interactor';
 import { UploadVideoInteractor } from '@/modules/media/application/use-cases/upload-video/upload-video.interactor';
-import { INotificationsService } from '@/modules/notification/application/services/notification.service';
+import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { ListNotificationsInteractor } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.interactor';
 import { MarkNotificationReadInteractor } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.interactor';
 import { MarkNotificationsReadInteractor } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.interactor';
@@ -70,7 +70,7 @@ import { GetPermissionInteractor } from '@/modules/permission/application/use-ca
 import { ListPermissionsInteractor } from '@/modules/permission/application/use-cases/list-permissions/list-permissions.interactor';
 import { UpdatePermissionInteractor } from '@/modules/permission/application/use-cases/update-permission/update-permission.interactor';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
-import { IPostService } from '@/modules/post/application/services/post.service';
+import { PostServicePort } from '@/modules/post/application/services/post.service';
 import { CreatePostInteractor } from '@/modules/post/application/use-cases/create-post/create-post.interactor';
 import { GetGuestNewFeedsInteractor } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.interactor';
 import { GetNewFeedsInteractor } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.interactor';
@@ -79,19 +79,22 @@ import { GetPostsTypeInteractor } from '@/modules/post/application/use-cases/get
 import { IncreaseViewsInteractor } from '@/modules/post/application/use-cases/increase-views/increase-views.interactor';
 import { SearchPostsInteractor } from '@/modules/post/application/use-cases/search-posts/search-posts.interactor';
 import { UpdatePostInteractor } from '@/modules/post/application/use-cases/update-post/update-post.interactor';
-import { IRoleService } from '@/modules/role/application/services/role.service';
+import { RoleServicePort } from '@/modules/role/application/services/role.service';
 import { CreateRoleInteractor } from '@/modules/role/application/use-cases/create-role/create-role.interactor';
 import { DeleteRoleInteractor } from '@/modules/role/application/use-cases/delete-role/delete-role.interactor';
 import { GetRoleInteractor } from '@/modules/role/application/use-cases/get-role/get-role.interactor';
 import { ListRolesInteractor } from '@/modules/role/application/use-cases/list-roles/list-roles.interactor';
 import { UpdateRoleInteractor } from '@/modules/role/application/use-cases/update-role/update-role.interactor';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { ChangePasswordInteractor } from '@/modules/user/application/use-cases/change-password/change-password.interactor';
 import { GetMeInteractor } from '@/modules/user/application/use-cases/get-me/get-me.interactor';
 import { GetUserProfileInteractor } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.interactor';
 import { SearchUsersInteractor } from '@/modules/user/application/use-cases/search-users/search-users.interactor';
 import { UpdateMeInteractor } from '@/modules/user/application/use-cases/update-me/update-me.interactor';
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
+import { AdminGuard } from '@/presentation/http/express/guards/admin.guard';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
@@ -168,22 +171,22 @@ export type HttpContext = ContainerRepositories & {
   realtimeEmitter: RealtimeEmitterPort;
   fileStorage: FileStoragePort;
   imageProcessor: ImageProcessorPort;
-  emailQueue: IEmailQueue;
-  videoStreamQueue: IVideoStreamQueue;
-  googleOAuthService: IGoogleOAuthService;
+  emailQueue: EmailQueuePort;
+  videoStreamQueue: VideoStreamQueuePort;
+  googleOAuthService: GoogleOAuthServicePort;
   s3Service: StoragePort;
-  tokenService: ITokenService;
-  authService: IAuthService;
-  userService: IUserService;
-  friendService: IFriendService;
-  blockService: IBlockService;
-  postService: IPostService;
-  conversationService: IConversationService;
-  otpService: IOtpService;
-  roleService: IRoleService;
+  tokenService: TokenServicePort;
+  authService: AuthServicePort;
+  userService: UserServicePort;
+  friendService: FriendServicePort;
+  blockService: BlockServicePort;
+  postService: PostServicePort;
+  conversationService: ConversationServicePort;
+  otpService: OtpServicePort;
+  roleService: RoleServicePort;
   hashingService: HashingPort;
-  notificationsService: INotificationsService;
-  twoFactorService: ITwoFactorAuthPort;
+  notificationsService: NotificationServicePort;
+  twoFactorService: TwoFactorAuthPort;
 };
 
 export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
@@ -232,9 +235,10 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     twoFactorService
   } = ctx;
 
-  // redis.del(CACHE_KEYS.user('entity_019dd4a5-0932-7551-b768-3ec46534c2a1'));
-
   const authGuard = new AuthGuard(roleRepository, tokenService);
+  const authOptionGuard = new AuthOptionGuard(tokenService);
+  const adminGuard = new AdminGuard(roleService, userService);
+  const throttlerGuard = new ThrottlerProxyGuard(appConfig);
 
   const registerUC = new RegisterInteractor(
     userRepository,
@@ -249,8 +253,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const refreshTokenUC = new RefreshTokenInteractor(
     refreshTokenRepository,
     userQueryRepository,
-    roleRepository,
-    userService,
     authService,
     tokenService
   );
@@ -525,28 +527,29 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const permissionsValidator: IPermissionsValidator = new PermissionsValidator();
 
   const routers: BaseRoute[] = [
-    new AuthRoute(authController, authValidator, authGuard),
-    new UserRoute(userController, userValidator, authGuard),
-    new BookmarkRoute(bookmarkController, userValidator, postValidator, authGuard),
-    new LikeRoute(likeController, userValidator, postValidator, authGuard),
-    new MediaRoute(mediaController, userValidator, authGuard),
-    new OAuthRoute(oauthController),
-    new PostRoute(postController, postValidator, userValidator, authGuard),
-    new SearchRoute(searchController, searchValidator, userValidator, authGuard),
-    new FriendRoute(friendController, friendValidator, userValidator, authGuard),
-    new BlockRoute(blocksController, blocksValidator, userValidator, authGuard),
+    new AuthRoute(authController, authValidator, authGuard, throttlerGuard),
+    new UserRoute(userController, userValidator, authGuard, authOptionGuard, throttlerGuard),
+    new BookmarkRoute(bookmarkController, userValidator, postValidator, authGuard, throttlerGuard),
+    new LikeRoute(likeController, userValidator, postValidator, authGuard, throttlerGuard),
+    new MediaRoute(mediaController, userValidator, authGuard, throttlerGuard),
+    new OAuthRoute(oauthController, throttlerGuard),
+    new PostRoute(postController, postValidator, userValidator, authGuard, authOptionGuard, throttlerGuard),
+    new SearchRoute(searchController, searchValidator, userValidator, authOptionGuard, throttlerGuard),
+    new FriendRoute(friendController, friendValidator, userValidator, authGuard, throttlerGuard),
+    new BlockRoute(blocksController, blocksValidator, userValidator, authGuard, throttlerGuard),
     new ConversationRoute(
       conversationController,
       conversationValidator,
       chatMessageController,
       chatMessageValidator,
       userValidator,
-      authGuard
+      authGuard,
+      throttlerGuard
     ),
-    new StaticRoute(mediaController),
-    new NotificationRoute(notificationController, notificationValidator, userValidator, authGuard),
-    new RoleRoute(roleController, roleService, userService, rolesValidator, authGuard),
-    new PermissionRoute(permissionController, roleService, userService, permissionsValidator, authGuard)
+    new StaticRoute(mediaController, throttlerGuard),
+    new NotificationRoute(notificationController, notificationValidator, userValidator, authGuard, throttlerGuard),
+    new RoleRoute(roleController, rolesValidator, authGuard, adminGuard, throttlerGuard),
+    new PermissionRoute(permissionController, permissionsValidator, authGuard, adminGuard, throttlerGuard)
   ];
 
   return routers;

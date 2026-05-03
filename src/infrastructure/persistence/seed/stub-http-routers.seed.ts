@@ -1,6 +1,7 @@
-import type { IRoleService } from '@/modules/role/application/services/role.service';
-import type { IUserService } from '@/modules/user/application/services/user.service';
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
+import { AdminGuard } from '@/presentation/http/express/guards/admin.guard';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
@@ -70,9 +71,10 @@ function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
   });
 }
 
-const noopRoleService = {} as IRoleService;
-const noopUserServiceForAdmin = {} as IUserService;
 const noopAuthGuard = new Proxy({} as AuthGuard, { get: () => nextOnlyMiddleware });
+const noopAuthOptionGuard = new Proxy({} as AuthOptionGuard, { get: () => nextOnlyMiddleware });
+const noopAdminGuard = new Proxy({} as AdminGuard, { get: () => nextOnlyMiddleware });
+const noopThrottlerGuard = new Proxy({} as ThrottlerProxyGuard, { get: () => nextOnlyMiddleware });
 
 /**
  * Thứ tự giống `buildHttpRouters` để danh sách route trùng runtime.
@@ -91,44 +93,94 @@ export function buildStubHttpRouters(): BaseRoute[] {
   const permissionsValidator: IPermissionsValidator = createNoopValidatorProxyForRouteRegistration();
 
   return [
-    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authValidator, noopAuthGuard),
-    new UserRoute(createNoopControllerProxyForRouteRegistration(), userValidator, noopAuthGuard),
-    new BookmarkRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator, noopAuthGuard),
-    new LikeRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator, noopAuthGuard),
-    new MediaRoute(createNoopControllerProxyForRouteRegistration(), userValidator, noopAuthGuard),
-    new OAuthRoute(createNoopControllerProxyForRouteRegistration()),
-    new PostRoute(createNoopControllerProxyForRouteRegistration(), postValidator, userValidator, noopAuthGuard),
-    new SearchRoute(createNoopControllerProxyForRouteRegistration(), searchValidator, userValidator, noopAuthGuard),
-    new FriendRoute(createNoopControllerProxyForRouteRegistration(), friendValidator, userValidator, noopAuthGuard),
-    new BlockRoute(createNoopControllerProxyForRouteRegistration(), blocksValidator, userValidator, noopAuthGuard),
+    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authValidator, noopAuthGuard, noopThrottlerGuard),
+    new UserRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userValidator,
+      noopAuthGuard,
+      noopAuthOptionGuard,
+      noopThrottlerGuard
+    ),
+    new BookmarkRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userValidator,
+      postValidator,
+      noopAuthGuard,
+      noopThrottlerGuard
+    ),
+    new LikeRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userValidator,
+      postValidator,
+      noopAuthGuard,
+      noopThrottlerGuard
+    ),
+    new MediaRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userValidator,
+      noopAuthGuard,
+      noopThrottlerGuard
+    ),
+    new OAuthRoute(createNoopControllerProxyForRouteRegistration(), noopThrottlerGuard),
+    new PostRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      postValidator,
+      userValidator,
+      noopAuthGuard,
+      noopAuthOptionGuard,
+      noopThrottlerGuard
+    ),
+    new SearchRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      searchValidator,
+      userValidator,
+      noopAuthOptionGuard,
+      noopThrottlerGuard
+    ),
+    new FriendRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      friendValidator,
+      userValidator,
+      noopAuthGuard,
+      noopThrottlerGuard
+    ),
+    new BlockRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      blocksValidator,
+      userValidator,
+      noopAuthGuard,
+      noopThrottlerGuard
+    ),
     new ConversationRoute(
       createNoopControllerProxyForRouteRegistration(),
       conversationValidator,
       createNoopControllerProxyForRouteRegistration(),
       chatMessageValidator,
       userValidator,
-      noopAuthGuard
+      noopAuthGuard,
+      noopThrottlerGuard
     ),
-    new StaticRoute(createNoopControllerProxyForRouteRegistration()),
+    new StaticRoute(createNoopControllerProxyForRouteRegistration(), noopThrottlerGuard),
     new NotificationRoute(
       createNoopControllerProxyForRouteRegistration(),
       notificationValidator,
       userValidator,
-      noopAuthGuard
+      noopAuthGuard,
+      noopThrottlerGuard
     ),
     new RoleRoute(
       createNoopControllerProxyForRouteRegistration<IRoleController>(),
-      noopRoleService,
-      noopUserServiceForAdmin,
       rolesValidator,
-      noopAuthGuard
+      noopAuthGuard,
+      noopAdminGuard,
+      noopThrottlerGuard
     ),
     new PermissionRoute(
       createNoopControllerProxyForRouteRegistration<IPermissionController>(),
-      noopRoleService,
-      noopUserServiceForAdmin,
       permissionsValidator,
-      noopAuthGuard
+      noopAuthGuard,
+      noopAdminGuard,
+      noopThrottlerGuard
     )
   ];
 }

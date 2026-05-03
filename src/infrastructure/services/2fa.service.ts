@@ -1,7 +1,7 @@
-import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
+import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
 import { Secret, TOTP } from 'otpauth';
 
-export class TwoFactorAuthService implements ITwoFactorAuthPort {
+export class TwoFactorAuthService implements TwoFactorAuthPort {
   private createTOTP(email: string, secret?: string): TOTP {
     return new TOTP({
       issuer: 'Social App', // TODO: use envConfig.APP_NAME,

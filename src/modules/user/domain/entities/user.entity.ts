@@ -1,3 +1,4 @@
+import { EMAIL_REGEX } from '@/modules/common/constants/regex.constants';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import {
@@ -21,7 +22,7 @@ export class UserEntity extends Entity<UserProps> {
     const { name, email, password, birthday, roleId, status } = this.getProps();
     invariant(name.trim().length > 0, new ArgumentNotProvidedException('Name is required'));
     invariant(email.trim().length > 0, new ArgumentNotProvidedException('Email is required'));
-    invariant(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), new ArgumentInvalidException('Invalid email format'));
+    invariant(EMAIL_REGEX.test(email), new ArgumentInvalidException('Invalid email format'));
     invariant(
       password === undefined || password.trim().length > 0,
       new ArgumentNotProvidedException('Password is required')

@@ -1,14 +1,14 @@
 import {
   IPostViewsJobData,
   IPostViewsJobResult,
-  IPostViewsQueue
+  PostViewsQueuePort
 } from '@/modules/post/application/ports/post-views-job.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 export const POST_VIEWS_QUEUE_NAME = 'post-views';
 
-export class BullMQPostViewsQueue implements IPostViewsQueue {
+export class BullMQPostViewsQueue implements PostViewsQueuePort {
   private readonly queue: Queue<IPostViewsJobData, IPostViewsJobResult>;
   private readonly log: LoggerPort;
 

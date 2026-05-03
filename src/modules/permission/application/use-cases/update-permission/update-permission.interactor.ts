@@ -19,7 +19,7 @@ export class UpdatePermissionInteractor extends UpdatePermissionInPort {
   async execute(command: UpdatePermissionCommand) {
     const currentEntity = await this.permissionRepository.findPermissionById(command.id);
     if (!currentEntity) {
-      throw PermissionNotFoundException;
+      throw new PermissionNotFoundException();
     }
     const current = currentEntity.toObject<PermissionFullProps>();
     const nextPath = command.path ?? current.path;
@@ -32,7 +32,7 @@ export class UpdatePermissionInteractor extends UpdatePermissionInPort {
         excludeId: command.id
       });
       if (taken) {
-        throw PermissionPathMethodConflictException;
+        throw new PermissionPathMethodConflictException();
       }
     }
 
@@ -49,7 +49,7 @@ export class UpdatePermissionInteractor extends UpdatePermissionInPort {
 
     const updated = await this.permissionRepository.updatePermission(command.id, patch);
     if (!updated) {
-      throw PermissionNotFoundException;
+      throw new PermissionNotFoundException();
     }
     return new PermissionListItem(updated.toObject());
   }

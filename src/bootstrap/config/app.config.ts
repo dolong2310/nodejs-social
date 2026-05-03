@@ -38,7 +38,7 @@ export const appConfig: IAppConfig = {
   port: parseInt(envConfig.PORT, 10),
 
   client: {
-    url: isProduction ? envConfig.PRODUCTION_URL : envConfig.DEVELOPMENT_URL
+    url: envConfig.APP_URL
   },
 
   jwt: {
@@ -68,7 +68,7 @@ export const appConfig: IAppConfig = {
   },
 
   rateLimit: {
-    enabled: (isProduction && envConfig.RATE_LIMIT_ENABLED !== '0') || envConfig.RATE_LIMIT_ENABLED === '1',
+    enabled: envConfig.RATE_LIMIT_ENABLED === '1',
     windowMs: parseInt(envConfig.RATE_LIMIT_WINDOW_MS ?? '900000', 10),
     limit: parseInt(envConfig.RATE_LIMIT_MAX ?? '100', 10),
     standardHeaders: 'draft-8' as const, // Trả về header chuẩn rate limit (bản draft-8 của IETF) cho client.

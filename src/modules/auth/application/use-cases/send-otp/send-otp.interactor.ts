@@ -1,4 +1,4 @@
-import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
+import { EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
 import { SendOtpCommand, SendOtpInPort } from '@/modules/auth/application/use-cases/send-otp/send-otp.in-port';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
@@ -16,7 +16,7 @@ export class SendOtpInteractor extends SendOtpInPort {
   constructor(
     private readonly otpRepository: OtpRepositoryPort,
     private readonly userRepository: UserRepositoryPort,
-    private readonly emailQueue: IEmailQueue
+    private readonly emailQueue: EmailQueuePort
   ) {
     super();
   }
@@ -26,11 +26,11 @@ export class SendOtpInteractor extends SendOtpInPort {
     const user = await this.userRepository.findUserByEmail(email);
 
     if (user && type === EOtpType.REGISTER) {
-      throw EmailAlreadyExistsException;
+      throw new EmailAlreadyExistsException();
     }
 
     if (!user && type === EOtpType.FORGOT_PASSWORD) {
-      throw EmailNotFoundException;
+      throw new EmailNotFoundException();
     }
 
     // 2. Create otp code
@@ -48,7 +48,7 @@ export class SendOtpInteractor extends SendOtpInPort {
     console.log('generatedOtpCode: ', generatedOtpCode); // TODO: remove this after testing
 
     if (!otpCode) {
-      throw FailedToSendOtpCodeException;
+      throw new FailedToSendOtpCodeException();
     }
 
     // 3. Send OTP to email (worker deletes OTP if delivery ultimately fails)

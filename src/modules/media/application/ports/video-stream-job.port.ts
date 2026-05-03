@@ -7,7 +7,7 @@ export interface IVideoStreamJobResult {
   idName: string;
 }
 
-export interface IVideoStreamQueue {
+export interface VideoStreamQueuePort {
   add(data: IVideoStreamJobData): Promise<void>;
   close(): Promise<void>;
 }

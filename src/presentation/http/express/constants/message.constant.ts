@@ -8,7 +8,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   NAME_MUST_BE_A_STRING: 'Name must be a string',
   NAME_LENGTH_MUST_BE_FROM_1_TO_100: 'Name length must be from 1 to 100 characters',
   EMAIL_IS_REQUIRED: 'Email is required',
-  EMAIL_IS_INVALID: 'Email is invalid', // TODO: remove if needed
+  EMAIL_IS_INVALID: 'Email is invalid',
   EMAIL_ALREADY_EXISTS: 'Email already exists',
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
@@ -23,18 +23,14 @@ export const VALIDATION_ERROR_MESSAGE = {
   CONFIRM_PASSWORD_MUST_MATCH_PASSWORD: 'Confirm password does not match password',
   DATE_OF_BIRTH_IS_REQUIRED: 'Date of birth is required',
   DATE_OF_BIRTH_MUST_BE_ISO8601: 'Date of birth must be ISO8601 format',
-  EMAIL_AND_PASSWORD_ARE_REQUIRED: 'Email and password are required', // TODO: remove if needed
 
   // Token errors
-  TOKEN_MUST_BE_STRING: 'Token must be a string', // TODO: remove if needed
-  TOKEN_IS_REQUIRED: 'Token is required', // TODO: remove if needed
   TOKEN_IS_INVALID: 'Token is invalid',
   NO_TOKEN_PROVIDED: 'No token provided',
   TOKEN_HAS_EXPIRED: 'Token has expired',
   ADMIN_ROLE_REQUIRED: 'This action requires an administrator account',
 
   // User errors
-  INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password', // TODO: remove if needed
   USER_NOT_FOUND: 'User not found',
   USER_IS_INACTIVE: 'User is inactive',
   USER_IS_BANNED: 'User is banned',
@@ -45,7 +41,6 @@ export const VALIDATION_ERROR_MESSAGE = {
   WEBSITE_MUST_BE_A_STRING: 'Website must be a string',
   WEBSITE_LENGTH_MUST_BE_FROM_1_TO_500: 'Website length must be from 1 to 500 characters',
   USERNAME_MUST_BE_A_STRING: 'Username must be a string',
-  USERNAME_LENGTH_MUST_BE_FROM_4_TO_15: 'Username length must be from 4 to 15 characters', // TODO: remove if needed
   IMAGE_MUST_BE_A_STRING: 'Image must be a string',
   IMAGE_LENGTH_MUST_BE_FROM_1_TO_500: 'Image length must be from 1 to 500 characters',
   USER_ID_IS_REQUIRED: 'User ID is required',
@@ -59,12 +54,9 @@ export const VALIDATION_ERROR_MESSAGE = {
   INVALID_POST_TYPE: 'Invalid post type',
   INVALID_POST_AUDIENCE: 'Invalid post audience',
   ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN: 'allowStrangerComments must be a boolean',
-  CONTENT_IS_REQUIRED: 'Content is required', // TODO: remove if needed
   CONTENT_MUST_BE_A_STRING: 'Content must be a string',
   CONTENT_MUST_BE_EMPTY_STRING: 'Content must be empty string',
   CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'Content must be a non-empty string',
-  CONTENT_LENGTH_MUST_BE_FROM_1_TO_1000: 'Content length must be from 1 to 1000 characters', // TODO: remove if needed
-  PARENT_ID_IS_REQUIRED: 'Parent ID is required', // TODO: remove if needed
   PARENT_ID_MUST_BE_A_VALID_POST_ID: 'Parent ID must be a valid post ID',
   PARENT_ID_MUST_BE_NULL: 'Parent ID must be null',
   HASHTAGS_MUST_BE_AN_ARRAY: 'Hashtags must be an array',

@@ -1,3 +1,4 @@
+import { HASHTAG_NAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import {
@@ -21,7 +22,7 @@ export class HashtagEntity extends Entity<HashtagProps> {
     const { name } = this.getProps();
     invariant(name.trim().length > 0, new ArgumentNotProvidedException('Hashtag name is required'));
     invariant(
-      /^[a-zA-Z0-9_\u00C0-\u024F\u4E00-\u9FFF]+$/.test(name),
+      HASHTAG_NAME_REGEX.test(name),
       new ArgumentInvalidException('Hashtag name must contain only letters, digits, or underscores')
     );
     invariant(name.length <= 100, new ArgumentOutOfRangeException('Hashtag name must not exceed 100 characters'));

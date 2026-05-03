@@ -18,23 +18,23 @@ export class UpdateRoleInteractor extends UpdateRoleInPort {
   async execute(command: UpdateRoleCommand) {
     const currentRole = await this.roleRepository.findRoleById(command.id);
     if (!currentRole) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
     const currentName = currentRole.getProps().name;
 
     if (command.name !== undefined && command.name !== currentName) {
       if (currentRole.isSystemRole()) {
-        throw CannotRenameSystemRoleException;
+        throw new CannotRenameSystemRoleException();
       }
       const existingRole = await this.roleRepository.findRoleByName(command.name);
       if (existingRole) {
-        throw RoleNameAlreadyExistsException;
+        throw new RoleNameAlreadyExistsException();
       }
     }
 
     // Không được deactive role admin
     if (currentName === ERoleName.ADMIN && !command.isActive) {
-      throw CannotDeactivateAdminRoleException;
+      throw new CannotDeactivateAdminRoleException();
     }
 
     const patch: IUpdateRoleInput = {};
@@ -49,7 +49,7 @@ export class UpdateRoleInteractor extends UpdateRoleInPort {
 
     const updated = await this.roleRepository.updateRole(command.id, patch);
     if (!updated) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
     return new RoleListItem(updated.toObject());
   }

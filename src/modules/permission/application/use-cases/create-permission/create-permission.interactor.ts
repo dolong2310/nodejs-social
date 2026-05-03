@@ -20,7 +20,7 @@ export class CreatePermissionInteractor extends CreatePermissionInPort {
       method: command.method
     });
     if (existing) {
-      throw PermissionPathMethodConflictException;
+      throw new PermissionPathMethodConflictException();
     }
     const entity = await this.permissionRepository.createPermission({
       name: command.name,
@@ -30,7 +30,7 @@ export class CreatePermissionInteractor extends CreatePermissionInPort {
       module: command.module
     });
     if (!entity) {
-      throw FailedToCreatePermissionException;
+      throw new FailedToCreatePermissionException();
     }
     return new PermissionListItem(entity.toObject());
   }

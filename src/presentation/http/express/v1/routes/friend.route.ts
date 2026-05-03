@@ -1,10 +1,10 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import { IFriendValidator } from '@/presentation/http/express/v1/validators/friend.validator';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/validators/pagination.validator';
 import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class FriendRoute extends BaseRoute {
@@ -15,7 +15,8 @@ export class FriendRoute extends BaseRoute {
     private readonly friendController: IFriendController,
     private readonly friendValidator: IFriendValidator,
     private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -39,59 +40,60 @@ export class FriendRoute extends BaseRoute {
       revokeOutgoingToUserIdValidator,
       unfriendUserIdValidator
     } = this.friendValidator;
-    const { protect } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttler.handler();
 
-    this.router.get('/', protect, userActiveValidator, validateCursorPaginationQuery, asyncHandler(listFriends));
+    this.router.get('/', authGuard, userActiveValidator, validateCursorPaginationQuery, asyncHandler(listFriends));
     this.router.get(
       '/requests/incoming',
-      protect,
+      authGuard,
       userActiveValidator,
       validateCursorPaginationQuery,
       asyncHandler(listIncoming)
     );
     this.router.get(
       '/requests/outgoing',
-      protect,
+      authGuard,
       userActiveValidator,
       validateCursorPaginationQuery,
       asyncHandler(listOutgoing)
     );
     this.router.post(
       '/requests',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       sendRequestToUserIdValidator,
       asyncHandler(sendFriendRequest)
     );
     this.router.post(
       '/requests/:fromUserId/accept',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       incomingFromUserIdValidator,
       asyncHandler(acceptIncomingRequest)
     );
     this.router.post(
       '/requests/:fromUserId/decline',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       incomingFromUserIdValidator,
       asyncHandler(declineIncomingRequest)
     );
     this.router.delete(
       '/requests/outgoing/:toUserId',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       revokeOutgoingToUserIdValidator,
       asyncHandler(revokeOutgoingRequest)
     );
     this.router.delete(
       '/:userId',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       unfriendUserIdValidator,
       asyncHandler(unfriend)

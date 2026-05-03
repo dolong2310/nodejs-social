@@ -22,8 +22,7 @@ const ENV_KEYS = [
   'PORT',
   'LOG_LEVEL',
   'FRONTEND_URL',
-  'PRODUCTION_URL',
-  'DEVELOPMENT_URL',
+  'APP_URL',
 
   // CORS
   'CORS_ORIGINS',

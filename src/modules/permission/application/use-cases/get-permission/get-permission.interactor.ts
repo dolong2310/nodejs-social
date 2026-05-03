@@ -14,7 +14,7 @@ export class GetPermissionInteractor extends GetPermissionInPort {
   async execute(query: GetPermissionQuery) {
     const entity = await this.permissionRepository.findPermissionById(query.id);
     if (!entity) {
-      throw PermissionNotFoundException;
+      throw new PermissionNotFoundException();
     }
     return new PermissionListItem(entity.toObject());
   }

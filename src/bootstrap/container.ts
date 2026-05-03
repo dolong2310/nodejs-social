@@ -5,63 +5,65 @@ import { createContainerRepositories } from '@/bootstrap/di/repositories';
 import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
 import logger from '@/infrastructure/logger/create-logger';
-import { Database } from '@/infrastructure/persistence/mongodb/database';
-import { Redis } from '@/infrastructure/persistence/redis/redis';
+import { DatabasePort } from '@/infrastructure/persistence/mongodb/database';
 import { TwoFactorAuthService } from '@/infrastructure/services/2fa.service';
-import { EmailService, IEmailService } from '@/infrastructure/services/email.service';
+import { EmailService, EmailServicePort } from '@/infrastructure/services/email.service';
 import { GoogleOAuthService } from '@/infrastructure/services/google-oauth.service';
 import { HashingService } from '@/infrastructure/services/hashing.service';
 import { JwtService } from '@/infrastructure/services/jwt.service';
 import { S3Service } from '@/infrastructure/services/s3.service';
 import { LocalFileStorage } from '@/infrastructure/services/storages/file-storage.service';
 import { SharpImageProcessor } from '@/infrastructure/services/storages/image-processor.service';
-import { AuthService, IAuthService } from '@/modules/auth/application/services/auth.service';
-import { IOtpService, OtpService } from '@/modules/auth/application/services/otp.service';
+import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
+import { EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
+import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-oauth.out-port';
+import { JwtPort } from '@/modules/auth/application/ports/jwt.port';
+import { AuthService, AuthServicePort } from '@/modules/auth/application/services/auth.service';
+import { OtpService, OtpServicePort } from '@/modules/auth/application/services/otp.service';
 import { TokenService } from '@/modules/auth/application/services/token.service';
-import { ITokenService } from '@/modules/auth/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
-import { BlockService, IBlockService } from '@/modules/block/application/services/block.service';
+import { BlockService, BlockServicePort } from '@/modules/block/application/services/block.service';
 import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
 import { BookmarkRepositoryPort } from '@/modules/bookmark/domain/repositories/bookmark.repository';
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/application/ports/queries/conversation-member-query.repository';
 import {
   ConversationService,
-  IConversationService
+  ConversationServicePort
 } from '@/modules/conversation/application/services/conversation.service';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { IGoogleOAuthService } from '@/modules/auth/application/ports/google-oauth.out-port';
-import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
-import { INotificationTrimQueue } from '@/modules/notification/application/ports/notification-trim-job.port';
-import { IPostViewsQueue } from '@/modules/post/application/ports/post-views-job.port';
+import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { FriendService, IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendService, FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
 import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
 import { HashtagRepositoryPort } from '@/modules/hashtag/domain/repositories/hashtag.repository';
 import { LikeRepositoryPort } from '@/modules/like/domain/repositories/like.repository';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import {
-  INotificationsService,
-  NotificationsService
+  NotificationService,
+  NotificationServicePort
 } from '@/modules/notification/application/services/notification.service';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { PostCommandRepositoryPort } from '@/modules/post/application/ports/command/post-command.repository';
+import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import { IPostService, PostService } from '@/modules/post/application/services/post.service';
+import { PostService, PostServicePort } from '@/modules/post/application/services/post.service';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import { IRoleService, RoleService } from '@/modules/role/application/services/role.service';
+import { RoleService, RoleServicePort } from '@/modules/role/application/services/role.service';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
-import { IUserService, UserService } from '@/modules/user/application/services/user.service';
+import { UserService, UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { APP_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -76,7 +78,7 @@ export class Container implements IContainer {
 
   private readonly routers: BaseRoute[];
 
-  private readonly database: Database;
+  private readonly database: DatabasePort;
   private readonly redis: CacheManagerPort;
   private readonly logger: LoggerPort = logger;
 
@@ -85,10 +87,10 @@ export class Container implements IContainer {
   private readonly fileStorage: FileStoragePort;
   private readonly imageProcessor: ImageProcessorPort;
 
-  private readonly emailQueue: IEmailQueue;
-  private readonly videoStreamQueue: IVideoStreamQueue;
-  private readonly notificationTrimQueue: INotificationTrimQueue;
-  private readonly postViewsQueue: IPostViewsQueue;
+  private readonly emailQueue: EmailQueuePort;
+  private readonly videoStreamQueue: VideoStreamQueuePort;
+  private readonly notificationTrimQueue: NotificationTrimQueuePort;
+  private readonly postViewsQueue: PostViewsQueuePort;
 
   private readonly userRepository: UserRepositoryPort;
   private readonly refreshTokenRepository: RefreshTokenRepositoryPort;
@@ -112,35 +114,37 @@ export class Container implements IContainer {
   private readonly userQueryRepository: UserQueryRepositoryPort;
   private readonly conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort;
 
-  private readonly jwtService = new JwtService();
-  private readonly tokenService: ITokenService;
-  private readonly hashingService = new HashingService();
-  private readonly twoFactorService = new TwoFactorAuthService();
-  private readonly googleOAuthService: IGoogleOAuthService;
+  private readonly jwtService: JwtPort;
+  private readonly tokenService: TokenServicePort;
+  private readonly hashingService: HashingPort;
+  private readonly twoFactorService: TwoFactorAuthPort;
+  private readonly googleOAuthService: GoogleOAuthServicePort;
 
   private readonly s3Service: StoragePort;
-  private readonly emailService: IEmailService;
+  private readonly emailService: EmailServicePort;
 
-  private readonly authService: IAuthService;
-  private readonly userService: IUserService;
-  private readonly friendService: IFriendService;
-  private readonly blockService: IBlockService;
-  private readonly postService: IPostService;
-  private readonly conversationService: IConversationService;
-  private readonly otpService: IOtpService;
-  private readonly roleService: IRoleService;
-  private readonly notificationsService: INotificationsService;
+  private readonly authService: AuthServicePort;
+  private readonly userService: UserServicePort;
+  private readonly friendService: FriendServicePort;
+  private readonly blockService: BlockServicePort;
+  private readonly postService: PostServicePort;
+  private readonly conversationService: ConversationServicePort;
+  private readonly otpService: OtpServicePort;
+  private readonly roleService: RoleServicePort;
+  private readonly notificationsService: NotificationServicePort;
 
   private readonly presenceFeature: PresenceFeature;
   private readonly chatFeature: ChatFeature;
 
-  private constructor(database: Database, redis: Redis, socket: SocketIOServer) {
+  private constructor(database: DatabasePort, redis: CacheManagerPort, socket: SocketIOServer) {
     this.database = database;
     this.redis = redis;
 
+    this.jwtService = new JwtService();
+    this.hashingService = new HashingService();
+    this.twoFactorService = new TwoFactorAuthService();
     this.fileStorage = new LocalFileStorage();
     this.imageProcessor = new SharpImageProcessor();
-
     this.realtimeEmitter = new RealtimeEmitter(socket);
 
     const queues = createContainerQueues(this.logger);
@@ -185,7 +189,7 @@ export class Container implements IContainer {
     this.conversationService = new ConversationService(this.conversationRepository, this.conversationMemberRepository);
     this.otpService = new OtpService(this.otpRepository, this.twoFactorService);
     this.roleService = new RoleService(this.roleRepository);
-    this.notificationsService = new NotificationsService(
+    this.notificationsService = new NotificationService(
       this.notificationRepository,
       this.notificationTrimQueue,
       this.userService,
@@ -225,9 +229,9 @@ export class Container implements IContainer {
     this.chatFeature = socketFeatures.chatFeature;
   }
 
-  public static getOrSet(mongo: Database, redis: Redis, socket: SocketIOServer): Container {
+  public static getOrSet(database: DatabasePort, redis: CacheManagerPort, socket: SocketIOServer): Container {
     if (!Container.instance) {
-      Container.instance = new Container(mongo, redis, socket);
+      Container.instance = new Container(database, redis, socket);
     }
     return Container.instance;
   }

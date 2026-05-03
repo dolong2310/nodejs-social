@@ -1,5 +1,5 @@
 import { NoPendingFriendRequestException } from '@/modules/friend/application/friend.exception';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   DeclineIncomingRequestCommand,
   DeclineIncomingRequestInPort
@@ -9,7 +9,7 @@ import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositorie
 export class DeclineIncomingRequestInteractor extends DeclineIncomingRequestInPort {
   constructor(
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
-    private readonly friendService: IFriendService
+    private readonly friendService: FriendServicePort
   ) {
     super();
   }
@@ -17,7 +17,7 @@ export class DeclineIncomingRequestInteractor extends DeclineIncomingRequestInPo
   async execute({ userId, fromUserId }: DeclineIncomingRequestCommand): Promise<void> {
     const deleted = await this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId });
     if (deleted === 0) {
-      throw NoPendingFriendRequestException;
+      throw new NoPendingFriendRequestException();
     }
     await this.friendService.invalidateBoth(userId, fromUserId);
   }

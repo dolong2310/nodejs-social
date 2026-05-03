@@ -1,5 +1,5 @@
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
+import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import {
   UploadVideoStreamCommand,
   UploadVideoStreamInPort,
@@ -14,7 +14,7 @@ import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/v
 export class UploadVideoStreamInteractor extends UploadVideoStreamInPort {
   constructor(
     private readonly mediaRepository: VideoStatusRepositoryPort,
-    private readonly videoStreamQueue: IVideoStreamQueue,
+    private readonly videoStreamQueue: VideoStreamQueuePort,
     private readonly appConfig: IAppConfig
   ) {
     super();

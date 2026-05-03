@@ -11,7 +11,7 @@ export class CreateRoleInteractor extends CreateRoleInPort {
   async execute(command: CreateRoleCommand) {
     const duplicate = await this.roleRepository.findRoleByName(command.name);
     if (duplicate) {
-      throw RoleNameAlreadyExistsException;
+      throw new RoleNameAlreadyExistsException();
     }
     const entity = await this.roleRepository.insertRole({
       name: command.name,

@@ -1,7 +1,7 @@
 import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { RequestHandlerType } from '@/presentation/http/express/middlewares/types';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 import { checkSchema } from 'express-validator';

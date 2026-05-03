@@ -1,5 +1,5 @@
 import { ConversationRoleForbiddenException } from '@/modules/conversation/application/conversation.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   UpdateConversationCommand,
   UpdateConversationInPort,
@@ -17,7 +17,7 @@ import { ConversationRepositoryPort } from '@/modules/conversation/domain/reposi
 export class UpdateConversationInteractor extends UpdateConversationInPort {
   constructor(
     private readonly conversationRepository: ConversationRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }
@@ -32,7 +32,7 @@ export class UpdateConversationInteractor extends UpdateConversationInPort {
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
     // chỉ cho phép admin và manager được sửa metadata của conversation
     if (self.role === EConversationMemberRole.MEMBER) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
 
     // patch object chứa các thay đổi cần thực hiện

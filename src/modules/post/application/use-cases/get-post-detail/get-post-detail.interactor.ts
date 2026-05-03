@@ -1,6 +1,6 @@
 import { PostNotFoundException } from '@/modules/post/application/post.exception';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import { IPostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
+import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
   GetPostDetailInPort,
   GetPostDetailQuery
@@ -9,7 +9,7 @@ import {
 export class GetPostDetailInteractor extends GetPostDetailInPort {
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
-    private readonly postAudienceAccess: IPostAudienceAccessService
+    private readonly postAudienceAccess: PostAudienceAccessServicePort
   ) {
     super();
   }
@@ -17,7 +17,7 @@ export class GetPostDetailInteractor extends GetPostDetailInPort {
   async execute({ postId, viewerUserId }: GetPostDetailQuery) {
     const post = await this.postQueryRepository.findPostDetailById(postId);
     if (!post) {
-      throw PostNotFoundException;
+      throw new PostNotFoundException();
     }
     await this.postAudienceAccess.assertViewerCanAccessPostDetail(post, viewerUserId);
     return post;

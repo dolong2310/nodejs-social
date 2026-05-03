@@ -1,29 +1,29 @@
-import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
+import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
+import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
 import {
   CannotViewPostBlockedException,
   GuestCannotAccessNonPublicPostException,
   OnlyFriendsCanViewPostsException,
   OnlyOwnerCanViewPostsException
 } from '@/modules/post/application/post.exception';
-import { UserIsBannedException, UserNotFoundException } from '@/modules/user/application/user.exception';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { IBlockService } from '@/modules/block/application/services/block.service';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { EPostAudience } from '@/modules/post/domain/entities/post.type';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
+import { UserIsBannedException, UserNotFoundException } from '@/modules/user/application/user.exception';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';
 
-export interface IPostAudienceAccessService {
+export interface PostAudienceAccessServicePort {
   assertViewerCanAccessPostDetail(post: IPostDetailOutput, viewerUserId: string | undefined): Promise<void>;
 }
 
-export class PostAudienceAccessService implements IPostAudienceAccessService {
+export class PostAudienceAccessService implements PostAudienceAccessServicePort {
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
-    private readonly blockService: IBlockService,
-    private readonly userService: IUserService,
-    private readonly friendsService: IFriendService
+    private readonly blockService: BlockServicePort,
+    private readonly userService: UserServicePort,
+    private readonly friendsService: FriendServicePort
   ) {}
 
   async assertViewerCanAccessPostDetail(post: IPostDetailOutput, viewerUserId: string | undefined): Promise<void> {
@@ -38,7 +38,7 @@ export class PostAudienceAccessService implements IPostAudienceAccessService {
 
     if (isGuestUser) {
       if (!isPublicAudience) {
-        throw GuestCannotAccessNonPublicPostException;
+        throw new GuestCannotAccessNonPublicPostException();
       }
       return;
     }
@@ -46,15 +46,15 @@ export class PostAudienceAccessService implements IPostAudienceAccessService {
     if (isOwner) {
       const userOwner = await this.userService.findUserById(ownerId);
       if (!userOwner) {
-        throw UserNotFoundException;
+        throw new UserNotFoundException();
       }
       if (userOwner.status === EUserStatus.BANNED) {
-        throw UserIsBannedException;
+        throw new UserIsBannedException();
       }
     }
 
     if (isOnlyMeAudience && !isOwner) {
-      throw OnlyOwnerCanViewPostsException;
+      throw new OnlyOwnerCanViewPostsException();
     }
 
     if (isFriendsOnlyAudience) {
@@ -65,7 +65,7 @@ export class PostAudienceAccessService implements IPostAudienceAccessService {
           otherUserId: ownerId
         });
         if (!isFriend) {
-          throw OnlyFriendsCanViewPostsException;
+          throw new OnlyFriendsCanViewPostsException();
         }
       }
     }
@@ -78,7 +78,7 @@ export class PostAudienceAccessService implements IPostAudienceAccessService {
           postId: post.id
         });
         if (!isInteracted) {
-          throw CannotViewPostBlockedException;
+          throw new CannotViewPostBlockedException();
         }
         transformUnknownAuthorForPostDetail(post);
       }

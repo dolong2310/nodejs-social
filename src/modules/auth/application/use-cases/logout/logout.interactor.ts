@@ -17,7 +17,7 @@ export class LogoutInteractor extends LogoutInPort {
     const deleted = await this.refreshTokenRepository.deleteRefreshToken(refreshToken);
 
     if (!deleted) {
-      throw InvalidTokenException;
+      throw new InvalidTokenException();
     }
 
     return true;

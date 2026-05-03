@@ -3,19 +3,7 @@ import {
   PageMustBeGreaterThanZeroException
 } from '@/presentation/http/express/exceptions/pagination.exception';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { NextFunction, Request, Response } from 'express';
 import { checkSchema } from 'express-validator';
-import { pick } from 'lodash-es';
-
-/**
- * @deprecated: use DTO instead
- */
-export const filterBodyMiddleware =
-  <T>(filterKeys: (keyof T)[]) =>
-  (req: Request, _res: Response, next: NextFunction) => {
-    req.body = pick(req.body, filterKeys as string[]);
-    next();
-  };
 
 export const validatePaginationQuery = validate(
   checkSchema(

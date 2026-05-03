@@ -8,7 +8,7 @@ export interface IEmailJobResult {
   sentAt: string;
 }
 
-export interface IEmailQueue {
+export interface EmailQueuePort {
   add(data: IEmailJobData): Promise<void>;
   close(): Promise<void>;
 }

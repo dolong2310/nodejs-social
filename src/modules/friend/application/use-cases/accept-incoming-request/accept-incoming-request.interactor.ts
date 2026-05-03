@@ -3,22 +3,22 @@ import {
   FriendActionBlockedException,
   NoPendingFriendRequestException
 } from '@/modules/friend/application/friend.exception';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   AcceptIncomingRequestCommand,
   AcceptIncomingRequestInPort
 } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.in-port';
 import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
 import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
-import { INotificationsService } from '@/modules/notification/application/services/notification.service';
+import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 
 export class AcceptIncomingRequestInteractor extends AcceptIncomingRequestInPort {
   constructor(
     private readonly friendshipRepository: FriendshipRepositoryPort,
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
-    private readonly friendService: IFriendService,
+    private readonly friendService: FriendServicePort,
     private readonly blockRepository: BlockRepositoryPort,
-    private readonly notificationsService: INotificationsService
+    private readonly notificationsService: NotificationServicePort
   ) {
     super();
   }
@@ -33,12 +33,12 @@ export class AcceptIncomingRequestInteractor extends AcceptIncomingRequestInPort
       // - Nếu không phải bạn bè và không có pending, throw lỗi NO_PENDING_FRIEND_REQUEST.
       const alreadyFriends = await this.friendshipRepository.findFriendshipPair(fromUserId, userId);
       if (alreadyFriends) return;
-      throw NoPendingFriendRequestException;
+      throw new NoPendingFriendRequestException();
     }
 
     // kiểm tra xem người nhận có block người gửi không
     if (await this.blockRepository.isBlockedEitherWay(userId, fromUserId)) {
-      throw FriendActionBlockedException;
+      throw new FriendActionBlockedException();
     }
 
     const entity = await this.friendshipRepository.createFriendship(fromUserId, userId);

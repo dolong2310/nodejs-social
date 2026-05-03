@@ -10,14 +10,14 @@ export class DeleteRoleInteractor extends DeleteRoleInPort {
   async execute(command: DeleteRoleCommand): Promise<void> {
     const current = await this.roleRepository.findRoleById(command.id);
     if (!current) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
     if (current.isSystemRole()) {
-      throw SystemRoleCannotBeDeletedException;
+      throw new SystemRoleCannotBeDeletedException();
     }
     const removed = await this.roleRepository.deleteRole(command.id);
     if (!removed) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
   }
 }

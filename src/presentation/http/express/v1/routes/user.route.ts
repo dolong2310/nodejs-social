@@ -1,5 +1,7 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { appLimiter, authLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IUserController } from '@/presentation/http/express/v1/controllers/user.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -12,7 +14,9 @@ export class UserRoute extends BaseRoute {
   constructor(
     private readonly userController: IUserController,
     private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly authOptionGuard: AuthOptionGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -21,15 +25,18 @@ export class UserRoute extends BaseRoute {
   protected override createRoutes(): void {
     const { getMe, updateMe, getUserProfile, changePassword } = this.userController;
     const { userActiveValidator, updateMeValidator, changePasswordValidator } = this.userValidator;
-    const { protect, optionalProtect } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const authOptionGuard = this.authOptionGuard.handler;
+    const throttler = this.throttler.handler();
+    const throttlerAuth = this.throttler.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
 
-    this.router.get('/me', appLimiter, protect, userActiveValidator, asyncHandler(getMe));
-    this.router.patch('/me', appLimiter, protect, userActiveValidator, updateMeValidator, asyncHandler(updateMe));
-    this.router.get('/:username', appLimiter, optionalProtect, asyncHandler(getUserProfile));
+    this.router.get('/me', throttler, authGuard, userActiveValidator, asyncHandler(getMe));
+    this.router.patch('/me', throttler, authGuard, userActiveValidator, updateMeValidator, asyncHandler(updateMe));
+    this.router.get('/:username', throttler, authOptionGuard, asyncHandler(getUserProfile));
     this.router.put(
       '/change-password',
-      authLimiter,
-      protect,
+      throttlerAuth,
+      authGuard,
       userActiveValidator,
       changePasswordValidator,
       asyncHandler(changePassword)

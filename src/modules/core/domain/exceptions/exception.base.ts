@@ -1,6 +1,7 @@
 export interface NormalizedException {
   message: string;
   code: string;
+  statusCode: number;
   stack?: string;
   cause?: string;
   /**
@@ -15,6 +16,7 @@ export interface NormalizedException {
 
 export abstract class ExceptionBase extends Error {
   abstract code: string;
+  abstract statusCode: number;
 
   /**
    * @param {string} message
@@ -25,7 +27,7 @@ export abstract class ExceptionBase extends Error {
    * info that may help with debugging.
    */
   constructor(
-    readonly message: string,
+    readonly message: string = '',
     cause?: Error,
     readonly metadata?: Record<string, unknown>
   ) {
@@ -37,6 +39,7 @@ export abstract class ExceptionBase extends Error {
     return {
       message: this.message,
       code: this.code,
+      statusCode: this.statusCode,
       stack: this.stack,
       cause: JSON.stringify(this.cause),
       metadata: this.metadata

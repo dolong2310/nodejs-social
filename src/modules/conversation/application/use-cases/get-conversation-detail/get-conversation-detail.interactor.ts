@@ -1,4 +1,4 @@
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   GetConversationDetailInPort,
   GetConversationDetailQuery,
@@ -9,7 +9,7 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 export class GetConversationDetailInteractor extends GetConversationDetailInPort {
   constructor(
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }

@@ -1,6 +1,6 @@
 import { CannotViewUserProfileBlockedException, UserNotFoundException } from '@/modules/user/application/user.exception';
-import { IBlockService } from '@/modules/block/application/services/block.service';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   GetUserProfileInPort,
   GetUserProfileQuery,
@@ -9,8 +9,8 @@ import {
 
 export class GetUserProfileInteractor extends GetUserProfileInPort {
   constructor(
-    private readonly userService: IUserService,
-    private readonly blockService: IBlockService
+    private readonly userService: UserServicePort,
+    private readonly blockService: BlockServicePort
   ) {
     super();
   }
@@ -19,13 +19,13 @@ export class GetUserProfileInteractor extends GetUserProfileInPort {
     const user = await this.userService.findUserByUsername(username, { querySafe: true });
 
     if (!user) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     if (userId) {
       const blocked = await this.blockService.isBlockedEitherWay(userId, user.id);
       if (blocked) {
-        throw CannotViewUserProfileBlockedException;
+        throw new CannotViewUserProfileBlockedException();
       }
     }
 

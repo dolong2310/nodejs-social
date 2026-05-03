@@ -7,7 +7,7 @@ export interface IPostViewsJobResult {
   updatedCount: number;
 }
 
-export interface IPostViewsQueue {
+export interface PostViewsQueuePort {
   add(data: IPostViewsJobData): Promise<void>;
   close(): Promise<void>;
 }

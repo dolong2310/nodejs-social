@@ -26,11 +26,11 @@ export class UpdatePostInteractor extends UpdatePostInPort {
     const postExisting = postExistingEntity?.toObject();
 
     if (!postExisting) {
-      throw PostNotFoundException;
+      throw new PostNotFoundException();
     }
 
     if (postExisting.userId !== userId) {
-      throw OnlyOwnerCanUpdatePostSettingsException;
+      throw new OnlyOwnerCanUpdatePostSettingsException();
     }
 
     const postEntity = await this.postRepository.updatePostAudienceAndStrangerComments({
@@ -41,7 +41,7 @@ export class UpdatePostInteractor extends UpdatePostInPort {
     });
 
     if (!postEntity) {
-      throw PostNotFoundException;
+      throw new PostNotFoundException();
     }
 
     return new UpdatePostResult(postEntity.toObject());

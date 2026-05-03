@@ -1,9 +1,9 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/validators/pagination.validator';
 import { ISearchValidator } from '@/presentation/http/express/v1/validators/search.validator';
 import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
@@ -15,7 +15,8 @@ export class SearchRoute extends BaseRoute {
     private readonly searchController: ISearchController,
     private readonly searchValidator: ISearchValidator,
     private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authOptionGuard: AuthOptionGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -25,12 +26,14 @@ export class SearchRoute extends BaseRoute {
     const { search } = this.searchController;
     const { searchValidator } = this.searchValidator;
     const { userActiveValidator } = this.userValidator;
-    const { optionalAuth } = this.authGuard;
+    const authOptionGuard = this.authOptionGuard.handler;
+    const throttler = this.throttler.handler();
 
     this.router.get(
       '/',
-      appLimiter,
-      optionalAuth(userActiveValidator),
+      throttler,
+      authOptionGuard,
+      userActiveValidator,
       validateCursorPaginationQuery,
       searchValidator,
       asyncHandler(search)

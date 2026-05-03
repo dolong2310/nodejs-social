@@ -1,9 +1,9 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { UserNotEnabled2FAException } from '@/modules/auth/application/otp.exception';
-import { IOtpService } from '@/modules/auth/application/services/otp.service';
+import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   Disable2FACommand,
   Disable2FAInPort
@@ -15,8 +15,8 @@ import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repo
 export class Disable2FAInteractor extends Disable2FAInPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
-    private readonly userService: IUserService,
-    private readonly otpService: IOtpService,
+    private readonly userService: UserServicePort,
+    private readonly otpService: OtpServicePort,
     private readonly cacheManager: CacheManagerPort
   ) {
     super();
@@ -27,11 +27,11 @@ export class Disable2FAInteractor extends Disable2FAInPort {
     const user = await this.userService.findUserById(userId);
 
     if (!user) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     if (!user.totpSecret) {
-      throw UserNotEnabled2FAException;
+      throw new UserNotEnabled2FAException();
     }
 
     // 2. Validate TOTP code or email OTP code

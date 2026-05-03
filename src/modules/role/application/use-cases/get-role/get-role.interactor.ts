@@ -11,7 +11,7 @@ export class GetRoleInteractor extends GetRoleInPort {
   async execute(query: GetRoleQuery) {
     const entity = await this.roleRepository.findRoleById(query.id);
     if (!entity) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
     return new RoleListItem(entity.toObject());
   }

@@ -1,5 +1,6 @@
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import { RANGE_HEADER_REGEX } from '@/modules/common/constants/regex.constants';
 import { RequestedRangeNotSatisfiableException } from '@/modules/media/application/media.exception';
+import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import {
   GetStaticVideoStreamInPort,
   GetStaticVideoStreamQuery,
@@ -14,20 +15,20 @@ export class GetStaticVideoStreamInteractor extends GetStaticVideoStreamInPort {
 
   async execute({ filename, rangeHeader }: GetStaticVideoStreamQuery): Promise<GetStaticVideoStreamResult> {
     if (!rangeHeader) {
-      throw RequestedRangeNotSatisfiableException;
+      throw new RequestedRangeNotSatisfiableException();
     }
 
     const videoPath = path.resolve('uploads/videos', filename);
     const { size: videoSize } = await this.fileStorage.stat(videoPath);
 
-    const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
-    if (!match) throw RequestedRangeNotSatisfiableException;
+    const match = RANGE_HEADER_REGEX.exec(rangeHeader);
+    if (!match) throw new RequestedRangeNotSatisfiableException();
 
     const start = Number(match[1]);
     const endFromHeader = match[2] ? Number(match[2]) : null;
 
     if (!Number.isFinite(start) || start < 0 || start >= videoSize) {
-      throw RequestedRangeNotSatisfiableException;
+      throw new RequestedRangeNotSatisfiableException();
     }
 
     const chunkSize = 10 ** 6;

@@ -1,11 +1,11 @@
-import { IGoogleOAuthService } from '@/modules/auth/application/ports/google-oauth.out-port';
+import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-oauth.out-port';
 import {
   GetGoogleAuthUrlCommand,
   GetGoogleAuthUrlInPort
 } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.in-port';
 
 export class GetGoogleAuthUrlInteractor extends GetGoogleAuthUrlInPort {
-  constructor(private readonly googleOAuthService: IGoogleOAuthService) {
+  constructor(private readonly googleOAuthService: GoogleOAuthServicePort) {
     super();
   }
 

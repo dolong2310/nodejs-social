@@ -1,9 +1,11 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { postsLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IPostController } from '@/presentation/http/express/v1/controllers/post.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/validators/pagination.validator';
 import { IPostValidator } from '@/presentation/http/express/v1/validators/post.validator';
 import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
@@ -15,7 +17,9 @@ export class PostRoute extends BaseRoute {
     private readonly postController: IPostController,
     private readonly postValidator: IPostValidator,
     private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly authOptionGuard: AuthOptionGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -25,19 +29,22 @@ export class PostRoute extends BaseRoute {
     const { getNewFeeds, patchPost, getPostDetail, getPostsType, createPost } = this.postController;
     const { postIdValidator, patchPostValidator, postTypeValidator, createPostValidator } = this.postValidator;
     const { userActiveValidator } = this.userValidator;
-    const { protect, optionalAuth } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const authOptionGuard = this.authOptionGuard.handler;
+    const throttler = this.throttler.handler(THROTTLE.POSTS.WINDOW_MS, THROTTLE.POSTS.MAX);
 
     this.router.get(
       '/',
-      postsLimiter,
-      optionalAuth(userActiveValidator),
+      throttler,
+      authOptionGuard,
+      userActiveValidator,
       validateCursorPaginationQuery,
       asyncHandler(getNewFeeds)
     );
     this.router.patch(
       '/:postId',
-      postsLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       postIdValidator('postId', 'params'),
       patchPostValidator,
@@ -45,20 +52,22 @@ export class PostRoute extends BaseRoute {
     );
     this.router.get(
       '/:postId',
-      postsLimiter,
-      optionalAuth(userActiveValidator),
+      throttler,
+      authOptionGuard,
+      userActiveValidator,
       postIdValidator('postId', 'params'),
       asyncHandler(getPostDetail)
     );
     this.router.get(
       '/:type/:postId',
-      postsLimiter,
-      optionalAuth(userActiveValidator),
+      throttler,
+      authOptionGuard,
+      userActiveValidator,
       postIdValidator('postId', 'params'),
       postTypeValidator,
       validateCursorPaginationQuery,
       asyncHandler(getPostsType)
     );
-    this.router.post('/', postsLimiter, protect, userActiveValidator, createPostValidator, asyncHandler(createPost));
+    this.router.post('/', throttler, authGuard, userActiveValidator, createPostValidator, asyncHandler(createPost));
   }
 }

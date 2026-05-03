@@ -4,7 +4,7 @@ import {
   ConversationNotMemberException
 } from '@/modules/conversation/application/conversation.exception';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   KickMemberCommand,
   KickMemberInPort
@@ -26,7 +26,7 @@ export class KickMemberInteractor extends KickMemberInPort {
   constructor(
     private readonly conversationRepository: ConversationRepositoryPort,
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }
@@ -35,12 +35,12 @@ export class KickMemberInteractor extends KickMemberInPort {
     // kiểm tra conversation có phải là group không
     const convEntity = await this.conversationService.loadConversation(conversationId);
     if (convEntity.getProps().type === EConversationType.DIRECT) {
-      throw ConversationDirectNoKickException;
+      throw new ConversationDirectNoKickException();
     }
 
     // không cho kick chính mình
     if (targetUserId === userId) {
-      throw ConversationCannotKickMemberException;
+      throw new ConversationCannotKickMemberException();
     }
 
     // Gom 1 query để lấy membership của actor (người thực hiện) + target (người bị kick) (giảm query so với findMembership 2 lần).
@@ -54,26 +54,26 @@ export class KickMemberInteractor extends KickMemberInPort {
 
     // kiểm tra user có phải là member của conversation không
     if (!actor) {
-      throw ConversationNotMemberException;
+      throw new ConversationNotMemberException();
     }
     // kiểm tra người bị kick có phải là member của conversation không
     if (!target) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     // kiểm tra quyền của người thực hiện
     if (actor.role === EConversationMemberRole.MEMBER) {
-      throw ConversationCannotKickMemberException;
+      throw new ConversationCannotKickMemberException();
     }
     // không cho kick ADMIN
     if (target.role === EConversationMemberRole.ADMIN) {
-      throw ConversationCannotKickMemberException;
+      throw new ConversationCannotKickMemberException();
     }
     // ADMIN thì kick được MEMBER và MANAGER (không kick được ADMIN).
     // MANAGER chỉ được kick MEMBER (không kick được MANAGER/ADMIN).
     if (actor.role === EConversationMemberRole.MANAGER) {
       if (target.role !== EConversationMemberRole.MEMBER) {
-        throw ConversationCannotKickMemberException;
+        throw new ConversationCannotKickMemberException();
       }
     }
 

@@ -1,5 +1,5 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -12,7 +12,8 @@ export class MediaRoute extends BaseRoute {
   constructor(
     private readonly mediaController: IMediaController,
     private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -21,11 +22,12 @@ export class MediaRoute extends BaseRoute {
   protected override createRoutes(): void {
     const { uploadImage, uploadVideo, uploadVideoStream, getVideoStatus } = this.mediaController;
     const { userActiveValidator } = this.userValidator;
-    const { protect } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttler.handler();
 
-    this.router.post('/upload-image', appLimiter, protect, userActiveValidator, asyncHandler(uploadImage));
-    this.router.post('/upload-video', appLimiter, protect, userActiveValidator, asyncHandler(uploadVideo));
-    this.router.post('/upload-video-stream', appLimiter, protect, userActiveValidator, asyncHandler(uploadVideoStream));
-    this.router.get('/video-status/:id', appLimiter, protect, userActiveValidator, asyncHandler(getVideoStatus));
+    this.router.post('/upload-image', throttler, authGuard, userActiveValidator, asyncHandler(uploadImage));
+    this.router.post('/upload-video', throttler, authGuard, userActiveValidator, asyncHandler(uploadVideo));
+    this.router.post('/upload-video-stream', throttler, authGuard, userActiveValidator, asyncHandler(uploadVideoStream));
+    this.router.get('/video-status/:id', throttler, authGuard, userActiveValidator, asyncHandler(getVideoStatus));
   }
 }

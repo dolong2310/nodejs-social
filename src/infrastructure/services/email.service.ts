@@ -5,7 +5,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import path from 'path';
 
-export interface IEmailService {
+export interface EmailServicePort {
   sendEmail(payload: IEmailJobData): Promise<SendEmailCommandOutput>;
 }
 

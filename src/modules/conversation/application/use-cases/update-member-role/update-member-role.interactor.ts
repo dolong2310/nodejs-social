@@ -4,7 +4,7 @@ import {
   ConversationRoleForbiddenException
 } from '@/modules/conversation/application/conversation.exception';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   UpdateMemberRoleCommand,
   UpdateMemberRoleInPort,
@@ -27,7 +27,7 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 export class UpdateMemberRoleInteractor extends UpdateMemberRoleInPort {
   constructor(
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }
@@ -42,7 +42,7 @@ export class UpdateMemberRoleInteractor extends UpdateMemberRoleInPort {
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();
     if (conv.type !== EConversationType.GROUP) {
-      throw ConversationNotFoundException;
+      throw new ConversationNotFoundException();
     }
 
     // gom 1 query để lấy membership của actor + target (giảm round-trip DB).
@@ -55,29 +55,29 @@ export class UpdateMemberRoleInteractor extends UpdateMemberRoleInPort {
     const target = memberships.find((m) => m.userId === targetUserId);
     // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
     if (!actor) {
-      throw ConversationNotMemberException;
+      throw new ConversationNotMemberException();
     }
     if (actor.role !== EConversationMemberRole.ADMIN) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
     // kiểm tra người bị đổi role có phải là member của conversation không và có phải là ADMIN không
     if (!target) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
     if (target.role === EConversationMemberRole.ADMIN) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
 
     // kiểm tra role mới có phải là MEMBER hoặc MANAGER không
     const nextRole = role;
     if (nextRole === EConversationMemberRole.ADMIN) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
     if (target.role === EConversationMemberRole.MANAGER && nextRole !== EConversationMemberRole.MEMBER) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
     if (target.role === EConversationMemberRole.MEMBER && nextRole !== EConversationMemberRole.MANAGER) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
 
     // cập nhật role của người bị đổi role

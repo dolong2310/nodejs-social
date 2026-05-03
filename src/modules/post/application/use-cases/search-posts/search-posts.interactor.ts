@@ -1,10 +1,10 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { IBlockService } from '@/modules/block/application/services/block.service';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { IPostService } from '@/modules/post/application/services/post.service';
+import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   SearchPostsInPort,
   SearchPostsQuery,
@@ -15,9 +15,9 @@ import { transformUnknownAuthor } from '@/modules/post/application/utils/transfo
 export class SearchPostsInteractor extends SearchPostsInPort {
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
-    private readonly friendService: IFriendService,
-    private readonly postsService: IPostService,
-    private readonly blockService: IBlockService
+    private readonly friendService: FriendServicePort,
+    private readonly postsService: PostServicePort,
+    private readonly blockService: BlockServicePort
   ) {
     super();
   }

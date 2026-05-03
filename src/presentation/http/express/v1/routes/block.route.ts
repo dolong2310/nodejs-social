@@ -1,10 +1,10 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validatePaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import { IBlockValidator } from '@/presentation/http/express/v1/validators/block.validator';
+import { validatePaginationQuery } from '@/presentation/http/express/v1/validators/pagination.validator';
 import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class BlockRoute extends BaseRoute {
@@ -15,7 +15,8 @@ export class BlockRoute extends BaseRoute {
     private readonly blockController: IBlockController,
     private readonly blockValidator: IBlockValidator,
     private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -25,14 +26,15 @@ export class BlockRoute extends BaseRoute {
     const { listBlocked, blockUser, unblockUser } = this.blockController;
     const { blockUserBodyValidator, unblockUserIdValidator } = this.blockValidator;
     const { userActiveValidator } = this.userValidator;
-    const { protect } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttler.handler();
 
-    this.router.get('/', protect, userActiveValidator, validatePaginationQuery, asyncHandler(listBlocked));
-    this.router.post('/', appLimiter, protect, userActiveValidator, blockUserBodyValidator, asyncHandler(blockUser));
+    this.router.get('/', authGuard, userActiveValidator, validatePaginationQuery, asyncHandler(listBlocked));
+    this.router.post('/', throttler, authGuard, userActiveValidator, blockUserBodyValidator, asyncHandler(blockUser));
     this.router.delete(
       '/:userId',
-      appLimiter,
-      protect,
+      throttler,
+      authGuard,
       userActiveValidator,
       unblockUserIdValidator,
       asyncHandler(unblockUser)

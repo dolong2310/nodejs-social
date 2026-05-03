@@ -4,8 +4,8 @@ import {
   ConversationPeerBlockedException,
   ConversationPeerNotFriendException
 } from '@/modules/conversation/application/conversation.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   GetOrCreateConversationCommand,
   GetOrCreateConversationInPort,
@@ -23,8 +23,8 @@ export class GetOrCreateConversationInteractor extends GetOrCreateConversationIn
   constructor(
     private readonly conversationRepository: ConversationRepositoryPort,
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService,
-    private readonly friendService: IFriendService,
+    private readonly conversationService: ConversationServicePort,
+    private readonly friendService: FriendServicePort,
     private readonly blockRepository: BlockRepositoryPort
   ) {
     super();
@@ -33,7 +33,7 @@ export class GetOrCreateConversationInteractor extends GetOrCreateConversationIn
   async execute({ userId, peerUserId }: GetOrCreateConversationCommand): Promise<GetOrCreateConversationResult> {
     // Chặn tự gửi tin cho chính mình
     if (userId === peerUserId) {
-      throw ConversationInvalidPeerException;
+      throw new ConversationInvalidPeerException();
     }
 
     // Tìm phòng direct đã tồn tại
@@ -46,10 +46,10 @@ export class GetOrCreateConversationInteractor extends GetOrCreateConversationIn
       this.blockRepository.isBlockedEitherWay(userId, peerUserId)
     ]);
     if (!isFriend) {
-      throw ConversationPeerNotFriendException;
+      throw new ConversationPeerNotFriendException();
     }
     if (isBlockedEitherWay) {
-      throw ConversationPeerBlockedException;
+      throw new ConversationPeerBlockedException();
     }
 
     const convEntity = await this.conversationRepository.createDirectConversation(userId, peerUserId);
@@ -61,7 +61,7 @@ export class GetOrCreateConversationInteractor extends GetOrCreateConversationIn
       if (againConvEntity) {
         return againConvEntity;
       } else {
-        throw ConversationNotFoundException;
+        throw new ConversationNotFoundException();
       }
     }
 

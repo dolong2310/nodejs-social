@@ -1,9 +1,9 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
+import { USERNAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { USERNAME_REGEX } from '@/presentation/http/express/constants/regex.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
   InvalidUserIdException,
@@ -74,7 +74,7 @@ export interface IUserValidator {
 }
 
 export class UsersValidator implements IUserValidator {
-  constructor(private readonly userService: IUserService) {}
+  constructor(private readonly userService: UserServicePort) {}
 
   updateMeValidator = validate(
     checkSchema(

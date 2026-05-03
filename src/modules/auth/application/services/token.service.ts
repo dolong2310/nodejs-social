@@ -2,14 +2,14 @@ import { JwtPort } from '@/modules/auth/application/ports/jwt.port';
 import {
   AccessTokenPayload,
   AccessTokenPayloadCreate,
-  ITokenService,
+  TokenServicePort,
   RefreshTokenPayload,
   RefreshTokenPayloadCreate
 } from '@/modules/auth/application/services/token.service.type';
 import { IAppConfig } from '@/bootstrap/types/app.type';
 import { v4 as uuidv4 } from 'uuid';
 
-export class TokenService implements ITokenService {
+export class TokenService implements TokenServicePort {
   constructor(
     private readonly jwtService: JwtPort,
     private readonly appConfig: IAppConfig

@@ -1,5 +1,6 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { authLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
+import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -12,7 +13,8 @@ export class AuthRoute extends BaseRoute {
   constructor(
     private readonly authController: IAuthController,
     private readonly authValidator: IAuthValidator,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttler: ThrottlerProxyGuard
   ) {
     super();
     this.createRoutes();
@@ -23,15 +25,16 @@ export class AuthRoute extends BaseRoute {
       this.authController;
     const { registerValidator, loginValidator, forgotPasswordValidator, sendOtpValidator, disable2faValidator } =
       this.authValidator;
-    const { protect } = this.authGuard;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttler.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
 
-    this.router.post('/register', authLimiter, registerValidator, asyncHandler(register));
-    this.router.post('/login', authLimiter, loginValidator, asyncHandler(login));
-    this.router.post('/logout', authLimiter, protect, asyncHandler(logout));
-    this.router.get('/refresh-token', authLimiter, asyncHandler(refreshToken));
-    this.router.post('/forgot-password', authLimiter, forgotPasswordValidator, asyncHandler(forgotPassword));
-    this.router.post('/otp', authLimiter, sendOtpValidator, asyncHandler(sendOtp));
-    this.router.post('/2fa/enable', authLimiter, protect, asyncHandler(enable2fa));
-    this.router.post('/2fa/disable', authLimiter, protect, disable2faValidator, asyncHandler(disable2fa));
+    this.router.post('/register', throttler, registerValidator, asyncHandler(register));
+    this.router.post('/login', throttler, loginValidator, asyncHandler(login));
+    this.router.post('/logout', throttler, authGuard, asyncHandler(logout));
+    this.router.get('/refresh-token', throttler, asyncHandler(refreshToken));
+    this.router.post('/forgot-password', throttler, forgotPasswordValidator, asyncHandler(forgotPassword));
+    this.router.post('/otp', throttler, sendOtpValidator, asyncHandler(sendOtp));
+    this.router.post('/2fa/enable', throttler, authGuard, asyncHandler(enable2fa));
+    this.router.post('/2fa/disable', throttler, authGuard, disable2faValidator, asyncHandler(disable2fa));
   }
 }
