@@ -35,7 +35,6 @@ import {
 } from '@/presentation/http/express/v1/dtos/auth/auth.response.dto';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { BadGatewayException } from '../../responses/error.response';
 
 export interface IAuthController {
   register(req: Request<ParamsDictionary, object, RegisterRequestDTO>): Promise<unknown>;
