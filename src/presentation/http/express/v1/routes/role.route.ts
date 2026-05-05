@@ -1,6 +1,5 @@
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
@@ -27,30 +26,9 @@ export class RoleRoute extends BaseRoute {
     const apiKeyGuard = this.apiKeyGuard.handler;
     const throttler = this.throttlerGuard();
 
-    this.router.get(
-      '/',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      validatePaginationQuery,
-      asyncHandler(this.transformInterceptor(list))
-    );
-    this.router.post(
-      '/',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      createBodyPipe,
-      asyncHandler(this.transformInterceptor(create))
-    );
-    this.router.get(
-      '/:roleId',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      roleIdParam,
-      asyncHandler(this.transformInterceptor(getById))
-    );
+    this.router.get('/', throttler, authGuard, apiKeyGuard, validatePaginationQuery, this.interceptor(list));
+    this.router.post('/', throttler, authGuard, apiKeyGuard, createBodyPipe, this.interceptor(create));
+    this.router.get('/:roleId', throttler, authGuard, apiKeyGuard, roleIdParam, this.interceptor(getById));
     this.router.put(
       '/:roleId',
       throttler,
@@ -58,15 +36,8 @@ export class RoleRoute extends BaseRoute {
       apiKeyGuard,
       roleIdParam,
       updateBodyPipe,
-      asyncHandler(this.transformInterceptor(update))
+      this.interceptor(update)
     );
-    this.router.delete(
-      '/:roleId',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      roleIdParam,
-      asyncHandler(this.transformInterceptor(remove))
-    );
+    this.router.delete('/:roleId', throttler, authGuard, apiKeyGuard, roleIdParam, this.interceptor(remove));
   }
 }

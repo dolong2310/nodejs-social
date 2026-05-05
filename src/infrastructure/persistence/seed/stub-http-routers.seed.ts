@@ -64,7 +64,7 @@ function createNoopPipeProxyForRouteRegistration<T extends object>(): T {
 }
 
 /**
- * Tạo proxy controller giả: mỗi method trả về hàm async rỗng (đủ cho `asyncHandler` gắn route).
+ * Tạo proxy controller giả: mỗi method trả về hàm async rỗng (đủ cho route + `interceptor`).
  */
 function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
   return new Proxy({} as T, {

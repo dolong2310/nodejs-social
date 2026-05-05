@@ -23,7 +23,7 @@ export function createExpressApp(container: IContainer): Express {
   app.use(cookieParser());
   app.use(cors(appConfig.cors));
 
-  app.use(logger.getHttpLogger());
+  // app.use(logger.getHttpLogger());
   app.use((req, res, next) => requestContextLogger.bindRequestLogContextMiddleware(req, res, next));
 
   container.getRouters().forEach((route) => {

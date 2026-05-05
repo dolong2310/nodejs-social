@@ -1,5 +1,4 @@
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
 import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
@@ -34,7 +33,7 @@ export class SearchRoute extends BaseRoute {
       userActivePipe,
       validateCursorPaginationQuery,
       searchPipe,
-      asyncHandler(this.transformInterceptor(search))
+      this.interceptor(search)
     );
   }
 }

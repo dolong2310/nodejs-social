@@ -1,5 +1,4 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IChatMessageController } from '@/presentation/http/express/v1/controllers/chat-message.controller';
 import { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
 import { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
@@ -53,29 +52,15 @@ export class ConversationRoute extends BaseRoute {
     const authGuard = this.authGuard.handler;
     const throttler = this.throttlerGuard();
 
-    this.router.post(
-      '/direct',
-      throttler,
-      authGuard,
-      userActivePipe,
-      peerUserIdBody,
-      asyncHandler(this.transformInterceptor(createDirect))
-    );
-    this.router.post(
-      '/groups',
-      throttler,
-      authGuard,
-      userActivePipe,
-      createGroupBody,
-      asyncHandler(this.transformInterceptor(createGroup))
-    );
+    this.router.post('/direct', throttler, authGuard, userActivePipe, peerUserIdBody, this.interceptor(createDirect));
+    this.router.post('/groups', throttler, authGuard, userActivePipe, createGroupBody, this.interceptor(createGroup));
     this.router.get(
       '/',
       throttler,
       authGuard,
       userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(listConversations))
+      this.interceptor(listConversations)
     );
     this.router.get(
       '/:conversationId',
@@ -83,7 +68,7 @@ export class ConversationRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       conversationIdParam,
-      asyncHandler(this.transformInterceptor(getConversation))
+      this.interceptor(getConversation)
     );
     this.router.patch(
       '/:conversationId',
@@ -92,7 +77,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       patchConversationBody,
-      asyncHandler(this.transformInterceptor(patchConversation))
+      this.interceptor(patchConversation)
     );
     this.router.post(
       '/:conversationId/members',
@@ -101,7 +86,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       inviteUserIdBody,
-      asyncHandler(this.transformInterceptor(inviteMember))
+      this.interceptor(inviteMember)
     );
     this.router.delete(
       '/:conversationId/members/me',
@@ -109,7 +94,7 @@ export class ConversationRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       conversationIdParam,
-      asyncHandler(this.transformInterceptor(leaveConversation))
+      this.interceptor(leaveConversation)
     );
     this.router.delete(
       '/:conversationId/members/:userId',
@@ -118,7 +103,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       kickTargetUserIdParam,
-      asyncHandler(this.transformInterceptor(kickMember))
+      this.interceptor(kickMember)
     );
     this.router.patch(
       '/:conversationId/members/:userId/role',
@@ -128,7 +113,7 @@ export class ConversationRoute extends BaseRoute {
       conversationIdParam,
       kickTargetUserIdParam,
       patchMemberRoleBody,
-      asyncHandler(this.transformInterceptor(patchMemberRole))
+      this.interceptor(patchMemberRole)
     );
     this.router.post(
       '/:conversationId/admin/transfer',
@@ -137,7 +122,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       newAdminUserIdBody,
-      asyncHandler(this.transformInterceptor(transferAdmin))
+      this.interceptor(transferAdmin)
     );
 
     // Chat Messages
@@ -148,7 +133,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(listMessages))
+      this.interceptor(listMessages)
     );
     this.router.post(
       '/:conversationId/messages',
@@ -157,7 +142,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       sendMessageBody,
-      asyncHandler(this.transformInterceptor(sendMessage))
+      this.interceptor(sendMessage)
     );
     this.router.patch(
       '/:conversationId/read',
@@ -166,7 +151,7 @@ export class ConversationRoute extends BaseRoute {
       userActivePipe,
       conversationIdParam,
       markReadBody,
-      asyncHandler(this.transformInterceptor(markRead))
+      this.interceptor(markRead)
     );
   }
 }

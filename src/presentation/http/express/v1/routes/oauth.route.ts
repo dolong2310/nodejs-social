@@ -1,4 +1,3 @@
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IOAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 
@@ -16,7 +15,7 @@ export class OAuthRoute extends BaseRoute {
 
     const throttler = this.throttlerGuard();
 
-    this.router.get('/google/url', throttler, asyncHandler(this.transformInterceptor(getGoogleAuthUrl)));
-    this.router.get('/google', throttler, asyncHandler(this.transformInterceptor(googleLogin)));
+    this.router.get('/google/url', throttler, this.interceptor(getGoogleAuthUrl));
+    this.router.get('/google', throttler, this.interceptor(googleLogin));
   }
 }

@@ -1,5 +1,4 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { ILikeController } from '@/presentation/http/express/v1/controllers/like.controller';
 import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
@@ -32,7 +31,7 @@ export class LikeRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       postIdPipe('postId', 'body'),
-      asyncHandler(this.transformInterceptor(createLike))
+      this.interceptor(createLike)
     );
     this.router.delete(
       '/posts/:postId',
@@ -40,7 +39,7 @@ export class LikeRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       postIdPipe('postId', 'params'),
-      asyncHandler(this.transformInterceptor(deleteLike))
+      this.interceptor(deleteLike)
     );
   }
 }

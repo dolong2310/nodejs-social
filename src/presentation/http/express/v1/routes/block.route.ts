@@ -1,5 +1,4 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
 import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
@@ -27,28 +26,15 @@ export class BlockRoute extends BaseRoute {
     const authGuard = this.authGuard.handler;
     const throttler = this.throttlerGuard();
 
-    this.router.get(
-      '/',
-      authGuard,
-      userActivePipe,
-      validatePaginationQuery,
-      asyncHandler(this.transformInterceptor(listBlocked))
-    );
-    this.router.post(
-      '/',
-      throttler,
-      authGuard,
-      userActivePipe,
-      blockUserBodyPipe,
-      asyncHandler(this.transformInterceptor(blockUser))
-    );
+    this.router.get('/', authGuard, userActivePipe, validatePaginationQuery, this.interceptor(listBlocked));
+    this.router.post('/', throttler, authGuard, userActivePipe, blockUserBodyPipe, this.interceptor(blockUser));
     this.router.delete(
       '/:userId',
       throttler,
       authGuard,
       userActivePipe,
       unblockUserIdPipe,
-      asyncHandler(this.transformInterceptor(unblockUser))
+      this.interceptor(unblockUser)
     );
   }
 }

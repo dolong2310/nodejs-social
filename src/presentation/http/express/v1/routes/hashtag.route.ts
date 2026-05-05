@@ -1,5 +1,4 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
 import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
@@ -25,26 +24,14 @@ export class HashtagRoute extends BaseRoute {
     const authGuard = this.authGuard.handler;
     const throttler = this.throttlerGuard();
 
-    this.router.get(
-      '/',
-      throttler,
-      authGuard,
-      validatePaginationQuery,
-      asyncHandler(this.transformInterceptor(this.hashtagController.list))
-    );
-    this.router.post(
-      '/',
-      throttler,
-      authGuard,
-      createBodyPipe,
-      asyncHandler(this.transformInterceptor(this.hashtagController.create))
-    );
+    this.router.get('/', throttler, authGuard, validatePaginationQuery, this.interceptor(this.hashtagController.list));
+    this.router.post('/', throttler, authGuard, createBodyPipe, this.interceptor(this.hashtagController.create));
     this.router.get(
       '/:hashtagId',
       throttler,
       authGuard,
       hashtagIdParam,
-      asyncHandler(this.transformInterceptor(this.hashtagController.getById))
+      this.interceptor(this.hashtagController.getById)
     );
     this.router.put(
       '/:hashtagId',
@@ -52,14 +39,14 @@ export class HashtagRoute extends BaseRoute {
       authGuard,
       hashtagIdParam,
       updateBodyPipe,
-      asyncHandler(this.transformInterceptor(this.hashtagController.update))
+      this.interceptor(this.hashtagController.update)
     );
     this.router.delete(
       '/:hashtagId',
       throttler,
       authGuard,
       hashtagIdParam,
-      asyncHandler(this.transformInterceptor(this.hashtagController.remove))
+      this.interceptor(this.hashtagController.remove)
     );
   }
 }

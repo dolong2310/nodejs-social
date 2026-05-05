@@ -1,7 +1,6 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IPostController } from '@/presentation/http/express/v1/controllers/post.controller';
 import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
@@ -37,7 +36,7 @@ export class PostRoute extends BaseRoute {
       authOptionGuard,
       userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(getNewFeeds))
+      this.interceptor(getNewFeeds)
     );
     this.router.patch(
       '/:postId',
@@ -46,7 +45,7 @@ export class PostRoute extends BaseRoute {
       userActivePipe,
       postIdPipe('postId', 'params'),
       patchPostPipe,
-      asyncHandler(this.transformInterceptor(patchPost))
+      this.interceptor(patchPost)
     );
     this.router.get(
       '/:postId',
@@ -54,7 +53,7 @@ export class PostRoute extends BaseRoute {
       authOptionGuard,
       userActivePipe,
       postIdPipe('postId', 'params'),
-      asyncHandler(this.transformInterceptor(getPostDetail))
+      this.interceptor(getPostDetail)
     );
     this.router.get(
       '/:type/:postId',
@@ -64,15 +63,8 @@ export class PostRoute extends BaseRoute {
       postIdPipe('postId', 'params'),
       postTypePipe,
       validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(getPostsType))
+      this.interceptor(getPostsType)
     );
-    this.router.post(
-      '/',
-      throttler,
-      authGuard,
-      userActivePipe,
-      createPostPipe,
-      asyncHandler(this.transformInterceptor(createPost))
-    );
+    this.router.post('/', throttler, authGuard, userActivePipe, createPostPipe, this.interceptor(createPost));
   }
 }

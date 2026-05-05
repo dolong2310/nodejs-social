@@ -1,6 +1,5 @@
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
@@ -27,30 +26,9 @@ export class PermissionRoute extends BaseRoute {
     const apiKeyGuard = this.apiKeyGuard.handler;
     const throttler = this.throttlerGuard();
 
-    this.router.get(
-      '/',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      validatePaginationQuery,
-      asyncHandler(this.transformInterceptor(list))
-    );
-    this.router.post(
-      '/',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      createBodyPipe,
-      asyncHandler(this.transformInterceptor(create))
-    );
-    this.router.get(
-      '/:permissionId',
-      throttler,
-      authGuard,
-      apiKeyGuard,
-      permissionIdParam,
-      asyncHandler(this.transformInterceptor(getById))
-    );
+    this.router.get('/', throttler, authGuard, apiKeyGuard, validatePaginationQuery, this.interceptor(list));
+    this.router.post('/', throttler, authGuard, apiKeyGuard, createBodyPipe, this.interceptor(create));
+    this.router.get('/:permissionId', throttler, authGuard, apiKeyGuard, permissionIdParam, this.interceptor(getById));
     this.router.put(
       '/:permissionId',
       throttler,
@@ -58,7 +36,7 @@ export class PermissionRoute extends BaseRoute {
       apiKeyGuard,
       permissionIdParam,
       updateBodyPipe,
-      asyncHandler(this.transformInterceptor(update))
+      this.interceptor(update)
     );
     this.router.delete(
       '/:permissionId',
@@ -66,7 +44,7 @@ export class PermissionRoute extends BaseRoute {
       authGuard,
       apiKeyGuard,
       permissionIdParam,
-      asyncHandler(this.transformInterceptor(remove))
+      this.interceptor(remove)
     );
   }
 }

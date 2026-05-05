@@ -1,5 +1,4 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
 import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
@@ -37,26 +36,20 @@ export class FriendRoute extends BaseRoute {
     const authGuard = this.authGuard.handler;
     const throttler = this.throttlerGuard();
 
-    this.router.get(
-      '/',
-      authGuard,
-      userActivePipe,
-      validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(listFriends))
-    );
+    this.router.get('/', authGuard, userActivePipe, validateCursorPaginationQuery, this.interceptor(listFriends));
     this.router.get(
       '/requests/incoming',
       authGuard,
       userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(listIncoming))
+      this.interceptor(listIncoming)
     );
     this.router.get(
       '/requests/outgoing',
       authGuard,
       userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(this.transformInterceptor(listOutgoing))
+      this.interceptor(listOutgoing)
     );
     this.router.post(
       '/requests',
@@ -64,7 +57,7 @@ export class FriendRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       sendRequestToUserIdPipe,
-      asyncHandler(this.transformInterceptor(sendFriendRequest))
+      this.interceptor(sendFriendRequest)
     );
     this.router.post(
       '/requests/:fromUserId/accept',
@@ -72,7 +65,7 @@ export class FriendRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       incomingFromUserIdPipe,
-      asyncHandler(this.transformInterceptor(acceptIncomingRequest))
+      this.interceptor(acceptIncomingRequest)
     );
     this.router.post(
       '/requests/:fromUserId/decline',
@@ -80,7 +73,7 @@ export class FriendRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       incomingFromUserIdPipe,
-      asyncHandler(this.transformInterceptor(declineIncomingRequest))
+      this.interceptor(declineIncomingRequest)
     );
     this.router.delete(
       '/requests/outgoing/:toUserId',
@@ -88,7 +81,7 @@ export class FriendRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       revokeOutgoingToUserIdPipe,
-      asyncHandler(this.transformInterceptor(revokeOutgoingRequest))
+      this.interceptor(revokeOutgoingRequest)
     );
     this.router.delete(
       '/:userId',
@@ -96,7 +89,7 @@ export class FriendRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       unfriendUserIdPipe,
-      asyncHandler(this.transformInterceptor(unfriend))
+      this.interceptor(unfriend)
     );
   }
 }

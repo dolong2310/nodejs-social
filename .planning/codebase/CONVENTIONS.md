@@ -75,7 +75,7 @@
 
 **Express routes:**
 
-- **Wrap async handlers** with `asyncHandler` from `src/presentation/http/express/utils/async-handler.util.ts` so rejected promises call `next(error)`.
+- **Express 5** passes Promise rejections from async route handlers/middleware to `next` automatically; routes use **`interceptor`** on `BaseRoute`, which already returns an async `RequestHandler`.
 - **Validation failures** go through `validate()` in `src/presentation/http/express/utils/validation.util.ts`, which builds `UnprocessableEntityError` with express-validator `mapped()` errors.
 
 **Use case pattern:**

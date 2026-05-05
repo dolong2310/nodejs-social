@@ -1,7 +1,6 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IUserController } from '@/presentation/http/express/v1/controllers/user.controller';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -28,23 +27,16 @@ export class UserRoute extends BaseRoute {
     const throttler = this.throttlerGuard();
     const throttlerAuth = this.throttlerGuard(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
 
-    this.router.get('/me', throttler, authGuard, userActivePipe, asyncHandler(this.transformInterceptor(getMe)));
-    this.router.patch(
-      '/me',
-      throttler,
-      authGuard,
-      userActivePipe,
-      updateMePipe,
-      asyncHandler(this.transformInterceptor(updateMe))
-    );
-    this.router.get('/:username', throttler, authOptionGuard, asyncHandler(this.transformInterceptor(getUserProfile)));
+    this.router.get('/me', throttler, authGuard, userActivePipe, this.interceptor(getMe));
+    this.router.patch('/me', throttler, authGuard, userActivePipe, updateMePipe, this.interceptor(updateMe));
+    this.router.get('/:username', throttler, authOptionGuard, this.interceptor(getUserProfile));
     this.router.put(
       '/change-password',
       throttlerAuth,
       authGuard,
       userActivePipe,
       changePasswordPipe,
-      asyncHandler(this.transformInterceptor(changePassword))
+      this.interceptor(changePassword)
     );
   }
 }

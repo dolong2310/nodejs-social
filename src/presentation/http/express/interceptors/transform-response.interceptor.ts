@@ -1,25 +1,21 @@
+import {
+  BaseInterceptor,
+  CallHandler,
+  ControllerResult,
+  InterceptorContext
+} from '@/presentation/http/express/interceptors/base.interceptor';
 import { OK, SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { NextFunction, RequestHandler, Response } from 'express';
+import { ExpressResponse } from '@/presentation/http/express/types';
+import { Response } from 'express';
 
-type ControllerResult<T = unknown> = SuccessResponse<T> | T | void;
-
-type ControllerHandler<TRequest = ExpressRequest, TResponse = ExpressResponse, TNext = NextFunction> = (
-  request: TRequest,
-  response: TResponse,
-  next: TNext
-) => ControllerResult | Promise<ControllerResult>;
-
-export class TransformResponseInterceptor {
-  constructor() {
-    this.intercept = this.intercept.bind(this);
-  }
-
-  intercept<TRequest, TResponse, TNext>(handler: ControllerHandler<TRequest, TResponse, TNext>): RequestHandler {
-    return async (request: ExpressRequest, response: ExpressResponse, next: NextFunction) => {
-      const result = await handler(request as TRequest, response as TResponse, next as TNext);
-      this.send(response, result);
-    };
+export class TransformResponseInterceptor implements BaseInterceptor {
+  async intercept<TRequest, TResponse, TNext>(
+    context: InterceptorContext<TRequest, TResponse, TNext>,
+    next: CallHandler
+  ) {
+    const result = await next.handle();
+    this.send(context.response as ExpressResponse, result);
+    return result;
   }
 
   private send<T>(response: Response, result: ControllerResult<T>): void {

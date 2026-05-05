@@ -1,5 +1,4 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
 import { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
 import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
@@ -34,17 +33,10 @@ export class NotificationRoute extends BaseRoute {
       userActivePipe,
       validateCursorPaginationQuery,
       listQuery,
-      asyncHandler(this.transformInterceptor(list))
+      this.interceptor(list)
     );
 
-    this.router.patch(
-      '/read',
-      throttler,
-      authGuard,
-      userActivePipe,
-      markReadBody,
-      asyncHandler(this.transformInterceptor(markRead))
-    );
+    this.router.patch('/read', throttler, authGuard, userActivePipe, markReadBody, this.interceptor(markRead));
 
     this.router.patch(
       '/:notificationId/read',
@@ -52,7 +44,7 @@ export class NotificationRoute extends BaseRoute {
       authGuard,
       userActivePipe,
       notificationIdParam,
-      asyncHandler(this.transformInterceptor(markOneRead))
+      this.interceptor(markOneRead)
     );
   }
 }
