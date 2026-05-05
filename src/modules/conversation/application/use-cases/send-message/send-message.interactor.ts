@@ -5,7 +5,7 @@ import {
   MessageEmptyException,
   MessageForbiddenException
 } from '@/modules/conversation/application/conversation.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   SendMessageCommand,
   SendMessageInPort,
@@ -18,7 +18,7 @@ import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/reposit
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { INotificationsService } from '@/modules/notification/application/services/notification.service';
+import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 
 /**
  * Nghiệp vụ tổng thể:
@@ -36,8 +36,8 @@ export class SendMessageInteractor extends SendMessageInPort {
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
     private readonly chatMessageRepository: ChatMessageRepositoryPort,
     private readonly blockRepository: BlockRepositoryPort,
-    private readonly notificationsService: INotificationsService,
-    private readonly conversationService: IConversationService,
+    private readonly notificationsService: NotificationServicePort,
+    private readonly conversationService: ConversationServicePort,
     private readonly realtimeEmitter: RealtimeEmitterPort
   ) {
     super();
@@ -50,7 +50,7 @@ export class SendMessageInteractor extends SendMessageInPort {
     // Conversation phải tồn tại trong DB.
     const convEntity = await this.conversationRepository.findConversationById(conversationId);
     if (!convEntity) {
-      throw ConversationNotFoundException;
+      throw new ConversationNotFoundException();
     }
 
     // Kiểm tra có thể gửi tin direct được không.
@@ -60,7 +60,7 @@ export class SendMessageInteractor extends SendMessageInPort {
     this.validateAttachments(attachments);
 
     if ((!text || text.length === 0) && (!attachments || attachments.length === 0)) {
-      throw MessageEmptyException;
+      throw new MessageEmptyException();
     }
 
     // Lưu tin vào DB.
@@ -136,7 +136,7 @@ export class SendMessageInteractor extends SendMessageInPort {
     if (conv.getProps().type === EConversationType.DIRECT) {
       const peerId = this.conversationService.getDirectPeerId({ conv, userId });
       if (await this.blockRepository.isBlockedEitherWay(userId, peerId)) {
-        throw MessageForbiddenException;
+        throw new MessageForbiddenException();
       }
     }
   }
@@ -145,7 +145,7 @@ export class SendMessageInteractor extends SendMessageInPort {
     if (!att?.length) return;
     for (const a of att) {
       if (a.size > this.CHAT_ATTACHMENT_MAX_BYTES) {
-        throw AttachmentTooLargeException;
+        throw new AttachmentTooLargeException();
       }
     }
   }

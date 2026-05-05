@@ -1,6 +1,6 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/application/ports/queries/conversation-member-query.repository';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   ConversationItem,
   GetConversationsInPort,
@@ -17,7 +17,7 @@ export class GetConversationsInteractor extends GetConversationsInPort {
     private readonly conversationRepository: ConversationRepositoryPort,
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
     private readonly conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }

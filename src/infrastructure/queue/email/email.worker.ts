@@ -1,19 +1,15 @@
 import { EMAIL_QUEUE_NAME } from '@/infrastructure/queue/email/email.queue';
-import { IEmailService } from '@/infrastructure/services/email.service';
+import { EmailServicePort } from '@/infrastructure/services/email.service';
 import { IEmailJobData, IEmailJobResult } from '@/modules/auth/application/ports/email-job.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { UnrecoverableError, Worker, type ConnectionOptions, type Job } from 'bullmq';
 
-export interface IEmailWorker {
-  run(connection: ConnectionOptions): Worker<IEmailJobData, IEmailJobResult>;
-}
-
 // Consumer
-export class EmailWorker implements IEmailWorker {
+export class EmailWorker {
   private readonly log: LoggerPort;
   constructor(
-    private readonly emailService: IEmailService,
+    private readonly emailService: EmailServicePort,
     private readonly otpRepository: OtpRepositoryPort,
     private readonly logger: LoggerPort
   ) {

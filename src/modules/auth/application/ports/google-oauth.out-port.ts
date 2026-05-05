@@ -4,7 +4,7 @@ export interface IGoogleUserInfo {
   verifiedEmail: boolean;
 }
 
-export interface IGoogleOAuthService {
+export interface GoogleOAuthServicePort {
   generateAuthUrl(payload: { state: string; scope: string[] }): string;
   getUserInfoFromCode(code: string): Promise<IGoogleUserInfo>;
 }

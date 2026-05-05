@@ -11,12 +11,12 @@ import {
   CreateBookmarkResponseDTO,
   DeleteBookmarkResponseDTO
 } from '@/presentation/http/express/v1/dtos/bookmark/bookmark.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IBookmarkController {
-  createBookmark(req: Request<ParamsDictionary, object, CreateBookmarkRequestDTO>, res: Response): Promise<void>;
-  deleteBookmark(req: Request<DeleteBookmarkParamsDTO>, res: Response): Promise<void>;
+  createBookmark(req: Request<ParamsDictionary, object, CreateBookmarkRequestDTO>): Promise<unknown>;
+  deleteBookmark(req: Request<DeleteBookmarkParamsDTO>): Promise<unknown>;
 }
 
 export class BookmarkController extends BaseController implements IBookmarkController {
@@ -28,7 +28,7 @@ export class BookmarkController extends BaseController implements IBookmarkContr
   }
 
   @AutoBind()
-  async createBookmark(req: Request<ParamsDictionary, object, CreateBookmarkRequestDTO>, res: Response) {
+  async createBookmark(req: Request<ParamsDictionary, object, CreateBookmarkRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new CreateBookmarkRequestDTO(req.body);
 
@@ -37,8 +37,7 @@ export class BookmarkController extends BaseController implements IBookmarkContr
       postId: dto.postId
     });
 
-    this.sendResponse<CreateBookmarkResponseDTO>({
-      res,
+    return this.response<CreateBookmarkResponseDTO>({
       instance: Created,
       data: bookmark,
       message: 'Bookmark post successfully'
@@ -46,7 +45,7 @@ export class BookmarkController extends BaseController implements IBookmarkContr
   }
 
   @AutoBind()
-  async deleteBookmark(req: Request<DeleteBookmarkParamsDTO>, res: Response) {
+  async deleteBookmark(req: Request<DeleteBookmarkParamsDTO>) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 
@@ -55,8 +54,7 @@ export class BookmarkController extends BaseController implements IBookmarkContr
       postId
     });
 
-    this.sendResponse<DeleteBookmarkResponseDTO>({
-      res,
+    return this.response<DeleteBookmarkResponseDTO>({
       message: 'Unbookmark post successfully'
     });
   }

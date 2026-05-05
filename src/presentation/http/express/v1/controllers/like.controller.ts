@@ -8,12 +8,12 @@ import {
   CreateLikeResponseDTO,
   DeleteLikeResponseDTO
 } from '@/presentation/http/express/v1/dtos/like/like.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ILikeController {
-  createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>, res: Response): Promise<void>;
-  deleteLike(req: Request<DeleteLikeParamsDTO>, res: Response): Promise<void>;
+  createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>): Promise<unknown>;
+  deleteLike(req: Request<DeleteLikeParamsDTO>): Promise<unknown>;
 }
 
 export class LikeController extends BaseController implements ILikeController {
@@ -25,7 +25,7 @@ export class LikeController extends BaseController implements ILikeController {
   }
 
   @AutoBind()
-  async createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>, res: Response) {
+  async createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new CreateLikeRequestDTO(req.body);
 
@@ -34,8 +34,7 @@ export class LikeController extends BaseController implements ILikeController {
       postId: dto.postId
     });
 
-    this.sendResponse<CreateLikeResponseDTO>({
-      res,
+    return this.response<CreateLikeResponseDTO>({
       instance: Created,
       data: new CreateLikeResponseDTO(like),
       message: 'Post liked successfully'
@@ -43,7 +42,7 @@ export class LikeController extends BaseController implements ILikeController {
   }
 
   @AutoBind()
-  async deleteLike(req: Request<DeleteLikeParamsDTO>, res: Response) {
+  async deleteLike(req: Request<DeleteLikeParamsDTO>) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 
@@ -52,8 +51,7 @@ export class LikeController extends BaseController implements ILikeController {
       postId
     });
 
-    this.sendResponse<DeleteLikeResponseDTO>({
-      res,
+    return this.response<DeleteLikeResponseDTO>({
       data: new DeleteLikeResponseDTO(like),
       message: 'Like removed successfully'
     });

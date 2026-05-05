@@ -24,7 +24,7 @@
 **Presentation (adapters — HTTP & WebSocket):**
 - Purpose: Translate HTTP/Socket.IO to application calls and back; auth middleware; API versioning; OpenAPI/Swagger.
 - Location: `src/presentation/http/express/`, `src/presentation/socket/`
-- Contains: `app.ts` (Express factory), `v1/routes/*.route.ts`, `v1/controllers/*.controller.ts`, `v1/dtos/`, `v1/validators/`, `middlewares/`, `responses/`, `socket.app.ts`, `realtime-emitter.ts`, `features/chat.feature.ts`, `features/presence.feature.ts`
+- Contains: `app.ts` (Express factory), `v1/routes/*.route.ts`, `v1/controllers/*.controller.ts`, `v1/dtos/`, `v1/pipes/`, `middlewares/`, `responses/`, `socket.app.ts`, `realtime-emitter.ts`, `features/chat.feature.ts`, `features/presence.feature.ts`
 - Depends on: Application layer (interactors via controllers), `IContainer`, token/user services for guards and sockets.
 - Used by: Bootstrap when building the HTTP server and socket app.
 
@@ -147,7 +147,7 @@
 
 **Logging:** Pino via `src/infrastructure/logger/create-logger.ts`, HTTP logging middleware, request context binding (`src/infrastructure/logger/request-context-logger.ts`).
 
-**Validation:** Express-route validators under `src/presentation/http/express/v1/validators/`; Valibot and express-validator appear in dependencies for input validation patterns.
+**Validation:** Express-route pipes (validation middleware) under `src/presentation/http/express/v1/pipes/`; Valibot and express-validator appear in dependencies for input validation patterns.
 
 **Authentication:** `AuthGuard` and related middleware (`src/presentation/http/express/middlewares/auth.guard.ts`); JWT verification via `TokenService` / `JwtService` (`src/infrastructure/services/jwt.service.ts`); Socket.IO auth in `socket.app.ts`.
 

@@ -2,12 +2,12 @@ import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/block/application/constants/cache.constant';
 import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
 
-export interface IBlockService {
+export interface BlockServicePort {
   isBlockedEitherWay(userIdA: string, userIdB: string): Promise<boolean>;
   getBlockedIdsByUserId(userId: string): Promise<string[]>;
 }
 
-export class BlockService implements IBlockService {
+export class BlockService implements BlockServicePort {
   constructor(
     private readonly blockRepository: BlockRepositoryPort,
     private readonly cacheManager: CacheManagerPort

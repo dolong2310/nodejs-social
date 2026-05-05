@@ -1,8 +1,8 @@
-import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
+import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { UserAlreadyHas2FAException } from '@/modules/auth/application/otp.exception';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   Setup2FACommand,
   Setup2FAInPort,
@@ -15,8 +15,8 @@ import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repo
 export class Setup2FAInteractor extends Setup2FAInPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
-    private readonly userService: IUserService,
-    private readonly twoFactorAuthenticationService: ITwoFactorAuthPort,
+    private readonly userService: UserServicePort,
+    private readonly twoFactorAuthenticationService: TwoFactorAuthPort,
     private readonly cacheManager: CacheManagerPort
   ) {
     super();
@@ -27,11 +27,11 @@ export class Setup2FAInteractor extends Setup2FAInPort {
     const user = await this.userService.findUserById(userId);
 
     if (!user) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     if (user.totpSecret) {
-      throw UserAlreadyHas2FAException;
+      throw new UserAlreadyHas2FAException();
     }
 
     // 2. Tạo secret key và URI cho 2FA

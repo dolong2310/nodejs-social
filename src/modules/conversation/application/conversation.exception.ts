@@ -1,19 +1,71 @@
-export const ConversationNotFoundException = new Error('Conversation not found');
-export const ConversationNotMemberException = new Error('You are not a member of this conversation');
-export const ConversationGroupNeedsMemberException = new Error('Group must include at least one other member');
-export const ConversationPeerNotFriendException = new Error('You can only start a direct conversation with a friend');
-export const ConversationInvalidPeerException = new Error('Invalid peer user');
-export const ConversationPeerBlockedException = new Error(
-  'Cannot use this conversation due to a block between participants'
-);
-export const ConversationUserAlreadyMemberException = new Error('User is already a member of this conversation');
-export const ConversationInviteNotFriendException = new Error(
-  'Invited user must be friends with you and with the group creator'
-);
-export const ConversationDirectNoKickException = new Error('Kick is not supported in direct conversations');
-export const ConversationCannotKickMemberException = new Error('You cannot remove this member');
-export const ConversationRoleForbiddenException = new Error('This role change is not allowed');
+import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
 
-export const MessageEmptyException = new Error('Message must include non-empty text and/or attachments');
-export const MessageForbiddenException = new Error('You cannot send messages in this conversation');
-export const AttachmentTooLargeException = new Error('Each attachment must be 5MB or less');
+export class ConversationNotFoundException extends ExceptionBase {
+  readonly code = 'CONVERSATION.NOT_FOUND';
+  readonly statusCode = 404;
+}
+
+export class ConversationNotMemberException extends ExceptionBase {
+  readonly code = 'CONVERSATION.NOT_MEMBER';
+  readonly statusCode = 403;
+}
+
+export class ConversationGroupNeedsMemberException extends ExceptionBase {
+  readonly code = 'CONVERSATION.GROUP_NEEDS_MEMBER';
+  readonly statusCode = 400;
+}
+
+export class ConversationPeerNotFriendException extends ExceptionBase {
+  readonly code = 'CONVERSATION.PEER_NOT_FRIEND';
+  readonly statusCode = 403;
+}
+
+export class ConversationInvalidPeerException extends ExceptionBase {
+  readonly code = 'CONVERSATION.INVALID_PEER';
+  readonly statusCode = 400;
+}
+
+export class ConversationPeerBlockedException extends ExceptionBase {
+  readonly code = 'CONVERSATION.PEER_BLOCKED';
+  readonly statusCode = 403;
+}
+
+export class ConversationUserAlreadyMemberException extends ExceptionBase {
+  readonly code = 'CONVERSATION.USER_ALREADY_MEMBER';
+  readonly statusCode = 409;
+}
+
+export class ConversationInviteNotFriendException extends ExceptionBase {
+  readonly code = 'CONVERSATION.INVITE_NOT_FRIEND';
+  readonly statusCode = 403;
+}
+
+export class ConversationDirectNoKickException extends ExceptionBase {
+  readonly code = 'CONVERSATION.DIRECT_NO_KICK';
+  readonly statusCode = 400;
+}
+
+export class ConversationCannotKickMemberException extends ExceptionBase {
+  readonly code = 'CONVERSATION.CANNOT_KICK_MEMBER';
+  readonly statusCode = 403;
+}
+
+export class ConversationRoleForbiddenException extends ExceptionBase {
+  readonly code = 'CONVERSATION.ROLE_FORBIDDEN';
+  readonly statusCode = 403;
+}
+
+export class MessageEmptyException extends ExceptionBase {
+  readonly code = 'CONVERSATION.MESSAGE_EMPTY';
+  readonly statusCode = 400;
+}
+
+export class MessageForbiddenException extends ExceptionBase {
+  readonly code = 'CONVERSATION.MESSAGE_FORBIDDEN';
+  readonly statusCode = 403;
+}
+
+export class AttachmentTooLargeException extends ExceptionBase {
+  readonly code = 'CONVERSATION.ATTACHMENT_TOO_LARGE';
+  readonly statusCode = 413;
+}

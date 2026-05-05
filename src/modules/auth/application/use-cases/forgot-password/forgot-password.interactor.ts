@@ -1,11 +1,11 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { IOtpService } from '@/modules/auth/application/services/otp.service';
+import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 import { EmailNotFoundException } from '@/modules/auth/application/auth.exception';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   ForgotPasswordCommand,
   ForgotPasswordInPort
@@ -18,8 +18,8 @@ export class ForgotPasswordInteractor extends ForgotPasswordInPort {
     private readonly cacheManager: CacheManagerPort,
     private readonly otpRepository: OtpRepositoryPort,
     private readonly hashingService: HashingPort,
-    private readonly userService: IUserService,
-    private readonly otpService: IOtpService
+    private readonly userService: UserServicePort,
+    private readonly otpService: OtpServicePort
   ) {
     super();
   }
@@ -46,7 +46,7 @@ export class ForgotPasswordInteractor extends ForgotPasswordInPort {
     if (!user) {
       // Delete OTP code
       await this.otpRepository.deleteOtp(otpEntity.id.toString());
-      throw EmailNotFoundException;
+      throw new EmailNotFoundException();
     }
 
     // 3. Hash new password

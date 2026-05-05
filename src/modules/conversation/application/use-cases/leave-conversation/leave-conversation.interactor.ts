@@ -1,5 +1,5 @@
 import { ConversationRoleForbiddenException } from '@/modules/conversation/application/conversation.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   LeaveConversationCommand,
   LeaveConversationInPort
@@ -11,7 +11,7 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 export class LeaveConversationInteractor extends LeaveConversationInPort {
   constructor(
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }
@@ -25,7 +25,7 @@ export class LeaveConversationInteractor extends LeaveConversationInPort {
       const adminsCount = await this.conversationMemberRepository.countAdmins(conversationId);
       // nếu chỉ còn 1 admin thì không cho rời group
       if (adminsCount === 1) {
-        throw ConversationRoleForbiddenException;
+        throw new ConversationRoleForbiddenException();
       }
     }
 

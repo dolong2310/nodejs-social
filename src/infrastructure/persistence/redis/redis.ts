@@ -39,7 +39,6 @@ export class Redis implements CacheManagerPort {
       this.client.disconnect();
       throw error;
     }
-    log.info('connected to redis');
   }
 
   async disconnect(): Promise<void> {
@@ -73,6 +72,10 @@ export class Redis implements CacheManagerPort {
     if (keys.length > 0) {
       await this.client.del(...keys);
     }
+  }
+
+  async clear(): Promise<void> {
+    await this.client.flushall();
   }
 
   async getOrSet<T>(key: string, fn: () => Promise<T>, ttlSeconds: number): Promise<T> {

@@ -1,13 +1,11 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { IChatMessageController } from '@/presentation/http/express/v1/controllers/chat-message.controller';
 import { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
+import { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
+import { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IChatMessageValidator } from '@/presentation/http/express/v1/validators/chat-message.validator';
-import { IConversationValidator } from '@/presentation/http/express/v1/validators/conversation.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class ConversationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -15,10 +13,10 @@ export class ConversationRoute extends BaseRoute {
 
   constructor(
     private readonly conversationController: IConversationController,
-    private readonly conversationValidator: IConversationValidator,
+    private readonly conversationPipe: IConversationPipe,
     private readonly chatMessageController: IChatMessageController,
-    private readonly chatMessageValidator: IChatMessageValidator,
-    private readonly userValidator: IUserValidator,
+    private readonly chatMessagePipe: IChatMessagePipe,
+    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard
   ) {
     super();
@@ -39,7 +37,7 @@ export class ConversationRoute extends BaseRoute {
       transferAdmin
     } = this.conversationController;
     const { listMessages, sendMessage, markRead } = this.chatMessageController;
-    const { userActiveValidator } = this.userValidator;
+    const { userActivePipe } = this.userPipe;
     const {
       peerUserIdBody,
       createGroupBody,
@@ -49,110 +47,111 @@ export class ConversationRoute extends BaseRoute {
       kickTargetUserIdParam,
       patchMemberRoleBody,
       newAdminUserIdBody
-    } = this.conversationValidator;
-    const { sendMessageBody, markReadBody } = this.chatMessageValidator;
-    const { protect } = this.authGuard;
+    } = this.conversationPipe;
+    const { sendMessageBody, markReadBody } = this.chatMessagePipe;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttlerGuard();
 
-    this.router.post('/direct', appLimiter, protect, userActiveValidator, peerUserIdBody, asyncHandler(createDirect));
-    this.router.post('/groups', appLimiter, protect, userActiveValidator, createGroupBody, asyncHandler(createGroup));
+    this.router.post('/direct', throttler, authGuard, userActivePipe, peerUserIdBody, this.interceptor(createDirect));
+    this.router.post('/groups', throttler, authGuard, userActivePipe, createGroupBody, this.interceptor(createGroup));
     this.router.get(
       '/',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(listConversations)
+      this.interceptor(listConversations)
     );
     this.router.get(
       '/:conversationId',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
-      asyncHandler(getConversation)
+      this.interceptor(getConversation)
     );
     this.router.patch(
       '/:conversationId',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       patchConversationBody,
-      asyncHandler(patchConversation)
+      this.interceptor(patchConversation)
     );
     this.router.post(
       '/:conversationId/members',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       inviteUserIdBody,
-      asyncHandler(inviteMember)
+      this.interceptor(inviteMember)
     );
     this.router.delete(
       '/:conversationId/members/me',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
-      asyncHandler(leaveConversation)
+      this.interceptor(leaveConversation)
     );
     this.router.delete(
       '/:conversationId/members/:userId',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       kickTargetUserIdParam,
-      asyncHandler(kickMember)
+      this.interceptor(kickMember)
     );
     this.router.patch(
       '/:conversationId/members/:userId/role',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       kickTargetUserIdParam,
       patchMemberRoleBody,
-      asyncHandler(patchMemberRole)
+      this.interceptor(patchMemberRole)
     );
     this.router.post(
       '/:conversationId/admin/transfer',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       newAdminUserIdBody,
-      asyncHandler(transferAdmin)
+      this.interceptor(transferAdmin)
     );
 
     // Chat Messages
     this.router.get(
       '/:conversationId/messages',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       validateCursorPaginationQuery,
-      asyncHandler(listMessages)
+      this.interceptor(listMessages)
     );
     this.router.post(
       '/:conversationId/messages',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       sendMessageBody,
-      asyncHandler(sendMessage)
+      this.interceptor(sendMessage)
     );
     this.router.patch(
       '/:conversationId/read',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       conversationIdParam,
       markReadBody,
-      asyncHandler(markRead)
+      this.interceptor(markRead)
     );
   }
 }

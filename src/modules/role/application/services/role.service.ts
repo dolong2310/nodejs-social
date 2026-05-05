@@ -2,7 +2,7 @@ import { RoleNotFoundException } from '@/modules/role/application/role.exception
 import { ERoleName } from '@/modules/role/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 
-export interface IRoleService {
+export interface RoleServicePort {
   getAdminRoleId(): Promise<string>;
   getUserRoleId(): Promise<string>;
 }
@@ -30,7 +30,7 @@ export class RoleService {
   private async _getRoleId(roleName: string): Promise<string> {
     const roleEntity = await this.roleRepository.findRoleByName(roleName);
     if (!roleEntity) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
     return roleEntity.id.toString();
   }

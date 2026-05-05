@@ -1,10 +1,10 @@
-import { IGoogleOAuthService } from '@/modules/auth/application/ports/google-oauth.out-port';
+import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-oauth.out-port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { IRoleService } from '@/modules/role/application/services/role.service';
+import { RoleServicePort } from '@/modules/role/application/services/role.service';
 import { ERoleName } from '@/modules/role/domain/entities/role.type';
 import { GoogleAccountNotVerifiedException } from '@/modules/auth/application/auth.exception';
-import { IAuthService } from '@/modules/auth/application/services/auth.service';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   LoginGoogleCommand,
   LoginGoogleInPort,
@@ -17,12 +17,12 @@ import { v4 as uuidv4 } from 'uuid'; // TODO: tách hàm util random id
 
 export class LoginGoogleInteractor extends LoginGoogleInPort {
   constructor(
-    private readonly googleOAuthService: IGoogleOAuthService,
+    private readonly googleOAuthService: GoogleOAuthServicePort,
     private readonly userRepository: UserRepositoryPort,
     private readonly hashingService: HashingPort,
-    private readonly roleService: IRoleService,
-    private readonly authService: IAuthService,
-    private readonly userService: IUserService
+    private readonly roleService: RoleServicePort,
+    private readonly authService: AuthServicePort,
+    private readonly userService: UserServicePort
   ) {
     super();
   }
@@ -31,7 +31,7 @@ export class LoginGoogleInteractor extends LoginGoogleInPort {
     const { email, name, verifiedEmail } = await this.googleOAuthService.getUserInfoFromCode(code);
 
     if (!verifiedEmail || !email) {
-      throw GoogleAccountNotVerifiedException;
+      throw new GoogleAccountNotVerifiedException();
     }
 
     const user = await this.userService.findUserByEmail(email);

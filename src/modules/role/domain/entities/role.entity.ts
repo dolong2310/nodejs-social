@@ -1,9 +1,10 @@
+import { ROLE_NAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { CreateRoleProps, ERoleName, ROLE_NAME_PATTERN, RoleProps } from '@/modules/role/domain/entities/role.type';
+import { CreateRoleProps, ERoleName, RoleProps } from '@/modules/role/domain/entities/role.type';
 
 export class RoleEntity extends Entity<RoleProps> {
   static create(createProps: CreateRoleProps) {
@@ -27,7 +28,7 @@ export class RoleEntity extends Entity<RoleProps> {
     const { name } = this.getProps();
     invariant(name.trim().length > 0, new ArgumentNotProvidedException('Role name is required'));
     invariant(
-      ROLE_NAME_PATTERN.test(name),
+      ROLE_NAME_REGEX.test(name),
       new ArgumentInvalidException('Role name must only contain uppercase letters, digits, or underscores')
     );
   }

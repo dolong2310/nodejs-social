@@ -1,18 +1,16 @@
-import { ITokenService } from '@/modules/auth/application/services/token.service.type';
-import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { RefreshTokenExpiredException } from '@/modules/auth/application/refresh-token.exception';
-import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
-import { RoleNotFoundException } from '@/modules/role/application/role.exception';
-import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { InvalidTokenException } from '@/modules/auth/application/auth.exception';
-import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
-import { IAuthService } from '@/modules/auth/application/services/auth.service';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { RefreshTokenExpiredException } from '@/modules/auth/application/refresh-token.exception';
+import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
+import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
 import {
   RefreshTokenCommand,
   RefreshTokenInPort,
   RefreshTokenResult
 } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.in-port';
+import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
+import { invariant } from '@/modules/core/domain/helpers/invariant';
+import { RoleNotFoundException } from '@/modules/role/application/role.exception';
+import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
 import jwt from 'jsonwebtoken';
 
@@ -20,10 +18,8 @@ export class RefreshTokenInteractor extends RefreshTokenInPort {
   constructor(
     private readonly refreshTokenRepository: RefreshTokenRepositoryPort,
     private readonly userQueryRepository: UserQueryRepositoryPort,
-    private readonly roleRepository: RoleRepositoryPort,
-    private readonly userService: IUserService,
-    private readonly authService: IAuthService,
-    private readonly tokenService: ITokenService
+    private readonly authService: AuthServicePort,
+    private readonly tokenService: TokenServicePort
   ) {
     super();
   }
@@ -36,11 +32,11 @@ export class RefreshTokenInteractor extends RefreshTokenInPort {
       const user = await this.userQueryRepository.findUserByIdIncludeRole(decoded.userId);
 
       if (!user) {
-        throw UserNotFoundException;
+        throw new UserNotFoundException();
       }
 
       if (!user.role) {
-        throw RoleNotFoundException;
+        throw new RoleNotFoundException();
       }
 
       // 2. Generate new tokens
@@ -58,14 +54,14 @@ export class RefreshTokenInteractor extends RefreshTokenInPort {
       });
 
       if (!rotated) {
-        throw InvalidTokenException;
+        throw new InvalidTokenException();
       }
 
       // 4. Return tokens
       return new RefreshTokenResult({ accessToken, refreshToken });
     } catch (error) {
-      invariant(error instanceof jwt.TokenExpiredError, RefreshTokenExpiredException); // TODO: kiểm tra type sau khi invariant
-      invariant(error instanceof jwt.JsonWebTokenError, InvalidTokenException);
+      invariant(error instanceof jwt.TokenExpiredError, new RefreshTokenExpiredException());
+      invariant(error instanceof jwt.JsonWebTokenError, new InvalidTokenException());
       // RefreshTokenHasBeenRevokedException
 
       throw error;

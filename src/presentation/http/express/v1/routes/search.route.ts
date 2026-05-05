@@ -1,11 +1,9 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { ISearchValidator } from '@/presentation/http/express/v1/validators/search.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class SearchRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,9 +11,9 @@ export class SearchRoute extends BaseRoute {
 
   constructor(
     private readonly searchController: ISearchController,
-    private readonly searchValidator: ISearchValidator,
-    private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly searchPipe: ISearchPipe,
+    private readonly userPipe: IUserPipe,
+    private readonly authOptionGuard: AuthOptionGuard
   ) {
     super();
     this.createRoutes();
@@ -23,17 +21,19 @@ export class SearchRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     const { search } = this.searchController;
-    const { searchValidator } = this.searchValidator;
-    const { userActiveValidator } = this.userValidator;
-    const { optionalAuth } = this.authGuard;
+    const { searchPipe } = this.searchPipe;
+    const { userActivePipe } = this.userPipe;
+    const authOptionGuard = this.authOptionGuard.handler;
+    const throttler = this.throttlerGuard();
 
     this.router.get(
       '/',
-      appLimiter,
-      optionalAuth(userActiveValidator),
+      throttler,
+      authOptionGuard,
+      userActivePipe,
       validateCursorPaginationQuery,
-      searchValidator,
-      asyncHandler(search)
+      searchPipe,
+      this.interceptor(search)
     );
   }
 }

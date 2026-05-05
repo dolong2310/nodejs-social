@@ -14,14 +14,14 @@ import { EConversationType } from '@/modules/conversation/domain/entities/conver
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
-export interface IConversationService {
+export interface ConversationServicePort {
   getDirectPeerId(payload: GetDirectPeerIdPayload): string;
   isMember(payload: AssertMemberPayload): Promise<ConversationMemberEntity>;
   loadConversation(conversationId: string): Promise<ConversationEntity>;
   mapConversationDetail(payload: MapConversationDetailPayload): Promise<ConversationDetailResult>;
 }
 
-export class ConversationService implements IConversationService {
+export class ConversationService implements ConversationServicePort {
   constructor(
     private readonly conversationRepository: ConversationRepositoryPort,
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort
@@ -37,7 +37,7 @@ export class ConversationService implements IConversationService {
   getDirectPeerId({ conv, userId }: GetDirectPeerIdPayload): string {
     const { type, userIdLow, userIdHigh } = conv.getProps();
     if (type !== EConversationType.DIRECT || !userIdLow || !userIdHigh) {
-      throw ConversationNotFoundException;
+      throw new ConversationNotFoundException();
     }
     return userIdLow === userId ? userIdHigh : userIdLow;
   }
@@ -49,7 +49,7 @@ export class ConversationService implements IConversationService {
   async isMember({ conversationId, userId }: AssertMemberPayload): Promise<ConversationMemberEntity> {
     const memberEntity = await this.conversationMemberRepository.findMember({ conversationId, userId });
     if (!memberEntity) {
-      throw ConversationNotMemberException;
+      throw new ConversationNotMemberException();
     }
     return memberEntity;
   }
@@ -57,7 +57,7 @@ export class ConversationService implements IConversationService {
   async loadConversation(conversationId: string): Promise<ConversationEntity> {
     const convEntity = await this.conversationRepository.findConversationById(conversationId);
     if (!convEntity) {
-      throw ConversationNotFoundException;
+      throw new ConversationNotFoundException();
     }
     return convEntity;
   }

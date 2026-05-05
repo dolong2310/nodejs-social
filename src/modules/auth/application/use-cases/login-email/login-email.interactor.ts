@@ -1,6 +1,6 @@
 import { InvalidEmailOrPasswordException } from '@/modules/auth/application/auth.exception';
-import { IAuthService } from '@/modules/auth/application/services/auth.service';
-import { IOtpService } from '@/modules/auth/application/services/otp.service';
+import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
+import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
 import {
   LoginEmailCommand,
   LoginEmailInPort,
@@ -14,9 +14,9 @@ import { UserQueryRepositoryPort } from '@/modules/user/application/ports/querie
 export class LoginEmailInteractor extends LoginEmailInPort {
   constructor(
     private readonly userQueryRepository: UserQueryRepositoryPort,
-    private readonly otpService: IOtpService,
+    private readonly otpService: OtpServicePort,
     private readonly hashingService: HashingPort,
-    private readonly authService: IAuthService
+    private readonly authService: AuthServicePort
   ) {
     super();
   }
@@ -26,17 +26,17 @@ export class LoginEmailInteractor extends LoginEmailInPort {
     const user = await this.userQueryRepository.findUserByEmailIncludeRole(email);
 
     if (!user) {
-      throw InvalidEmailOrPasswordException;
+      throw new InvalidEmailOrPasswordException();
     }
 
     if (!user.role) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
 
     // 2. Check password is correct
     const isPasswordValid = await this.hashingService.compare(password, user.password);
     if (!isPasswordValid) {
-      throw InvalidEmailOrPasswordException;
+      throw new InvalidEmailOrPasswordException();
     }
 
     // 3. Check 2FA is enabled

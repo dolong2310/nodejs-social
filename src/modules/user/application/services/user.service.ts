@@ -4,7 +4,7 @@ import { UserQueryRepositoryPort } from '@/modules/user/application/ports/querie
 import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
-export interface IUserService {
+export interface UserServicePort {
   findUserById(userId: string, options: { querySafe: true }): Promise<UserSafeProps | null>;
   findUserById(userId: string, options?: { querySafe: false }): Promise<UserFullProps | null>;
   findUserById(userId: string, options?: { querySafe?: boolean }): Promise<UserSafeProps | UserFullProps | null>;
@@ -21,7 +21,7 @@ export interface IUserService {
   findUserByEmail(email: string, options?: { querySafe?: boolean }): Promise<UserSafeProps | UserFullProps | null>;
 }
 
-export class UserService implements IUserService {
+export class UserService implements UserServicePort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly userQueryRepository: UserQueryRepositoryPort,

@@ -1,5 +1,5 @@
 import { NoPendingFriendRequestException } from '@/modules/friend/application/friend.exception';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   RevokeOutgoingRequestCommand,
   RevokeOutgoingRequestInPort
@@ -9,7 +9,7 @@ import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositorie
 export class RevokeOutgoingRequestInteractor extends RevokeOutgoingRequestInPort {
   constructor(
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
-    private readonly friendService: IFriendService
+    private readonly friendService: FriendServicePort
   ) {
     super();
   }
@@ -17,7 +17,7 @@ export class RevokeOutgoingRequestInteractor extends RevokeOutgoingRequestInPort
   async execute({ userId, toUserId }: RevokeOutgoingRequestCommand): Promise<void> {
     const deleted = await this.friendRequestRepository.deletePendingRequest({ fromUserId: userId, toUserId });
     if (deleted === 0) {
-      throw NoPendingFriendRequestException;
+      throw new NoPendingFriendRequestException();
     }
     await this.friendService.invalidateBoth(userId, toUserId);
   }

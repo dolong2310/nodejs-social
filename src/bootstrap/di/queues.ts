@@ -1,7 +1,7 @@
-import { IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
-import { INotificationTrimQueue } from '@/modules/notification/application/ports/notification-trim-job.port';
-import { IPostViewsQueue } from '@/modules/post/application/ports/post-views-job.port';
-import { IVideoStreamQueue } from '@/modules/media/application/ports/video-stream-job.port';
+import { EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
+import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
+import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
+import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
@@ -11,10 +11,10 @@ import { BullMQPostViewsQueue } from '@/infrastructure/queue/post-views/post-vie
 import { BullMQVideoStreamQueue } from '@/infrastructure/queue/video-stream/video-stream.queue';
 
 export type ContainerQueues = {
-  emailQueue: IEmailQueue;
-  videoStreamQueue: IVideoStreamQueue;
-  notificationTrimQueue: INotificationTrimQueue;
-  postViewsQueue: IPostViewsQueue;
+  emailQueue: EmailQueuePort;
+  videoStreamQueue: VideoStreamQueuePort;
+  notificationTrimQueue: NotificationTrimQueuePort;
+  postViewsQueue: PostViewsQueuePort;
 };
 
 export function createContainerQueues(logger: LoggerPort): ContainerQueues {

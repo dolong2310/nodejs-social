@@ -1,10 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { PermissionEntity } from '@/modules/permission/domain/entities/permission.entity';
-import {
-  PermissionModel,
-  permissionSchema
-} from '@/modules/permission/infrastructure/mongo/permission.model';
+import { PermissionModel, permissionSchema } from '@/modules/permission/infrastructure/mongo/permission.model';
 import { parse } from 'valibot';
 
 export class PermissionMapper implements Mapper<PermissionEntity, PermissionModel> {

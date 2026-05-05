@@ -1,6 +1,6 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   UpdateMeCommand,
   UpdateMeInPort,
@@ -12,7 +12,7 @@ import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repo
 export class UpdateMeInteractor extends UpdateMeInPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
-    private readonly userService: IUserService,
+    private readonly userService: UserServicePort,
     private readonly cacheManager: CacheManagerPort
   ) {
     super();
@@ -34,7 +34,7 @@ export class UpdateMeInteractor extends UpdateMeInPort {
     if (username) {
       const existingUser = await this.userService.findUserByUsername(username, { querySafe: true });
       if (existingUser && existingUser.id !== userId) {
-        throw UsernameAlreadyExistsException;
+        throw new UsernameAlreadyExistsException();
       }
     }
 
@@ -51,7 +51,7 @@ export class UpdateMeInteractor extends UpdateMeInPort {
     const user = userEntity?.toObject();
 
     if (!user) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     const usernames = [current?.username, user?.username].filter((username): username is string => Boolean(username));

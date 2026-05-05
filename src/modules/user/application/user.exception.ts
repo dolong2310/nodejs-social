@@ -1,10 +1,36 @@
-export const UserNotFoundException = new Error('User not found');
-export const UserAlreadyExistsException = new Error('User already exists');
-export const UsernameAlreadyExistsException = new Error('Username already exists');
-export const UserAlreadyVerifiedException = new Error('User already verified');
-export const CannotViewUserProfileBlockedException = new Error(
-  'You cannot view this profile due to a block between accounts'
-);
-export const UserIsInactiveException = new Error('User is inactive');
-// export const UserNotVerifiedYetException = new Error('User not verified yet');
-export const UserIsBannedException = new Error('User is banned');
+import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
+
+export class UserNotFoundException extends ExceptionBase {
+  readonly code = 'USER.NOT_FOUND';
+  readonly statusCode = 404;
+}
+
+export class UserAlreadyExistsException extends ExceptionBase {
+  readonly code = 'USER.ALREADY_EXISTS';
+  readonly statusCode = 409;
+}
+
+export class UsernameAlreadyExistsException extends ExceptionBase {
+  readonly code = 'USER.USERNAME_ALREADY_EXISTS';
+  readonly statusCode = 409;
+}
+
+export class UserAlreadyVerifiedException extends ExceptionBase {
+  readonly code = 'USER.ALREADY_VERIFIED';
+  readonly statusCode = 409;
+}
+
+export class CannotViewUserProfileBlockedException extends ExceptionBase {
+  readonly code = 'USER.PROFILE_VIEW_BLOCKED';
+  readonly statusCode = 403;
+}
+
+export class UserIsInactiveException extends ExceptionBase {
+  readonly code = 'USER.INACTIVE';
+  readonly statusCode = 403;
+}
+
+export class UserIsBannedException extends ExceptionBase {
+  readonly code = 'USER.BANNED';
+  readonly statusCode = 403;
+}

@@ -1,5 +1,5 @@
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   GetMessagesInPort,
   GetMessagesQuery,
@@ -17,7 +17,7 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 export class GetMessagesInteractor extends GetMessagesInPort {
   constructor(
     private readonly chatMessageRepository: ChatMessageRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }

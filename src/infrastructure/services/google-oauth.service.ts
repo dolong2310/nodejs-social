@@ -1,9 +1,9 @@
-import { IGoogleOAuthService, IGoogleUserInfo } from '@/modules/auth/application/ports/google-oauth.out-port';
+import { GoogleOAuthServicePort, IGoogleUserInfo } from '@/modules/auth/application/ports/google-oauth.out-port';
 import { envConfig } from '@/bootstrap/config/env.config';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
-export class GoogleOAuthService implements IGoogleOAuthService {
+export class GoogleOAuthService implements GoogleOAuthServicePort {
   private readonly client: OAuth2Client;
 
   constructor() {

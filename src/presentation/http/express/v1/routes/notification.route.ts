@@ -1,11 +1,9 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
+import { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { INotificationValidator } from '@/presentation/http/express/v1/validators/notification.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class NotificationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,8 +11,8 @@ export class NotificationRoute extends BaseRoute {
 
   constructor(
     private readonly notificationController: INotificationController,
-    private readonly notificationValidator: INotificationValidator,
-    private readonly userValidator: IUserValidator,
+    private readonly notificationPipe: INotificationPipe,
+    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard
   ) {
     super();
@@ -23,29 +21,30 @@ export class NotificationRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     const { list, markRead, markOneRead } = this.notificationController;
-    const { userActiveValidator } = this.userValidator;
-    const { listQuery, markReadBody, notificationIdParam } = this.notificationValidator;
-    const { protect } = this.authGuard;
+    const { userActivePipe } = this.userPipe;
+    const { listQuery, markReadBody, notificationIdParam } = this.notificationPipe;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttlerGuard();
 
     this.router.get(
       '/',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       validateCursorPaginationQuery,
       listQuery,
-      asyncHandler(list)
+      this.interceptor(list)
     );
 
-    this.router.patch('/read', appLimiter, protect, userActiveValidator, markReadBody, asyncHandler(markRead));
+    this.router.patch('/read', throttler, authGuard, userActivePipe, markReadBody, this.interceptor(markRead));
 
     this.router.patch(
       '/:notificationId/read',
-      appLimiter,
-      protect,
-      userActiveValidator,
+      throttler,
+      authGuard,
+      userActivePipe,
       notificationIdParam,
-      asyncHandler(markOneRead)
+      this.interceptor(markOneRead)
     );
   }
 }

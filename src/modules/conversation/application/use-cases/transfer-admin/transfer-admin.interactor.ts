@@ -4,7 +4,7 @@ import {
   ConversationRoleForbiddenException
 } from '@/modules/conversation/application/conversation.exception';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   TransferAdminCommand,
   TransferAdminInPort,
@@ -24,7 +24,7 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 export class TransferAdminInteractor extends TransferAdminInPort {
   constructor(
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService
+    private readonly conversationService: ConversationServicePort
   ) {
     super();
   }
@@ -34,12 +34,12 @@ export class TransferAdminInteractor extends TransferAdminInPort {
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();
     if (conv.type !== EConversationType.GROUP) {
-      throw ConversationNotFoundException;
+      throw new ConversationNotFoundException();
     }
 
     // không cho chuyển quyền admin cho chính mình
     if (newAdminUserId === userId) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
 
     // gom 1 query để lấy membership của actor + người mới nhận quyền admin (giảm round-trip DB).
@@ -53,15 +53,15 @@ export class TransferAdminInteractor extends TransferAdminInPort {
 
     // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
     if (!actor) {
-      throw ConversationNotMemberException;
+      throw new ConversationNotMemberException();
     }
     if (actor.role !== EConversationMemberRole.ADMIN) {
-      throw ConversationRoleForbiddenException;
+      throw new ConversationRoleForbiddenException();
     }
 
     // kiểm tra người mới nhận quyền admin có phải là member của conversation không
     if (!newAdmin) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     const updatedAt = new Date();

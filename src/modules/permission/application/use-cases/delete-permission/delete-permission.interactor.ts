@@ -20,15 +20,15 @@ export class DeletePermissionInteractor extends DeletePermissionInPort {
   async execute(command: DeletePermissionCommand): Promise<void> {
     const current = await this.permissionRepository.findPermissionById(command.id);
     if (!current) {
-      throw PermissionNotFoundException;
+      throw new PermissionNotFoundException();
     }
     const inUse = await this.roleRepository.countRolesWithPermissionId(command.id);
     if (inUse > 0) {
-      throw PermissionInUseByRolesException;
+      throw new PermissionInUseByRolesException();
     }
     const removed = await this.permissionRepository.deletePermission(command.id);
     if (!removed) {
-      throw PermissionNotFoundException;
+      throw new PermissionNotFoundException();
     }
   }
 }

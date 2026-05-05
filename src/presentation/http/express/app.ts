@@ -3,7 +3,7 @@ import { IContainer } from '@/bootstrap/container';
 import logger from '@/infrastructure/logger/create-logger';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant';
-import { errorHandler } from '@/presentation/http/express/middlewares/error.middleware';
+import { HttpExceptionFilter } from '@/presentation/http/express/filters/exception.filter';
 import { getSwaggerDefinition } from '@/presentation/http/express/utils/file.util';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -23,7 +23,7 @@ export function createExpressApp(container: IContainer): Express {
   app.use(cookieParser());
   app.use(cors(appConfig.cors));
 
-  app.use(logger.getHttpLogger());
+  // app.use(logger.getHttpLogger());
   app.use((req, res, next) => requestContextLogger.bindRequestLogContextMiddleware(req, res, next));
 
   container.getRouters().forEach((route) => {
@@ -36,7 +36,7 @@ export function createExpressApp(container: IContainer): Express {
   app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
   app.use(appConfig.api.prefix, setupSwagger());
 
-  app.use(errorHandler);
+  app.use(HttpExceptionFilter.catch);
 
   return app;
 }

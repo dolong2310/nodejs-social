@@ -15,6 +15,9 @@ export interface IAppConfig {
     accessTokenExpiresIn: StringValue;
     refreshTokenExpiresIn: StringValue;
   };
+  auth: {
+    apiKey: string;
+  };
   logs: {
     level: string;
   };
@@ -25,5 +28,5 @@ export interface IAppConfig {
     ttlSeconds: number;
   };
   cors: CorsOptions;
-  rateLimit?: Partial<RateLimitOptions> & { enabled: boolean };
+  rateLimit: Partial<RateLimitOptions> & { enabled: boolean };
 }

@@ -523,7 +523,7 @@ components:
                 avatar:
                   type: string
                   example: 'https://cdn.example.com/avatars/user.jpg'
-    # Feed + search posts: `sendCursorPaginatedResponse` → data.items + data.nextCursor
+    # Feed + search posts: `cursorPaginatedResponse` → data.items + data.nextCursor
     PostFeedCursorSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'
@@ -578,7 +578,7 @@ components:
           type: string
         avatar:
           type: string
-    # Danh sách bạn / lời mời: cursor (`sendCursorPaginatedResponse`)
+    # Danh sách bạn / lời mời: cursor (`cursorPaginatedResponse`)
     FriendListCursorSuccessResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponse'

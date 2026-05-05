@@ -77,7 +77,7 @@
 **Redis caching TODOs:**
 
 - Issue: Role lookup in auth guard and user lookup in user validator marked for Redis cache; not implemented.
-- Files: `src/presentation/http/express/middlewares/auth.guard.ts`, `src/presentation/http/express/v1/validators/user.validator.ts`
+- Files: `src/presentation/http/express/middlewares/auth.guard.ts`, `src/presentation/http/express/v1/pipes/user.pipe.ts`
 - Impact: Extra Mongo round-trips on hot paths.
 - Fix approach: Cache role-by-id and user-by-id with TTL and invalidation on updates.
 

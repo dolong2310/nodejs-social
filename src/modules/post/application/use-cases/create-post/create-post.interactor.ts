@@ -5,8 +5,8 @@ import {
   StrangerCommentsNotAllowedException
 } from '@/modules/post/application/post.exception';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { IBlockService } from '@/modules/block/application/services/block.service';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   CreatePostCommand,
   CreatePostInPort,
@@ -23,8 +23,8 @@ export class CreatePostInteractor extends CreatePostInPort {
   constructor(
     private readonly postRepository: PostRepositoryPort,
     private readonly hashtagRepository: HashtagRepositoryPort,
-    private readonly blockService: IBlockService,
-    private readonly friendService: IFriendService,
+    private readonly blockService: BlockServicePort,
+    private readonly friendService: FriendServicePort,
     private readonly logger: LoggerPort
   ) {
     super();
@@ -45,18 +45,18 @@ export class CreatePostInteractor extends CreatePostInPort {
     // xử lý quyền tương tác vào bài cha trước khi cho tạo comment/repost/quote
     if (type !== EPostType.POST) {
       if (!parentId) {
-        throw PostNotFoundException;
+        throw new PostNotFoundException();
       }
       // lấy bài post cha
       const postEntity = await this.postRepository.findPostById(parentId);
       const parent = postEntity?.toObject();
       if (!parent) {
-        throw PostNotFoundException;
+        throw new PostNotFoundException();
       }
 
       // Kiểm tra block 2 chiều
       if (await this.blockService.isBlockedEitherWay(userId, parent.userId)) {
-        throw CannotEngagePostBlockedException;
+        throw new CannotEngagePostBlockedException();
       }
 
       // chắc chắn người dùng được phép nhìn thấy bài cha
@@ -76,7 +76,7 @@ export class CreatePostInteractor extends CreatePostInPort {
         if (!allowStrangerComments) {
           const isFriend = await this.friendService.isFriendOf({ userId, otherUserId: ownerId }); // chỉ query khi cần enforce stranger rule
           if (!isFriend) {
-            throw StrangerCommentsNotAllowedException;
+            throw new StrangerCommentsNotAllowedException();
           }
         }
       }
@@ -129,7 +129,7 @@ export class CreatePostInteractor extends CreatePostInPort {
     const isMention = parent.mentions.some((mentionId) => mentionId === viewerId);
     // Nếu bài cha là ONLY_ME thì không cho phép truy cập.
     if (isOnlyMe) {
-      throw CannotEngageWithInaccessiblePostException;
+      throw new CannotEngageWithInaccessiblePostException();
     }
     if (isPublic) {
       return;
@@ -140,11 +140,11 @@ export class CreatePostInteractor extends CreatePostInPort {
       if (isFriend) {
         return;
       }
-      throw CannotEngageWithInaccessiblePostException;
+      throw new CannotEngageWithInaccessiblePostException();
     }
     // Nếu bài cha không phải là PUBLIC hoặc FRIENDS_ONLY thì không cho phép truy cập.
     if (!isPublic && !isFriendsOnly) {
-      throw CannotEngageWithInaccessiblePostException;
+      throw new CannotEngageWithInaccessiblePostException();
     }
   }
 }

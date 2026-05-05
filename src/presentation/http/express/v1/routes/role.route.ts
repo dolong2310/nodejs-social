@@ -1,13 +1,9 @@
-import { IRoleService } from '@/modules/role/application/services/role.service';
-import { IUserService } from '@/modules/user/application/services/user.service';
-import { requireAdmin } from '@/presentation/http/express/middlewares/admin.middleware';
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validatePaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
+import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IRolesValidator } from '@/presentation/http/express/v1/validators/role.validator';
 
 export class RoleRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -15,34 +11,33 @@ export class RoleRoute extends BaseRoute {
 
   constructor(
     private readonly roleController: IRoleController,
-    private readonly roleService: IRoleService,
-    private readonly userService: IUserService,
-    private readonly rolesValidator: IRolesValidator,
-    private readonly authGuard: AuthGuard
+    private readonly rolesPipe: IRolesPipe,
+    private readonly authGuard: AuthGuard,
+    private readonly apiKeyGuard: ApiKeyGuard
   ) {
     super();
     this.createRoutes();
   }
 
   protected override createRoutes(): void {
-    const admin = requireAdmin(this.roleService, this.userService);
-    const roleIdParam = this.rolesValidator.roleIdParam();
-    const createBodyValidator = this.rolesValidator.createBodyValidator();
-    const updateBodyValidator = this.rolesValidator.updateBodyValidator();
-    const { protect } = this.authGuard;
+    const { roleIdParam, createBodyPipe, updateBodyPipe } = this.rolesPipe;
+    const { list, create, getById, update, remove } = this.roleController;
+    const authGuard = this.authGuard.handler;
+    const apiKeyGuard = this.apiKeyGuard.handler;
+    const throttler = this.throttlerGuard();
 
-    this.router.get('/', appLimiter, protect, admin, validatePaginationQuery, asyncHandler(this.roleController.list));
-    this.router.post('/', appLimiter, protect, admin, createBodyValidator, asyncHandler(this.roleController.create));
-    this.router.get('/:roleId', appLimiter, protect, admin, roleIdParam, asyncHandler(this.roleController.getById));
+    this.router.get('/', throttler, authGuard, apiKeyGuard, validatePaginationQuery, this.interceptor(list));
+    this.router.post('/', throttler, authGuard, apiKeyGuard, createBodyPipe, this.interceptor(create));
+    this.router.get('/:roleId', throttler, authGuard, apiKeyGuard, roleIdParam, this.interceptor(getById));
     this.router.put(
       '/:roleId',
-      appLimiter,
-      protect,
-      admin,
+      throttler,
+      authGuard,
+      apiKeyGuard,
       roleIdParam,
-      updateBodyValidator,
-      asyncHandler(this.roleController.update)
+      updateBodyPipe,
+      this.interceptor(update)
     );
-    this.router.delete('/:roleId', appLimiter, protect, admin, roleIdParam, asyncHandler(this.roleController.remove));
+    this.router.delete('/:roleId', throttler, authGuard, apiKeyGuard, roleIdParam, this.interceptor(remove));
   }
 }

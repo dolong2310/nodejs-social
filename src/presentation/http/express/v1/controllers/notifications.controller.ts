@@ -9,13 +9,13 @@ import {
   NotificationListQueryDTO
 } from '@/presentation/http/express/v1/dtos/notification/notification.request.dto';
 import { NotificationResponseDTO } from '@/presentation/http/express/v1/dtos/notification/notification.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface INotificationController {
-  list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>, res: Response): Promise<void>;
-  markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>, res: Response): Promise<void>;
-  markOneRead(req: Request<NotificationIdParams>, res: Response): Promise<void>;
+  list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>): Promise<unknown>;
+  markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>): Promise<unknown>;
+  markOneRead(req: Request<NotificationIdParams>): Promise<unknown>;
 }
 
 export class NotificationsController extends BaseController implements INotificationController {
@@ -28,7 +28,7 @@ export class NotificationsController extends BaseController implements INotifica
   }
 
   @AutoBind()
-  async list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>, res: Response) {
+  async list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor, unreadOnly: unreadRaw } = req.query;
     const unreadOnly =
@@ -41,8 +41,7 @@ export class NotificationsController extends BaseController implements INotifica
       unreadOnly
     });
 
-    this.sendCursorPaginatedResponse<NotificationResponseDTO>({
-      res,
+    return this.cursorPaginatedResponse<NotificationResponseDTO>({
       items,
       nextCursor,
       message: 'Notifications loaded'
@@ -50,23 +49,23 @@ export class NotificationsController extends BaseController implements INotifica
   }
 
   @AutoBind()
-  async markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>, res: Response) {
+  async markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>) {
     const userId = this.getUserId(req);
     const body = new MarkNotificationsReadBodyDTO(req.body);
     const ids = body.ids && body.ids.length > 0 ? body.ids : undefined;
 
     await this.markNotificationsReadUC.execute({ viewerId: userId, ids });
 
-    this.sendResponse({ res, message: 'Notifications updated' });
+    return this.response({ message: 'Notifications updated' });
   }
 
   @AutoBind()
-  async markOneRead(req: Request<NotificationIdParams>, res: Response) {
+  async markOneRead(req: Request<NotificationIdParams>) {
     const userId = this.getUserId(req);
     const { notificationId } = req.params;
 
     await this.markNotificationReadUC.execute({ viewerId: userId, notificationId });
 
-    this.sendResponse({ res, message: 'Notification marked read' });
+    return this.response({ message: 'Notification marked read' });
   }
 }

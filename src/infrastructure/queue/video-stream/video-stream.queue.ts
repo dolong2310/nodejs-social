@@ -1,7 +1,7 @@
 import {
   IVideoStreamJobData,
   IVideoStreamJobResult,
-  IVideoStreamQueue
+  VideoStreamQueuePort
 } from '@/modules/media/application/ports/video-stream-job.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
@@ -9,7 +9,7 @@ import { Queue, type ConnectionOptions } from 'bullmq';
 export const VIDEO_STREAM_QUEUE_NAME = 'video-stream';
 
 // Producer
-export class BullMQVideoStreamQueue implements IVideoStreamQueue {
+export class BullMQVideoStreamQueue implements VideoStreamQueuePort {
   private readonly queue: Queue<IVideoStreamJobData, IVideoStreamJobResult>;
   private readonly log: LoggerPort;
 

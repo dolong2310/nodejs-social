@@ -1,11 +1,11 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/middlewares/common.middleware';
-import { postsLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { IPostController } from '@/presentation/http/express/v1/controllers/post.controller';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IPostValidator } from '@/presentation/http/express/v1/validators/post.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class PostRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,9 +13,10 @@ export class PostRoute extends BaseRoute {
 
   constructor(
     private readonly postController: IPostController,
-    private readonly postValidator: IPostValidator,
-    private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard
+    private readonly postPipe: IPostPipe,
+    private readonly userPipe: IUserPipe,
+    private readonly authGuard: AuthGuard,
+    private readonly authOptionGuard: AuthOptionGuard
   ) {
     super();
     this.createRoutes();
@@ -23,42 +24,47 @@ export class PostRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     const { getNewFeeds, patchPost, getPostDetail, getPostsType, createPost } = this.postController;
-    const { postIdValidator, patchPostValidator, postTypeValidator, createPostValidator } = this.postValidator;
-    const { userActiveValidator } = this.userValidator;
-    const { protect, optionalAuth } = this.authGuard;
+    const { postIdPipe, patchPostPipe, postTypePipe, createPostPipe } = this.postPipe;
+    const { userActivePipe } = this.userPipe;
+    const authGuard = this.authGuard.handler;
+    const authOptionGuard = this.authOptionGuard.handler;
+    const throttler = this.throttlerGuard(THROTTLE.POSTS.WINDOW_MS, THROTTLE.POSTS.MAX);
 
     this.router.get(
       '/',
-      postsLimiter,
-      optionalAuth(userActiveValidator),
+      throttler,
+      authOptionGuard,
+      userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(getNewFeeds)
+      this.interceptor(getNewFeeds)
     );
     this.router.patch(
       '/:postId',
-      postsLimiter,
-      protect,
-      userActiveValidator,
-      postIdValidator('postId', 'params'),
-      patchPostValidator,
-      asyncHandler(patchPost)
+      throttler,
+      authGuard,
+      userActivePipe,
+      postIdPipe('postId', 'params'),
+      patchPostPipe,
+      this.interceptor(patchPost)
     );
     this.router.get(
       '/:postId',
-      postsLimiter,
-      optionalAuth(userActiveValidator),
-      postIdValidator('postId', 'params'),
-      asyncHandler(getPostDetail)
+      throttler,
+      authOptionGuard,
+      userActivePipe,
+      postIdPipe('postId', 'params'),
+      this.interceptor(getPostDetail)
     );
     this.router.get(
       '/:type/:postId',
-      postsLimiter,
-      optionalAuth(userActiveValidator),
-      postIdValidator('postId', 'params'),
-      postTypeValidator,
+      throttler,
+      authOptionGuard,
+      userActivePipe,
+      postIdPipe('postId', 'params'),
+      postTypePipe,
       validateCursorPaginationQuery,
-      asyncHandler(getPostsType)
+      this.interceptor(getPostsType)
     );
-    this.router.post('/', postsLimiter, protect, userActiveValidator, createPostValidator, asyncHandler(createPost));
+    this.router.post('/', throttler, authGuard, userActivePipe, createPostPipe, this.interceptor(createPost));
   }
 }

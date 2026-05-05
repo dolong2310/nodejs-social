@@ -1,6 +1,7 @@
-import type { IRoleService } from '@/modules/role/application/services/role.service';
-import type { IUserService } from '@/modules/user/application/services/user.service';
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
+import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
@@ -9,6 +10,7 @@ import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
 import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
 import { FriendRoute } from '@/presentation/http/express/v1/routes/friend.route';
+import { HashtagRoute } from '@/presentation/http/express/v1/routes/hashtag.route';
 import { LikeRoute } from '@/presentation/http/express/v1/routes/like.route';
 import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
@@ -19,20 +21,21 @@ import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
 import { SearchRoute } from '@/presentation/http/express/v1/routes/search.route';
 import { StaticRoute } from '@/presentation/http/express/v1/routes/static.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
-import type { IAuthValidator } from '@/presentation/http/express/v1/validators/auth.validator';
-import type { IBlockValidator } from '@/presentation/http/express/v1/validators/block.validator';
-import type { IChatMessageValidator } from '@/presentation/http/express/v1/validators/chat-message.validator';
-import type { IConversationValidator } from '@/presentation/http/express/v1/validators/conversation.validator';
-import type { IFriendValidator } from '@/presentation/http/express/v1/validators/friend.validator';
-import type { INotificationValidator } from '@/presentation/http/express/v1/validators/notification.validator';
-import type { IPermissionsValidator } from '@/presentation/http/express/v1/validators/permission.validator';
-import type { IPostValidator } from '@/presentation/http/express/v1/validators/post.validator';
-import type { IRolesValidator } from '@/presentation/http/express/v1/validators/role.validator';
-import type { ISearchValidator } from '@/presentation/http/express/v1/validators/search.validator';
-import type { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
+import type { IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
+import type { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
+import type { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
+import type { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
+import type { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
+import type { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
+import type { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
+import type { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
+import type { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import type { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
+import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import type { RequestHandler } from 'express';
 
-/** Middleware rỗng: chỉ gọi `next()` — dùng khi cần object validator/controller giả cho Express đăng ký route, không thực thi logic. */
+/** Middleware rỗng: chỉ gọi `next()` — dùng khi cần object pipe/controller giả cho Express đăng ký route, không thực thi logic. */
 const nextOnlyMiddleware: RequestHandler = (_request, _response, next) => {
   next();
 };
@@ -41,16 +44,17 @@ const nextOnlyMiddleware: RequestHandler = (_request, _response, next) => {
  * Tạo proxy giả: mỗi field là `nextOnlyMiddleware`, hoặc factory trả về nó (userId / postId).
  * Chỉ phục vụ bước khai báo route trong constructor — không dùng xử lý request thật.
  */
-function createNoopValidatorProxyForRouteRegistration<T extends object>(): T {
+function createNoopPipeProxyForRouteRegistration<T extends object>(): T {
   return new Proxy({} as T, {
     get(_target, propertyKey: string | symbol) {
       if (
-        propertyKey === 'userIdValidator' ||
-        propertyKey === 'postIdValidator' ||
+        propertyKey === 'userIdPipe' ||
+        propertyKey === 'postIdPipe' ||
         propertyKey === 'roleIdParam' ||
-        propertyKey === 'createBodyValidator' ||
-        propertyKey === 'updateBodyValidator' ||
-        propertyKey === 'permissionIdParam'
+        propertyKey === 'createBodyPipe' ||
+        propertyKey === 'updateBodyPipe' ||
+        propertyKey === 'permissionIdParam' ||
+        propertyKey === 'hashtagIdParam'
       ) {
         return () => nextOnlyMiddleware;
       }
@@ -60,7 +64,7 @@ function createNoopValidatorProxyForRouteRegistration<T extends object>(): T {
 }
 
 /**
- * Tạo proxy controller giả: mỗi method trả về hàm async rỗng (đủ cho `asyncHandler` gắn route).
+ * Tạo proxy controller giả: mỗi method trả về hàm async rỗng (đủ cho route + `interceptor`).
  */
 function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
   return new Proxy({} as T, {
@@ -70,66 +74,67 @@ function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
   });
 }
 
-const noopRoleService = {} as IRoleService;
-const noopUserServiceForAdmin = {} as IUserService;
 const noopAuthGuard = new Proxy({} as AuthGuard, { get: () => nextOnlyMiddleware });
+const noopApiKeyGuard = new Proxy({} as ApiKeyGuard, { get: () => nextOnlyMiddleware });
+const noopAuthOptionGuard = new Proxy({} as AuthOptionGuard, { get: () => nextOnlyMiddleware });
 
 /**
  * Thứ tự giống `buildHttpRouters` để danh sách route trùng runtime.
  */
 export function buildStubHttpRouters(): BaseRoute[] {
-  const authValidator: IAuthValidator = createNoopValidatorProxyForRouteRegistration();
-  const userValidator: IUserValidator = createNoopValidatorProxyForRouteRegistration();
-  const postValidator: IPostValidator = createNoopValidatorProxyForRouteRegistration();
-  const searchValidator: ISearchValidator = createNoopValidatorProxyForRouteRegistration();
-  const friendValidator: IFriendValidator = createNoopValidatorProxyForRouteRegistration();
-  const blocksValidator: IBlockValidator = createNoopValidatorProxyForRouteRegistration();
-  const conversationValidator: IConversationValidator = createNoopValidatorProxyForRouteRegistration();
-  const chatMessageValidator: IChatMessageValidator = createNoopValidatorProxyForRouteRegistration();
-  const notificationValidator: INotificationValidator = createNoopValidatorProxyForRouteRegistration();
-  const rolesValidator: IRolesValidator = createNoopValidatorProxyForRouteRegistration();
-  const permissionsValidator: IPermissionsValidator = createNoopValidatorProxyForRouteRegistration();
+  const authPipe: IAuthPipe = createNoopPipeProxyForRouteRegistration();
+  const userPipe: IUserPipe = createNoopPipeProxyForRouteRegistration();
+  const postPipe: IPostPipe = createNoopPipeProxyForRouteRegistration();
+  const searchPipe: ISearchPipe = createNoopPipeProxyForRouteRegistration();
+  const friendPipe: IFriendPipe = createNoopPipeProxyForRouteRegistration();
+  const blocksPipe: IBlockPipe = createNoopPipeProxyForRouteRegistration();
+  const conversationPipe: IConversationPipe = createNoopPipeProxyForRouteRegistration();
+  const chatMessagePipe: IChatMessagePipe = createNoopPipeProxyForRouteRegistration();
+  const notificationPipe: INotificationPipe = createNoopPipeProxyForRouteRegistration();
+  const rolesPipe: IRolesPipe = createNoopPipeProxyForRouteRegistration();
+  const permissionsPipe: IPermissionsPipe = createNoopPipeProxyForRouteRegistration();
+  const hashtagsPipe: IHashtagsPipe = createNoopPipeProxyForRouteRegistration();
 
   return [
-    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authValidator, noopAuthGuard),
-    new UserRoute(createNoopControllerProxyForRouteRegistration(), userValidator, noopAuthGuard),
-    new BookmarkRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator, noopAuthGuard),
-    new LikeRoute(createNoopControllerProxyForRouteRegistration(), userValidator, postValidator, noopAuthGuard),
-    new MediaRoute(createNoopControllerProxyForRouteRegistration(), userValidator, noopAuthGuard),
+    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authPipe, noopAuthGuard),
+    new UserRoute(createNoopControllerProxyForRouteRegistration(), userPipe, noopAuthGuard, noopAuthOptionGuard),
+    new BookmarkRoute(createNoopControllerProxyForRouteRegistration(), userPipe, postPipe, noopAuthGuard),
+    new LikeRoute(createNoopControllerProxyForRouteRegistration(), userPipe, postPipe, noopAuthGuard),
+    new MediaRoute(createNoopControllerProxyForRouteRegistration(), userPipe, noopAuthGuard),
     new OAuthRoute(createNoopControllerProxyForRouteRegistration()),
-    new PostRoute(createNoopControllerProxyForRouteRegistration(), postValidator, userValidator, noopAuthGuard),
-    new SearchRoute(createNoopControllerProxyForRouteRegistration(), searchValidator, userValidator, noopAuthGuard),
-    new FriendRoute(createNoopControllerProxyForRouteRegistration(), friendValidator, userValidator, noopAuthGuard),
-    new BlockRoute(createNoopControllerProxyForRouteRegistration(), blocksValidator, userValidator, noopAuthGuard),
+    new PostRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      postPipe,
+      userPipe,
+      noopAuthGuard,
+      noopAuthOptionGuard
+    ),
+    new SearchRoute(createNoopControllerProxyForRouteRegistration(), searchPipe, userPipe, noopAuthOptionGuard),
+    new FriendRoute(createNoopControllerProxyForRouteRegistration(), friendPipe, userPipe, noopAuthGuard),
+    new BlockRoute(createNoopControllerProxyForRouteRegistration(), blocksPipe, userPipe, noopAuthGuard),
     new ConversationRoute(
       createNoopControllerProxyForRouteRegistration(),
-      conversationValidator,
+      conversationPipe,
       createNoopControllerProxyForRouteRegistration(),
-      chatMessageValidator,
-      userValidator,
+      chatMessagePipe,
+      userPipe,
       noopAuthGuard
     ),
     new StaticRoute(createNoopControllerProxyForRouteRegistration()),
-    new NotificationRoute(
-      createNoopControllerProxyForRouteRegistration(),
-      notificationValidator,
-      userValidator,
-      noopAuthGuard
-    ),
+    new NotificationRoute(createNoopControllerProxyForRouteRegistration(), notificationPipe, userPipe, noopAuthGuard),
     new RoleRoute(
       createNoopControllerProxyForRouteRegistration<IRoleController>(),
-      noopRoleService,
-      noopUserServiceForAdmin,
-      rolesValidator,
-      noopAuthGuard
+      rolesPipe,
+      noopAuthGuard,
+      noopApiKeyGuard
     ),
     new PermissionRoute(
       createNoopControllerProxyForRouteRegistration<IPermissionController>(),
-      noopRoleService,
-      noopUserServiceForAdmin,
-      permissionsValidator,
-      noopAuthGuard
-    )
+      permissionsPipe,
+      noopAuthGuard,
+      noopApiKeyGuard
+    ),
+    new HashtagRoute(createNoopControllerProxyForRouteRegistration<IHashtagController>(), hashtagsPipe, noopAuthGuard)
   ];
 }
 

@@ -3,7 +3,7 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { IPostService } from '@/modules/post/application/services/post.service';
+import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetGuestNewFeedsInPort,
   GetGuestNewFeedsQuery,
@@ -15,7 +15,7 @@ export class GetGuestNewFeedsInteractor extends GetGuestNewFeedsInPort {
 
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
-    private readonly postService: IPostService,
+    private readonly postService: PostServicePort,
     private readonly logger: LoggerPort
   ) {
     super();

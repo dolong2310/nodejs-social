@@ -4,7 +4,7 @@ import {
 } from '@/modules/notification/application/constants/notification.constant';
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
-import { INotificationTrimQueue } from '@/modules/notification/application/ports/notification-trim-job.port';
+import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import {
   RecordAddedToGroupPayload,
@@ -12,7 +12,7 @@ import {
   RecordFriendRequestPayload,
   RecordNewMessagePayload
 } from '@/modules/notification/application/services/notification.service.type';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
@@ -70,26 +70,26 @@ function createTtlCapCache<K, V>(ttlMs: number, maxEntries: number) {
   };
 }
 
-export interface INotificationsService {
+export interface NotificationServicePort {
   recordFriendRequest(payload: RecordFriendRequestPayload): Promise<void>;
   recordFriendAccepted(payload: RecordFriendAcceptedPayload): Promise<void>;
   recordNewMessage(payload: RecordNewMessagePayload): Promise<void>;
   recordAddedToGroup(payload: RecordAddedToGroupPayload): Promise<void>;
 }
 
-export class NotificationsService implements INotificationsService {
+export class NotificationService implements NotificationServicePort {
   private static readonly NEW_MESSAGE_OPTIMIZE_THRESHOLD = 50;
   private static readonly ACTOR_CACHE_TTL_MS = 60000;
   private static readonly ACTOR_CACHE_MAX_ENTRIES = 5000;
   private readonly actorCache = createTtlCapCache<string, NotificationFullProps['actor']>(
-    NotificationsService.ACTOR_CACHE_TTL_MS,
-    NotificationsService.ACTOR_CACHE_MAX_ENTRIES
+    NotificationService.ACTOR_CACHE_TTL_MS,
+    NotificationService.ACTOR_CACHE_MAX_ENTRIES
   );
 
   constructor(
     private readonly notificationRepository: NotificationRepositoryPort,
-    private readonly notificationTrimQueue: INotificationTrimQueue,
-    private readonly userService: IUserService,
+    private readonly notificationTrimQueue: NotificationTrimQueuePort,
+    private readonly userService: UserServicePort,
     private readonly realtimeEmitter: RealtimeEmitterPort
   ) {}
 
@@ -101,7 +101,7 @@ export class NotificationsService implements INotificationsService {
     const user = await this.userService.findUserById(userId, { querySafe: true });
 
     if (!user) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
     const actor = {
       userId: user.id,
@@ -235,7 +235,7 @@ export class NotificationsService implements INotificationsService {
     );
 
     // Small group: keep current sync flow (insertOne + trim + emit) for correctness.
-    if (recipientIds.length < NotificationsService.NEW_MESSAGE_OPTIMIZE_THRESHOLD) {
+    if (recipientIds.length < NotificationService.NEW_MESSAGE_OPTIMIZE_THRESHOLD) {
       for (const entity of entities) {
         await this.persistAndEmit(entity.getProps().recipientId, entity);
       }

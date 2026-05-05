@@ -1,5 +1,5 @@
-import { IAuthService } from '@/modules/auth/application/services/auth.service';
-import { IOtpService } from '@/modules/auth/application/services/otp.service';
+import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
+import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
 import {
   RegisterCommand,
   RegisterInPort,
@@ -9,7 +9,7 @@ import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { generateId } from '@/modules/core/domain/helpers/ids';
-import { IRoleService } from '@/modules/role/application/services/role.service';
+import { RoleServicePort } from '@/modules/role/application/services/role.service';
 import { UserAlreadyExistsException } from '@/modules/user/application/user.exception';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -17,11 +17,11 @@ import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repo
 export class RegisterInteractor extends RegisterInPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
-    private readonly authService: IAuthService,
+    private readonly authService: AuthServicePort,
     private readonly hashingService: HashingPort,
     private readonly otpRepository: OtpRepositoryPort,
-    private readonly otpService: IOtpService,
-    private readonly roleService: IRoleService
+    private readonly otpService: OtpServicePort,
+    private readonly roleService: RoleServicePort
   ) {
     super();
   }
@@ -50,7 +50,7 @@ export class RegisterInteractor extends RegisterInPort {
     // 4. Check existing user and create user
     const existingUserEntity = await this.userRepository.findUserByEmail(email);
     if (existingUserEntity) {
-      throw UserAlreadyExistsException;
+      throw new UserAlreadyExistsException();
     }
     const userEntity = UserEntity.create({
       name,

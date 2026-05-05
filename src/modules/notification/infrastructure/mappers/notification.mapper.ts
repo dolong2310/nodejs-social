@@ -8,10 +8,7 @@ import {
   IFriendRequestNotificationPayload,
   INewMessageNotificationPayload
 } from '@/modules/notification/domain/entities/notification.type';
-import {
-  NotificationModel,
-  notificationSchema
-} from '@/modules/notification/infrastructure/mongo/notification.model';
+import { NotificationModel, notificationSchema } from '@/modules/notification/infrastructure/mongo/notification.model';
 import { parse } from 'valibot';
 
 export class NotificationMapper implements Mapper<NotificationEntity, NotificationModel> {

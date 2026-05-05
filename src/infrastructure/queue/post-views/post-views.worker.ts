@@ -1,14 +1,10 @@
 import { POST_VIEWS_QUEUE_NAME } from '@/infrastructure/queue/post-views/post-views.queue';
-import { IPostViewsJobData, IPostViewsJobResult } from '@/modules/post/application/ports/post-views-job.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostCommandRepositoryPort } from '@/modules/post/application/ports/command/post-command.repository';
+import { IPostViewsJobData, IPostViewsJobResult } from '@/modules/post/application/ports/post-views-job.port';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 
-export interface IPostViewsWorker {
-  run(connection: ConnectionOptions): Worker<IPostViewsJobData, IPostViewsJobResult>;
-}
-
-export class PostViewsWorker implements IPostViewsWorker {
+export class PostViewsWorker {
   private readonly log: LoggerPort;
 
   constructor(

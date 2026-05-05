@@ -1,10 +1,8 @@
-import { AuthGuard } from '@/presentation/http/express/middlewares/auth.guard';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
-import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
+import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ILikeController } from '@/presentation/http/express/v1/controllers/like.controller';
+import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IPostValidator } from '@/presentation/http/express/v1/validators/post.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class LikeRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -12,8 +10,8 @@ export class LikeRoute extends BaseRoute {
 
   constructor(
     private readonly likeController: ILikeController,
-    private readonly userValidator: IUserValidator,
-    private readonly postValidator: IPostValidator,
+    private readonly userPipe: IUserPipe,
+    private readonly postPipe: IPostPipe,
     private readonly authGuard: AuthGuard
   ) {
     super();
@@ -22,25 +20,26 @@ export class LikeRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     const { createLike, deleteLike } = this.likeController;
-    const { userActiveValidator } = this.userValidator;
-    const { postIdValidator } = this.postValidator;
-    const { protect } = this.authGuard;
+    const { userActivePipe } = this.userPipe;
+    const { postIdPipe } = this.postPipe;
+    const authGuard = this.authGuard.handler;
+    const throttler = this.throttlerGuard();
 
     this.router.post(
       '/',
-      appLimiter,
-      protect,
-      userActiveValidator,
-      postIdValidator('postId', 'body'),
-      asyncHandler(createLike)
+      throttler,
+      authGuard,
+      userActivePipe,
+      postIdPipe('postId', 'body'),
+      this.interceptor(createLike)
     );
     this.router.delete(
       '/posts/:postId',
-      appLimiter,
-      protect,
-      userActiveValidator,
-      postIdValidator('postId', 'params'),
-      asyncHandler(deleteLike)
+      throttler,
+      authGuard,
+      userActivePipe,
+      postIdPipe('postId', 'params'),
+      this.interceptor(deleteLike)
     );
   }
 }

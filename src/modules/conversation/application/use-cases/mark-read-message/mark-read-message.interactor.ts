@@ -1,5 +1,5 @@
 import { ConversationNotFoundException } from '@/modules/conversation/application/conversation.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   MarkReadCommand,
   MarkReadInPort
@@ -13,7 +13,7 @@ export class MarkReadInteractor extends MarkReadInPort {
   constructor(
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
     private readonly chatMessageRepository: ChatMessageRepositoryPort,
-    private readonly conversationService: IConversationService,
+    private readonly conversationService: ConversationServicePort,
     private readonly realtimeEmitter: RealtimeEmitterPort
   ) {
     super();
@@ -32,7 +32,7 @@ export class MarkReadInteractor extends MarkReadInPort {
       // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
       const entity = await this.chatMessageRepository.findMessageById(messageId);
       if (!entity || entity.getProps().conversationId !== conversationId) {
-        throw ConversationNotFoundException;
+        throw new ConversationNotFoundException();
       }
       messageEntity = entity;
     } else {
@@ -44,7 +44,7 @@ export class MarkReadInteractor extends MarkReadInPort {
       // Kiểm tra messageId có hợp lệ không.
       // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
       if (messageEntity.getProps().conversationId !== conversationId) {
-        throw ConversationNotFoundException;
+        throw new ConversationNotFoundException();
       }
     }
 

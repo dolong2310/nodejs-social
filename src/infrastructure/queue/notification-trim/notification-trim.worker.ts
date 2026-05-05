@@ -8,11 +8,7 @@ import { NOTIFICATION_MAX_PER_USER } from '@/modules/notification/application/co
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 
-export interface INotificationTrimWorker {
-  run(connection: ConnectionOptions): Worker<INotificationTrimJobData, INotificationTrimJobResult>;
-}
-
-export class NotificationTrimWorker implements INotificationTrimWorker {
+export class NotificationTrimWorker {
   private readonly log: LoggerPort;
 
   constructor(

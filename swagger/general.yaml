@@ -7,7 +7,7 @@ info:
     **Base path:** mọi route (trừ tài liệu) nằm dưới prefix `/api` (ví dụ đăng nhập: `POST /api/auth/login`).
     **Swagger UI:** `/api/docs`.
 
-    **Auth:** `Authorization: Bearer <accessToken>`. Refresh token chỉ qua cookie httpOnly `refreshToken` — làm mới access: `GET /api/auth/refresh-token` (không body).
+    **Auth:** `Authorization: Bearer <accessToken>` cho user auth; `x-api-key: <API_KEY>` cho route dùng API key. Có thể dùng cả hai nếu route gắn cả `AuthGuard` và `ApiKeyGuard`. Refresh token chỉ qua cookie httpOnly `refreshToken` — làm mới access: `GET /api/auth/refresh-token` (không body).
 
     **Chuẩn Response:**
     - Success: `{ message, statusCode, data? }` — `SuccessResponse`

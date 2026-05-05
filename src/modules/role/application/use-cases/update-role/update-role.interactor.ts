@@ -1,3 +1,4 @@
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import {
   CannotDeactivateAdminRoleException,
   CannotRenameSystemRoleException,
@@ -5,36 +6,42 @@ import {
   RoleNotFoundException
 } from '@/modules/role/application/role.exception';
 import { RoleListItem } from '@/modules/role/application/use-cases/list-roles/list-roles.in-port';
-import { UpdateRoleCommand, UpdateRoleInPort } from '@/modules/role/application/use-cases/update-role/update-role.in-port';
+import {
+  UpdateRoleCommand,
+  UpdateRoleInPort
+} from '@/modules/role/application/use-cases/update-role/update-role.in-port';
 import { ERoleName } from '@/modules/role/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { IUpdateRoleInput } from '@/modules/role/domain/repositories/role.repository.type';
 
 export class UpdateRoleInteractor extends UpdateRoleInPort {
-  constructor(private readonly roleRepository: RoleRepositoryPort) {
+  constructor(
+    private readonly roleRepository: RoleRepositoryPort,
+    private readonly cacheManager: CacheManagerPort
+  ) {
     super();
   }
 
   async execute(command: UpdateRoleCommand) {
     const currentRole = await this.roleRepository.findRoleById(command.id);
     if (!currentRole) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
     const currentName = currentRole.getProps().name;
 
     if (command.name !== undefined && command.name !== currentName) {
       if (currentRole.isSystemRole()) {
-        throw CannotRenameSystemRoleException;
+        throw new CannotRenameSystemRoleException();
       }
       const existingRole = await this.roleRepository.findRoleByName(command.name);
       if (existingRole) {
-        throw RoleNameAlreadyExistsException;
+        throw new RoleNameAlreadyExistsException();
       }
     }
 
     // Không được deactive role admin
     if (currentName === ERoleName.ADMIN && !command.isActive) {
-      throw CannotDeactivateAdminRoleException;
+      throw new CannotDeactivateAdminRoleException();
     }
 
     const patch: IUpdateRoleInput = {};
@@ -49,8 +56,10 @@ export class UpdateRoleInteractor extends UpdateRoleInPort {
 
     const updated = await this.roleRepository.updateRole(command.id, patch);
     if (!updated) {
-      throw RoleNotFoundException;
+      throw new RoleNotFoundException();
     }
+
+    await this.cacheManager.del(`role:${command.id}`);
     return new RoleListItem(updated.toObject());
   }
 }

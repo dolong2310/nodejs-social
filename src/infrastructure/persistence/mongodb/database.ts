@@ -4,8 +4,12 @@ import { Db, MongoClient, type Collection, type Document } from 'mongodb';
 const log = logger.child({ module: 'database-service' });
 
 export interface DatabasePort {
+  dbClient: MongoClient;
+  db: Db;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
+  initializeIndexes(): Promise<void>;
+  initializeConversationIndexes(): Promise<void>;
 }
 
 export class Database implements DatabasePort {
@@ -21,11 +25,11 @@ export class Database implements DatabasePort {
     try {
       await this.db.command({ ping: 1 });
     } catch (error) {
-      log.error({ err: error }, 'error connecting to mongodb database');
+      log.error({ err: error }, 'error connecting to mongodb');
       await this.disconnect();
       throw error;
     }
-    log.info({ database: this.db.databaseName }, 'connected to mongodb databases');
+    log.info({ database: this.db.databaseName }, 'connected to mongodb');
   }
 
   async disconnect() {
@@ -86,7 +90,7 @@ export class Database implements DatabasePort {
     }
   }
 
-  async createUsersIndex() {
+  private async createUsersIndex() {
     const isIndexExists = await this.indexExistsSafe(this.users, ['email_1_password_1', 'username_1', 'email_1']);
     if (isIndexExists) return;
     await Promise.all([
@@ -96,7 +100,7 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createRefreshTokensIndex() {
+  private async createRefreshTokensIndex() {
     const isIndexExists = await this.indexExistsSafe(this.refreshTokens, ['token_1', 'expiresAt_1']);
     if (isIndexExists) return;
     await Promise.all([
@@ -105,13 +109,13 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createVideoStatusesIndex() {
+  private async createVideoStatusesIndex() {
     const isIndexExists = await this.indexExistsSafe(this.videoStatuses, ['name_1']);
     if (isIndexExists) return;
     await this.videoStatuses.createIndex({ name: 1 });
   }
 
-  async createFriendshipIndexes() {
+  private async createFriendshipIndexes() {
     const isIndexExists = await this.indexExistsSafe(this.friendships, ['userIdLow_1_userIdHigh_1']);
     if (isIndexExists) return;
     await Promise.all([
@@ -121,7 +125,7 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createFriendRequestIndexes() {
+  private async createFriendRequestIndexes() {
     const isIndexExists = await this.indexExistsSafe(this.friendRequests, ['fromUserId_1_toUserId_1']);
     if (isIndexExists) return;
     await Promise.all([
@@ -132,7 +136,7 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createBlockIndexes() {
+  private async createBlockIndexes() {
     const isIndexExists = await this.indexExistsSafe(this.blocks, ['blockerId_1_blockedId_1']);
     if (isIndexExists) return;
     await Promise.all([
@@ -142,13 +146,13 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createPostsIndex() {
+  private async createPostsIndex() {
     const isIndexExists = await this.indexExistsSafe(this.posts, ['content_text']);
     if (isIndexExists) return;
     await this.posts.createIndex({ content: 'text' }, { default_language: 'none' });
   }
 
-  async createPostsAdditionalIndexes() {
+  private async createPostsAdditionalIndexes() {
     await Promise.all([
       // For findPostsType / countPostsType queries: { parentId, type }
       // Also used by the $lookup self-join in aggregation pipelines that counts child posts (comments/reposts/quotes)
@@ -164,7 +168,7 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createBookmarksIndex() {
+  private async createBookmarksIndex() {
     await Promise.all([
       // For bookmark create (upsert) and delete: { userId, postId } — also prevents duplicate bookmarks
       this.bookmarks.createIndex({ userId: 1, postId: 1 }, { unique: true }),
@@ -173,29 +177,37 @@ export class Database implements DatabasePort {
     ]);
   }
 
-  async createLikesIndex() {
+  private async createLikesIndex() {
     await Promise.all([
       this.likes.createIndex({ userId: 1, postId: 1 }, { unique: true }),
       this.likes.createIndex({ postId: 1 })
     ]);
   }
 
-  async createHashtagsIndex() {
+  private async createHashtagsIndex() {
     // For findAndUpsertHashtags upsert filter and find-by-name queries
     await this.hashtags.createIndex({ name: 1 }, { unique: true });
   }
 
   /** Search posts: filters on audience + media.type (video / image) combine often in $match. */
-  async createSearchPostsAudienceMediaIndex() {
+  private async createSearchPostsAudienceMediaIndex() {
     const name = 'audience_1_media.type_1';
     if (await this.indexExistsSafe(this.posts, [name])) return;
     await this.posts.createIndex({ audience: 1, 'media.type': 1 }, { name });
   }
 
-  async createUsersSearchIndex() {
+  private async createUsersSearchIndex() {
     const isIndexExists = await this.indexExistsSafe(this.users, ['name_1_username_1_email_1']);
     if (isIndexExists) return;
     await this.users.createIndex({ name: 'text', username: 'text', email: 'text' }, { default_language: 'none' });
+  }
+
+  private async createNotificationIndexes() {
+    const col = this.notifications;
+    const listIdx = 'recipientId_1_createdAt_-1__id_-1';
+    if (!(await this.indexExistsSafe(col, [listIdx]))) {
+      await col.createIndex({ recipientId: 1, createdAt: -1, _id: -1 }, { name: listIdx });
+    }
   }
 
   async initializeIndexes() {
@@ -215,14 +227,6 @@ export class Database implements DatabasePort {
       this.createHashtagsIndex(),
       this.createNotificationIndexes()
     ]);
-  }
-
-  async createNotificationIndexes() {
-    const col = this.notifications;
-    const listIdx = 'recipientId_1_createdAt_-1__id_-1';
-    if (!(await this.indexExistsSafe(col, [listIdx]))) {
-      await col.createIndex({ recipientId: 1, createdAt: -1, _id: -1 }, { name: listIdx });
-    }
   }
 
   async initializeConversationIndexes(): Promise<void> {

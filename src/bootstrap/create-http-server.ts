@@ -25,7 +25,7 @@ export async function createHttpServer(httpServer: HttpServer, io: SocketIOServe
 
   httpServer.on('request', app);
 
-  if (appConfig.rateLimit?.enabled) {
+  if (appConfig.rateLimit.enabled) {
     app.use(
       rateLimit({
         windowMs: appConfig.rateLimit.windowMs,
@@ -48,6 +48,6 @@ export async function createHttpServer(httpServer: HttpServer, io: SocketIOServe
   return {
     server: httpServer,
     port: appConfig.port,
-    container
+    appUrl: appConfig.client.url
   };
 }

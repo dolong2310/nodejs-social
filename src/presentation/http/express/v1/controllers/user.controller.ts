@@ -11,14 +11,14 @@ import {
   UpdateMeRequestDTO
 } from '@/presentation/http/express/v1/dtos/user/user.request.dto';
 import { ChangePasswordResponseDTO, UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IUserController {
-  getMe(req: Request, res: Response): Promise<void>;
-  updateMe(req: Request<ParamsDictionary, object, UpdateMeRequestBody>, res: Response): Promise<void>;
-  getUserProfile(req: Request<GetUserProfileParamsDTO>, res: Response): Promise<void>;
-  changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response): Promise<void>;
+  getMe(req: Request): Promise<unknown>;
+  updateMe(req: Request<ParamsDictionary, object, UpdateMeRequestBody>): Promise<unknown>;
+  getUserProfile(req: Request<GetUserProfileParamsDTO>): Promise<unknown>;
+  changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>): Promise<unknown>;
 }
 
 export class UserController extends BaseController implements IUserController {
@@ -32,20 +32,19 @@ export class UserController extends BaseController implements IUserController {
   }
 
   @AutoBind()
-  async getMe(req: Request, res: Response) {
+  async getMe(req: Request) {
     const userId = this.getUserId(req);
 
     const user = await this.getMeUC.execute({ userId });
 
-    this.sendResponse<UserResponseDTO>({
-      res,
+    return this.response<UserResponseDTO>({
       data: new UserResponseDTO(user),
       message: 'Get me successfully'
     });
   }
 
   @AutoBind()
-  async updateMe(req: Request<ParamsDictionary, object, UpdateMeRequestBody>, res: Response) {
+  async updateMe(req: Request<ParamsDictionary, object, UpdateMeRequestBody>) {
     const userId = this.getUserId(req);
     const dto = new UpdateMeRequestDTO(req.body);
 
@@ -61,36 +60,33 @@ export class UserController extends BaseController implements IUserController {
       coverPhoto: dto.coverPhoto
     });
 
-    this.sendResponse<UserResponseDTO>({
-      res,
+    return this.response<UserResponseDTO>({
       data: new UserResponseDTO(updatedUser),
       message: 'Update me successfully'
     });
   }
 
   @AutoBind()
-  async getUserProfile(req: Request<GetUserProfileParamsDTO>, res: Response) {
+  async getUserProfile(req: Request<GetUserProfileParamsDTO>) {
     const { username } = req.params;
     const userId = this.getUserId(req, { optional: true });
 
     const user = await this.getUserProfileUC.execute({ userId, username });
 
-    this.sendResponse<UserResponseDTO>({
-      res,
+    return this.response<UserResponseDTO>({
       data: new UserResponseDTO(user),
       message: 'Get user profile successfully'
     });
   }
 
   @AutoBind()
-  async changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>, res: Response) {
+  async changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>) {
     const dto = new ChangePasswordRequestDTO(req.body);
     const userId = this.getUserId(req);
 
     await this.changePasswordUC.execute({ userId, password: dto.password });
 
-    this.sendResponse<ChangePasswordResponseDTO>({
-      res,
+    return this.response<ChangePasswordResponseDTO>({
       message: 'Change password successfully'
     });
   }

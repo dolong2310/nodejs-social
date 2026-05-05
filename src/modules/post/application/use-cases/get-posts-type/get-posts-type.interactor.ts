@@ -5,9 +5,9 @@ import { PostNotFoundException } from '@/modules/post/application/post.exception
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { IBlockService } from '@/modules/block/application/services/block.service';
-import { IPostService } from '@/modules/post/application/services/post.service';
-import { IPostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
+import { PostServicePort } from '@/modules/post/application/services/post.service';
+import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
   GetPostsTypeInPort,
   GetPostsTypeQuery,
@@ -19,9 +19,9 @@ export class GetPostsTypeInteractor extends GetPostsTypeInPort {
 
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
-    private readonly postAudienceAccess: IPostAudienceAccessService,
-    private readonly postService: IPostService,
-    private readonly blockService: IBlockService,
+    private readonly postAudienceAccess: PostAudienceAccessServicePort,
+    private readonly postService: PostServicePort,
+    private readonly blockService: BlockServicePort,
     private readonly logger: LoggerPort
   ) {
     super();
@@ -37,7 +37,7 @@ export class GetPostsTypeInteractor extends GetPostsTypeInPort {
   }: GetPostsTypeQuery): Promise<GetPostsTypeResult<T>> {
     const parentPost = await this.postQueryRepository.findPostDetailById(postId);
     if (!parentPost) {
-      throw PostNotFoundException;
+      throw new PostNotFoundException();
     }
     await this.postAudienceAccess.assertViewerCanAccessPostDetail(parentPost, userId);
 

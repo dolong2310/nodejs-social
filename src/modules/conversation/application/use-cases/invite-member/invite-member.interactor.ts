@@ -3,9 +3,9 @@ import {
   ConversationNotFoundException,
   ConversationUserAlreadyMemberException
 } from '@/modules/conversation/application/conversation.exception';
-import { IConversationService } from '@/modules/conversation/application/services/conversation.service';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
-import { INotificationsService } from '@/modules/notification/application/services/notification.service';
+import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
+import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import {
   InviteMemberCommand,
   InviteMemberInPort,
@@ -24,9 +24,9 @@ export class InviteMemberInteractor extends InviteMemberInPort {
   constructor(
     private readonly conversationRepository: ConversationRepositoryPort,
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
-    private readonly conversationService: IConversationService,
-    private readonly friendService: IFriendService,
-    private readonly notificationsService: INotificationsService
+    private readonly conversationService: ConversationServicePort,
+    private readonly friendService: FriendServicePort,
+    private readonly notificationsService: NotificationServicePort
   ) {
     super();
   }
@@ -45,17 +45,17 @@ export class InviteMemberInteractor extends InviteMemberInPort {
 
     // kiểm tra conversation có phải là group không
     if (conv.type !== EConversationType.GROUP) {
-      throw ConversationNotFoundException;
+      throw new ConversationNotFoundException();
     }
 
     // kiểm tra người được mới có phải là member của conversation không
     if (memberEntity) {
-      throw ConversationUserAlreadyMemberException;
+      throw new ConversationUserAlreadyMemberException();
     }
 
     // kiểm tra người được mời có phải là bạn bè của người đang mời không
     if (!isFriend) {
-      throw ConversationInviteNotFriendException;
+      throw new ConversationInviteNotFriendException();
     }
 
     // kiểm tra người tạo group có phải là bạn bè của người được mời không
@@ -64,7 +64,7 @@ export class InviteMemberInteractor extends InviteMemberInPort {
       otherUserId: inviteeUserId
     });
     if (!creatorFriend) {
-      throw ConversationInviteNotFriendException;
+      throw new ConversationInviteNotFriendException();
     }
 
     // thêm người được mời vào group database

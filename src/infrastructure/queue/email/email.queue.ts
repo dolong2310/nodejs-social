@@ -1,10 +1,10 @@
-import { IEmailJobData, IEmailJobResult, IEmailQueue } from '@/modules/auth/application/ports/email-job.port';
+import { IEmailJobData, IEmailJobResult, EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 export const EMAIL_QUEUE_NAME = 'email';
 
-export class BullMQEmailQueue implements IEmailQueue {
+export class BullMQEmailQueue implements EmailQueuePort {
   private readonly queue: Queue<IEmailJobData, IEmailJobResult>;
   private readonly log: LoggerPort;
 

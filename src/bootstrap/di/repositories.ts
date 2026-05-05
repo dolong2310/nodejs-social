@@ -34,6 +34,9 @@ import { HashtagRepository } from '@/modules/hashtag/infrastructure/mongo/hashta
 import { LikeRepositoryPort } from '@/modules/like/domain/repositories/like.repository';
 import { LikeMapper } from '@/modules/like/infrastructure/mappers/like.mapper';
 import { LikeRepository } from '@/modules/like/infrastructure/mongo/like.impl.repository';
+import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { VideoStatusMapper } from '@/modules/media/infrastructure/mappers/video-status.mapper';
+import { VideoStatusRepository } from '@/modules/media/infrastructure/mongo/video-status.impl.repository';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/mappers/notification.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/mongo/notification.impl.repository';
@@ -47,17 +50,16 @@ import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
 import { PostCommandRepository } from '@/modules/post/infrastructure/mongo/post-command.impl.repository';
 import { PostQueryRepository } from '@/modules/post/infrastructure/mongo/post-query.impl.repository';
 import { PostRepository } from '@/modules/post/infrastructure/mongo/post.impl.repository';
+import { RoleQueryRepositoryPort } from '@/modules/role/application/ports/queries/role-query.repository';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { RoleMapper } from '@/modules/role/infrastructure/mappers/role.mapper';
+import { RoleQueryRepository } from '@/modules/role/infrastructure/mongo/role-query.impl.repository';
 import { RoleRepository } from '@/modules/role/infrastructure/mongo/role.impl.repository';
 import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
 import { UserQueryRepository } from '@/modules/user/infrastructure/mongo/user-query.impl.repository';
 import { UserRepository } from '@/modules/user/infrastructure/mongo/user.impl.repository';
-import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
-import { VideoStatusMapper } from '@/modules/media/infrastructure/mappers/video-status.mapper';
-import { VideoStatusRepository } from '@/modules/media/infrastructure/mongo/video-status.impl.repository';
 import { Db, MongoClient } from 'mongodb';
 
 type Repositories = {
@@ -85,6 +87,7 @@ type QueryRepositories = {
   postCommandRepository: PostCommandRepositoryPort;
   userQueryRepository: UserQueryRepositoryPort;
   conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort;
+  roleQueryRepository: RoleQueryRepositoryPort;
 };
 
 export type ContainerRepositories = Repositories & QueryRepositories;
@@ -137,7 +140,8 @@ export function createContainerRepositories(db: Db, dbClient: MongoClient, logge
   const queryRepositories = {
     postQueryRepository: new PostQueryRepository(db, dbClient, postMapper),
     userQueryRepository: new UserQueryRepository(db, dbClient, userMapper),
-    conversationMemberQueryRepository: new ConversationMemberQueryRepository(db, dbClient)
+    conversationMemberQueryRepository: new ConversationMemberQueryRepository(db, dbClient),
+    roleQueryRepository: new RoleQueryRepository(db, dbClient, roleMapper)
   };
 
   const commandRepositories = {

@@ -5,7 +5,7 @@ import {
   FriendActionBlockedException,
   FriendRequestDailyLimitExceededException
 } from '@/modules/friend/application/friend.exception';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   SendFriendRequestCommand,
   SendFriendRequestInPort,
@@ -13,7 +13,7 @@ import {
 } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.in-port';
 import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
 import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
-import { INotificationsService } from '@/modules/notification/application/services/notification.service';
+import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { UserNotFoundException } from '@/modules/user/application/user.exception';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
@@ -32,23 +32,23 @@ export class SendFriendRequestInteractor extends SendFriendRequestInPort {
   constructor(
     private readonly friendshipRepository: FriendshipRepositoryPort,
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
-    private readonly friendService: IFriendService,
+    private readonly friendService: FriendServicePort,
     private readonly blockRepository: BlockRepositoryPort,
     private readonly userRepository: UserRepositoryPort,
-    private readonly notificationsService: INotificationsService
+    private readonly notificationsService: NotificationServicePort
   ) {
     super();
   }
 
   async execute({ userId, toUserId }: SendFriendRequestCommand): Promise<SendFriendRequestResult> {
     if (userId === toUserId) {
-      throw CannotSendFriendRequestToYourselfException;
+      throw new CannotSendFriendRequestToYourselfException();
     }
 
     // kiểm tra xem người được gửi yêu cầu có tồn tại không
     const userEntity = await this.userRepository.findUserById(toUserId);
     if (!userEntity) {
-      throw UserNotFoundException;
+      throw new UserNotFoundException();
     }
 
     const { start, endExclusive } = this._utcDayRange(new Date());
@@ -64,18 +64,18 @@ export class SendFriendRequestInteractor extends SendFriendRequestInPort {
 
     // kiểm tra xem người được gửi yêu cầu có block người gửi không
     if (isBlockedEitherWay) {
-      throw FriendActionBlockedException;
+      throw new FriendActionBlockedException();
     }
 
     // kiểm tra xem người được gửi yêu cầu có là bạn bè với người gửi không
     if (existingFriendship) {
-      throw AlreadyFriendsException;
+      throw new AlreadyFriendsException();
     }
 
     // kiểm tra xem người gửi có vượt quá số lượng yêu cầu kết bạn tới người được gửi yêu cầu không
     // Vì 1 ngày chỉ được gửi 100 yêu cầu kết bạn tới người được gửi yêu cầu không => tránh spam
     if (sentToday >= this.OUTGOING_REQUESTS_PER_UTC_DAY) {
-      throw FriendRequestDailyLimitExceededException;
+      throw new FriendRequestDailyLimitExceededException();
     }
 
     // try/catch để bắt lỗi Mongo duplicate key 11000 (thường do unique index theo cặp directed fromUserId+toUserId)

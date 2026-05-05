@@ -44,7 +44,7 @@ nodejs-social/
 - Purpose: Small shared utilities/constants for modules (e.g. socket helpers) — not the same as `core` (DDD primitives).
 
 **`src/presentation/`:**
-- Purpose: Express routes, controllers, DTOs, validators, middleware, HTTP responses; Socket.IO app and realtime features.
+- Purpose: Express routes, controllers, DTOs, pipes (validation middleware), middleware, HTTP responses; Socket.IO app and realtime features.
 - Contains: `http/express/app.ts`, `v1/routes/`, `v1/controllers/`, `v1/dtos/`, `middlewares/`, `socket/`
 - Key files: `src/presentation/http/express/app.ts`, `src/presentation/socket/socket.app.ts`
 
@@ -103,7 +103,7 @@ nodejs-social/
 2. Implement **Mongo repository** in `src/modules/<feature>/infrastructure/mongo/` and register in `src/bootstrap/di/repositories.ts`.
 3. Add **interactor** under `src/modules/<feature>/application/use-cases/<action>/`.
 4. Wire **controller** method and **route** in `src/presentation/http/express/v1/` and register the interactor in `src/bootstrap/di/http-routes.ts` (follow existing patterns for `AuthRoute`, `UserRoute`, etc.).
-5. Add Swagger fragments under `swagger/` and DTOs/validators under `v1/dtos/` and `v1/validators/`.
+5. Add Swagger fragments under `swagger/` and DTOs/pipes under `v1/dtos/` and `v1/pipes/`.
 
 **New module (bounded context):**
 - Create `src/modules/<name>/{domain,application,infrastructure}` mirroring an existing module such as `src/modules/block/` or `src/modules/bookmark/`.

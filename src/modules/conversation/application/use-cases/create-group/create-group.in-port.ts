@@ -1,5 +1,8 @@
+import {
+  CreateGroupConversationProps,
+  EConversationType
+} from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { CreateGroupConversationProps, EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 
 export class CreateGroupCommand {
   userId: string;

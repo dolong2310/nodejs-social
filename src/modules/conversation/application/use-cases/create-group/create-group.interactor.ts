@@ -24,13 +24,13 @@ export class CreateGroupInteractor extends CreateGroupInPort {
 
     // chỉ cho tạo group khi có ít nhất 1 member khác chính mình
     if (memberIds.length < 1) {
-      throw ConversationGroupNeedsMemberException;
+      throw new ConversationGroupNeedsMemberException();
     }
 
     // chỉ cho tạo group khi tất cả members đều là bạn bè của admin
     const allFriends = await this.areAllFriends({ userId, otherUserIds: memberIds });
     if (!allFriends) {
-      throw ConversationPeerNotFriendException;
+      throw new ConversationPeerNotFriendException();
     }
 
     // tạo transaction thực hiện 2 operation: insert group và insert members

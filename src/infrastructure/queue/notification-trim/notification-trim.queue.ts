@@ -2,14 +2,14 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   INotificationTrimJobData,
   INotificationTrimJobResult,
-  INotificationTrimQueue
+  NotificationTrimQueuePort
 } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { Queue, type ConnectionOptions } from 'bullmq';
 
 export const NOTIFICATION_TRIM_QUEUE_NAME = 'notification-trim';
 
 // Producer
-export class BullMQNotificationTrimQueue implements INotificationTrimQueue {
+export class BullMQNotificationTrimQueue implements NotificationTrimQueuePort {
   private readonly queue: Queue<INotificationTrimJobData, INotificationTrimJobResult>;
   private readonly log: LoggerPort;
 

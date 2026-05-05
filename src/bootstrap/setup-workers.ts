@@ -6,7 +6,7 @@ import { NotificationTrimWorker } from '@/infrastructure/queue/notification-trim
 import { PostViewsWorker } from '@/infrastructure/queue/post-views/post-views.worker';
 import { VideoStreamWorker } from '@/infrastructure/queue/video-stream/video-stream.worker';
 
-export function setupWorkers(container: IContainer) {
+export function setupWorkers(container: IContainer): void {
   const connection = buildBullMQConnection(dbConfig.redis);
   const logger = container.getLogger();
   const {

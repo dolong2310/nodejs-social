@@ -1,10 +1,10 @@
 import { ExpiredOtpCodeException, InvalidOtpCodeException } from '@/modules/auth/application/otp.exception';
-import { ITwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
+import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
 import { OtpEntity } from '@/modules/auth/domain/entities/otp.entity';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 
-export interface IOtpService {
+export interface OtpServicePort {
   findAndValidateOtpCode(data: { email: string; code: string; type: EOtpType }): Promise<OtpEntity>;
   validateTOTPCodeOrEmailOtpCode(data: {
     totpCode?: string;
@@ -18,7 +18,7 @@ export interface IOtpService {
 export class OtpService {
   constructor(
     private readonly otpRepository: OtpRepositoryPort,
-    private readonly twoFactorAuthenticationService: ITwoFactorAuthPort
+    private readonly twoFactorAuthenticationService: TwoFactorAuthPort
   ) {}
 
   async findAndValidateOtpCode(data: { email: string; code: string; type: EOtpType }): Promise<OtpEntity> {
@@ -28,19 +28,19 @@ export class OtpService {
     });
 
     if (!otpEntity) {
-      throw InvalidOtpCodeException;
+      throw new InvalidOtpCodeException();
     }
 
     const otp = otpEntity.toObject();
 
     if (otp.code !== data.code) {
-      throw InvalidOtpCodeException;
+      throw new InvalidOtpCodeException();
     }
 
     if (otp.expiresAt < new Date()) {
       // Delete OTP code
       await this.otpRepository.deleteOtp(otp.id);
-      throw ExpiredOtpCodeException;
+      throw new ExpiredOtpCodeException();
     }
 
     return otpEntity;
@@ -62,7 +62,7 @@ export class OtpService {
     // Check TOTP code is valid or email OTP code is valid
     // 1. Throw error if body does not have totpCode and emailOtpCode
     if (!totpCode && !emailOtpCode) {
-      throw InvalidOtpCodeException;
+      throw new InvalidOtpCodeException();
     }
 
     // 2. Check TOTP code is valid or email OTP code is valid
@@ -75,7 +75,7 @@ export class OtpService {
       });
 
       if (!isTOTPValid) {
-        throw InvalidOtpCodeException;
+        throw new InvalidOtpCodeException();
       }
     } else if (emailOtpCode) {
       // 2.2 Verify email OTP code

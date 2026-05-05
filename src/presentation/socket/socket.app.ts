@@ -1,7 +1,7 @@
 import { IContainer } from '@/bootstrap/container';
-import { AccessTokenPayload, ITokenService } from '@/modules/auth/application/services/token.service.type';
+import { AccessTokenPayload, TokenServicePort } from '@/modules/auth/application/services/token.service.type';
 import { userRoom } from '@/modules/common/constants/socket.constant';
-import { IUserService } from '@/modules/user/application/services/user.service';
+import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';
 import { ExtendedError, Server, Socket } from 'socket.io';
 
@@ -37,7 +37,11 @@ export const createSocketApp = (io: Server, container: IContainer): Server => {
   return io;
 };
 
-async function eventSocketMiddleware(socket: Socket, next: (err?: ExtendedError) => void, tokenService: ITokenService) {
+async function eventSocketMiddleware(
+  socket: Socket,
+  next: (err?: ExtendedError) => void,
+  tokenService: TokenServicePort
+) {
   try {
     const { accessToken } = socket.handshake.auth;
     if (!accessToken) {
@@ -59,8 +63,8 @@ async function eventSocketMiddleware(socket: Socket, next: (err?: ExtendedError)
 async function socketAuthMiddleware(
   socket: Socket,
   next: (err?: ExtendedError) => void,
-  tokenService: ITokenService,
-  userService: IUserService
+  tokenService: TokenServicePort,
+  userService: UserServicePort
 ) {
   try {
     const { Authorization } = socket.handshake.auth;

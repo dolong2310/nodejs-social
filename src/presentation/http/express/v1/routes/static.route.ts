@@ -1,5 +1,4 @@
 import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
-import { appLimiter } from '@/presentation/http/express/middlewares/limiter.middleware';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 
 export class StaticRoute extends BaseRoute {
@@ -15,10 +14,12 @@ export class StaticRoute extends BaseRoute {
     const { getStaticImage, getStaticVideoStream, getStaticVideoStreamMaster, getStaticVideoStreamSegment } =
       this.mediaController;
 
-    this.router.get('/images/:filename', appLimiter, getStaticImage);
+    const throttler = this.throttlerGuard();
+
+    this.router.get('/images/:filename', throttler, getStaticImage);
     // this.router.get('/videos/:filename', getStaticVideo);
-    this.router.get('/videos-stream/:filename', appLimiter, getStaticVideoStream);
-    this.router.get('/videos-stream/:id/master.m3u8', appLimiter, getStaticVideoStreamMaster);
-    this.router.get('/videos-stream/:id/:version/:segment', appLimiter, getStaticVideoStreamSegment);
+    this.router.get('/videos-stream/:filename', throttler, getStaticVideoStream);
+    this.router.get('/videos-stream/:id/master.m3u8', throttler, getStaticVideoStreamMaster);
+    this.router.get('/videos-stream/:id/:version/:segment', throttler, getStaticVideoStreamSegment);
   }
 }

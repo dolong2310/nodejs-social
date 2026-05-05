@@ -1,10 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { FriendRequestEntity } from '@/modules/friend/domain/entities/friend-request.entity';
-import {
-  FriendRequestModel,
-  friendRequestSchema
-} from '@/modules/friend/infrastructure/mongo/friend-request.model';
+import { FriendRequestModel, friendRequestSchema } from '@/modules/friend/infrastructure/mongo/friend-request.model';
 import { parse } from 'valibot';
 
 export class FriendRequestMapper implements Mapper<FriendRequestEntity, FriendRequestModel> {

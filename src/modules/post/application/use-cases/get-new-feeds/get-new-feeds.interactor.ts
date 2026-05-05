@@ -4,9 +4,9 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { IBlockService } from '@/modules/block/application/services/block.service';
-import { IFriendService } from '@/modules/friend/application/services/friend.service';
-import { IPostService } from '@/modules/post/application/services/post.service';
+import { BlockServicePort } from '@/modules/block/application/services/block.service';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
+import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetNewFeedsInPort,
   GetNewFeedsQuery,
@@ -24,9 +24,9 @@ export class GetNewFeedsInteractor extends GetNewFeedsInPort {
 
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
-    private readonly postService: IPostService,
-    private readonly blockService: IBlockService,
-    private readonly friendService: IFriendService,
+    private readonly postService: PostServicePort,
+    private readonly blockService: BlockServicePort,
+    private readonly friendService: FriendServicePort,
     private readonly logger: LoggerPort
   ) {
     super();

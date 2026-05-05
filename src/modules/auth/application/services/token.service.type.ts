@@ -20,7 +20,7 @@ export interface RefreshTokenPayload extends RefreshTokenPayloadCreate {
   iat: number;
 }
 
-export interface ITokenService {
+export interface TokenServicePort {
   signAccessToken(payload: AccessTokenPayloadCreate): Promise<string>;
   signRefreshToken(payload: RefreshTokenPayloadCreate): Promise<string>;
   verifyAccessToken(token: string): Promise<AccessTokenPayload>;

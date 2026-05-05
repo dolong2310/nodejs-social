@@ -12,12 +12,8 @@ import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { get } from 'lodash-es';
 import path from 'path';
 
-export interface IVideoStreamWorker {
-  run(connection: ConnectionOptions): Worker<IVideoStreamJobData, IVideoStreamJobResult>;
-}
-
 // Consumer
-export class VideoStreamWorker implements IVideoStreamWorker {
+export class VideoStreamWorker {
   private readonly log: LoggerPort;
 
   constructor(

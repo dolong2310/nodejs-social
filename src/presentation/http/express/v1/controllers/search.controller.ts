@@ -6,11 +6,11 @@ import { BaseController } from '@/presentation/http/express/v1/controllers/base.
 import { PostDetailWithAuthorResponseDTO } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
 import { SearchCursorQueryDTO } from '@/presentation/http/express/v1/dtos/search/search.request.dto';
 import { UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ISearchController {
-  search(req: Request<ParamsDictionary, object, object, SearchCursorQueryDTO>, res: Response): Promise<void>;
+  search(req: Request<ParamsDictionary, object, object, SearchCursorQueryDTO>): Promise<unknown>;
 }
 
 export class SearchController extends BaseController implements ISearchController {
@@ -22,7 +22,7 @@ export class SearchController extends BaseController implements ISearchControlle
   }
 
   @AutoBind()
-  async search(req: Request<ParamsDictionary, object, object, SearchCursorQueryDTO>, res: Response) {
+  async search(req: Request<ParamsDictionary, object, object, SearchCursorQueryDTO>) {
     const { query = '', type, people, cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
@@ -53,8 +53,7 @@ export class SearchController extends BaseController implements ISearchControlle
       nextCursor = result.nextCursor;
     }
 
-    this.sendCursorPaginatedResponse<PostDetailWithAuthorResponseDTO | UserResponseDTO>({
-      res,
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO | UserResponseDTO>({
       items,
       nextCursor,
       message: 'Search successfully'

@@ -1,6 +1,10 @@
-import { TypingCommand, TypingInPort, TypingResult } from '@/modules/notification/application/use-cases/realtime/typing/typing.in-port';
-import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { isValidId } from '@/modules/core/domain/helpers/ids';
+import {
+  TypingCommand,
+  TypingInPort,
+  TypingResult
+} from '@/modules/notification/application/use-cases/realtime/typing/typing.in-port';
 
 export class TypingInteractor extends TypingInPort {
   private readonly lastEmit = new Map<string, number>();

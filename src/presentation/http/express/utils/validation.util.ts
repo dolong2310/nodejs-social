@@ -1,4 +1,4 @@
-import { UnprocessableEntityError } from '@/presentation/http/express/responses/error.response';
+import { UnprocessableEntityException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constant';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
 import { NextFunction, Request, Response } from 'express';
@@ -30,7 +30,7 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>, 
         errorObject.errors[key] = error;
       }
 
-      return next(new UnprocessableEntityError(errorObject.message, errorObject.status, errorObject.errors));
+      return next(new UnprocessableEntityException(errorObject.message, errorObject.status, errorObject.errors));
     }
 
     if (options?.assignMatchedBody) {
