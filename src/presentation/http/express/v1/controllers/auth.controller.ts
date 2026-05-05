@@ -1,11 +1,11 @@
-import { Disable2FAInPort } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.in-port';
-import { ForgotPasswordInPort } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.in-port';
-import { LoginEmailInPort } from '@/modules/auth/application/use-cases/login-email/login-email.in-port';
-import { LogoutInPort } from '@/modules/auth/application/use-cases/logout/logout.in-port';
-import { RefreshTokenInPort } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.in-port';
-import { RegisterInPort } from '@/modules/auth/application/use-cases/register/register.in-port';
-import { SendOtpInPort } from '@/modules/auth/application/use-cases/send-otp/send-otp.in-port';
-import { Setup2FAInPort } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.in-port';
+import { Disable2FAPort } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.port';
+import { ForgotPasswordPort } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.port';
+import { LoginEmailPort } from '@/modules/auth/application/use-cases/login-email/login-email.port';
+import { LogoutPort } from '@/modules/auth/application/use-cases/logout/logout.port';
+import { RefreshTokenPort } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.port';
+import { RegisterPort } from '@/modules/auth/application/use-cases/register/register.port';
+import { SendOtpPort } from '@/modules/auth/application/use-cases/send-otp/send-otp.port';
+import { Setup2FAPort } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
@@ -49,14 +49,14 @@ export interface IAuthController {
 
 export class AuthController extends BaseController implements IAuthController {
   constructor(
-    private readonly registerUC: RegisterInPort,
-    private readonly loginEmailUC: LoginEmailInPort,
-    private readonly logoutUC: LogoutInPort,
-    private readonly refreshTokenUC: RefreshTokenInPort,
-    private readonly forgotPasswordUC: ForgotPasswordInPort,
-    private readonly sendOtpUC: SendOtpInPort,
-    private readonly setup2faUC: Setup2FAInPort,
-    private readonly disable2faUC: Disable2FAInPort
+    private readonly registerUC: RegisterPort,
+    private readonly loginEmailUC: LoginEmailPort,
+    private readonly logoutUC: LogoutPort,
+    private readonly refreshTokenUC: RefreshTokenPort,
+    private readonly forgotPasswordUC: ForgotPasswordPort,
+    private readonly sendOtpUC: SendOtpPort,
+    private readonly setup2faUC: Setup2FAPort,
+    private readonly disable2faUC: Disable2FAPort
   ) {
     super();
   }

@@ -1,4 +1,4 @@
-import { SendMessageResult } from '@/modules/conversation/application/use-cases/send-message/send-message.in-port';
+import { SendMessageResult } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
 
 export interface RealtimeEmitterPort {
   emitToUser(userId: string, event: string, data: unknown): void;

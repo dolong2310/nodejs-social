@@ -1,6 +1,6 @@
 import { ESearchType } from '@/modules/common/domain/enums/search.enum';
-import { SearchPostsInPort } from '@/modules/post/application/use-cases/search-posts/search-posts.in-port';
-import { SearchUsersInPort } from '@/modules/user/application/use-cases/search-users/search-users.in-port';
+import { SearchPostsPort } from '@/modules/post/application/use-cases/search-posts/search-posts.port';
+import { SearchUsersPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
 import { PostDetailWithAuthorResponseDTO } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
@@ -15,8 +15,8 @@ export interface ISearchController {
 
 export class SearchController extends BaseController implements ISearchController {
   constructor(
-    private readonly searchPostsUC: SearchPostsInPort,
-    private readonly searchUsersUC: SearchUsersInPort
+    private readonly searchPostsUC: SearchPostsPort,
+    private readonly searchUsersUC: SearchUsersPort
   ) {
     super();
   }

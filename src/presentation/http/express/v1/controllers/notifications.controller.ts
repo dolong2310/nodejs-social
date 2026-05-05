@@ -1,6 +1,6 @@
-import { ListNotificationsInPort } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.in-port';
-import { MarkNotificationReadInPort } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.in-port';
-import { MarkNotificationsReadInPort } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.in-port';
+import { ListNotificationsPort } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
+import { MarkNotificationReadPort } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.port';
+import { MarkNotificationsReadPort } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
 import {
@@ -20,9 +20,9 @@ export interface INotificationController {
 
 export class NotificationsController extends BaseController implements INotificationController {
   constructor(
-    private readonly listNotificationsUC: ListNotificationsInPort,
-    private readonly markNotificationsReadUC: MarkNotificationsReadInPort,
-    private readonly markNotificationReadUC: MarkNotificationReadInPort
+    private readonly listNotificationsUC: ListNotificationsPort,
+    private readonly markNotificationsReadUC: MarkNotificationsReadPort,
+    private readonly markNotificationReadUC: MarkNotificationReadPort
   ) {
     super();
   }

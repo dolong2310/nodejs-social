@@ -1,4 +1,4 @@
-import { SearchUsersQuery } from '@/modules/user/application/use-cases/search-users/search-users.in-port';
+import { SearchUsersQuery } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { appConfig } from '@/bootstrap/config/app.config';
 import { createHash } from 'crypto';
 

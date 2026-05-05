@@ -1,13 +1,13 @@
-import { CreateGroupInPort } from '@/modules/conversation/application/use-cases/create-group/create-group.in-port';
-import { GetConversationDetailInPort } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.in-port';
-import { GetConversationsInPort } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.in-port';
-import { GetOrCreateConversationInPort } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.in-port';
-import { InviteMemberInPort } from '@/modules/conversation/application/use-cases/invite-member/invite-member.in-port';
-import { KickMemberInPort } from '@/modules/conversation/application/use-cases/kick-member/kick-member.in-port';
-import { LeaveConversationInPort } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.in-port';
-import { TransferAdminInPort } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.in-port';
-import { UpdateConversationInPort } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.in-port';
-import { UpdateMemberRoleInPort } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.in-port';
+import { CreateGroupPort } from '@/modules/conversation/application/use-cases/create-group/create-group.port';
+import { GetConversationDetailPort } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.port';
+import { GetConversationsPort } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
+import { GetOrCreateConversationPort } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
+import { InviteMemberPort } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
+import { KickMemberPort } from '@/modules/conversation/application/use-cases/kick-member/kick-member.port';
+import { LeaveConversationPort } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
+import { TransferAdminPort } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
+import { UpdateConversationPort } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
+import { UpdateMemberRolePort } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -44,16 +44,16 @@ export interface IConversationController {
 
 export class ConversationController extends BaseController implements IConversationController {
   constructor(
-    private readonly createDirectUC: GetOrCreateConversationInPort,
-    private readonly createGroupUC: CreateGroupInPort,
-    private readonly listConversationsUC: GetConversationsInPort,
-    private readonly getConversationDetailUC: GetConversationDetailInPort,
-    private readonly updateConversationUC: UpdateConversationInPort,
-    private readonly inviteMemberUC: InviteMemberInPort,
-    private readonly kickMemberUC: KickMemberInPort,
-    private readonly leaveConversationUC: LeaveConversationInPort,
-    private readonly updateMemberRoleUC: UpdateMemberRoleInPort,
-    private readonly transferAdminUC: TransferAdminInPort
+    private readonly createDirectUC: GetOrCreateConversationPort,
+    private readonly createGroupUC: CreateGroupPort,
+    private readonly listConversationsUC: GetConversationsPort,
+    private readonly getConversationDetailUC: GetConversationDetailPort,
+    private readonly updateConversationUC: UpdateConversationPort,
+    private readonly inviteMemberUC: InviteMemberPort,
+    private readonly kickMemberUC: KickMemberPort,
+    private readonly leaveConversationUC: LeaveConversationPort,
+    private readonly updateMemberRoleUC: UpdateMemberRolePort,
+    private readonly transferAdminUC: TransferAdminPort
   ) {
     super();
   }

@@ -1,23 +1,23 @@
 import { FormidableFileUploadService } from '@/infrastructure/services/storages/file-upload.service';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { GetStaticVideoStreamInPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.in-port';
+import { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
 import {
-  GetVideoStatusInPort,
+  GetVideoStatusPort,
   GetVideoStatusResult
-} from '@/modules/media/application/use-cases/get-video-status/get-video-status.in-port';
+} from '@/modules/media/application/use-cases/get-video-status/get-video-status.port';
 import {
-  UploadImageInPort,
+  UploadImagePort,
   UploadImageResult
-} from '@/modules/media/application/use-cases/upload-image/upload-image.in-port';
+} from '@/modules/media/application/use-cases/upload-image/upload-image.port';
 import {
-  UploadVideoStreamInPort,
+  UploadVideoStreamPort,
   UploadVideoStreamResult
-} from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.in-port';
+} from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.port';
 import {
-  UploadVideoInPort,
+  UploadVideoPort,
   UploadVideoResult
-} from '@/modules/media/application/use-cases/upload-video/upload-video.in-port';
+} from '@/modules/media/application/use-cases/upload-video/upload-video.port';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
@@ -45,11 +45,11 @@ export interface IMediaController {
 
 export class MediaController extends BaseController implements IMediaController {
   constructor(
-    private readonly getVideoStatusUC: GetVideoStatusInPort,
-    private readonly getStaticVideoStreamUC: GetStaticVideoStreamInPort,
-    private readonly uploadImageUC: UploadImageInPort,
-    private readonly uploadVideoUC: UploadVideoInPort,
-    private readonly uploadVideoStreamUC: UploadVideoStreamInPort,
+    private readonly getVideoStatusUC: GetVideoStatusPort,
+    private readonly getStaticVideoStreamUC: GetStaticVideoStreamPort,
+    private readonly uploadImageUC: UploadImagePort,
+    private readonly uploadVideoUC: UploadVideoPort,
+    private readonly uploadVideoStreamUC: UploadVideoStreamPort,
     private readonly s3Service: StoragePort,
     private readonly fileStorage: FileStoragePort
   ) {

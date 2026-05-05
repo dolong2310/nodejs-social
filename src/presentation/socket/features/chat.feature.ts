@@ -7,19 +7,19 @@ import {
   SOCKET_SERVER_PRESENCE_CHAT,
   chatRoom
 } from '@/modules/common/constants/socket.constant';
-import { GetConversationPresenceInPort } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.in-port';
-import { JoinConversationInPort } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.in-port';
-import { LeaveConversationInPort } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.in-port';
-import { TypingInPort } from '@/modules/notification/application/use-cases/realtime/typing/typing.in-port';
+import { GetConversationPresencePort } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.port';
+import { JoinConversationPort } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
+import { LeaveConversationPort } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
+import { TypingPort } from '@/modules/notification/application/use-cases/realtime/typing/typing.port';
 import { ISocketFeature } from '@/presentation/socket/socket.type';
 import { Server, Socket } from 'socket.io';
 
 export class ChatFeature implements ISocketFeature {
   constructor(
-    private readonly joinUC: JoinConversationInPort,
-    private readonly leaveUC: LeaveConversationInPort,
-    private readonly typingUC: TypingInPort,
-    private readonly presenceUC: GetConversationPresenceInPort
+    private readonly joinUC: JoinConversationPort,
+    private readonly leaveUC: LeaveConversationPort,
+    private readonly typingUC: TypingPort,
+    private readonly presenceUC: GetConversationPresencePort
   ) {}
 
   /** Kiểm tra song song xem có member nào đang online không */

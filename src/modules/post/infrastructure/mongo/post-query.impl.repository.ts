@@ -1,8 +1,8 @@
-import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model';
+import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model'; // TODO: do not depend on bookmark module
 import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
-import { LikeModel } from '@/modules/like/infrastructure/mongo/like.model';
+import { LikeModel } from '@/modules/like/infrastructure/mongo/like.model'; // TODO: do not depend on like module
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import {
   IFindGuestPostsInput,

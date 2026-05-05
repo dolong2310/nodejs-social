@@ -1,6 +1,6 @@
-import { GetMessagesInPort } from '@/modules/conversation/application/use-cases/get-messages/get-messages.in-port';
-import { MarkReadInPort } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.in-port';
-import { SendMessageInPort } from '@/modules/conversation/application/use-cases/send-message/send-message.in-port';
+import { GetMessagesPort } from '@/modules/conversation/application/use-cases/get-messages/get-messages.port';
+import { MarkReadPort } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.port';
+import { SendMessagePort } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -21,9 +21,9 @@ export interface IChatMessageController {
 
 export class ChatMessageController extends BaseController implements IChatMessageController {
   constructor(
-    private readonly sendMessageUC: SendMessageInPort,
-    private readonly listMessagesUC: GetMessagesInPort,
-    private readonly markReadUC: MarkReadInPort
+    private readonly sendMessageUC: SendMessagePort,
+    private readonly listMessagesUC: GetMessagesPort,
+    private readonly markReadUC: MarkReadPort
   ) {
     super();
   }

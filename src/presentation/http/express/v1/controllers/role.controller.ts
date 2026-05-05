@@ -1,17 +1,17 @@
 import {
   CreateRoleCommand,
-  CreateRoleInPort
-} from '@/modules/role/application/use-cases/create-role/create-role.in-port';
+  CreateRolePort
+} from '@/modules/role/application/use-cases/create-role/create-role.port';
 import {
   DeleteRoleCommand,
-  DeleteRoleInPort
-} from '@/modules/role/application/use-cases/delete-role/delete-role.in-port';
-import { GetRoleInPort, GetRoleQuery } from '@/modules/role/application/use-cases/get-role/get-role.in-port';
-import { ListRolesInPort, ListRolesQuery } from '@/modules/role/application/use-cases/list-roles/list-roles.in-port';
+  DeleteRolePort
+} from '@/modules/role/application/use-cases/delete-role/delete-role.port';
+import { GetRolePort, GetRoleQuery } from '@/modules/role/application/use-cases/get-role/get-role.port';
+import { ListRolesPort, ListRolesQuery } from '@/modules/role/application/use-cases/list-roles/list-roles.port';
 import {
   UpdateRoleCommand,
-  UpdateRoleInPort
-} from '@/modules/role/application/use-cases/update-role/update-role.in-port';
+  UpdateRolePort
+} from '@/modules/role/application/use-cases/update-role/update-role.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -34,11 +34,11 @@ export interface IRoleController {
 
 export class RoleController extends BaseController implements IRoleController {
   constructor(
-    private readonly listRolesUC: ListRolesInPort,
-    private readonly getRoleUC: GetRoleInPort,
-    private readonly createRoleUC: CreateRoleInPort,
-    private readonly updateRoleUC: UpdateRoleInPort,
-    private readonly deleteRoleUC: DeleteRoleInPort
+    private readonly listRolesUC: ListRolesPort,
+    private readonly getRoleUC: GetRolePort,
+    private readonly createRoleUC: CreateRolePort,
+    private readonly updateRoleUC: UpdateRolePort,
+    private readonly deleteRoleUC: DeleteRolePort
   ) {
     super();
   }

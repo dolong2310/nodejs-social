@@ -1,6 +1,6 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { GetGoogleAuthUrlInPort } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.in-port';
-import { LoginGoogleInPort } from '@/modules/auth/application/use-cases/login-google/login-google.in-port';
+import { GetGoogleAuthUrlPort } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.port';
+import { LoginGooglePort } from '@/modules/auth/application/use-cases/login-google/login-google.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
@@ -25,8 +25,8 @@ export interface IOAuthController {
 
 export class OAuthController extends BaseController implements IOAuthController {
   constructor(
-    private readonly getGoogleAuthUrlUC: GetGoogleAuthUrlInPort,
-    private readonly googleLoginUC: LoginGoogleInPort
+    private readonly getGoogleAuthUrlUC: GetGoogleAuthUrlPort,
+    private readonly googleLoginUC: LoginGooglePort
   ) {
     super();
   }

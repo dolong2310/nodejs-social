@@ -1,13 +1,13 @@
-import { CreatePostInPort } from '@/modules/post/application/use-cases/create-post/create-post.in-port';
-import { GetGuestNewFeedsInPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.in-port';
-import { GetNewFeedsInPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.in-port';
+import { CreatePostPort } from '@/modules/post/application/use-cases/create-post/create-post.port';
+import { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
+import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
 import {
-  GetPostDetailInPort,
+  GetPostDetailPort,
   GetPostDetailQuery
-} from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.in-port';
-import { GetPostsTypeInPort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.in-port';
-import { IncreaseViewsInPort } from '@/modules/post/application/use-cases/increase-views/increase-views.in-port';
-import { UpdatePostInPort } from '@/modules/post/application/use-cases/update-post/update-post.in-port';
+} from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
+import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
+import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
+import { UpdatePostPort } from '@/modules/post/application/use-cases/update-post/update-post.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -36,13 +36,13 @@ export interface IPostController {
 
 export class PostController extends BaseController implements IPostController {
   constructor(
-    private readonly getNewFeedsUC: GetNewFeedsInPort,
-    private readonly getGuestNewFeedsUC: GetGuestNewFeedsInPort,
-    private readonly getPostDetailUC: GetPostDetailInPort,
-    private readonly increaseViewsUC: IncreaseViewsInPort,
-    private readonly getPostsTypeUC: GetPostsTypeInPort,
-    private readonly createPostUC: CreatePostInPort,
-    private readonly updatePostUC: UpdatePostInPort
+    private readonly getNewFeedsUC: GetNewFeedsPort,
+    private readonly getGuestNewFeedsUC: GetGuestNewFeedsPort,
+    private readonly getPostDetailUC: GetPostDetailPort,
+    private readonly increaseViewsUC: IncreaseViewsPort,
+    private readonly getPostsTypeUC: GetPostsTypePort,
+    private readonly createPostUC: CreatePostPort,
+    private readonly updatePostUC: UpdatePostPort
   ) {
     super();
   }

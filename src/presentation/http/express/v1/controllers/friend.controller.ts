@@ -1,11 +1,11 @@
-import { AcceptIncomingRequestInPort } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.in-port';
-import { DeclineIncomingRequestInPort } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.in-port';
-import { GetFriendsInPort } from '@/modules/friend/application/use-cases/get-friends/get-friends.in-port';
-import { GetIncomingRequestsInPort } from '@/modules/friend/application/use-cases/get-incoming-requests/get-incoming-requests.in-port';
-import { GetOutgoingRequestsInPort } from '@/modules/friend/application/use-cases/get-outgoing-requests/get-outgoing-requests.in-port';
-import { RevokeOutgoingRequestInPort } from '@/modules/friend/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.in-port';
-import { SendFriendRequestInPort } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.in-port';
-import { UnfriendInPort } from '@/modules/friend/application/use-cases/unfriend/unfriend.in-port';
+import { AcceptIncomingRequestPort } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.port';
+import { DeclineIncomingRequestPort } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.port';
+import { GetFriendsPort } from '@/modules/friend/application/use-cases/get-friends/get-friends.port';
+import { GetIncomingRequestsPort } from '@/modules/friend/application/use-cases/get-incoming-requests/get-incoming-requests.port';
+import { GetOutgoingRequestsPort } from '@/modules/friend/application/use-cases/get-outgoing-requests/get-outgoing-requests.port';
+import { RevokeOutgoingRequestPort } from '@/modules/friend/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.port';
+import { SendFriendRequestPort } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.port';
+import { UnfriendPort } from '@/modules/friend/application/use-cases/unfriend/unfriend.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -36,14 +36,14 @@ export interface IFriendController {
 
 export class FriendController extends BaseController implements IFriendController {
   constructor(
-    private readonly listFriendsUC: GetFriendsInPort,
-    private readonly listIncomingRequestsUC: GetIncomingRequestsInPort,
-    private readonly listOutgoingRequestsUC: GetOutgoingRequestsInPort,
-    private readonly sendFriendRequestUC: SendFriendRequestInPort,
-    private readonly acceptIncomingRequestUC: AcceptIncomingRequestInPort,
-    private readonly declineIncomingRequestUC: DeclineIncomingRequestInPort,
-    private readonly revokeOutgoingRequestUC: RevokeOutgoingRequestInPort,
-    private readonly unfriendUC: UnfriendInPort
+    private readonly listFriendsUC: GetFriendsPort,
+    private readonly listIncomingRequestsUC: GetIncomingRequestsPort,
+    private readonly listOutgoingRequestsUC: GetOutgoingRequestsPort,
+    private readonly sendFriendRequestUC: SendFriendRequestPort,
+    private readonly acceptIncomingRequestUC: AcceptIncomingRequestPort,
+    private readonly declineIncomingRequestUC: DeclineIncomingRequestPort,
+    private readonly revokeOutgoingRequestUC: RevokeOutgoingRequestPort,
+    private readonly unfriendUC: UnfriendPort
   ) {
     super();
   }

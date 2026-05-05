@@ -6,96 +6,96 @@ import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-
 import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
 import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
 import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
-import { Disable2FAInteractor } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.interactor';
-import { ForgotPasswordInteractor } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.interactor';
-import { GetGoogleAuthUrlInteractor } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.interactor';
-import { LoginEmailInteractor } from '@/modules/auth/application/use-cases/login-email/login-email.interactor';
-import { LoginGoogleInteractor } from '@/modules/auth/application/use-cases/login-google/login-google.interactor';
-import { LogoutInteractor } from '@/modules/auth/application/use-cases/logout/logout.interactor';
-import { RefreshTokenInteractor } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.interactor';
-import { RegisterInteractor } from '@/modules/auth/application/use-cases/register/register.interactor';
-import { SendOtpInteractor } from '@/modules/auth/application/use-cases/send-otp/send-otp.interactor';
-import { Setup2FAInteractor } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.interactor';
+import { Disable2FAUseCase } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.usecase';
+import { ForgotPasswordUseCase } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.usecase';
+import { GetGoogleAuthUrlUseCase } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
+import { LoginEmailUseCase } from '@/modules/auth/application/use-cases/login-email/login-email.usecase';
+import { LoginGoogleUseCase } from '@/modules/auth/application/use-cases/login-google/login-google.usecase';
+import { LogoutUseCase } from '@/modules/auth/application/use-cases/logout/logout.usecase';
+import { RefreshTokenUseCase } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.usecase';
+import { RegisterUseCase } from '@/modules/auth/application/use-cases/register/register.usecase';
+import { SendOtpUseCase } from '@/modules/auth/application/use-cases/send-otp/send-otp.usecase';
+import { Setup2FAUseCase } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.usecase';
 import { BlockServicePort } from '@/modules/block/application/services/block.service';
-import { BlockUserInteractor } from '@/modules/block/application/use-cases/block-user/block-user.interactor';
-import { GetBlockedUserInteractor } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.interactor';
-import { UnblockUserInteractor } from '@/modules/block/application/use-cases/unblock-user/unblock-user.interactor';
-import { BookmarkPostInteractor } from '@/modules/bookmark/application/use-cases/bookmark-post/bookmark-post.interactor';
-import { UnbookmarkPostInteractor } from '@/modules/bookmark/application/use-cases/unbookmark-post/unbookmark-post.interactor';
+import { BlockUserUseCase } from '@/modules/block/application/use-cases/block-user/block-user.usecase';
+import { GetBlockedUserUseCase } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.usecase';
+import { UnblockUserUseCase } from '@/modules/block/application/use-cases/unblock-user/unblock-user.usecase';
+import { BookmarkPostUseCase } from '@/modules/bookmark/application/use-cases/bookmark-post/bookmark-post.usecase';
+import { UnbookmarkPostUseCase } from '@/modules/bookmark/application/use-cases/unbookmark-post/unbookmark-post.usecase';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
-import { CreateGroupInteractor } from '@/modules/conversation/application/use-cases/create-group/create-group.interactor';
-import { GetConversationDetailInteractor } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.interactor';
-import { GetConversationsInteractor } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.interactor';
-import { GetMessagesInteractor } from '@/modules/conversation/application/use-cases/get-messages/get-messages.interactor';
-import { GetOrCreateConversationInteractor } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.interactor';
-import { InviteMemberInteractor } from '@/modules/conversation/application/use-cases/invite-member/invite-member.interactor';
-import { KickMemberInteractor } from '@/modules/conversation/application/use-cases/kick-member/kick-member.interactor';
-import { LeaveConversationInteractor as LeaveConversationHttpInteractor } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.interactor';
-import { MarkReadInteractor } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.interactor';
-import { SendMessageInteractor } from '@/modules/conversation/application/use-cases/send-message/send-message.interactor';
-import { TransferAdminInteractor } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.interactor';
-import { UpdateConversationInteractor } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.interactor';
-import { UpdateMemberRoleInteractor } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.interactor';
+import { CreateGroupUseCase } from '@/modules/conversation/application/use-cases/create-group/create-group.usecase';
+import { GetConversationDetailUseCase } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.usecase';
+import { GetConversationsUseCase } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.usecase';
+import { GetMessagesUseCase } from '@/modules/conversation/application/use-cases/get-messages/get-messages.usecase';
+import { GetOrCreateConversationUseCase } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.usecase';
+import { InviteMemberUseCase } from '@/modules/conversation/application/use-cases/invite-member/invite-member.usecase';
+import { KickMemberUseCase } from '@/modules/conversation/application/use-cases/kick-member/kick-member.usecase';
+import { LeaveConversationUseCase as LeaveConversationHttpUseCase } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.usecase';
+import { MarkReadUseCase } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.usecase';
+import { SendMessageUseCase } from '@/modules/conversation/application/use-cases/send-message/send-message.usecase';
+import { TransferAdminUseCase } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.usecase';
+import { UpdateConversationUseCase } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.usecase';
+import { UpdateMemberRoleUseCase } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.usecase';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import { StoragePort } from '@/modules/core/application/ports/storage.port';
 import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
-import { AcceptIncomingRequestInteractor } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.interactor';
-import { DeclineIncomingRequestInteractor } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.interactor';
-import { GetFriendsInteractor } from '@/modules/friend/application/use-cases/get-friends/get-friends.interactor';
-import { GetIncomingRequestsInteractor } from '@/modules/friend/application/use-cases/get-incoming-requests/get-incoming-requests.interactor';
-import { GetOutgoingRequestsInteractor } from '@/modules/friend/application/use-cases/get-outgoing-requests/get-outgoing-requests.interactor';
-import { RevokeOutgoingRequestInteractor } from '@/modules/friend/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.interactor';
-import { SendFriendRequestInteractor } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.interactor';
-import { UnfriendInteractor } from '@/modules/friend/application/use-cases/unfriend/unfriend.interactor';
-import { CreateHashtagInteractor } from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.interactor';
-import { DeleteHashtagInteractor } from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.interactor';
-import { GetHashtagInteractor } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.interactor';
-import { ListHashtagsInteractor } from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.interactor';
-import { UpdateHashtagInteractor } from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.interactor';
-import { LikePostInteractor } from '@/modules/like/application/use-cases/like-post/like-post.interactor';
-import { UnlikePostInteractor } from '@/modules/like/application/use-cases/unlike-post/unlike-post.interactor';
+import { AcceptIncomingRequestUseCase } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.usecase';
+import { DeclineIncomingRequestUseCase } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.usecase';
+import { GetFriendsUseCase } from '@/modules/friend/application/use-cases/get-friends/get-friends.usecase';
+import { GetIncomingRequestsUseCase } from '@/modules/friend/application/use-cases/get-incoming-requests/get-incoming-requests.usecase';
+import { GetOutgoingRequestsUseCase } from '@/modules/friend/application/use-cases/get-outgoing-requests/get-outgoing-requests.usecase';
+import { RevokeOutgoingRequestUseCase } from '@/modules/friend/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.usecase';
+import { SendFriendRequestUseCase } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.usecase';
+import { UnfriendUseCase } from '@/modules/friend/application/use-cases/unfriend/unfriend.usecase';
+import { CreateHashtagUseCase } from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.usecase';
+import { DeleteHashtagUseCase } from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.usecase';
+import { GetHashtagUseCase } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.usecase';
+import { ListHashtagsUseCase } from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.usecase';
+import { UpdateHashtagUseCase } from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.usecase';
+import { LikePostUseCase } from '@/modules/like/application/use-cases/like-post/like-post.usecase';
+import { UnlikePostUseCase } from '@/modules/like/application/use-cases/unlike-post/unlike-post.usecase';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
 import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
-import { GetStaticVideoStreamInteractor } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.interactor';
-import { GetVideoStatusInteractor } from '@/modules/media/application/use-cases/get-video-status/get-video-status.interactor';
-import { UploadImageInteractor } from '@/modules/media/application/use-cases/upload-image/upload-image.interactor';
-import { UploadVideoStreamInteractor } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.interactor';
-import { UploadVideoInteractor } from '@/modules/media/application/use-cases/upload-video/upload-video.interactor';
+import { GetStaticVideoStreamUseCase } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.usecase';
+import { GetVideoStatusUseCase } from '@/modules/media/application/use-cases/get-video-status/get-video-status.usecase';
+import { UploadImageUseCase } from '@/modules/media/application/use-cases/upload-image/upload-image.usecase';
+import { UploadVideoStreamUseCase } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.usecase';
+import { UploadVideoUseCase } from '@/modules/media/application/use-cases/upload-video/upload-video.usecase';
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
-import { ListNotificationsInteractor } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.interactor';
-import { MarkNotificationReadInteractor } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.interactor';
-import { MarkNotificationsReadInteractor } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.interactor';
-import { CreatePermissionInteractor } from '@/modules/permission/application/use-cases/create-permission/create-permission.interactor';
-import { DeletePermissionInteractor } from '@/modules/permission/application/use-cases/delete-permission/delete-permission.interactor';
-import { GetPermissionInteractor } from '@/modules/permission/application/use-cases/get-permission/get-permission.interactor';
-import { ListPermissionsInteractor } from '@/modules/permission/application/use-cases/list-permissions/list-permissions.interactor';
-import { UpdatePermissionInteractor } from '@/modules/permission/application/use-cases/update-permission/update-permission.interactor';
+import { ListNotificationsUseCase } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.usecase';
+import { MarkNotificationReadUseCase } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.usecase';
+import { MarkNotificationsReadUseCase } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.usecase';
+import { CreatePermissionUseCase } from '@/modules/permission/application/use-cases/create-permission/create-permission.usecase';
+import { DeletePermissionUseCase } from '@/modules/permission/application/use-cases/delete-permission/delete-permission.usecase';
+import { GetPermissionUseCase } from '@/modules/permission/application/use-cases/get-permission/get-permission.usecase';
+import { ListPermissionsUseCase } from '@/modules/permission/application/use-cases/list-permissions/list-permissions.usecase';
+import { UpdatePermissionUseCase } from '@/modules/permission/application/use-cases/update-permission/update-permission.usecase';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
-import { CreatePostInteractor } from '@/modules/post/application/use-cases/create-post/create-post.interactor';
-import { GetGuestNewFeedsInteractor } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.interactor';
-import { GetNewFeedsInteractor } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.interactor';
-import { GetPostDetailInteractor } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.interactor';
-import { GetPostsTypeInteractor } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.interactor';
-import { IncreaseViewsInteractor } from '@/modules/post/application/use-cases/increase-views/increase-views.interactor';
-import { SearchPostsInteractor } from '@/modules/post/application/use-cases/search-posts/search-posts.interactor';
-import { UpdatePostInteractor } from '@/modules/post/application/use-cases/update-post/update-post.interactor';
+import { CreatePostUseCase } from '@/modules/post/application/use-cases/create-post/create-post.usecase';
+import { GetGuestNewFeedsUseCase } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.usecase';
+import { GetNewFeedsUseCase } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.usecase';
+import { GetPostDetailUseCase } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.usecase';
+import { GetPostsTypeUseCase } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.usecase';
+import { IncreaseViewsUseCase } from '@/modules/post/application/use-cases/increase-views/increase-views.usecase';
+import { SearchPostsUseCase } from '@/modules/post/application/use-cases/search-posts/search-posts.usecase';
+import { UpdatePostUseCase } from '@/modules/post/application/use-cases/update-post/update-post.usecase';
 import { RoleServicePort } from '@/modules/role/application/services/role.service';
-import { CreateRoleInteractor } from '@/modules/role/application/use-cases/create-role/create-role.interactor';
-import { DeleteRoleInteractor } from '@/modules/role/application/use-cases/delete-role/delete-role.interactor';
-import { GetRoleInteractor } from '@/modules/role/application/use-cases/get-role/get-role.interactor';
-import { ListRolesInteractor } from '@/modules/role/application/use-cases/list-roles/list-roles.interactor';
-import { UpdateRoleInteractor } from '@/modules/role/application/use-cases/update-role/update-role.interactor';
+import { CreateRoleUseCase } from '@/modules/role/application/use-cases/create-role/create-role.usecase';
+import { DeleteRoleUseCase } from '@/modules/role/application/use-cases/delete-role/delete-role.usecase';
+import { GetRoleUseCase } from '@/modules/role/application/use-cases/get-role/get-role.usecase';
+import { ListRolesUseCase } from '@/modules/role/application/use-cases/list-roles/list-roles.usecase';
+import { UpdateRoleUseCase } from '@/modules/role/application/use-cases/update-role/update-role.usecase';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { ChangePasswordInteractor } from '@/modules/user/application/use-cases/change-password/change-password.interactor';
-import { GetMeInteractor } from '@/modules/user/application/use-cases/get-me/get-me.interactor';
-import { GetUserProfileInteractor } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.interactor';
-import { SearchUsersInteractor } from '@/modules/user/application/use-cases/search-users/search-users.interactor';
-import { UpdateMeInteractor } from '@/modules/user/application/use-cases/update-me/update-me.interactor';
+import { ChangePasswordUseCase } from '@/modules/user/application/use-cases/change-password/change-password.usecase';
+import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me.usecase';
+import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
+import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
+import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -235,7 +235,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
 
-  const registerUC = new RegisterInteractor(
+  const registerUC = new RegisterUseCase(
     userRepository,
     authService,
     hashingService,
@@ -243,15 +243,15 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     otpService,
     roleService
   );
-  const loginEmailUC = new LoginEmailInteractor(userQueryRepository, otpService, hashingService, authService);
-  const logoutUC = new LogoutInteractor(refreshTokenRepository);
-  const refreshTokenUC = new RefreshTokenInteractor(
+  const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
+  const logoutUC = new LogoutUseCase(refreshTokenRepository);
+  const refreshTokenUC = new RefreshTokenUseCase(
     refreshTokenRepository,
     userQueryRepository,
     authService,
     tokenService
   );
-  const forgotPasswordUC = new ForgotPasswordInteractor(
+  const forgotPasswordUC = new ForgotPasswordUseCase(
     userRepository,
     redis,
     otpRepository,
@@ -259,12 +259,12 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userService,
     otpService
   );
-  const sendOtpUC = new SendOtpInteractor(otpRepository, userRepository, emailQueue);
-  const setup2faUC = new Setup2FAInteractor(userRepository, userService, twoFactorService, redis);
-  const disable2faUC = new Disable2FAInteractor(userRepository, userService, otpService, redis);
+  const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, emailQueue);
+  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, redis);
+  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, redis);
 
-  const getGoogleAuthUrlUC = new GetGoogleAuthUrlInteractor(googleOAuthService);
-  const loginGoogleUC = new LoginGoogleInteractor(
+  const getGoogleAuthUrlUC = new GetGoogleAuthUrlUseCase(googleOAuthService);
+  const loginGoogleUC = new LoginGoogleUseCase(
     googleOAuthService,
     userRepository,
     hashingService,
@@ -273,12 +273,12 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userService
   );
 
-  const getMeUC = new GetMeInteractor(userService);
-  const updateMeUC = new UpdateMeInteractor(userRepository, userService, redis);
-  const getUserProfileUC = new GetUserProfileInteractor(userService, blockService);
-  const changePasswordUC = new ChangePasswordInteractor(userRepository, hashingService, redis);
+  const getMeUC = new GetMeUseCase(userService);
+  const updateMeUC = new UpdateMeUseCase(userRepository, userService, redis);
+  const getUserProfileUC = new GetUserProfileUseCase(userService, blockService);
+  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, redis);
 
-  const blockUserUC = new BlockUserInteractor(
+  const blockUserUC = new BlockUserUseCase(
     blockRepository,
     blockService,
     userRepository,
@@ -286,8 +286,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     friendRequestRepository,
     friendService
   );
-  const unblockUserUC = new UnblockUserInteractor(blockRepository, friendService);
-  const listBlockedUC = new GetBlockedUserInteractor(blockRepository, userRepository);
+  const unblockUserUC = new UnblockUserUseCase(blockRepository, friendService);
+  const listBlockedUC = new GetBlockedUserUseCase(blockRepository, userRepository);
 
   const postAudienceAccessService = new PostAudienceAccessService(
     postQueryRepository,
@@ -296,53 +296,43 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     friendService
   );
 
-  const createBookmarkUC = new BookmarkPostInteractor(
+  const createBookmarkUC = new BookmarkPostUseCase(bookmarkRepository, postQueryRepository, postAudienceAccessService);
+  const unbookmarkPostUC = new UnbookmarkPostUseCase(
     bookmarkRepository,
     postQueryRepository,
     postAudienceAccessService
   );
-  const unbookmarkPostUC = new UnbookmarkPostInteractor(
-    bookmarkRepository,
-    postQueryRepository,
-    postAudienceAccessService
-  );
 
-  const createLikeUC = new LikePostInteractor(likeRepository, postQueryRepository, postAudienceAccessService);
-  const unlikeUC = new UnlikePostInteractor(likeRepository, postQueryRepository, postAudienceAccessService);
+  const createLikeUC = new LikePostUseCase(likeRepository, postQueryRepository, postAudienceAccessService);
+  const unlikeUC = new UnlikePostUseCase(likeRepository, postQueryRepository, postAudienceAccessService);
 
-  const getVideoStatusUC = new GetVideoStatusInteractor(videoStatusRepository);
-  const getStaticVideoStreamUC = new GetStaticVideoStreamInteractor(fileStorage);
-  const uploadImageUC = new UploadImageInteractor(s3Service, imageProcessor, fileStorage);
-  const uploadVideoUC = new UploadVideoInteractor(s3Service, fileStorage);
-  const uploadVideoStreamUC = new UploadVideoStreamInteractor(videoStatusRepository, videoStreamQueue, appConfig);
+  const getVideoStatusUC = new GetVideoStatusUseCase(videoStatusRepository);
+  const getStaticVideoStreamUC = new GetStaticVideoStreamUseCase(fileStorage);
+  const uploadImageUC = new UploadImageUseCase(s3Service, imageProcessor, fileStorage);
+  const uploadVideoUC = new UploadVideoUseCase(s3Service, fileStorage);
+  const uploadVideoStreamUC = new UploadVideoStreamUseCase(videoStatusRepository, videoStreamQueue, appConfig);
 
-  const getNewFeedsUC = new GetNewFeedsInteractor(
-    postQueryRepository,
-    postService,
-    blockService,
-    friendService,
-    logger
-  );
-  const getGuestNewFeedsUC = new GetGuestNewFeedsInteractor(postQueryRepository, postService, logger);
-  const increaseViewsUC = new IncreaseViewsInteractor(postCommandRepository);
-  const getPostDetailUC = new GetPostDetailInteractor(postQueryRepository, postAudienceAccessService);
-  const getPostsTypeUC = new GetPostsTypeInteractor(
+  const getNewFeedsUC = new GetNewFeedsUseCase(postQueryRepository, postService, blockService, friendService, logger);
+  const getGuestNewFeedsUC = new GetGuestNewFeedsUseCase(postQueryRepository, postService, logger);
+  const increaseViewsUC = new IncreaseViewsUseCase(postCommandRepository);
+  const getPostDetailUC = new GetPostDetailUseCase(postQueryRepository, postAudienceAccessService);
+  const getPostsTypeUC = new GetPostsTypeUseCase(
     postQueryRepository,
     postAudienceAccessService,
     postService,
     blockService,
     logger
   );
-  const createPostUC = new CreatePostInteractor(postRepository, hashtagRepository, blockService, friendService, logger);
-  const updatePostUC = new UpdatePostInteractor(postRepository, logger);
+  const createPostUC = new CreatePostUseCase(postRepository, hashtagRepository, blockService, friendService, logger);
+  const updatePostUC = new UpdatePostUseCase(postRepository, logger);
 
-  const searchPostsUC = new SearchPostsInteractor(postQueryRepository, friendService, postService, blockService);
-  const searchUsersUC = new SearchUsersInteractor(userQueryRepository, friendService, redis);
+  const searchPostsUC = new SearchPostsUseCase(postQueryRepository, friendService, postService, blockService);
+  const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, redis);
 
-  const listFriendsUC = new GetFriendsInteractor(friendshipRepository, userRepository);
-  const listIncomingRequestsUC = new GetIncomingRequestsInteractor(friendRequestRepository, userQueryRepository);
-  const listOutgoingRequestsUC = new GetOutgoingRequestsInteractor(friendRequestRepository, userQueryRepository);
-  const sendFriendRequestUC = new SendFriendRequestInteractor(
+  const listFriendsUC = new GetFriendsUseCase(friendshipRepository, userRepository);
+  const listIncomingRequestsUC = new GetIncomingRequestsUseCase(friendRequestRepository, userQueryRepository);
+  const listOutgoingRequestsUC = new GetOutgoingRequestsUseCase(friendRequestRepository, userQueryRepository);
+  const sendFriendRequestUC = new SendFriendRequestUseCase(
     friendshipRepository,
     friendRequestRepository,
     friendService,
@@ -350,53 +340,46 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userRepository,
     notificationsService
   );
-  const acceptIncomingRequestUC = new AcceptIncomingRequestInteractor(
+  const acceptIncomingRequestUC = new AcceptIncomingRequestUseCase(
     friendshipRepository,
     friendRequestRepository,
     friendService,
     blockRepository,
     notificationsService
   );
-  const declineIncomingRequestUC = new DeclineIncomingRequestInteractor(friendRequestRepository, friendService);
-  const revokeOutgoingRequestUC = new RevokeOutgoingRequestInteractor(friendRequestRepository, friendService);
-  const unfriendUC = new UnfriendInteractor(friendshipRepository, friendService);
+  const declineIncomingRequestUC = new DeclineIncomingRequestUseCase(friendRequestRepository, friendService);
+  const revokeOutgoingRequestUC = new RevokeOutgoingRequestUseCase(friendRequestRepository, friendService);
+  const unfriendUC = new UnfriendUseCase(friendshipRepository, friendService);
 
-  const createDirectUC = new GetOrCreateConversationInteractor(
+  const createDirectUC = new GetOrCreateConversationUseCase(
     conversationRepository,
     conversationMemberRepository,
     conversationService,
     friendService,
     blockRepository
   );
-  const createGroupUC = new CreateGroupInteractor(conversationRepository, friendshipRepository);
-  const listConversationsUC = new GetConversationsInteractor(
+  const createGroupUC = new CreateGroupUseCase(conversationRepository, friendshipRepository);
+  const listConversationsUC = new GetConversationsUseCase(
     conversationRepository,
     conversationMemberRepository,
     conversationMemberQueryRepository,
     conversationService
   );
-  const getConversationDetailUC = new GetConversationDetailInteractor(
-    conversationMemberRepository,
-    conversationService
-  );
-  const updateConversationUC = new UpdateConversationInteractor(conversationRepository, conversationService);
-  const inviteMemberUC = new InviteMemberInteractor(
+  const getConversationDetailUC = new GetConversationDetailUseCase(conversationMemberRepository, conversationService);
+  const updateConversationUC = new UpdateConversationUseCase(conversationRepository, conversationService);
+  const inviteMemberUC = new InviteMemberUseCase(
     conversationRepository,
     conversationMemberRepository,
     conversationService,
     friendService,
     notificationsService
   );
-  const kickMemberUC = new KickMemberInteractor(
-    conversationRepository,
-    conversationMemberRepository,
-    conversationService
-  );
-  const leaveConversationUC = new LeaveConversationHttpInteractor(conversationMemberRepository, conversationService);
-  const updateMemberRoleUC = new UpdateMemberRoleInteractor(conversationMemberRepository, conversationService);
-  const transferAdminUC = new TransferAdminInteractor(conversationMemberRepository, conversationService);
+  const kickMemberUC = new KickMemberUseCase(conversationRepository, conversationMemberRepository, conversationService);
+  const leaveConversationUC = new LeaveConversationHttpUseCase(conversationMemberRepository, conversationService);
+  const updateMemberRoleUC = new UpdateMemberRoleUseCase(conversationMemberRepository, conversationService);
+  const transferAdminUC = new TransferAdminUseCase(conversationMemberRepository, conversationService);
 
-  const sendMessageUC = new SendMessageInteractor(
+  const sendMessageUC = new SendMessageUseCase(
     conversationRepository,
     conversationMemberRepository,
     chatMessageRepository,
@@ -405,8 +388,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     conversationService,
     realtimeEmitter
   );
-  const listMessagesUC = new GetMessagesInteractor(chatMessageRepository, conversationService);
-  const markReadUC = new MarkReadInteractor(
+  const listMessagesUC = new GetMessagesUseCase(chatMessageRepository, conversationService);
+  const markReadUC = new MarkReadUseCase(
     conversationMemberRepository,
     chatMessageRepository,
     conversationService,
@@ -474,26 +457,26 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     listMessagesUC,
     markReadUC
   );
-  const listNotificationsUC = new ListNotificationsInteractor(notificationRepository, blockRepository);
-  const markNotificationsReadUC = new MarkNotificationsReadInteractor(notificationRepository);
-  const markNotificationReadUC = new MarkNotificationReadInteractor(notificationRepository);
+  const listNotificationsUC = new ListNotificationsUseCase(notificationRepository, blockRepository);
+  const markNotificationsReadUC = new MarkNotificationsReadUseCase(notificationRepository);
+  const markNotificationReadUC = new MarkNotificationReadUseCase(notificationRepository);
   const notificationController: INotificationController = new NotificationsController(
     listNotificationsUC,
     markNotificationsReadUC,
     markNotificationReadUC
   );
 
-  const listRolesUC = new ListRolesInteractor(roleRepository);
-  const getRoleUC = new GetRoleInteractor(roleRepository);
-  const createRoleUC = new CreateRoleInteractor(roleRepository);
-  const updateRoleUC = new UpdateRoleInteractor(roleRepository, redis);
-  const deleteRoleUC = new DeleteRoleInteractor(roleRepository, redis);
-  const listPermissionsUC = new ListPermissionsInteractor(permissionRepository);
+  const listRolesUC = new ListRolesUseCase(roleRepository);
+  const getRoleUC = new GetRoleUseCase(roleRepository);
+  const createRoleUC = new CreateRoleUseCase(roleRepository);
+  const updateRoleUC = new UpdateRoleUseCase(roleRepository, redis);
+  const deleteRoleUC = new DeleteRoleUseCase(roleRepository, redis);
+  const listPermissionsUC = new ListPermissionsUseCase(permissionRepository);
 
-  const getPermissionUC = new GetPermissionInteractor(permissionRepository);
-  const createPermissionUC = new CreatePermissionInteractor(permissionRepository);
-  const updatePermissionUC = new UpdatePermissionInteractor(permissionRepository, redis);
-  const deletePermissionUC = new DeletePermissionInteractor(permissionRepository, roleRepository);
+  const getPermissionUC = new GetPermissionUseCase(permissionRepository);
+  const createPermissionUC = new CreatePermissionUseCase(permissionRepository);
+  const updatePermissionUC = new UpdatePermissionUseCase(permissionRepository, redis);
+  const deletePermissionUC = new DeletePermissionUseCase(permissionRepository, roleRepository);
   const roleController: IRoleController = new RoleController(
     listRolesUC,
     getRoleUC,
@@ -509,11 +492,11 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     deletePermissionUC
   );
 
-  const listHashtagsUC = new ListHashtagsInteractor(hashtagRepository);
-  const getHashtagUC = new GetHashtagInteractor(hashtagRepository);
-  const createHashtagUC = new CreateHashtagInteractor(hashtagRepository);
-  const updateHashtagUC = new UpdateHashtagInteractor(hashtagRepository);
-  const deleteHashtagUC = new DeleteHashtagInteractor(hashtagRepository);
+  const listHashtagsUC = new ListHashtagsUseCase(hashtagRepository);
+  const getHashtagUC = new GetHashtagUseCase(hashtagRepository);
+  const createHashtagUC = new CreateHashtagUseCase(hashtagRepository);
+  const updateHashtagUC = new UpdateHashtagUseCase(hashtagRepository);
+  const deleteHashtagUC = new DeleteHashtagUseCase(hashtagRepository);
   const hashtagController: IHashtagController = new HashtagController(
     listHashtagsUC,
     getHashtagUC,

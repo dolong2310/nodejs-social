@@ -1,6 +1,6 @@
-import { BlockUserInPort } from '@/modules/block/application/use-cases/block-user/block-user.in-port';
-import { GetBlockedUserInPort } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.in-port';
-import { UnblockUserInPort } from '@/modules/block/application/use-cases/unblock-user/unblock-user.in-port';
+import { BlockUserPort } from '@/modules/block/application/use-cases/block-user/block-user.port';
+import { GetBlockedUserPort } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.port';
+import { UnblockUserPort } from '@/modules/block/application/use-cases/unblock-user/unblock-user.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -19,9 +19,9 @@ export interface IBlockController {
 
 export class BlockController extends BaseController implements IBlockController {
   constructor(
-    private readonly blockUserUC: BlockUserInPort,
-    private readonly unblockUserUC: UnblockUserInPort,
-    private readonly listBlockedUC: GetBlockedUserInPort
+    private readonly blockUserUC: BlockUserPort,
+    private readonly unblockUserUC: UnblockUserPort,
+    private readonly listBlockedUC: GetBlockedUserPort
   ) {
     super();
   }

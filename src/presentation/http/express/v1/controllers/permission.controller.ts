@@ -1,23 +1,23 @@
 import {
   CreatePermissionCommand,
-  CreatePermissionInPort
-} from '@/modules/permission/application/use-cases/create-permission/create-permission.in-port';
+  CreatePermissionPort
+} from '@/modules/permission/application/use-cases/create-permission/create-permission.port';
 import {
   DeletePermissionCommand,
-  DeletePermissionInPort
-} from '@/modules/permission/application/use-cases/delete-permission/delete-permission.in-port';
+  DeletePermissionPort
+} from '@/modules/permission/application/use-cases/delete-permission/delete-permission.port';
 import {
-  GetPermissionInPort,
+  GetPermissionPort,
   GetPermissionQuery
-} from '@/modules/permission/application/use-cases/get-permission/get-permission.in-port';
+} from '@/modules/permission/application/use-cases/get-permission/get-permission.port';
 import {
-  ListPermissionsInPort,
+  ListPermissionsPort,
   ListPermissionsQuery
-} from '@/modules/permission/application/use-cases/list-permissions/list-permissions.in-port';
+} from '@/modules/permission/application/use-cases/list-permissions/list-permissions.port';
 import {
   UpdatePermissionCommand,
-  UpdatePermissionInPort
-} from '@/modules/permission/application/use-cases/update-permission/update-permission.in-port';
+  UpdatePermissionPort
+} from '@/modules/permission/application/use-cases/update-permission/update-permission.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -40,11 +40,11 @@ export interface IPermissionController {
 
 export class PermissionController extends BaseController implements IPermissionController {
   constructor(
-    private readonly listPermissionsUC: ListPermissionsInPort,
-    private readonly getPermissionUC: GetPermissionInPort,
-    private readonly createPermissionUC: CreatePermissionInPort,
-    private readonly updatePermissionUC: UpdatePermissionInPort,
-    private readonly deletePermissionUC: DeletePermissionInPort
+    private readonly listPermissionsUC: ListPermissionsPort,
+    private readonly getPermissionUC: GetPermissionPort,
+    private readonly createPermissionUC: CreatePermissionPort,
+    private readonly updatePermissionUC: UpdatePermissionPort,
+    private readonly deletePermissionUC: DeletePermissionPort
   ) {
     super();
   }

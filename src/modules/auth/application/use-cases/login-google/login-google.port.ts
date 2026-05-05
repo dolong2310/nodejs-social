@@ -1,0 +1,23 @@
+import { UseCase } from '@/modules/core/application/base.usecase';
+
+export class LoginGoogleCommand {
+  state: string;
+  code: string;
+  constructor(payload: { state: string; code: string }) {
+    this.state = payload.state;
+    this.code = payload.code;
+  }
+}
+
+export class LoginGoogleResult {
+  accessToken: string;
+  refreshToken: string;
+  constructor(payload: { accessToken: string; refreshToken: string }) {
+    this.accessToken = payload.accessToken;
+    this.refreshToken = payload.refreshToken;
+  }
+}
+
+export abstract class LoginGooglePort implements UseCase<LoginGoogleCommand, LoginGoogleResult> {
+  abstract execute(command: LoginGoogleCommand): Promise<LoginGoogleResult>;
+}

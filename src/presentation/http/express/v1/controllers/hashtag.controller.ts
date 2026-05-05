@@ -1,23 +1,23 @@
 import {
   CreateHashtagCommand,
-  CreateHashtagInPort
-} from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.in-port';
+  CreateHashtagPort
+} from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.port';
 import {
   DeleteHashtagCommand,
-  DeleteHashtagInPort
-} from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.in-port';
+  DeleteHashtagPort
+} from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.port';
 import {
-  GetHashtagInPort,
+  GetHashtagPort,
   GetHashtagQuery
-} from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.in-port';
+} from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.port';
 import {
-  ListHashtagsInPort,
+  ListHashtagsPort,
   ListHashtagsQuery
-} from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.in-port';
+} from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.port';
 import {
   UpdateHashtagCommand,
-  UpdateHashtagInPort
-} from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.in-port';
+  UpdateHashtagPort
+} from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -40,11 +40,11 @@ export interface IHashtagController {
 
 export class HashtagController extends BaseController implements IHashtagController {
   constructor(
-    private readonly listHashtagsUC: ListHashtagsInPort,
-    private readonly getHashtagUC: GetHashtagInPort,
-    private readonly createHashtagUC: CreateHashtagInPort,
-    private readonly updateHashtagUC: UpdateHashtagInPort,
-    private readonly deleteHashtagUC: DeleteHashtagInPort
+    private readonly listHashtagsUC: ListHashtagsPort,
+    private readonly getHashtagUC: GetHashtagPort,
+    private readonly createHashtagUC: CreateHashtagPort,
+    private readonly updateHashtagUC: UpdateHashtagPort,
+    private readonly deleteHashtagUC: DeleteHashtagPort
   ) {
     super();
   }

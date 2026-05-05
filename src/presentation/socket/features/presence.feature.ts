@@ -1,14 +1,14 @@
 import { AccessTokenPayload } from '@/modules/auth/application/services/token.service.type';
 import { SOCKET_SERVER_PRESENCE_USER, userRoom } from '@/modules/common/constants/socket.constant';
-import { NotifyFriendsOfflineInPort } from '@/modules/notification/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.in-port';
-import { NotifyFriendsOnlineInPort } from '@/modules/notification/application/use-cases/realtime/notify-friends-online/notify-friends-online.in-port';
+import { NotifyFriendsOfflinePort } from '@/modules/notification/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.port';
+import { NotifyFriendsOnlinePort } from '@/modules/notification/application/use-cases/realtime/notify-friends-online/notify-friends-online.port';
 import { ISocketFeature } from '@/presentation/socket/socket.type';
 import { Server, Socket } from 'socket.io';
 
 export class PresenceFeature implements ISocketFeature {
   constructor(
-    private readonly onlineUC: NotifyFriendsOnlineInPort,
-    private readonly offlineUC: NotifyFriendsOfflineInPort
+    private readonly onlineUC: NotifyFriendsOnlinePort,
+    private readonly offlineUC: NotifyFriendsOfflinePort
   ) {}
 
   mount(io: Server, socket: Socket, payload: AccessTokenPayload): void {

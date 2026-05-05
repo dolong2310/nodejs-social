@@ -1,5 +1,5 @@
-import { BookmarkPostInPort } from '@/modules/bookmark/application/use-cases/bookmark-post/bookmark-post.in-port';
-import { UnbookmarkPostInPort } from '@/modules/bookmark/application/use-cases/unbookmark-post/unbookmark-post.in-port';
+import { BookmarkPostPort } from '@/modules/bookmark/application/use-cases/bookmark-post/bookmark-post.port';
+import { UnbookmarkPostPort } from '@/modules/bookmark/application/use-cases/unbookmark-post/unbookmark-post.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
@@ -21,8 +21,8 @@ export interface IBookmarkController {
 
 export class BookmarkController extends BaseController implements IBookmarkController {
   constructor(
-    private readonly createBookmarkUC: BookmarkPostInPort,
-    private readonly unbookmarkPostUC: UnbookmarkPostInPort
+    private readonly createBookmarkUC: BookmarkPostPort,
+    private readonly unbookmarkPostUC: UnbookmarkPostPort
   ) {
     super();
   }

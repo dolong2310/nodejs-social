@@ -1,7 +1,7 @@
-import { ChangePasswordInPort } from '@/modules/user/application/use-cases/change-password/change-password.in-port';
-import { GetMeInPort } from '@/modules/user/application/use-cases/get-me/get-me.in-port';
-import { GetUserProfileInPort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.in-port';
-import { UpdateMeInPort } from '@/modules/user/application/use-cases/update-me/update-me.in-port';
+import { ChangePasswordPort } from '@/modules/user/application/use-cases/change-password/change-password.port';
+import { GetMePort } from '@/modules/user/application/use-cases/get-me/get-me.port';
+import { GetUserProfilePort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
+import { UpdateMePort } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
 import {
@@ -23,10 +23,10 @@ export interface IUserController {
 
 export class UserController extends BaseController implements IUserController {
   constructor(
-    private readonly getMeUC: GetMeInPort,
-    private readonly updateMeUC: UpdateMeInPort,
-    private readonly getUserProfileUC: GetUserProfileInPort,
-    private readonly changePasswordUC: ChangePasswordInPort
+    private readonly getMeUC: GetMePort,
+    private readonly updateMeUC: UpdateMePort,
+    private readonly getUserProfileUC: GetUserProfilePort,
+    private readonly changePasswordUC: ChangePasswordPort
   ) {
     super();
   }

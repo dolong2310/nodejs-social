@@ -1,4 +1,4 @@
-import path from 'path'; // TODO: application should not depend on infrastructure
+import path from 'path';
 
 const MAXIMUM_BITRATE_720P = 5 * 10 ** 6; // 5Mbps
 const MAXIMUM_BITRATE_1080P = 8 * 10 ** 6; // 8Mbps
