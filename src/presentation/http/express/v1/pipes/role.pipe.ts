@@ -2,18 +2,17 @@ import { ROLE_NAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { RequestHandler } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
-export interface IRolesValidator {
-  roleIdParam(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  createBodyValidator(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  updateBodyValidator(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IRolesPipe {
+  roleIdParam(): RequestHandlerType;
+  createBodyPipe(): RequestHandlerType;
+  updateBodyPipe(): RequestHandlerType;
 }
 
-export class RolesValidator implements IRolesValidator {
+export class RolesPipe implements IRolesPipe {
   @AutoBind()
   roleIdParam() {
     return validate(
@@ -39,7 +38,7 @@ export class RolesValidator implements IRolesValidator {
   }
 
   @AutoBind()
-  createBodyValidator() {
+  createBodyPipe() {
     return validate(
       checkSchema(
         {
@@ -81,7 +80,7 @@ export class RolesValidator implements IRolesValidator {
   }
 
   @AutoBind()
-  updateBodyValidator() {
+  updateBodyPipe() {
     return validate(
       checkSchema(
         {

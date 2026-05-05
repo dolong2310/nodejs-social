@@ -1,10 +1,13 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { BookmarkEntity } from '@/modules/bookmark/domain/entities/bookmark.entity';
 import { BookmarkRepositoryPort } from '@/modules/bookmark/domain/repositories/bookmark.repository';
-import { ICreateBookmarkInput, IDeleteBookmarkInput } from '@/modules/bookmark/domain/repositories/bookmark.repository.type';
+import {
+  ICreateBookmarkInput,
+  IDeleteBookmarkInput
+} from '@/modules/bookmark/domain/repositories/bookmark.repository.type';
 import { BookmarkMapper } from '@/modules/bookmark/infrastructure/mappers/bookmark.mapper';
 import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { Db, MongoClient } from 'mongodb';
 
 export class BookmarkRepository

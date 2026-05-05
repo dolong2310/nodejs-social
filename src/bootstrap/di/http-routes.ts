@@ -50,6 +50,11 @@ import { GetOutgoingRequestsInteractor } from '@/modules/friend/application/use-
 import { RevokeOutgoingRequestInteractor } from '@/modules/friend/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.interactor';
 import { SendFriendRequestInteractor } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.interactor';
 import { UnfriendInteractor } from '@/modules/friend/application/use-cases/unfriend/unfriend.interactor';
+import { CreateHashtagInteractor } from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.interactor';
+import { DeleteHashtagInteractor } from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.interactor';
+import { GetHashtagInteractor } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.interactor';
+import { ListHashtagsInteractor } from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.interactor';
+import { UpdateHashtagInteractor } from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.interactor';
 import { LikePostInteractor } from '@/modules/like/application/use-cases/like-post/like-post.interactor';
 import { UnlikePostInteractor } from '@/modules/like/application/use-cases/unlike-post/unlike-post.interactor';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
@@ -91,10 +96,9 @@ import { GetMeInteractor } from '@/modules/user/application/use-cases/get-me/get
 import { GetUserProfileInteractor } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.interactor';
 import { SearchUsersInteractor } from '@/modules/user/application/use-cases/search-users/search-users.interactor';
 import { UpdateMeInteractor } from '@/modules/user/application/use-cases/update-me/update-me.interactor';
-import { AdminGuard } from '@/presentation/http/express/guards/admin.guard';
+import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
@@ -110,6 +114,7 @@ import {
   IConversationController
 } from '@/presentation/http/express/v1/controllers/conversation.controller';
 import { FriendController, IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
+import { HashtagController, IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import { ILikeController, LikeController } from '@/presentation/http/express/v1/controllers/like.controller';
 import { IMediaController, MediaController } from '@/presentation/http/express/v1/controllers/media.controller';
 import {
@@ -125,12 +130,25 @@ import { IPostController, PostController } from '@/presentation/http/express/v1/
 import { IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import { ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
 import { IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
+import { AuthPipe, IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
+import { BlocksPipe, IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
+import { ChatMessagesPipe, IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
+import { ConversationsPipe, IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
+import { FriendsPipe, IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
+import { HashtagsPipe, IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
+import { INotificationPipe, NotificationsPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
+import { IPermissionsPipe, PermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
+import { IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import { IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
+import { ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import { IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
 import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
 import { FriendRoute } from '@/presentation/http/express/v1/routes/friend.route';
+import { HashtagRoute } from '@/presentation/http/express/v1/routes/hashtag.route';
 import { LikeRoute } from '@/presentation/http/express/v1/routes/like.route';
 import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
@@ -141,29 +159,6 @@ import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
 import { SearchRoute } from '@/presentation/http/express/v1/routes/search.route';
 import { StaticRoute } from '@/presentation/http/express/v1/routes/static.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
-import { AuthValidator, IAuthValidator } from '@/presentation/http/express/v1/validators/auth.validator';
-import { BlocksValidator, IBlockValidator } from '@/presentation/http/express/v1/validators/block.validator';
-import {
-  ChatMessagesValidator,
-  IChatMessageValidator
-} from '@/presentation/http/express/v1/validators/chat-message.validator';
-import {
-  ConversationsValidator,
-  IConversationValidator
-} from '@/presentation/http/express/v1/validators/conversation.validator';
-import { FriendsValidator, IFriendValidator } from '@/presentation/http/express/v1/validators/friend.validator';
-import {
-  INotificationValidator,
-  NotificationsValidator
-} from '@/presentation/http/express/v1/validators/notification.validator';
-import {
-  IPermissionsValidator,
-  PermissionsValidator
-} from '@/presentation/http/express/v1/validators/permission.validator';
-import { IPostValidator, PostsValidator } from '@/presentation/http/express/v1/validators/post.validator';
-import { IRolesValidator, RolesValidator } from '@/presentation/http/express/v1/validators/role.validator';
-import { ISearchValidator, SearchValidator } from '@/presentation/http/express/v1/validators/search.validator';
-import { IUserValidator, UsersValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export type HttpContext = ContainerRepositories & {
   logger: LoggerPort;
@@ -207,6 +202,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     notificationRepository,
     otpRepository,
     roleRepository,
+    roleQueryRepository,
     permissionRepository,
     postQueryRepository,
     postCommandRepository,
@@ -235,10 +231,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     twoFactorService
   } = ctx;
 
-  const authGuard = new AuthGuard(roleRepository, tokenService);
+  const authGuard = new AuthGuard(roleQueryRepository, tokenService, redis);
   const authOptionGuard = new AuthOptionGuard(tokenService);
-  const adminGuard = new AdminGuard(roleService, userService);
-  const throttlerGuard = new ThrottlerProxyGuard(appConfig);
+  const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
 
   const registerUC = new RegisterInteractor(
     userRepository,
@@ -491,13 +486,13 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const listRolesUC = new ListRolesInteractor(roleRepository);
   const getRoleUC = new GetRoleInteractor(roleRepository);
   const createRoleUC = new CreateRoleInteractor(roleRepository);
-  const updateRoleUC = new UpdateRoleInteractor(roleRepository);
-  const deleteRoleUC = new DeleteRoleInteractor(roleRepository);
+  const updateRoleUC = new UpdateRoleInteractor(roleRepository, redis);
+  const deleteRoleUC = new DeleteRoleInteractor(roleRepository, redis);
   const listPermissionsUC = new ListPermissionsInteractor(permissionRepository);
 
   const getPermissionUC = new GetPermissionInteractor(permissionRepository);
   const createPermissionUC = new CreatePermissionInteractor(permissionRepository);
-  const updatePermissionUC = new UpdatePermissionInteractor(permissionRepository);
+  const updatePermissionUC = new UpdatePermissionInteractor(permissionRepository, redis);
   const deletePermissionUC = new DeletePermissionInteractor(permissionRepository, roleRepository);
   const roleController: IRoleController = new RoleController(
     listRolesUC,
@@ -514,42 +509,56 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     deletePermissionUC
   );
 
-  const authValidator: IAuthValidator = new AuthValidator();
-  const userValidator: IUserValidator = new UsersValidator(userService);
-  const postValidator: IPostValidator = new PostsValidator();
-  const searchValidator: ISearchValidator = new SearchValidator();
-  const friendValidator: IFriendValidator = new FriendsValidator(userValidator);
-  const blocksValidator: IBlockValidator = new BlocksValidator(userValidator);
-  const conversationValidator: IConversationValidator = new ConversationsValidator(userValidator);
-  const chatMessageValidator: IChatMessageValidator = new ChatMessagesValidator();
-  const notificationValidator: INotificationValidator = new NotificationsValidator(userValidator);
-  const rolesValidator: IRolesValidator = new RolesValidator();
-  const permissionsValidator: IPermissionsValidator = new PermissionsValidator();
+  const listHashtagsUC = new ListHashtagsInteractor(hashtagRepository);
+  const getHashtagUC = new GetHashtagInteractor(hashtagRepository);
+  const createHashtagUC = new CreateHashtagInteractor(hashtagRepository);
+  const updateHashtagUC = new UpdateHashtagInteractor(hashtagRepository);
+  const deleteHashtagUC = new DeleteHashtagInteractor(hashtagRepository);
+  const hashtagController: IHashtagController = new HashtagController(
+    listHashtagsUC,
+    getHashtagUC,
+    createHashtagUC,
+    updateHashtagUC,
+    deleteHashtagUC
+  );
+
+  const authPipe: IAuthPipe = new AuthPipe();
+  const userPipe: IUserPipe = new UsersPipe(userService);
+  const postPipe: IPostPipe = new PostsPipe();
+  const searchPipe: ISearchPipe = new SearchPipe();
+  const friendPipe: IFriendPipe = new FriendsPipe(userPipe);
+  const blocksPipe: IBlockPipe = new BlocksPipe(userPipe);
+  const conversationPipe: IConversationPipe = new ConversationsPipe(userPipe);
+  const chatMessagePipe: IChatMessagePipe = new ChatMessagesPipe();
+  const notificationPipe: INotificationPipe = new NotificationsPipe(userPipe);
+  const rolesPipe: IRolesPipe = new RolesPipe();
+  const permissionsPipe: IPermissionsPipe = new PermissionsPipe();
+  const hashtagsPipe: IHashtagsPipe = new HashtagsPipe();
 
   const routers: BaseRoute[] = [
-    new AuthRoute(authController, authValidator, authGuard, throttlerGuard),
-    new UserRoute(userController, userValidator, authGuard, authOptionGuard, throttlerGuard),
-    new BookmarkRoute(bookmarkController, userValidator, postValidator, authGuard, throttlerGuard),
-    new LikeRoute(likeController, userValidator, postValidator, authGuard, throttlerGuard),
-    new MediaRoute(mediaController, userValidator, authGuard, throttlerGuard),
-    new OAuthRoute(oauthController, throttlerGuard),
-    new PostRoute(postController, postValidator, userValidator, authGuard, authOptionGuard, throttlerGuard),
-    new SearchRoute(searchController, searchValidator, userValidator, authOptionGuard, throttlerGuard),
-    new FriendRoute(friendController, friendValidator, userValidator, authGuard, throttlerGuard),
-    new BlockRoute(blocksController, blocksValidator, userValidator, authGuard, throttlerGuard),
+    new AuthRoute(authController, authPipe, authGuard),
+    new UserRoute(userController, userPipe, authGuard, authOptionGuard),
+    new BookmarkRoute(bookmarkController, userPipe, postPipe, authGuard),
+    new LikeRoute(likeController, userPipe, postPipe, authGuard),
+    new MediaRoute(mediaController, userPipe, authGuard),
+    new OAuthRoute(oauthController),
+    new PostRoute(postController, postPipe, userPipe, authGuard, authOptionGuard),
+    new SearchRoute(searchController, searchPipe, userPipe, authOptionGuard),
+    new FriendRoute(friendController, friendPipe, userPipe, authGuard),
+    new BlockRoute(blocksController, blocksPipe, userPipe, authGuard),
     new ConversationRoute(
       conversationController,
-      conversationValidator,
+      conversationPipe,
       chatMessageController,
-      chatMessageValidator,
-      userValidator,
-      authGuard,
-      throttlerGuard
+      chatMessagePipe,
+      userPipe,
+      authGuard
     ),
-    new StaticRoute(mediaController, throttlerGuard),
-    new NotificationRoute(notificationController, notificationValidator, userValidator, authGuard, throttlerGuard),
-    new RoleRoute(roleController, rolesValidator, authGuard, adminGuard, throttlerGuard),
-    new PermissionRoute(permissionController, permissionsValidator, authGuard, adminGuard, throttlerGuard)
+    new StaticRoute(mediaController),
+    new NotificationRoute(notificationController, notificationPipe, userPipe, authGuard),
+    new RoleRoute(roleController, rolesPipe, authGuard, apiKeyGuard),
+    new PermissionRoute(permissionController, permissionsPipe, authGuard, apiKeyGuard),
+    new HashtagRoute(hashtagController, hashtagsPipe, authGuard)
   ];
 
   return routers;

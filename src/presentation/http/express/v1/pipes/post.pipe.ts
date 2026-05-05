@@ -1,7 +1,7 @@
 import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import {
   HashtagsCountMustBeBetween0To20Exception,
@@ -14,6 +14,7 @@ import {
   PostContentMustBeEmptyStringException,
   PostContentMustBeNonEmptyStringException
 } from '@/presentation/http/express/exceptions/post.exception';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import {
   CreatePostRequestDTO,
@@ -21,30 +22,21 @@ import {
   PatchPostRequestDTO
 } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
 import { RequestHandler } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
+import { Query } from 'express-serve-static-core';
 import { checkSchema, Location } from 'express-validator';
 import { isEmpty } from 'lodash-es';
 
-export interface IPostValidator {
-  createPostValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  postIdValidator: (
-    key: string,
-    location: Location
-  ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  patchPostValidator: RequestHandler<
-    GetPostDetailParamsDTO,
-    object,
-    PatchPostRequestDTO,
-    Query,
-    Record<string, unknown>
-  >;
-  postTypeValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IPostPipe {
+  createPostPipe: RequestHandlerType;
+  postIdPipe: (key: string, location: Location) => RequestHandlerType;
+  patchPostPipe: RequestHandler<GetPostDetailParamsDTO, object, PatchPostRequestDTO, Query, Record<string, unknown>>;
+  postTypePipe: RequestHandlerType;
 }
 
-export class PostsValidator implements IPostValidator {
+export class PostsPipe implements IPostPipe {
   private static readonly MAX_HASHTAGS_PER_POST = 20;
 
-  createPostValidator = validate(
+  createPostPipe = validate(
     checkSchema(
       {
         // type phải là 1 trong 4 giá trị: post, repost, comment, quote
@@ -124,7 +116,7 @@ export class PostsValidator implements IPostValidator {
           },
           custom: {
             options: (hashtags: string[]) => {
-              if (hashtags.length > PostsValidator.MAX_HASHTAGS_PER_POST) {
+              if (hashtags.length > PostsPipe.MAX_HASHTAGS_PER_POST) {
                 throw HashtagsCountMustBeBetween0To20Exception;
               }
 
@@ -177,7 +169,7 @@ export class PostsValidator implements IPostValidator {
     )
   );
 
-  patchPostValidator = validate(
+  patchPostPipe = validate(
     checkSchema(
       {
         audience: {
@@ -197,7 +189,7 @@ export class PostsValidator implements IPostValidator {
     )
   );
 
-  postIdValidator = (key: string, location: Location) =>
+  postIdPipe = (key: string, location: Location) =>
     validate(
       checkSchema(
         {
@@ -223,7 +215,7 @@ export class PostsValidator implements IPostValidator {
       )
     );
 
-  postTypeValidator = validate(
+  postTypePipe = validate(
     checkSchema(
       {
         type: {

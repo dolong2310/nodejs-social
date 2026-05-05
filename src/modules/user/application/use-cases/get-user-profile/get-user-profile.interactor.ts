@@ -1,4 +1,3 @@
-import { CannotViewUserProfileBlockedException, UserNotFoundException } from '@/modules/user/application/user.exception';
 import { BlockServicePort } from '@/modules/block/application/services/block.service';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
@@ -6,6 +5,10 @@ import {
   GetUserProfileQuery,
   GetUserProfileResult
 } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.in-port';
+import {
+  CannotViewUserProfileBlockedException,
+  UserNotFoundException
+} from '@/modules/user/application/user.exception';
 
 export class GetUserProfileInteractor extends GetUserProfileInPort {
   constructor(

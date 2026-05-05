@@ -49,6 +49,10 @@ export const appConfig: IAppConfig = {
     refreshTokenExpiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN as StringValue
   },
 
+  auth: {
+    apiKey: envConfig.API_KEY
+  },
+
   logs: {
     /** Pino levels: fatal, error, warn, info, debug, trace, silent */
     level: envConfig.LOG_LEVEL || (isDevelopment ? 'debug' : 'info')

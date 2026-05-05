@@ -19,7 +19,7 @@ import {
   UpdatePermissionInPort
 } from '@/modules/permission/application/use-cases/update-permission/update-permission.in-port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { Created, OK } from '@/presentation/http/express/responses/success.response';
+import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
 import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
@@ -27,15 +27,15 @@ import {
   PermissionIdParamsDTO,
   UpdatePermissionBodyDTO
 } from '@/presentation/http/express/v1/dtos/permission/permission.request.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPermissionController {
-  list(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
-  create(req: Request<ParamsDictionary, object, CreatePermissionBodyDTO>, res: Response): Promise<void>;
-  getById(req: Request<PermissionIdParamsDTO>, res: Response): Promise<void>;
-  update(req: Request<PermissionIdParamsDTO, object, UpdatePermissionBodyDTO>, res: Response): Promise<void>;
-  remove(req: Request<PermissionIdParamsDTO>, res: Response): Promise<void>;
+  list(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown>;
+  create(req: Request<ParamsDictionary, object, CreatePermissionBodyDTO>): Promise<unknown>;
+  getById(req: Request<PermissionIdParamsDTO>): Promise<unknown>;
+  update(req: Request<PermissionIdParamsDTO, object, UpdatePermissionBodyDTO>): Promise<unknown>;
+  remove(req: Request<PermissionIdParamsDTO>): Promise<unknown>;
 }
 
 export class PermissionController extends BaseController implements IPermissionController {
@@ -50,12 +50,11 @@ export class PermissionController extends BaseController implements IPermissionC
   }
 
   @AutoBind()
-  async list(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void> {
+  async list(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
     const { items, total } = await this.listPermissionsUC.execute(new ListPermissionsQuery({ page, limit }));
-    this.sendPaginatedResponse({
-      res,
+    return this.paginatedResponse({
       data: items,
       pagination: { page, limit, totalItems: total },
       message: 'List permissions successfully'
@@ -63,7 +62,7 @@ export class PermissionController extends BaseController implements IPermissionC
   }
 
   @AutoBind()
-  async create(req: Request<ParamsDictionary, object, CreatePermissionBodyDTO>, res: Response): Promise<void> {
+  async create(req: Request<ParamsDictionary, object, CreatePermissionBodyDTO>): Promise<unknown> {
     const dto = new CreatePermissionBodyDTO(req.body);
     const item = await this.createPermissionUC.execute(
       new CreatePermissionCommand({
@@ -74,18 +73,18 @@ export class PermissionController extends BaseController implements IPermissionC
         module: dto.module
       })
     );
-    this.sendResponse({ res, instance: Created, data: item, message: 'Permission created successfully' });
+    return this.response({ instance: Created, data: item, message: 'Permission created successfully' });
   }
 
   @AutoBind()
-  async getById(req: Request<PermissionIdParamsDTO>, res: Response): Promise<void> {
+  async getById(req: Request<PermissionIdParamsDTO>): Promise<unknown> {
     const { permissionId } = req.params;
     const item = await this.getPermissionUC.execute(new GetPermissionQuery(permissionId));
-    this.sendResponse({ res, data: item, message: 'Get permission successfully' });
+    return this.response({ data: item, message: 'Get permission successfully' });
   }
 
   @AutoBind()
-  async update(req: Request<PermissionIdParamsDTO, object, UpdatePermissionBodyDTO>, res: Response): Promise<void> {
+  async update(req: Request<PermissionIdParamsDTO, object, UpdatePermissionBodyDTO>): Promise<unknown> {
     const { permissionId } = req.params;
     const dto = new UpdatePermissionBodyDTO(req.body);
     const item = await this.updatePermissionUC.execute(
@@ -98,13 +97,13 @@ export class PermissionController extends BaseController implements IPermissionC
         module: dto.module
       })
     );
-    this.sendResponse({ res, instance: OK, data: item, message: 'Permission updated successfully' });
+    return this.response({ data: item, message: 'Permission updated successfully' });
   }
 
   @AutoBind()
-  async remove(req: Request<PermissionIdParamsDTO>, res: Response): Promise<void> {
+  async remove(req: Request<PermissionIdParamsDTO>): Promise<unknown> {
     const { permissionId } = req.params;
     await this.deletePermissionUC.execute(new DeletePermissionCommand(permissionId));
-    this.sendResponse({ res, message: 'Permission deleted successfully' });
+    return this.response({ message: 'Permission deleted successfully' });
   }
 }

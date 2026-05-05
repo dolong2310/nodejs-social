@@ -74,6 +74,10 @@ export class Redis implements CacheManagerPort {
     }
   }
 
+  async clear(): Promise<void> {
+    await this.client.flushall();
+  }
+
   async getOrSet<T>(key: string, fn: () => Promise<T>, ttlSeconds: number): Promise<T> {
     const cached = await this.get<T>(key);
     if (cached !== null) return cached;

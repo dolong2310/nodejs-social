@@ -2,20 +2,20 @@ import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema } from 'express-validator';
 
-export interface INotificationValidator {
+export interface INotificationPipe {
   listQuery: RequestHandlerType;
   markReadBody: RequestHandlerType;
   notificationIdParam: RequestHandlerType;
 }
 
-export class NotificationsValidator implements INotificationValidator {
+export class NotificationsPipe implements INotificationPipe {
   readonly notificationIdParam: RequestHandlerType;
 
-  constructor(private readonly userValidator: IUserValidator) {
-    this.notificationIdParam = this.userValidator.userIdValidator('notificationId', 'params');
+  constructor(private readonly userPipe: IUserPipe) {
+    this.notificationIdParam = this.userPipe.userIdPipe('notificationId', 'params');
   }
 
   listQuery = validate(

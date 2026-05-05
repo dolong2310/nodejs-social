@@ -1,11 +1,10 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
+import { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
+import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IBlockValidator } from '@/presentation/http/express/v1/validators/block.validator';
-import { validatePaginationQuery } from '@/presentation/http/express/v1/validators/pagination.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class BlockRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,10 +12,9 @@ export class BlockRoute extends BaseRoute {
 
   constructor(
     private readonly blockController: IBlockController,
-    private readonly blockValidator: IBlockValidator,
-    private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard,
-    private readonly throttler: ThrottlerProxyGuard
+    private readonly blockPipe: IBlockPipe,
+    private readonly userPipe: IUserPipe,
+    private readonly authGuard: AuthGuard
   ) {
     super();
     this.createRoutes();
@@ -24,20 +22,33 @@ export class BlockRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     const { listBlocked, blockUser, unblockUser } = this.blockController;
-    const { blockUserBodyValidator, unblockUserIdValidator } = this.blockValidator;
-    const { userActiveValidator } = this.userValidator;
+    const { blockUserBodyPipe, unblockUserIdPipe } = this.blockPipe;
+    const { userActivePipe } = this.userPipe;
     const authGuard = this.authGuard.handler;
-    const throttler = this.throttler.handler();
+    const throttler = this.throttlerGuard();
 
-    this.router.get('/', authGuard, userActiveValidator, validatePaginationQuery, asyncHandler(listBlocked));
-    this.router.post('/', throttler, authGuard, userActiveValidator, blockUserBodyValidator, asyncHandler(blockUser));
+    this.router.get(
+      '/',
+      authGuard,
+      userActivePipe,
+      validatePaginationQuery,
+      asyncHandler(this.transformInterceptor(listBlocked))
+    );
+    this.router.post(
+      '/',
+      throttler,
+      authGuard,
+      userActivePipe,
+      blockUserBodyPipe,
+      asyncHandler(this.transformInterceptor(blockUser))
+    );
     this.router.delete(
       '/:userId',
       throttler,
       authGuard,
-      userActiveValidator,
-      unblockUserIdValidator,
-      asyncHandler(unblockUser)
+      userActivePipe,
+      unblockUserIdPipe,
+      asyncHandler(this.transformInterceptor(unblockUser))
     );
   }
 }

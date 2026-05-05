@@ -1,7 +1,10 @@
 import { NoActiveBlockException } from '@/modules/block/application/block.exception';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
-import { UnblockUserCommand, UnblockUserInPort } from '@/modules/block/application/use-cases/unblock-user/unblock-user.in-port';
+import {
+  UnblockUserCommand,
+  UnblockUserInPort
+} from '@/modules/block/application/use-cases/unblock-user/unblock-user.in-port';
 import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
+import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 
 export class UnblockUserInteractor extends UnblockUserInPort {
   constructor(

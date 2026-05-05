@@ -1,4 +1,3 @@
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 
@@ -6,10 +5,7 @@ export class StaticRoute extends BaseRoute {
   protected override readonly version = 'v1';
   protected override readonly pathName = 'static';
 
-  constructor(
-    private readonly mediaController: IMediaController,
-    private readonly throttler: ThrottlerProxyGuard
-  ) {
+  constructor(private readonly mediaController: IMediaController) {
     super();
     this.createRoutes();
   }
@@ -18,7 +14,7 @@ export class StaticRoute extends BaseRoute {
     const { getStaticImage, getStaticVideoStream, getStaticVideoStreamMaster, getStaticVideoStreamSegment } =
       this.mediaController;
 
-    const throttler = this.throttler.handler();
+    const throttler = this.throttlerGuard();
 
     this.router.get('/images/:filename', throttler, getStaticImage);
     // this.router.get('/videos/:filename', getStaticVideo);

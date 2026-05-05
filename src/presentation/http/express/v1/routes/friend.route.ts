@@ -1,11 +1,10 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
+import { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
+import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IFriendValidator } from '@/presentation/http/express/v1/validators/friend.validator';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/validators/pagination.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class FriendRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,10 +12,9 @@ export class FriendRoute extends BaseRoute {
 
   constructor(
     private readonly friendController: IFriendController,
-    private readonly friendValidator: IFriendValidator,
-    private readonly userValidator: IUserValidator,
-    private readonly authGuard: AuthGuard,
-    private readonly throttler: ThrottlerProxyGuard
+    private readonly friendPipe: IFriendPipe,
+    private readonly userPipe: IUserPipe,
+    private readonly authGuard: AuthGuard
   ) {
     super();
     this.createRoutes();
@@ -33,70 +31,72 @@ export class FriendRoute extends BaseRoute {
       revokeOutgoingRequest,
       unfriend
     } = this.friendController;
-    const { userActiveValidator } = this.userValidator;
-    const {
-      sendRequestToUserIdValidator,
-      incomingFromUserIdValidator,
-      revokeOutgoingToUserIdValidator,
-      unfriendUserIdValidator
-    } = this.friendValidator;
+    const { userActivePipe } = this.userPipe;
+    const { sendRequestToUserIdPipe, incomingFromUserIdPipe, revokeOutgoingToUserIdPipe, unfriendUserIdPipe } =
+      this.friendPipe;
     const authGuard = this.authGuard.handler;
-    const throttler = this.throttler.handler();
+    const throttler = this.throttlerGuard();
 
-    this.router.get('/', authGuard, userActiveValidator, validateCursorPaginationQuery, asyncHandler(listFriends));
+    this.router.get(
+      '/',
+      authGuard,
+      userActivePipe,
+      validateCursorPaginationQuery,
+      asyncHandler(this.transformInterceptor(listFriends))
+    );
     this.router.get(
       '/requests/incoming',
       authGuard,
-      userActiveValidator,
+      userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(listIncoming)
+      asyncHandler(this.transformInterceptor(listIncoming))
     );
     this.router.get(
       '/requests/outgoing',
       authGuard,
-      userActiveValidator,
+      userActivePipe,
       validateCursorPaginationQuery,
-      asyncHandler(listOutgoing)
+      asyncHandler(this.transformInterceptor(listOutgoing))
     );
     this.router.post(
       '/requests',
       throttler,
       authGuard,
-      userActiveValidator,
-      sendRequestToUserIdValidator,
-      asyncHandler(sendFriendRequest)
+      userActivePipe,
+      sendRequestToUserIdPipe,
+      asyncHandler(this.transformInterceptor(sendFriendRequest))
     );
     this.router.post(
       '/requests/:fromUserId/accept',
       throttler,
       authGuard,
-      userActiveValidator,
-      incomingFromUserIdValidator,
-      asyncHandler(acceptIncomingRequest)
+      userActivePipe,
+      incomingFromUserIdPipe,
+      asyncHandler(this.transformInterceptor(acceptIncomingRequest))
     );
     this.router.post(
       '/requests/:fromUserId/decline',
       throttler,
       authGuard,
-      userActiveValidator,
-      incomingFromUserIdValidator,
-      asyncHandler(declineIncomingRequest)
+      userActivePipe,
+      incomingFromUserIdPipe,
+      asyncHandler(this.transformInterceptor(declineIncomingRequest))
     );
     this.router.delete(
       '/requests/outgoing/:toUserId',
       throttler,
       authGuard,
-      userActiveValidator,
-      revokeOutgoingToUserIdValidator,
-      asyncHandler(revokeOutgoingRequest)
+      userActivePipe,
+      revokeOutgoingToUserIdPipe,
+      asyncHandler(this.transformInterceptor(revokeOutgoingRequest))
     );
     this.router.delete(
       '/:userId',
       throttler,
       authGuard,
-      userActiveValidator,
-      unfriendUserIdValidator,
-      asyncHandler(unfriend)
+      userActivePipe,
+      unfriendUserIdPipe,
+      asyncHandler(this.transformInterceptor(unfriend))
     );
   }
 }

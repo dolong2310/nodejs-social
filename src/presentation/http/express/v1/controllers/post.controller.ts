@@ -23,15 +23,15 @@ import {
   PostDetailWithAuthorResponseDTO,
   PostResponseDTO
 } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostController {
-  getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
-  getPostDetail(req: Request<GetPostDetailParamsDTO>, res: Response): Promise<void>;
-  getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>, res: Response): Promise<void>;
-  createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response): Promise<void>;
-  patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response): Promise<void>;
+  getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
+  getPostDetail(req: Request<GetPostDetailParamsDTO>): Promise<unknown>;
+  getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
+  createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>): Promise<unknown>;
+  patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>): Promise<unknown>;
 }
 
 export class PostController extends BaseController implements IPostController {
@@ -48,7 +48,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>, res: Response) {
+  async getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
     const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
@@ -74,8 +74,7 @@ export class PostController extends BaseController implements IPostController {
       nextCursor = guestResults.nextCursor;
     }
 
-    this.sendCursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
-      res,
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
       items,
       nextCursor,
       message: 'Get new feeds successfully'
@@ -83,7 +82,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getPostDetail(req: Request<GetPostDetailParamsDTO>, res: Response) {
+  async getPostDetail(req: Request<GetPostDetailParamsDTO>) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
     const postDetail = await this.getPostDetailUC.execute(new GetPostDetailQuery({ postId, viewerUserId: userId }));
@@ -96,15 +95,14 @@ export class PostController extends BaseController implements IPostController {
       post.updatedAt = updatedViews.updatedAt!;
     }
 
-    this.sendResponse<PostDetailResponseDTO>({
-      res,
+    return this.response<PostDetailResponseDTO>({
       data: post,
       message: 'Get post detail successfully'
     });
   }
 
   @AutoBind()
-  async getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>, res: Response) {
+  async getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>) {
     const { postId, type } = req.params;
     const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
@@ -117,8 +115,7 @@ export class PostController extends BaseController implements IPostController {
       limit: Number(limit)
     });
 
-    this.sendCursorPaginatedResponse<PostDetailResponseDTO>({
-      res,
+    return this.cursorPaginatedResponse<PostDetailResponseDTO>({
       items,
       nextCursor,
       message: 'Get posts type successfully'
@@ -126,7 +123,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>, res: Response) {
+  async createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new CreatePostRequestDTO(req.body);
 
@@ -142,8 +139,7 @@ export class PostController extends BaseController implements IPostController {
       mentions: dto.mentions
     });
 
-    this.sendResponse<PostResponseDTO>({
-      res,
+    return this.response<PostResponseDTO>({
       instance: Created,
       data: new PostResponseDTO(post),
       message: 'Create post successfully'
@@ -151,7 +147,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>, res: Response) {
+  async patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
     const dto = new PatchPostRequestDTO(req.body);
@@ -163,8 +159,7 @@ export class PostController extends BaseController implements IPostController {
       allowStrangerComments: dto.allowStrangerComments
     });
 
-    this.sendResponse<PostResponseDTO>({
-      res,
+    return this.response<PostResponseDTO>({
       data: new PostResponseDTO(post),
       message: 'Post updated successfully'
     });

@@ -8,13 +8,13 @@ import { BlockUserBodyDTO, UnblockUserParamsDTO } from '@/presentation/http/expr
 import { BlockCreatedResponseDTO } from '@/presentation/http/express/v1/dtos/block/block.response.dto';
 import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import { FriendUserResponseDTO } from '@/presentation/http/express/v1/dtos/friend/friend.response.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IBlockController {
-  blockUser(req: Request<ParamsDictionary, object, BlockUserBodyDTO>, res: Response): Promise<void>;
-  unblockUser(req: Request<UnblockUserParamsDTO>, res: Response): Promise<void>;
-  listBlocked(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response): Promise<void>;
+  blockUser(req: Request<ParamsDictionary, object, BlockUserBodyDTO>): Promise<unknown>;
+  unblockUser(req: Request<UnblockUserParamsDTO>): Promise<unknown>;
+  listBlocked(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown>;
 }
 
 export class BlockController extends BaseController implements IBlockController {
@@ -27,14 +27,13 @@ export class BlockController extends BaseController implements IBlockController 
   }
 
   @AutoBind()
-  async blockUser(req: Request<ParamsDictionary, object, BlockUserBodyDTO>, res: Response) {
+  async blockUser(req: Request<ParamsDictionary, object, BlockUserBodyDTO>) {
     const dto = new BlockUserBodyDTO(req.body);
     const blockerUserId = this.getUserId(req);
 
     await this.blockUserUC.execute({ blockerUserId, blockedUserId: dto.userId });
 
-    this.sendResponse<BlockCreatedResponseDTO>({
-      res,
+    return this.response<BlockCreatedResponseDTO>({
       instance: Created,
       data: new BlockCreatedResponseDTO(dto.userId),
       message: 'User blocked successfully'
@@ -42,24 +41,23 @@ export class BlockController extends BaseController implements IBlockController 
   }
 
   @AutoBind()
-  async unblockUser(req: Request<UnblockUserParamsDTO>, res: Response) {
+  async unblockUser(req: Request<UnblockUserParamsDTO>) {
     const blockerUserId = this.getUserId(req);
     const { userId: blockedUserId } = req.params;
 
     await this.unblockUserUC.execute({ blockerUserId, blockedUserId });
 
-    this.sendResponse({ res, message: 'User unblocked successfully' });
+    return this.response({ message: 'User unblocked successfully' });
   }
 
   @AutoBind()
-  async listBlocked(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>, res: Response) {
+  async listBlocked(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>) {
     const blockerUserId = this.getUserId(req);
     const { page, limit } = req.query;
 
     const { users, total } = await this.listBlockedUC.execute({ blockerUserId, page, limit });
 
-    this.sendPaginatedResponse<FriendUserResponseDTO[]>({
-      res,
+    return this.paginatedResponse<FriendUserResponseDTO[]>({
       data: users.map((user) => new FriendUserResponseDTO(user)),
       pagination: { page, limit, totalItems: total },
       message: 'Get blocked users successfully'

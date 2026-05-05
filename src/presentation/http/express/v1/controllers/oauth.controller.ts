@@ -16,8 +16,11 @@ import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IOAuthController {
-  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>, res: Response): void;
-  googleLogin(req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response): Promise<void>;
+  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>): void;
+  googleLogin(
+    req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
+    res: Response
+  ): Promise<unknown>;
 }
 
 export class OAuthController extends BaseController implements IOAuthController {
@@ -29,11 +32,10 @@ export class OAuthController extends BaseController implements IOAuthController 
   }
 
   @AutoBind()
-  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>, res: Response) {
+  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>) {
     const { ip, userAgent } = req.query;
     const url = this.getGoogleAuthUrlUC.execute({ ip, userAgent });
-    this.sendResponse<string>({
-      res,
+    return this.response<string>({
       data: url,
       message: 'Get authorization url successfully'
     });

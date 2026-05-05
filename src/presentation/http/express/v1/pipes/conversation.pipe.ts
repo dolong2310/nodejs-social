@@ -3,10 +3,10 @@ import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema } from 'express-validator';
 
-export interface IConversationValidator {
+export interface IConversationPipe {
   conversationIdParam: RequestHandlerType;
   peerUserIdBody: RequestHandlerType;
   createGroupBody: RequestHandlerType;
@@ -17,19 +17,17 @@ export interface IConversationValidator {
   kickTargetUserIdParam: RequestHandlerType;
 }
 
-const roleValues = [EConversationMemberRole.MANAGER, EConversationMemberRole.MEMBER];
-
-export class ConversationsValidator implements IConversationValidator {
+export class ConversationsPipe implements IConversationPipe {
   kickTargetUserIdParam: RequestHandlerType;
   peerUserIdBody: RequestHandlerType;
   inviteUserIdBody: RequestHandlerType;
   newAdminUserIdBody: RequestHandlerType;
 
-  constructor(private readonly userValidator: IUserValidator) {
-    this.kickTargetUserIdParam = this.userValidator.userIdValidator('userId', 'params');
-    this.peerUserIdBody = this.userValidator.userIdValidator('peerUserId', 'body');
-    this.inviteUserIdBody = this.userValidator.userIdValidator('userId', 'body');
-    this.newAdminUserIdBody = this.userValidator.userIdValidator('newAdminUserId', 'body');
+  constructor(private readonly userPipe: IUserPipe) {
+    this.kickTargetUserIdParam = this.userPipe.userIdPipe('userId', 'params');
+    this.peerUserIdBody = this.userPipe.userIdPipe('peerUserId', 'body');
+    this.inviteUserIdBody = this.userPipe.userIdPipe('userId', 'body');
+    this.newAdminUserIdBody = this.userPipe.userIdPipe('newAdminUserId', 'body');
   }
 
   conversationIdParam = validate(
@@ -92,7 +90,7 @@ export class ConversationsValidator implements IConversationValidator {
       {
         role: {
           isIn: {
-            options: [roleValues],
+            options: [EConversationMemberRole.MANAGER, EConversationMemberRole.MEMBER],
             errorMessage: VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN
           }
         }

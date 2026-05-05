@@ -3,20 +3,19 @@ import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { EHttpMethod } from '@/modules/permission/domain/entities/permission.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { RequestHandler } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
 const HTTP_METHODS = Object.values(EHttpMethod);
 
-export interface IPermissionsValidator {
-  permissionIdParam(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  createBodyValidator(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  updateBodyValidator(): RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IPermissionsPipe {
+  permissionIdParam(): RequestHandlerType;
+  createBodyPipe(): RequestHandlerType;
+  updateBodyPipe(): RequestHandlerType;
 }
 
-export class PermissionsValidator implements IPermissionsValidator {
+export class PermissionsPipe implements IPermissionsPipe {
   @AutoBind()
   permissionIdParam() {
     return validate(
@@ -42,7 +41,7 @@ export class PermissionsValidator implements IPermissionsValidator {
   }
 
   @AutoBind()
-  createBodyValidator() {
+  createBodyPipe() {
     return validate(
       checkSchema(
         {
@@ -103,7 +102,7 @@ export class PermissionsValidator implements IPermissionsValidator {
   }
 
   @AutoBind()
-  updateBodyValidator() {
+  updateBodyPipe() {
     return validate(
       checkSchema(
         {

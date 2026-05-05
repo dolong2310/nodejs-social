@@ -110,6 +110,12 @@ export const VALIDATION_ERROR_MESSAGE = {
   PERMISSION_MODULE_IS_REQUIRED: 'Module tag is required',
   PERMISSION_MODULE_INVALID: 'Module must match pattern [A-Z][A-Z0-9_]* (e.g. POSTS, AUTH)',
 
+  // Hashtag errors
+  HASHTAG_ID_IS_REQUIRED: 'Hashtag ID is required',
+  HASHTAG_ID_INVALID: 'Invalid hashtag ID',
+  HASHTAG_NAME_IS_REQUIRED: 'Hashtag name is required',
+  HASHTAG_NAME_INVALID: 'Hashtag name must be 1-100 characters (letters, digits, underscores)',
+
   // Media errors
   VIDEO_NOT_FOUND: 'Video not found',
 

@@ -1,10 +1,9 @@
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { ConfirmPasswordMustMatchException } from '@/presentation/http/express/exceptions/auth.exception';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { birthdaySchema, nameSchema } from '@/presentation/http/express/v1/validators/user.validator';
-import { RequestHandler } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
+import { birthdaySchema, nameSchema } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema, ParamSchema } from 'express-validator';
 
 const emailSchema: ParamSchema = {
@@ -77,18 +76,18 @@ export const confirmPasswordSchema: ParamSchema = {
   }
 };
 
-export interface IAuthValidator {
-  registerValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  loginValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  forgotPasswordValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  sendOtpValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  disable2faValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IAuthPipe {
+  registerPipe: RequestHandlerType;
+  loginPipe: RequestHandlerType;
+  forgotPasswordPipe: RequestHandlerType;
+  sendOtpPipe: RequestHandlerType;
+  disable2faPipe: RequestHandlerType;
 }
 
-export class AuthValidator implements IAuthValidator {
+export class AuthPipe implements IAuthPipe {
   constructor() {}
 
-  registerValidator = validate(
+  registerPipe = validate(
     checkSchema(
       {
         name: nameSchema,
@@ -107,7 +106,7 @@ export class AuthValidator implements IAuthValidator {
     )
   );
 
-  loginValidator = validate(
+  loginPipe = validate(
     checkSchema(
       {
         email: emailSchema,
@@ -155,7 +154,7 @@ export class AuthValidator implements IAuthValidator {
     )
   );
 
-  forgotPasswordValidator = validate(
+  forgotPasswordPipe = validate(
     checkSchema(
       {
         email: emailSchema
@@ -164,7 +163,7 @@ export class AuthValidator implements IAuthValidator {
     )
   );
 
-  sendOtpValidator = validate(
+  sendOtpPipe = validate(
     checkSchema(
       {
         email: emailSchema,
@@ -183,7 +182,7 @@ export class AuthValidator implements IAuthValidator {
     )
   );
 
-  disable2faValidator = validate(
+  disable2faPipe = validate(
     checkSchema(
       {
         totpCode: {

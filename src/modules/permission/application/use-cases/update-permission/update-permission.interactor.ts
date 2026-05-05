@@ -1,3 +1,4 @@
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import {
   PermissionNotFoundException,
   PermissionPathMethodConflictException
@@ -12,7 +13,10 @@ import { PermissionRepositoryPort } from '@/modules/permission/domain/repositori
 import { IUpdatePermissionInput } from '@/modules/permission/domain/repositories/permission.repository.type';
 
 export class UpdatePermissionInteractor extends UpdatePermissionInPort {
-  constructor(private readonly permissionRepository: PermissionRepositoryPort) {
+  constructor(
+    private readonly permissionRepository: PermissionRepositoryPort,
+    private readonly cacheManager: CacheManagerPort
+  ) {
     super();
   }
 
@@ -26,12 +30,12 @@ export class UpdatePermissionInteractor extends UpdatePermissionInPort {
     const nextMethod = command.method ?? current.method;
 
     if (nextPath !== current.path || nextMethod !== current.method) {
-      const taken = await this.permissionRepository.findPermissionByPathAndMethod({
+      const existing = await this.permissionRepository.findPermissionByPathAndMethod({
         path: nextPath,
         method: nextMethod,
         excludeId: command.id
       });
-      if (taken) {
+      if (existing) {
         throw new PermissionPathMethodConflictException();
       }
     }
@@ -51,6 +55,9 @@ export class UpdatePermissionInteractor extends UpdatePermissionInPort {
     if (!updated) {
       throw new PermissionNotFoundException();
     }
+
+    // await this.cacheManager.del(`role:${role.id}`);
+
     return new PermissionListItem(updated.toObject());
   }
 }

@@ -1,10 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
-import {
-  VideoStatusModel,
-  videoStatusSchema
-} from '@/modules/media/infrastructure/mongo/video-status.model';
+import { VideoStatusModel, videoStatusSchema } from '@/modules/media/infrastructure/mongo/video-status.model';
 import { parse } from 'valibot';
 
 export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusModel> {

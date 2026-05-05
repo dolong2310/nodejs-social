@@ -44,6 +44,9 @@ const ENV_KEYS = [
   'ACCESS_TOKEN_EXPIRES_IN',
   'REFRESH_TOKEN_EXPIRES_IN',
 
+  // API Key
+  'API_KEY',
+
   // OTP
   'OTP_EXPIRES_AT',
 

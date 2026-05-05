@@ -1,10 +1,9 @@
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { asyncHandler } from '@/presentation/http/express/utils/async-handler.util';
 import { IBookmarkController } from '@/presentation/http/express/v1/controllers/bookmark.controller';
+import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
-import { IPostValidator } from '@/presentation/http/express/v1/validators/post.validator';
-import { IUserValidator } from '@/presentation/http/express/v1/validators/user.validator';
 
 export class BookmarkRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -12,10 +11,9 @@ export class BookmarkRoute extends BaseRoute {
 
   constructor(
     private readonly bookmarkController: IBookmarkController,
-    private readonly userValidator: IUserValidator,
-    private readonly postValidator: IPostValidator,
-    private readonly authGuard: AuthGuard,
-    private readonly throttler: ThrottlerProxyGuard
+    private readonly userPipe: IUserPipe,
+    private readonly postPipe: IPostPipe,
+    private readonly authGuard: AuthGuard
   ) {
     super();
     this.createRoutes();
@@ -23,26 +21,26 @@ export class BookmarkRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     const { createBookmark, deleteBookmark } = this.bookmarkController;
-    const { userActiveValidator } = this.userValidator;
-    const { postIdValidator } = this.postValidator;
+    const { userActivePipe } = this.userPipe;
+    const { postIdPipe } = this.postPipe;
     const authGuard = this.authGuard.handler;
-    const throttler = this.throttler.handler();
+    const throttler = this.throttlerGuard();
 
     this.router.post(
       '/',
       throttler,
       authGuard,
-      userActiveValidator,
-      postIdValidator('postId', 'body'),
-      asyncHandler(createBookmark)
+      userActivePipe,
+      postIdPipe('postId', 'body'),
+      asyncHandler(this.transformInterceptor(createBookmark))
     );
     this.router.delete(
       '/posts/:postId',
       throttler,
       authGuard,
-      userActiveValidator,
-      postIdValidator('postId', 'params'),
-      asyncHandler(deleteBookmark)
+      userActivePipe,
+      postIdPipe('postId', 'params'),
+      asyncHandler(this.transformInterceptor(deleteBookmark))
     );
   }
 }

@@ -1,5 +1,5 @@
 import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
-import { ErrorResponse } from '@/presentation/http/express/responses/error.response';
+import { HttpException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constant';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
 import { NextFunction, Request, Response } from 'express';
@@ -14,7 +14,7 @@ export class HttpExceptionFilter {
       return;
     }
 
-    if (error instanceof ErrorResponse) {
+    if (error instanceof HttpException) {
       const { statusCode, message, errors = {} } = error;
       response.status(statusCode).json({ message, errors });
       return;

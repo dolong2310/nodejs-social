@@ -60,6 +60,7 @@ import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { PostService, PostServicePort } from '@/modules/post/application/services/post.service';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import { RoleQueryRepositoryPort } from '@/modules/role/application/ports/queries/role-query.repository';
 import { RoleService, RoleServicePort } from '@/modules/role/application/services/role.service';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
@@ -113,6 +114,7 @@ export class Container implements IContainer {
   private readonly postCommandRepository: PostCommandRepositoryPort;
   private readonly userQueryRepository: UserQueryRepositoryPort;
   private readonly conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort;
+  private readonly roleQueryRepository: RoleQueryRepositoryPort;
 
   private readonly jwtService: JwtPort;
   private readonly tokenService: TokenServicePort;
@@ -170,6 +172,7 @@ export class Container implements IContainer {
     this.notificationRepository = repos.notificationRepository;
     this.otpRepository = repos.otpRepository;
     this.roleRepository = repos.roleRepository;
+    this.roleQueryRepository = repos.roleQueryRepository;
 
     this.postQueryRepository = repos.postQueryRepository;
     this.postCommandRepository = repos.postCommandRepository;

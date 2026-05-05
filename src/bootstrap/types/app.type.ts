@@ -15,6 +15,9 @@ export interface IAppConfig {
     accessTokenExpiresIn: StringValue;
     refreshTokenExpiresIn: StringValue;
   };
+  auth: {
+    apiKey: string;
+  };
   logs: {
     level: string;
   };

@@ -33,7 +33,14 @@ class Logger implements LoggerPort, ILoggerGetter {
       level: appConfig.logs.level,
       mixin: logContextMixin,
       redact: {
-        paths: ['req.headers.authorization', 'req.headers.cookie', '*.password', '*.accessToken', '*.refreshToken'],
+        paths: [
+          'req.headers.authorization',
+          'req.headers.x-api-key',
+          'req.headers.cookie',
+          '*.password',
+          '*.accessToken',
+          '*.refreshToken'
+        ],
         remove: true
       },
       serializers: {

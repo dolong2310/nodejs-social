@@ -11,15 +11,12 @@ import {
 import { ChatMessageResponseDTO } from '@/presentation/http/express/v1/dtos/chat-message/chat-message.response.dto';
 import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import { ConversationIdParams } from '@/presentation/http/express/v1/dtos/conversation/conversation.request.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 export interface IChatMessageController {
-  sendMessage(req: Request<ConversationIdParams, object, SendChatMessageBodyDTO>, res: Response): Promise<void>;
-  listMessages(
-    req: Request<ConversationIdParams, object, object, CursorPaginationQueryDTO>,
-    res: Response
-  ): Promise<void>;
-  markRead(req: Request<ConversationIdParams, object, MarkChatReadBodyDTO>, res: Response): Promise<void>;
+  sendMessage(req: Request<ConversationIdParams, object, SendChatMessageBodyDTO>): Promise<unknown>;
+  listMessages(req: Request<ConversationIdParams, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
+  markRead(req: Request<ConversationIdParams, object, MarkChatReadBodyDTO>): Promise<unknown>;
 }
 
 export class ChatMessageController extends BaseController implements IChatMessageController {
@@ -32,7 +29,7 @@ export class ChatMessageController extends BaseController implements IChatMessag
   }
 
   @AutoBind()
-  async sendMessage(req: Request<ConversationIdParams, object, SendChatMessageBodyDTO>, res: Response) {
+  async sendMessage(req: Request<ConversationIdParams, object, SendChatMessageBodyDTO>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
     const body = new SendChatMessageBodyDTO(req.body);
@@ -44,8 +41,7 @@ export class ChatMessageController extends BaseController implements IChatMessag
       attachments: body.attachments
     });
 
-    this.sendResponse<ChatMessageResponseDTO>({
-      res,
+    return this.response<ChatMessageResponseDTO>({
       instance: Created,
       data: new ChatMessageResponseDTO(message),
       message: 'Message sent'
@@ -53,7 +49,7 @@ export class ChatMessageController extends BaseController implements IChatMessag
   }
 
   @AutoBind()
-  async listMessages(req: Request<ConversationIdParams, object, object, CursorPaginationQueryDTO>, res: Response) {
+  async listMessages(req: Request<ConversationIdParams, object, object, CursorPaginationQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
     const { conversationId } = req.params;
@@ -65,8 +61,7 @@ export class ChatMessageController extends BaseController implements IChatMessag
       cursor
     });
 
-    this.sendCursorPaginatedResponse<ChatMessageResponseDTO>({
-      res,
+    return this.cursorPaginatedResponse<ChatMessageResponseDTO>({
       items,
       nextCursor,
       message: 'Messages loaded'
@@ -74,13 +69,13 @@ export class ChatMessageController extends BaseController implements IChatMessag
   }
 
   @AutoBind()
-  async markRead(req: Request<ConversationIdParams, object, MarkChatReadBodyDTO>, res: Response) {
+  async markRead(req: Request<ConversationIdParams, object, MarkChatReadBodyDTO>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
     const body = new MarkChatReadBodyDTO(req.body);
 
     await this.markReadUC.execute({ userId, conversationId, lastReadMessageId: body.lastReadMessageId });
 
-    this.sendResponse({ res, message: 'Read state updated' });
+    return this.response({ message: 'Read state updated' });
   }
 }

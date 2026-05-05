@@ -1,10 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { FriendshipEntity } from '@/modules/friend/domain/entities/friendship.entity';
-import {
-  FriendshipModel,
-  friendshipSchema
-} from '@/modules/friend/infrastructure/mongo/friendship.model';
+import { FriendshipModel, friendshipSchema } from '@/modules/friend/infrastructure/mongo/friendship.model';
 import { parse } from 'valibot';
 
 export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipModel> {

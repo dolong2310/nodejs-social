@@ -1,10 +1,7 @@
+import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import { ConversationModel, conversationSchema } from '@/modules/conversation/infrastructure/mongo/conversation.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import {
-  ConversationModel,
-  conversationSchema
-} from '@/modules/conversation/infrastructure/mongo/conversation.model';
 import { parse } from 'valibot';
 
 export class ConversationMapper implements Mapper<ConversationEntity, ConversationModel> {

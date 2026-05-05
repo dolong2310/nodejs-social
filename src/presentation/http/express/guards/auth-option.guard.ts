@@ -1,6 +1,7 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
 import { BaseGuard } from '@/presentation/http/express/guards/base.guard';
+import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { Request } from 'express';
 
 export class AuthOptionGuard extends BaseGuard {
@@ -13,11 +14,10 @@ export class AuthOptionGuard extends BaseGuard {
    * Dùng cho các route public nhưng áp dụng logic bổ sung khi đã đăng nhập.
    */
   protected override async canActivate(request: Request): Promise<boolean> {
-    const authHeader = request.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = extractTokenFromHeader(request);
+    if (!token) {
       return true;
     }
-    const token = authHeader.split(' ')[1];
 
     try {
       request.tokenPayload = await this.tokenService.verifyAccessToken(token);

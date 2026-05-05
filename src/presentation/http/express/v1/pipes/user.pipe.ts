@@ -13,10 +13,10 @@ import {
   UserNotFoundException,
   UsernameFormatInvalidException
 } from '@/presentation/http/express/exceptions/user.exception';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { confirmPasswordSchema, passwordSchema } from '@/presentation/http/express/v1/validators/auth.validator';
-import { NextFunction, Request, RequestHandler, Response } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
+import { confirmPasswordSchema, passwordSchema } from '@/presentation/http/express/v1/pipes/auth.pipe';
+import { NextFunction, Request, Response } from 'express';
 import { Location, ParamSchema, checkSchema } from 'express-validator';
 
 export const nameSchema: ParamSchema = {
@@ -63,20 +63,17 @@ export const imageSchema: ParamSchema = {
   trim: true
 };
 
-export interface IUserValidator {
-  updateMeValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  userActiveValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  userIdValidator: (
-    key: string,
-    location: Location
-  ) => RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  changePasswordValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IUserPipe {
+  updateMePipe: RequestHandlerType;
+  userActivePipe: RequestHandlerType;
+  userIdPipe: (key: string, location: Location) => RequestHandlerType;
+  changePasswordPipe: RequestHandlerType;
 }
 
-export class UsersValidator implements IUserValidator {
+export class UsersPipe implements IUserPipe {
   constructor(private readonly userService: UserServicePort) {}
 
-  updateMeValidator = validate(
+  updateMePipe = validate(
     checkSchema(
       {
         name: {
@@ -167,7 +164,7 @@ export class UsersValidator implements IUserValidator {
   );
 
   @AutoBind()
-  async userActiveValidator(req: Request, _res: Response, next: NextFunction) {
+  async userActivePipe(req: Request, _res: Response, next: NextFunction) {
     const userId: string | undefined = req.tokenPayload?.userId;
     if (!userId) {
       throw MissingAuthTokenPayloadException;
@@ -188,7 +185,7 @@ export class UsersValidator implements IUserValidator {
   }
 
   @AutoBind()
-  userIdValidator(key: string, location: Location) {
+  userIdPipe(key: string, location: Location) {
     return validate(
       checkSchema(
         {
@@ -228,7 +225,7 @@ export class UsersValidator implements IUserValidator {
     );
   }
 
-  changePasswordValidator = validate(
+  changePasswordPipe = validate(
     checkSchema(
       {
         password: passwordSchema,

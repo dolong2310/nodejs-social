@@ -37,14 +37,14 @@ import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IAuthController {
-  register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response): Promise<void>;
-  login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response): Promise<void>;
-  logout(req: Request, res: Response): Promise<void>;
-  refreshToken(req: Request, res: Response): Promise<void>;
-  forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response): Promise<void>;
-  sendOtp(req: Request<ParamsDictionary, object, SendOtpRequestDTO>, res: Response): Promise<void>;
-  enable2fa(req: Request, res: Response): Promise<void>;
-  disable2fa(req: Request<ParamsDictionary, object, Disable2faRequestDTO>, res: Response): Promise<void>;
+  register(req: Request<ParamsDictionary, object, RegisterRequestDTO>): Promise<unknown>;
+  login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response): Promise<unknown>;
+  logout(req: Request, res: Response): Promise<unknown>;
+  refreshToken(req: Request, res: Response): Promise<unknown>;
+  forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>): Promise<unknown>;
+  sendOtp(req: Request<ParamsDictionary, object, SendOtpRequestDTO>): Promise<unknown>;
+  enable2fa(req: Request): Promise<unknown>;
+  disable2fa(req: Request<ParamsDictionary, object, Disable2faRequestDTO>): Promise<unknown>;
 }
 
 export class AuthController extends BaseController implements IAuthController {
@@ -62,13 +62,12 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async register(req: Request<ParamsDictionary, object, RegisterRequestDTO>, res: Response) {
+  async register(req: Request<ParamsDictionary, object, RegisterRequestDTO>) {
     const dto = new RegisterRequestDTO(req.body);
 
     const user = await this.registerUC.execute(dto);
 
-    this.sendResponse<RegisterResponseDTO>({
-      res,
+    return this.response<RegisterResponseDTO>({
       instance: Created,
       data: user,
       message: 'User registered successfully'
@@ -86,8 +85,7 @@ export class AuthController extends BaseController implements IAuthController {
       maxAge: refreshTokenMaxAgeMs(refreshToken)
     });
 
-    this.sendResponse<LoginResponseDTO>({
-      res,
+    return this.response<LoginResponseDTO>({
       data: { accessToken },
       message: 'Login successfully'
     });
@@ -103,8 +101,7 @@ export class AuthController extends BaseController implements IAuthController {
 
     this.clearCookie(res, REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieSharedOptions);
 
-    this.sendResponse<LogoutResponseDTO>({
-      res,
+    return this.response<LogoutResponseDTO>({
       message: 'Logout successfully'
     });
   }
@@ -122,59 +119,54 @@ export class AuthController extends BaseController implements IAuthController {
       maxAge: refreshTokenMaxAgeMs(refreshToken)
     });
 
-    this.sendResponse<RefreshTokenResponseDTO>({
-      res,
+    return this.response<RefreshTokenResponseDTO>({
       data: { accessToken },
       message: 'Refresh token successfully'
     });
   }
 
   @AutoBind()
-  async forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>, res: Response) {
+  async forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>) {
     const dto = new ForgotPasswordRequestDTO(req.body);
 
     await this.forgotPasswordUC.execute(dto);
 
-    this.sendResponse<ForgotPasswordResponseDTO>({
-      res,
+    return this.response<ForgotPasswordResponseDTO>({
       message: 'Forgot password successfully'
     });
   }
 
   @AutoBind()
-  async sendOtp(req: Request<ParamsDictionary, object, SendOtpRequestDTO>, res: Response) {
+  async sendOtp(req: Request<ParamsDictionary, object, SendOtpRequestDTO>) {
     const dto = new SendOtpRequestDTO(req.body);
 
     await this.sendOtpUC.execute(dto);
 
-    this.sendResponse<SendOtpResponseDTO>({
-      res,
+    return this.response<SendOtpResponseDTO>({
       message: 'Otp sent successfully'
     });
   }
 
   @AutoBind()
-  async enable2fa(req: Request, res: Response) {
+  async enable2fa(req: Request) {
     const userId = this.getUserId(req);
 
     const data = await this.setup2faUC.execute({ userId });
 
-    this.sendResponse<Enable2faResponseDTO>({
-      res,
+    return this.response<Enable2faResponseDTO>({
       data: new Enable2faResponseDTO(data),
       message: 'Enable 2fa successfully'
     });
   }
 
   @AutoBind()
-  async disable2fa(req: Request<ParamsDictionary, object, Disable2faRequestDTO>, res: Response) {
+  async disable2fa(req: Request<ParamsDictionary, object, Disable2faRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new Disable2faRequestDTO(req.body);
 
     await this.disable2faUC.execute({ userId, totpCode: dto.totpCode, emailOtpCode: dto.emailOtpCode });
 
-    this.sendResponse<Disable2faResponseDTO>({
-      res,
+    return this.response<Disable2faResponseDTO>({
       message: 'Disable 2fa successfully'
     });
   }

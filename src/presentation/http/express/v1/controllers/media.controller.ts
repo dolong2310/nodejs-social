@@ -34,13 +34,13 @@ import path from 'path';
 export interface IMediaController {
   getStaticImage(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): void;
   getStaticVideo(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): void;
-  getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): Promise<void>;
+  getStaticVideoStream(req: Request<FilenameParamsDTO>, res: Response, next: NextFunction): Promise<unknown>;
   getStaticVideoStreamMaster(req: Request<Pick<VideoStreamParamsDTO, 'id'>>, res: Response, next: NextFunction): void;
   getStaticVideoStreamSegment(req: Request<VideoStreamParamsDTO>, res: Response, next: NextFunction): void;
-  uploadImage(req: Request, res: Response, next: NextFunction): Promise<void>;
-  uploadVideo(req: Request, res: Response, next: NextFunction): Promise<void>;
-  uploadVideoStream(req: Request, res: Response, next: NextFunction): Promise<void>;
-  getVideoStatus(req: Request, res: Response, next: NextFunction): Promise<void>;
+  uploadImage(req: Request, res: Response, next: NextFunction): Promise<unknown>;
+  uploadVideo(req: Request, res: Response, next: NextFunction): Promise<unknown>;
+  uploadVideoStream(req: Request, res: Response, next: NextFunction): Promise<unknown>;
+  getVideoStatus(req: Request, res: Response, next: NextFunction): Promise<unknown>;
 }
 
 export class MediaController extends BaseController implements IMediaController {
@@ -63,7 +63,7 @@ export class MediaController extends BaseController implements IMediaController 
     if (!this.fileStorage.existsSync(imagePath)) {
       throw StaticMediaNotFoundException;
     }
-    this.sendFileResponse<typeof imagePath>(res, imagePath);
+    this.fileResponse<typeof imagePath>(res, imagePath);
   }
 
   @AutoBind()
@@ -73,7 +73,7 @@ export class MediaController extends BaseController implements IMediaController 
     if (!this.fileStorage.existsSync(videoPath)) {
       throw StaticMediaNotFoundException;
     }
-    this.sendFileResponse<typeof videoPath>(res, videoPath);
+    this.fileResponse<typeof videoPath>(res, videoPath);
   }
 
   @AutoBind()
@@ -117,49 +117,46 @@ export class MediaController extends BaseController implements IMediaController 
   }
 
   @AutoBind()
-  async uploadImage(req: Request, res: Response) {
+  async uploadImage(req: Request) {
     const uploader = new FormidableFileUploadService(req);
     const files = await uploader.uploadImages();
 
     const results = await this.uploadImageUC.execute({ files });
 
-    this.sendResponse<UploadImageResult[]>({
-      res,
+    return this.response<UploadImageResult[]>({
       data: results,
       message: 'Upload successfully'
     });
   }
 
   @AutoBind()
-  async uploadVideo(req: Request, res: Response) {
+  async uploadVideo(req: Request) {
     const uploader = new FormidableFileUploadService(req);
     const files = await uploader.uploadVideos();
 
     const results = await this.uploadVideoUC.execute({ files });
 
-    this.sendResponse<UploadVideoResult[]>({
-      res,
+    return this.response<UploadVideoResult[]>({
       data: results,
       message: 'Upload successfully'
     });
   }
 
   @AutoBind()
-  async uploadVideoStream(req: Request, res: Response) {
+  async uploadVideoStream(req: Request) {
     const uploader = new FormidableFileUploadService(req);
     const files = await uploader.uploadVideosStream();
 
     const results = await this.uploadVideoStreamUC.execute({ files });
 
-    this.sendResponse<UploadVideoStreamResult[]>({
-      res,
+    return this.response<UploadVideoStreamResult[]>({
       data: results,
       message: 'Upload successfully'
     });
   }
 
   @AutoBind()
-  async getVideoStatus(req: Request, res: Response) {
+  async getVideoStatus(req: Request) {
     const { id } = req.params as { id: string };
     const videoStatus = await this.getVideoStatusUC.execute({ name: id });
 
@@ -167,8 +164,7 @@ export class MediaController extends BaseController implements IMediaController 
       throw VideoNotFoundException;
     }
 
-    this.sendResponse<GetVideoStatusResult>({
-      res,
+    return this.response<GetVideoStatusResult>({
       data: videoStatus,
       message: 'Get video status successfully'
     });

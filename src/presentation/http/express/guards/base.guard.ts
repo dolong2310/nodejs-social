@@ -1,4 +1,4 @@
-import { ForbiddenError } from '@/presentation/http/express/responses/error.response';
+import { ForbiddenException } from '@/presentation/http/express/responses/error.response';
 import { NextFunction, Request, Response } from 'express';
 
 export abstract class BaseGuard {
@@ -12,7 +12,7 @@ export abstract class BaseGuard {
       if (result) {
         next();
       } else {
-        next(new ForbiddenError('You are not authorized to access this resource'));
+        next(new ForbiddenException('You are not authorized to access this resource'));
       }
     } catch (error) {
       next(error);

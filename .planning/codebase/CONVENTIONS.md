@@ -7,7 +7,7 @@
 **Files:**
 
 - **Use cases:** Folder per feature in `kebab-case`; files `*.in-port.ts` (abstract port), `*.interactor.ts` (implementation). Example: `src/modules/auth/application/use-cases/register/register.in-port.ts`, `register.interactor.ts`.
-- **HTTP layer:** `*.controller.ts`, `*.route.ts`, `*.validator.ts` under `src/presentation/http/express/v1/`.
+- **HTTP layer:** `*.controller.ts`, `*.route.ts`, `*.pipe.ts` under `src/presentation/http/express/v1/`.
 - **Infrastructure:** Mongo implementations often `*.impl.repository.ts`, models `*.model.ts`, mappers `*.mapper.ts` under `src/modules/<module>/infrastructure/`.
 - **Exceptions:** `*.exception.ts` (module-level in `application/` or `presentation/http/express/exceptions/`).
 - **Config / bootstrap:** `*.config.ts` in `src/bootstrap/config/`.
@@ -130,7 +130,7 @@
 
 **Cross-cutting:**
 
-- **Validation at HTTP boundary:** `express-validator` schemas and `checkSchema` in `src/presentation/http/express/v1/validators/*.validator.ts`, composed with `validate()`.
+- **Validation at HTTP boundary:** `express-validator` schemas and `checkSchema` in `src/presentation/http/express/v1/pipes/*.pipe.ts`, composed with `validate()`.
 - **Persistence boundary:** **Valibot** schemas in Mongo `*.model.ts` files and `parse()` in mappers (e.g. `src/modules/post/infrastructure/mongo/post.model.ts`, `*.mapper.ts`).
 
 ---

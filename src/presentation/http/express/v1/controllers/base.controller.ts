@@ -1,47 +1,36 @@
 import { isProduction } from '@/bootstrap/config/env.config';
 import { UserNotFoundException } from '@/presentation/http/express/exceptions/user.exception';
-import { Created, OK, SuccessResponseParams } from '@/presentation/http/express/responses/success.response';
+import {
+  Created,
+  OK,
+  SuccessResponse,
+  SuccessResponseParams
+} from '@/presentation/http/express/responses/success.response';
 import { PaginationResponseDTO } from '@/presentation/http/express/v1/dtos/common/common.response.dto';
 import type { CookieOptions } from 'express';
 import { Request, Response } from 'express';
 
 export abstract class BaseController {
-  /**
-   * Filter undefined fields
-   */
-  sanitize<T extends object>(obj: T): T {
-    return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
-  }
-
-  /**
-   * Sends a response with the specified status code, message, and data.
-   */
-  protected sendResponse<T>({
-    res,
+  protected response<T>({
     instance = OK,
     data,
     message,
     statusCode,
     reasonPhrasesCode
-  }: SuccessResponseParams<T> & { res: Response; instance?: typeof OK | typeof Created }): void {
-    new instance<T>({
+  }: SuccessResponseParams<T> & { instance?: typeof OK | typeof Created }): SuccessResponse<T> {
+    return new instance<T>({
       data,
       message,
       statusCode,
       reasonPhrasesCode
-    }).send(res);
+    });
   }
 
-  /**
-   * Sends a paginated response with the specified status code, message, data, and pagination details.
-   */
-  protected sendPaginatedResponse<T, P = PaginationResponseDTO & { data: T }>({
-    res,
+  protected paginatedResponse<T, P = PaginationResponseDTO & { data: T }>({
     data,
     pagination,
     message
   }: {
-    res: Response;
     data: T;
     pagination: {
       page: string | number;
@@ -49,7 +38,7 @@ export abstract class BaseController {
       totalItems: string | number;
     };
     message: string;
-  }): void {
+  }): SuccessResponse<P> {
     const page = Number(pagination.page);
     const limit = Number(pagination.limit);
     const totalItems = Number(pagination.totalItems);
@@ -67,41 +56,31 @@ export abstract class BaseController {
       hasPrev
     } as P;
 
-    new OK<P>({
+    return this.response<P>({
       data: payload,
       message
-    }).send(res);
+    });
   }
 
-  /**
-   * Sends a cursor pagination response (no skip/total), typically used by `cursor` + `limit`.
-   * Output payload shape (fixed): `{ items, nextCursor }`.
-   */
-  protected sendCursorPaginatedResponse<TItem>({
-    res,
+  protected cursorPaginatedResponse<TItem>({
     items,
     nextCursor,
     message
   }: {
-    res: Response;
     items: TItem[];
     nextCursor: string | null;
     message: string;
-  }): void {
-    this.sendResponse({
-      res,
+  }): SuccessResponse<{ items: TItem[]; nextCursor: string | null }> {
+    return this.response({
       data: { items, nextCursor },
       message
     });
   }
 
-  sendFileResponse<T extends string>(res: Response, path: T): void {
+  protected fileResponse<T extends string>(res: Response, path: T): void {
     res.sendFile(path);
   }
 
-  /**
-   * Retrieves the user ID from the request object.
-   */
   protected getUserId(req: Request, options?: { optional?: boolean }): string {
     const userId = req.tokenPayload?.userId;
     if (!userId && !options?.optional) {
@@ -110,9 +89,6 @@ export abstract class BaseController {
     return userId || '';
   }
 
-  /**
-   * Sets a cookie. Mặc định: httpOnly, secure (prod), sameSite strict — có thể ghi đè / bổ sung qua `options` (vd. path, sameSite: lax, maxAge).
-   */
   protected setCookie(res: Response, name: string, value: string, options?: CookieOptions): void {
     const defaults: CookieOptions = {
       httpOnly: true,
@@ -122,17 +98,12 @@ export abstract class BaseController {
     res.cookie(name, value, { ...defaults, ...options });
   }
 
-  /**
-   * Clears a cookie. Nên truyền cùng path/sameSite/httpOnly/secure như lúc set để trình duyệt xóa đúng.
-   */
   protected clearCookie(res: Response, name: string, options?: CookieOptions): void {
     res.clearCookie(name, options ?? {});
   }
 
-  /**
-   * Handles errors by passing them to the next middleware.
-   */
-  // protected handleError(error: unknown, next: NextFunction): void {
-  //   next(error);
-  // }
+  // Filter undefined fields
+  protected sanitize<T extends object>(obj: T): T {
+    return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
+  }
 }

@@ -1,16 +1,15 @@
 import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { RequestHandler } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
-export interface ISearchValidator {
-  searchValidator: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface ISearchPipe {
+  searchPipe: RequestHandlerType;
 }
 
-export class SearchValidator implements ISearchValidator {
-  searchValidator = validate(
+export class SearchPipe implements ISearchPipe {
+  searchPipe = validate(
     checkSchema(
       {
         query: {

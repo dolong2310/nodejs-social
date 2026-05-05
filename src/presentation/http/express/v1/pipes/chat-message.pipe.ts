@@ -1,14 +1,13 @@
+import { RequestHandlerType } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { RequestHandler } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { checkSchema } from 'express-validator';
 
-export interface IChatMessageValidator {
-  sendMessageBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
-  markReadBody: RequestHandler<ParamsDictionary, object, object, Query, Record<string, unknown>>;
+export interface IChatMessagePipe {
+  sendMessageBody: RequestHandlerType;
+  markReadBody: RequestHandlerType;
 }
 
-export class ChatMessagesValidator implements IChatMessageValidator {
+export class ChatMessagesPipe implements IChatMessagePipe {
   sendMessageBody = validate(
     checkSchema(
       {

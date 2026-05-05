@@ -5,6 +5,11 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Access Token (JWT)
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key credential for routes protected by ApiKeyGuard.
     refreshTokenCookie:
       type: apiKey
       in: cookie

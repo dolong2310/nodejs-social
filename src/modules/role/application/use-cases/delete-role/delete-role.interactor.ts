@@ -1,9 +1,16 @@
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { RoleNotFoundException, SystemRoleCannotBeDeletedException } from '@/modules/role/application/role.exception';
-import { DeleteRoleCommand, DeleteRoleInPort } from '@/modules/role/application/use-cases/delete-role/delete-role.in-port';
+import {
+  DeleteRoleCommand,
+  DeleteRoleInPort
+} from '@/modules/role/application/use-cases/delete-role/delete-role.in-port';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 
 export class DeleteRoleInteractor extends DeleteRoleInPort {
-  constructor(private readonly roleRepository: RoleRepositoryPort) {
+  constructor(
+    private readonly roleRepository: RoleRepositoryPort,
+    private readonly cacheManager: CacheManagerPort
+  ) {
     super();
   }
 
@@ -19,5 +26,6 @@ export class DeleteRoleInteractor extends DeleteRoleInPort {
     if (!removed) {
       throw new RoleNotFoundException();
     }
+    await this.cacheManager.del(`role:${command.id}`);
   }
 }

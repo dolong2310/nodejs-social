@@ -7,7 +7,7 @@ import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.c
  * Class lỗi cơ sở cho tất cả các lỗi tùy chỉnh trong API
  * Kế thừa từ class Error có sẵn của JavaScript
  */
-export class ErrorResponse extends Error {
+export class HttpException extends Error {
   statusCode: number;
   errors: Record<string, unknown>;
 
@@ -25,7 +25,7 @@ export class ErrorResponse extends Error {
  * Sử dụng khi yêu cầu xung đột với trạng thái hiện tại của server
  * Ví dụ: Tạo tài khoản với email đã tồn tại, tạo sản phẩm với mã đã có
  */
-export class ConflictRequestError extends ErrorResponse {
+export class ConflictException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.CONFLICT,
     statusCode: number = HTTP_STATUS.CONFLICT,
@@ -40,7 +40,7 @@ export class ConflictRequestError extends ErrorResponse {
  * Sử dụng khi yêu cầu bị lỗi cú pháp hoặc thiếu thông tin
  * Ví dụ: Thiếu trường bắt buộc, định dạng dữ liệu không hợp lệ
  */
-export class BadRequestError extends ErrorResponse {
+export class BadRequestException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.BAD_REQUEST,
     statusCode: number = HTTP_STATUS.BAD_REQUEST,
@@ -55,7 +55,7 @@ export class BadRequestError extends ErrorResponse {
  * Sử dụng khi người dùng chưa đăng nhập hoặc token không hợp lệ
  * Ví dụ: Token hết hạn, sai mật khẩu, thiếu token xác thực
  */
-export class AuthFailureError extends ErrorResponse {
+export class UnauthorizedException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.UNAUTHORIZED,
     statusCode: number = HTTP_STATUS.UNAUTHORIZED,
@@ -70,7 +70,7 @@ export class AuthFailureError extends ErrorResponse {
  * Sử dụng khi không tìm thấy tài nguyên được yêu cầu
  * Ví dụ: Truy cập vào user không tồn tại, URL không hợp lệ
  */
-export class NotFoundError extends ErrorResponse {
+export class NotFoundException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.NOT_FOUND,
     statusCode: number = HTTP_STATUS.NOT_FOUND,
@@ -85,7 +85,7 @@ export class NotFoundError extends ErrorResponse {
  * Sử dụng khi người dùng không có quyền truy cập tài nguyên
  * Ví dụ: Người dùng thường truy cập trang admin, không đủ quyền thực hiện hành động
  */
-export class ForbiddenError extends ErrorResponse {
+export class ForbiddenException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.FORBIDDEN,
     statusCode: number = HTTP_STATUS.FORBIDDEN,
@@ -100,7 +100,7 @@ export class ForbiddenError extends ErrorResponse {
  * Sử dụng khi có lỗi không mong muốn xảy ra trên server
  * Ví dụ: Lỗi kết nối database, lỗi xử lý dữ liệu
  */
-export class InternalServerError extends ErrorResponse {
+export class InternalServerErrorException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
     statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -115,7 +115,7 @@ export class InternalServerError extends ErrorResponse {
  * Sử dụng khi server nhận được phản hồi không hợp lệ từ server khác
  * Ví dụ: Lỗi khi gọi API bên thứ 3, lỗi kết nối microservice
  */
-export class BadGatewayError extends ErrorResponse {
+export class BadGatewayException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.BAD_GATEWAY,
     statusCode: number = HTTP_STATUS.BAD_GATEWAY,
@@ -130,7 +130,7 @@ export class BadGatewayError extends ErrorResponse {
  * Sử dụng khi server tạm thời không thể xử lý yêu cầu
  * Ví dụ: Server đang bảo trì, server quá tải
  */
-export class ServiceUnavailableError extends ErrorResponse {
+export class ServiceUnavailableException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.SERVICE_UNAVAILABLE,
     statusCode: number = HTTP_STATUS.SERVICE_UNAVAILABLE,
@@ -145,7 +145,7 @@ export class ServiceUnavailableError extends ErrorResponse {
  * Sử dụng khi dữ liệu gửi lên đúng format nhưng không hợp lệ về mặt logic
  * Ví dụ: Ngày sinh trong tương lai, số điện thoại sai định dạng
  */
-export class UnprocessableEntityError extends ErrorResponse {
+export class UnprocessableEntityException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.UNPROCESSABLE_ENTITY,
     statusCode: number = HTTP_STATUS.UNPROCESSABLE_ENTITY,
@@ -160,7 +160,7 @@ export class UnprocessableEntityError extends ErrorResponse {
  * Sử dụng khi người dùng gửi quá nhiều yêu cầu trong một khoảng thời gian
  * Ví dụ: Giới hạn số lần đăng nhập, giới hạn số request API
  */
-export class TooManyRequestsError extends ErrorResponse {
+export class TooManyRequestsException extends HttpException {
   constructor(
     message: string = HTTP_ERROR_MESSAGE.TOO_MANY_REQUESTS,
     statusCode: number = HTTP_STATUS.TOO_MANY_REQUESTS,
