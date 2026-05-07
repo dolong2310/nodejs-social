@@ -1,8 +1,5 @@
 import { RoleNameAlreadyExistsException } from '@/modules/role/application/role.exception';
-import {
-  CreateRoleCommand,
-  CreateRolePort
-} from '@/modules/role/application/use-cases/create-role/create-role.port';
+import { CreateRoleCommand, CreateRolePort } from '@/modules/role/application/use-cases/create-role/create-role.port';
 import { RoleListItem } from '@/modules/role/application/use-cases/list-roles/list-roles.port';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 

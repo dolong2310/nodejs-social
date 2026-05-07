@@ -1,6 +1,6 @@
 import { RoleQueryRepositoryPort } from '@/modules/role/application/ports/queries/role-query.repository';
 import { RoleWithPermissions } from '@/modules/role/application/ports/queries/role-query.type';
-import { RoleMapper } from '@/modules/role/infrastructure/mappers/role.mapper';
+import { RoleMapper } from '@/modules/role/infrastructure/mongo/role.mapper';
 import { RoleModel } from '@/modules/role/infrastructure/mongo/role.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
 

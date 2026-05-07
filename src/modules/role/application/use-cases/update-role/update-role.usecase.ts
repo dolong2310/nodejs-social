@@ -6,10 +6,7 @@ import {
   RoleNotFoundException
 } from '@/modules/role/application/role.exception';
 import { RoleListItem } from '@/modules/role/application/use-cases/list-roles/list-roles.port';
-import {
-  UpdateRoleCommand,
-  UpdateRolePort
-} from '@/modules/role/application/use-cases/update-role/update-role.port';
+import { UpdateRoleCommand, UpdateRolePort } from '@/modules/role/application/use-cases/update-role/update-role.port';
 import { ERoleName } from '@/modules/role/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import { IUpdateRoleInput } from '@/modules/role/domain/repositories/role.repository.type';

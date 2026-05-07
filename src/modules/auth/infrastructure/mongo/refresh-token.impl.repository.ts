@@ -6,7 +6,7 @@ import {
   ICreateRefreshTokenInput,
   IRotateRefreshTokenInput
 } from '@/modules/auth/domain/repositories/refresh-token.repository.type';
-import { RefreshTokenMapper } from '@/modules/auth/infrastructure/mappers/refresh-token.mapper';
+import { RefreshTokenMapper } from '@/modules/auth/infrastructure/mongo/refresh-token.mapper';
 import { RefreshTokenModel } from '@/modules/auth/infrastructure/mongo/refresh-token.model';
 import { Db, MongoClient } from 'mongodb';
 

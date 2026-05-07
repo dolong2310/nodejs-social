@@ -6,7 +6,7 @@ import {
   ICountFriendshipsWithUserAmongOthersInput,
   IListFriendIdsByCursorInput
 } from '@/modules/friend/domain/repositories/friendship.repository.type';
-import { FriendshipMapper } from '@/modules/friend/infrastructure/mappers/friendship.mapper';
+import { FriendshipMapper } from '@/modules/friend/infrastructure/mongo/friendship.mapper';
 import { FriendshipModel } from '@/modules/friend/infrastructure/mongo/friendship.model';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 

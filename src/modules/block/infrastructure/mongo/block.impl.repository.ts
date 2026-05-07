@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { BlockEntity } from '@/modules/block/domain/entities/block.entity';
 import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
-import { BlockMapper } from '@/modules/block/infrastructure/mappers/block.mapper';
+import { BlockMapper } from '@/modules/block/infrastructure/mongo/block.mapper';
 import { BlockModel } from '@/modules/block/infrastructure/mongo/block.model';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 

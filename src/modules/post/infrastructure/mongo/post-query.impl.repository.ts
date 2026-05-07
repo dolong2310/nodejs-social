@@ -15,7 +15,7 @@ import {
   IPostDetailWithAuthorOutput
 } from '@/modules/post/application/ports/queries/post-query.type';
 import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
-import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
+import { PostMapper } from '@/modules/post/infrastructure/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/mongo/post.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
 

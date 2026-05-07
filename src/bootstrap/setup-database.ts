@@ -1,14 +1,33 @@
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
-import { Database } from '@/infrastructure/persistence/mongodb/database';
+import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
+import { EnumDatabaseDriver, type DatabasePort } from '@/infrastructure/persistence/database.port';
+import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
 
-export async function setupDatabase(): Promise<Database> {
-  const database = new Database({
-    uri: dbConfig.database.uri,
-    databaseName: dbConfig.database.name
-  });
+export async function setupDatabase(): Promise<DatabasePort> {
+  switch (dbConfig.driver) {
+    case EnumDatabaseDriver.POSTGRES: {
+      const database = new PostgresDatabase({
+        uri: dbConfig.postgres.uri,
+        ssl: dbConfig.postgres.ssl
+      });
 
-  await database.connect();
-  await Promise.all([database.initializeIndexes(), database.initializeConversationIndexes()]);
+      await database.connect();
+      await database.initializeSchema();
 
-  return database;
+      return database;
+    }
+    case EnumDatabaseDriver.MONGO: {
+      const database = new MongoDatabase({
+        uri: dbConfig.mongodb.uri,
+        databaseName: dbConfig.mongodb.name
+      });
+
+      await database.connect();
+      await Promise.all([database.initializeIndexes(), database.initializeConversationIndexes()]);
+
+      return database;
+    }
+    default:
+      throw new Error(`Unsupported database driver: ${dbConfig.driver}`);
+  }
 }

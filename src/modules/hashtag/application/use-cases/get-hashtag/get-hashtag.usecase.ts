@@ -1,8 +1,5 @@
 import { HashtagNotFoundException } from '@/modules/hashtag/application/hashtag.exception';
-import {
-  GetHashtagPort,
-  GetHashtagQuery
-} from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.port';
+import { GetHashtagPort, GetHashtagQuery } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.port';
 import { HashtagListItem } from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.port';
 import { HashtagRepositoryPort } from '@/modules/hashtag/domain/repositories/hashtag.repository';
 

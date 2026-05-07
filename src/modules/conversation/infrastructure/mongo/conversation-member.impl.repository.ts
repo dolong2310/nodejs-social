@@ -13,7 +13,7 @@ import {
   IUpdateReadStateInput,
   IUpdateRoleInput
 } from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mappers/conversation-member.mapper';
+import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mongo/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/mongo/conversation-member.model';
 import { ConversationModel } from '@/modules/conversation/infrastructure/mongo/conversation.model';
 import { Db, MongoClient } from 'mongodb';

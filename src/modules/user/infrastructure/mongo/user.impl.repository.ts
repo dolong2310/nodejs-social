@@ -7,7 +7,7 @@ import {
   IResetPasswordInput,
   IUpdateMeInput
 } from '@/modules/user/domain/repositories/user.repository.type';
-import { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
+import { UserMapper } from '@/modules/user/infrastructure/mongo/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/mongo/user.model';
 import { Db, MongoClient } from 'mongodb';
 

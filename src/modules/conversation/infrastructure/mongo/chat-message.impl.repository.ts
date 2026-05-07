@@ -6,7 +6,7 @@ import {
   ICreateMessageInput,
   IFindMessagesInput
 } from '@/modules/conversation/domain/repositories/chat-message.repository.type';
-import { ChatMessageMapper } from '@/modules/conversation/infrastructure/mappers/chat-message.mapper';
+import { ChatMessageMapper } from '@/modules/conversation/infrastructure/mongo/chat-message.mapper';
 import { ChatMessageModel } from '@/modules/conversation/infrastructure/mongo/chat-message.model';
 import { Db, Filter, MongoClient } from 'mongodb';
 

@@ -21,9 +21,6 @@ export class GetOutgoingRequestsResult {
   }
 }
 
-export abstract class GetOutgoingRequestsPort implements UseCase<
-  GetOutgoingRequestsQuery,
-  GetOutgoingRequestsResult
-> {
+export abstract class GetOutgoingRequestsPort implements UseCase<GetOutgoingRequestsQuery, GetOutgoingRequestsResult> {
   abstract execute(query: GetOutgoingRequestsQuery): Promise<GetOutgoingRequestsResult>;
 }

@@ -6,10 +6,7 @@ import {
   DeleteHashtagCommand,
   DeleteHashtagPort
 } from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.port';
-import {
-  GetHashtagPort,
-  GetHashtagQuery
-} from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.port';
+import { GetHashtagPort, GetHashtagQuery } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.port';
 import {
   ListHashtagsPort,
   ListHashtagsQuery

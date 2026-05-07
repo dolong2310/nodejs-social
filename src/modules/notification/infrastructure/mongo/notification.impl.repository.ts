@@ -7,7 +7,7 @@ import {
   IFindOldestNotificationIdsForTrimInput,
   IUpdateReadByIdsInput
 } from '@/modules/notification/domain/repositories/notification.repository.type';
-import { NotificationMapper } from '@/modules/notification/infrastructure/mappers/notification.mapper';
+import { NotificationMapper } from '@/modules/notification/infrastructure/mongo/notification.mapper';
 import { NotificationModel } from '@/modules/notification/infrastructure/mongo/notification.model';
 import { Db, Filter, MongoClient } from 'mongodb';
 

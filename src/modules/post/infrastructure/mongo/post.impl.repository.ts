@@ -6,7 +6,7 @@ import {
   ICreatePostInput,
   IUpdatePostAudienceAndStrangerCommentsInput
 } from '@/modules/post/domain/repositories/post.repository.type';
-import { PostMapper } from '@/modules/post/infrastructure/mappers/post.mapper';
+import { PostMapper } from '@/modules/post/infrastructure/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/mongo/post.model';
 import { Db, MongoClient } from 'mongodb';
 

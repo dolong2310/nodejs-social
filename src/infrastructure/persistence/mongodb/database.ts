@@ -1,9 +1,10 @@
 import logger from '@/infrastructure/logger/create-logger';
+import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { Db, MongoClient, type Collection, type Document } from 'mongodb';
 
 const log = logger.child({ module: 'database-service' });
 
-export interface DatabasePort {
+export interface MongoDatabasePort extends DatabasePort {
   dbClient: MongoClient;
   db: Db;
   connect(): Promise<void>;
@@ -12,7 +13,7 @@ export interface DatabasePort {
   initializeConversationIndexes(): Promise<void>;
 }
 
-export class Database implements DatabasePort {
+export class MongoDatabase implements MongoDatabasePort {
   public dbClient: MongoClient;
   public db: Db;
 
@@ -42,6 +43,9 @@ export class Database implements DatabasePort {
   }
   private get refreshTokens(): Collection<Document> {
     return this.db.collection('refreshTokens');
+  }
+  private get otps(): Collection<Document> {
+    return this.db.collection('otps');
   }
   private get videoStatuses(): Collection<Document> {
     return this.db.collection('videoStatus');
@@ -90,6 +94,17 @@ export class Database implements DatabasePort {
     }
   }
 
+  private async findIndexSafe(collection: Collection<Document>, indexName: string): Promise<Document | null> {
+    try {
+      const indexes = await collection.listIndexes().toArray();
+      return indexes.find((index) => index.name === indexName) ?? null;
+    } catch (error: unknown) {
+      const code = (error as { code?: number })?.code;
+      if (code === 26) return null; // NamespaceNotFound (26) the collection has never been created
+      throw error;
+    }
+  }
+
   private async createUsersIndex() {
     const isIndexExists = await this.indexExistsSafe(this.users, ['email_1_password_1', 'username_1', 'email_1']);
     if (isIndexExists) return;
@@ -101,11 +116,20 @@ export class Database implements DatabasePort {
   }
 
   private async createRefreshTokensIndex() {
-    const isIndexExists = await this.indexExistsSafe(this.refreshTokens, ['token_1', 'expiresAt_1']);
+    const expiresAtIndex = await this.findIndexSafe(this.refreshTokens, 'expiresAt_1');
+    if (expiresAtIndex?.expireAfterSeconds !== undefined) {
+      await this.refreshTokens.dropIndex('expiresAt_1');
+    }
+
+    await Promise.all([this.refreshTokens.createIndex({ token: 1 }), this.refreshTokens.createIndex({ expiresAt: 1 })]);
+  }
+
+  private async createOtpsIndex() {
+    const isIndexExists = await this.indexExistsSafe(this.otps, ['email_1_type_1', 'expiresAt_1']);
     if (isIndexExists) return;
     await Promise.all([
-      this.refreshTokens.createIndex({ token: 1 }),
-      this.refreshTokens.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }) // TTL aligned with refresh-token.model (expiresAt)
+      this.otps.createIndex({ email: 1, type: 1 }, { unique: true }),
+      this.otps.createIndex({ expiresAt: 1 })
     ]);
   }
 
@@ -215,6 +239,7 @@ export class Database implements DatabasePort {
       this.createUsersIndex(),
       this.createUsersSearchIndex(),
       this.createRefreshTokensIndex(),
+      this.createOtpsIndex(),
       this.createVideoStatusesIndex(),
       this.createFriendshipIndexes(),
       this.createFriendRequestIndexes(),

@@ -7,7 +7,7 @@ import {
   IListHashtagsInput,
   IUpdateHashtagInput
 } from '@/modules/hashtag/domain/repositories/hashtag.repository.type';
-import { HashtagMapper } from '@/modules/hashtag/infrastructure/mappers/hashtag.mapper';
+import { HashtagMapper } from '@/modules/hashtag/infrastructure/mongo/hashtag.mapper';
 import { HashtagModel } from '@/modules/hashtag/infrastructure/mongo/hashtag.model';
 import { AnyBulkWriteOperation, Db, MongoClient } from 'mongodb';
 

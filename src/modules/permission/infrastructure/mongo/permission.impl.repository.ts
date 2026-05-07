@@ -8,7 +8,7 @@ import {
   IListPermissionsInput,
   IUpdatePermissionInput
 } from '@/modules/permission/domain/repositories/permission.repository.type';
-import { PermissionMapper } from '@/modules/permission/infrastructure/mappers/permission.mapper';
+import { PermissionMapper } from '@/modules/permission/infrastructure/mongo/permission.mapper';
 import { PermissionModel } from '@/modules/permission/infrastructure/mongo/permission.model';
 import { Db, MongoClient } from 'mongodb';
 

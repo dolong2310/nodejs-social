@@ -11,7 +11,7 @@ import {
   IListIncomingForUserInput,
   IListOutgoingForUserInput
 } from '@/modules/friend/domain/repositories/friend-request.repository.type';
-import { FriendRequestMapper } from '@/modules/friend/infrastructure/mappers/friend-request.mapper';
+import { FriendRequestMapper } from '@/modules/friend/infrastructure/mongo/friend-request.mapper';
 import { FriendRequestModel } from '@/modules/friend/infrastructure/mongo/friend-request.model';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 

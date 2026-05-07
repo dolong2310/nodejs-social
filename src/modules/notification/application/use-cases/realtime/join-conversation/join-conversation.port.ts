@@ -16,9 +16,6 @@ export class JoinConversationResult {
   }
 }
 
-export abstract class JoinConversationPort implements UseCase<
-  JoinConversationCommand,
-  JoinConversationResult | null
-> {
+export abstract class JoinConversationPort implements UseCase<JoinConversationCommand, JoinConversationResult | null> {
   abstract execute(command: JoinConversationCommand): Promise<JoinConversationResult | null>;
 }

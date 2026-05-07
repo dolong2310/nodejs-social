@@ -3,7 +3,7 @@ import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/r
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { IUpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.type';
-import { VideoStatusMapper } from '@/modules/media/infrastructure/mappers/video-status.mapper';
+import { VideoStatusMapper } from '@/modules/media/infrastructure/mongo/video-status.mapper';
 import { VideoStatusModel } from '@/modules/media/infrastructure/mongo/video-status.model';
 import { Db, MongoClient } from 'mongodb';
 

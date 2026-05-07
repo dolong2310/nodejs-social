@@ -4,7 +4,7 @@ import {
   ICreateBookmarkInput,
   IDeleteBookmarkInput
 } from '@/modules/bookmark/domain/repositories/bookmark.repository.type';
-import { BookmarkMapper } from '@/modules/bookmark/infrastructure/mappers/bookmark.mapper';
+import { BookmarkMapper } from '@/modules/bookmark/infrastructure/mongo/bookmark.mapper';
 import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';

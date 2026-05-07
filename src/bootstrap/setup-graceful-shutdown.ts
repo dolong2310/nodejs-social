@@ -1,8 +1,8 @@
-import { Database } from '@/infrastructure/persistence/mongodb/database';
+import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { Redis } from '@/infrastructure/persistence/redis/redis';
 import { Server as HttpServer } from 'http';
 
-export function setupGracefulShutdown(httpServer: HttpServer, database: Database, redis: Redis): void {
+export function setupGracefulShutdown(httpServer: HttpServer, database: DatabasePort, redis: Redis): void {
   const shutdown = async (signal: string) => {
     console.log({ signal }, 'shutting down gracefully');
 

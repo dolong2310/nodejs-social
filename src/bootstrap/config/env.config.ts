@@ -28,8 +28,11 @@ const ENV_KEYS = [
   'CORS_ORIGINS',
 
   // Database
-  'DATABASE_URI',
-  'DATABASE_NAME',
+  'PERSISTENCE_DRIVER',
+  'MONGO_URI',
+  'MONGO_DB_NAME',
+  'POSTGRES_URI',
+  'POSTGRES_SSL',
 
   // Redis
   'REDIS_HOST',

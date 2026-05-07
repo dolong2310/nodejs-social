@@ -5,7 +5,7 @@ import { createContainerRepositories } from '@/bootstrap/di/repositories';
 import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
 import logger from '@/infrastructure/logger/create-logger';
-import { DatabasePort } from '@/infrastructure/persistence/mongodb/database';
+import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { TwoFactorAuthService } from '@/infrastructure/services/2fa.service';
 import { EmailService, EmailServicePort } from '@/infrastructure/services/email.service';
 import { GoogleOAuthService } from '@/infrastructure/services/google-oauth.service';
@@ -155,7 +155,7 @@ export class Container implements IContainer {
     this.notificationTrimQueue = queues.notificationTrimQueue;
     this.postViewsQueue = queues.postViewsQueue;
 
-    const repos = createContainerRepositories(this.database.db, this.database.dbClient, this.logger);
+    const repos = createContainerRepositories(this.database, this.logger);
     this.userRepository = repos.userRepository;
     this.refreshTokenRepository = repos.refreshTokenRepository;
     this.bookmarkRepository = repos.bookmarkRepository;

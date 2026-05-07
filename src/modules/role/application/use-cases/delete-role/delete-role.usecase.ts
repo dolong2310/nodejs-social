@@ -1,9 +1,6 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { RoleNotFoundException, SystemRoleCannotBeDeletedException } from '@/modules/role/application/role.exception';
-import {
-  DeleteRoleCommand,
-  DeleteRolePort
-} from '@/modules/role/application/use-cases/delete-role/delete-role.port';
+import { DeleteRoleCommand, DeleteRolePort } from '@/modules/role/application/use-cases/delete-role/delete-role.port';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 
 export class DeleteRoleUseCase extends DeleteRolePort {

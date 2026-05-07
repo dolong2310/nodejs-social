@@ -7,7 +7,7 @@ import {
   IListRolesInput,
   IUpdateRoleInput
 } from '@/modules/role/domain/repositories/role.repository.type';
-import { RoleMapper } from '@/modules/role/infrastructure/mappers/role.mapper';
+import { RoleMapper } from '@/modules/role/infrastructure/mongo/role.mapper';
 import { RoleModel } from '@/modules/role/infrastructure/mongo/role.model';
 import { Db, MongoClient } from 'mongodb';
 

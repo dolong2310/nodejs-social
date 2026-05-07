@@ -4,7 +4,7 @@ import { OtpEntity } from '@/modules/auth/domain/entities/otp.entity';
 import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
 import { ICreateOtpInput } from '@/modules/auth/domain/repositories/otp.repository.type';
-import { OtpMapper } from '@/modules/auth/infrastructure/mappers/otp.mapper';
+import { OtpMapper } from '@/modules/auth/infrastructure/mongo/otp.mapper';
 import { OtpModel } from '@/modules/auth/infrastructure/mongo/otp.model';
 import { Db, MongoClient } from 'mongodb';
 
@@ -32,8 +32,20 @@ export class OtpRepository extends MongoRepositoryBase<OtpEntity, OtpModel> impl
     const entity = OtpEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.dbCollection.findOneAndUpdate(
-      { email: record.email, code: record.code, type: record.type, expiresAt: record.expiresAt },
-      { $setOnInsert: record },
+      { email: record.email, type: record.type },
+      {
+        $set: {
+          code: record.code,
+          expiresAt: record.expiresAt,
+          updatedAt: record.updatedAt
+        },
+        $setOnInsert: {
+          _id: record._id,
+          email: record.email,
+          type: record.type,
+          createdAt: record.createdAt
+        }
+      },
       { upsert: true, returnDocument: 'after' }
     );
     return result ? this.mapper.toDomain(result) : null;

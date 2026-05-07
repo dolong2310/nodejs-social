@@ -20,8 +20,12 @@
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "test": "node --import ./tests/setup/register-argv.mjs ./node_modules/vitest/vitest.mjs run",
-    "seed:permissions": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/permissions.ts --env=development",
-    "seed:fake-data": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/fake-data.ts --env=development"
+    "seed:create-admin-user:mongo": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/mongo/create-admin-user.ts --env=development",
+    "seed:permissions:mongo": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/mongo/permissions.ts --env=development",
+    "seed:fake-data:mongo": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/mongo/fake-data.ts --env=development",
+    "seed:create-admin-user:postgres": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/postgres/create-admin-user.ts --env=development",
+    "seed:permissions:postgres": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/postgres/permissions.ts --env=development",
+    "seed:fake-data:postgres": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/postgres/fake-data.ts --env=development"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1009.0",
@@ -52,6 +56,7 @@
     "mitt": "^3.0.1",
     "mongodb": "^7.1.0",
     "otpauth": "^9.5.0",
+    "pg": "^8.20.0",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "rate-limit-redis": "^4.3.1",
@@ -80,6 +85,7 @@
     "@types/mime-types": "^3.0.1",
     "@types/minimist": "^1.2.5",
     "@types/node": "^25.3.3",
+    "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",

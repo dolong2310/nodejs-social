@@ -10,9 +10,9 @@ import {
   ITouchUpdatedAtInput,
   IUpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.type';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mappers/conversation-member.mapper';
+import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/mongo/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/mongo/conversation-member.model';
-import { ConversationMapper } from '@/modules/conversation/infrastructure/mappers/conversation.mapper';
+import { ConversationMapper } from '@/modules/conversation/infrastructure/mongo/conversation.mapper';
 import { ConversationModel } from '@/modules/conversation/infrastructure/mongo/conversation.model';
 import { normalizeFriendshipPair } from '@/modules/friend/infrastructure/mongo/friendship.impl.repository';
 import { Db, MongoClient, MongoServerError } from 'mongodb';

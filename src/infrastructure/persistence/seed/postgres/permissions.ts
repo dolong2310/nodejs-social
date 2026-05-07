@@ -1,0 +1,256 @@
+/**
+ * Sync permissions from HTTP routes and assign them to ADMIN/USER roles in Postgres.
+ *
+ * Run:
+ * `tsx --tsconfig tsconfig.json src/infrastructure/persistence/seed/postgres/permissions.ts --env=development`
+ */
+import { appConfig } from '@/bootstrap/config/app.config';
+import logger from '@/infrastructure/logger/create-logger';
+import { dbConfig } from '@/infrastructure/persistence/config/database.config';
+import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
+import {
+  buildStubHttpRouters,
+  permissionModuleTagFromBaseRoutePath
+} from '@/infrastructure/persistence/seed/stub-http-routers.seed';
+import { EHttpMethod, PermissionFullProps } from '@/modules/permission/domain/entities/permission.type';
+import { PermissionRepository } from '@/modules/permission/infrastructure/postgres/permission.impl.repository';
+import { PermissionMapper } from '@/modules/permission/infrastructure/postgres/permission.mapper';
+import { ERoleName } from '@/modules/role/domain/entities/role.type';
+import { RoleRepository } from '@/modules/role/infrastructure/postgres/role.impl.repository';
+import { RoleMapper } from '@/modules/role/infrastructure/postgres/role.mapper';
+import type { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import type { Router } from 'express';
+
+type AvailableRoute = {
+  name: string;
+  path: string;
+  method: EHttpMethod;
+  module: string;
+};
+
+const USER_GETS_ALL_PERMISSIONS = false;
+
+const USER_MODULE_ALLOWLIST: ReadonlySet<string> = new Set([
+  'AUTH',
+  'USERS',
+  'BOOKMARKS',
+  'LIKES',
+  'MEDIA',
+  'OAUTH',
+  'POSTS',
+  'SEARCH',
+  'FRIENDS',
+  'BLOCKS',
+  'CONVERSATIONS',
+  'STATIC',
+  'NOTIFICATIONS'
+]);
+
+const VALID_HTTP_METHODS = new Set<string>(Object.values(EHttpMethod));
+
+const databaseService = new PostgresDatabase({
+  uri: dbConfig.postgres.uri,
+  ssl: dbConfig.postgres.ssl
+});
+const permissionRepository = new PermissionRepository(databaseService.pool, new PermissionMapper(), logger);
+const roleRepository = new RoleRepository(databaseService.pool, new RoleMapper(), logger);
+
+function joinExpressPathSegments(...segments: string[]): string {
+  const parts = segments
+    .map((segment) => segment.replace(/^\/+/, '').replace(/\/+$/, ''))
+    .filter((segment) => segment.length > 0);
+  return '/' + parts.join('/');
+}
+
+type ExpressRouteLayer = { route?: { path: string | string[] | RegExp; methods?: Record<string, boolean> } };
+
+function collectRoutesFromExpressRouter(
+  expressRouter: Router,
+  pathPrefix: string,
+  permissionModuleTag: string,
+  collectedRoutes: AvailableRoute[]
+): void {
+  for (const layer of expressRouter.stack as ExpressRouteLayer[]) {
+    const expressRoute = layer.route;
+    if (!expressRoute) continue;
+
+    const routePathPattern =
+      typeof expressRoute.path === 'string'
+        ? expressRoute.path
+        : Array.isArray(expressRoute.path)
+          ? expressRoute.path[0]!
+          : String(expressRoute.path);
+
+    const fullHttpPath = joinExpressPathSegments(pathPrefix, routePathPattern);
+    const methodFlags = expressRoute.methods;
+    if (!methodFlags) continue;
+
+    for (const methodName of Object.keys(methodFlags)) {
+      if (methodName === '_all' || !methodFlags[methodName]) continue;
+      const httpMethod = methodName.toUpperCase();
+      if (!VALID_HTTP_METHODS.has(httpMethod)) continue;
+      collectedRoutes.push({
+        name: `${httpMethod}+${fullHttpPath}`,
+        path: fullHttpPath,
+        method: httpMethod as EHttpMethod,
+        module: permissionModuleTag
+      });
+    }
+  }
+}
+
+function discoverApiRoutesFromBaseRouteList(baseRouteList: BaseRoute[]): AvailableRoute[] {
+  const allDiscoveredRoutes: AvailableRoute[] = [];
+  for (const baseRoute of baseRouteList) {
+    const fullMountPath = joinExpressPathSegments(appConfig.api.prefix, baseRoute.getVersion(), baseRoute.getPath());
+    const permissionModuleTag = permissionModuleTagFromBaseRoutePath(baseRoute.getPath());
+    collectRoutesFromExpressRouter(
+      baseRoute.getRouter() as unknown as Router,
+      fullMountPath,
+      permissionModuleTag,
+      allDiscoveredRoutes
+    );
+  }
+
+  const alreadySeenMethodPathKeys = new Set<string>();
+  return allDiscoveredRoutes.filter((route) => {
+    const methodPathKey = `${route.method}-${route.path}`;
+    if (alreadySeenMethodPathKeys.has(methodPathKey)) return false;
+    alreadySeenMethodPathKeys.add(methodPathKey);
+    return true;
+  });
+}
+
+async function ensureBaseRoles(): Promise<void> {
+  for (const name of [ERoleName.ADMIN, ERoleName.USER] as const) {
+    const existing = await roleRepository.findRoleByName(name);
+    if (existing) continue;
+    const created = await roleRepository.createRole({
+      name,
+      description: name === ERoleName.ADMIN ? 'Administrator' : 'User',
+      isActive: true,
+      permissionIds: []
+    });
+    if (!created) {
+      throw new Error(`Failed to create role: ${name}`);
+    }
+  }
+}
+
+async function main(): Promise<void> {
+  await databaseService.connect();
+  await databaseService.initializeSchema();
+
+  const routers = buildStubHttpRouters();
+  const availableRoutes = discoverApiRoutesFromBaseRouteList(routers);
+  if (process.env.SEED_LOG_ROUTES === '1') {
+    const uniqueModuleTags = new Set(availableRoutes.map((route) => route.module).sort());
+    console.log('Discovered module tags:', [...uniqueModuleTags].join(', '));
+  }
+
+  await ensureBaseRoles();
+  await syncPermissions(availableRoutes);
+
+  const permissions = await permissionRepository.findPermissions({
+    limit: 9999,
+    skip: 0
+  });
+
+  const allPermissionIds = permissions.map((permission) => permission.id.toString());
+  const userPermissionIds = USER_GETS_ALL_PERMISSIONS
+    ? allPermissionIds
+    : permissions
+        .filter((permission) => USER_MODULE_ALLOWLIST.has(permission.getProps().module))
+        .map((permission) => permission.id.toString());
+
+  await Promise.all([
+    allPermissionIds.length > 0 ? syncPermissionsToRole(ERoleName.ADMIN, allPermissionIds) : Promise.resolve(),
+    userPermissionIds.length > 0 ? syncPermissionsToRole(ERoleName.USER, userPermissionIds) : Promise.resolve()
+  ]);
+
+  console.log('Permissions and role assignments synced successfully.');
+  await databaseService.disconnect();
+  process.exit(0);
+}
+
+async function syncPermissions(availableRoutes: AvailableRoute[]): Promise<void> {
+  const permissionsInDatabase = await permissionRepository.findPermissions({ limit: 9999, skip: 0 });
+
+  const permissionsInDatabaseMap = permissionsInDatabase.reduce(
+    (acc, permission) => {
+      const props = permission.toObject<PermissionFullProps>();
+      acc[`${props.method}-${props.path}`] = props;
+      return acc;
+    },
+    {} as Record<string, PermissionFullProps>
+  );
+
+  const availableRoutesMap = availableRoutes.reduce(
+    (acc, route) => {
+      acc[`${route.method}-${route.path}`] = route;
+      return acc;
+    },
+    {} as Record<string, AvailableRoute>
+  );
+
+  const permissionsToDelete = permissionsInDatabase.filter(
+    (permission) => !availableRoutesMap[`${permission.getProps().method}-${permission.getProps().path}`]
+  );
+
+  if (permissionsToDelete.length > 0) {
+    const permissionIdsToDelete = permissionsToDelete.map((permission) => permission.id.toString());
+    await deleteRolePermissionLinks(permissionIdsToDelete);
+    const deletedCount = await permissionRepository.deletePermissions(permissionIdsToDelete);
+    console.log(`1. Deleted ${deletedCount} permissions.`);
+  } else {
+    console.log('1. No permissions to delete.');
+  }
+
+  const routesToCreate = availableRoutes.filter((route) => !permissionsInDatabaseMap[`${route.method}-${route.path}`]);
+
+  if (routesToCreate.length > 0) {
+    const createdRoutes = await permissionRepository.createPermissions(
+      routesToCreate.map((route) => ({
+        name: route.name,
+        description: '',
+        path: route.path,
+        method: route.method,
+        module: route.module
+      }))
+    );
+    console.log(`2. Created ${createdRoutes.length} permissions.`);
+  } else {
+    console.log('2. No new permissions to create.');
+  }
+}
+
+async function deleteRolePermissionLinks(permissionIds: string[]): Promise<void> {
+  if (permissionIds.length === 0) return;
+  const uniquePermissionIds = [...new Set(permissionIds)];
+  const result = await databaseService.pool.query(
+    `DELETE FROM role_permissions WHERE permission_id = ANY($1::text[])`,
+    [uniquePermissionIds]
+  );
+  console.log(`0. Removed ${result.rowCount ?? 0} role-permission links for obsolete permissions.`);
+}
+
+async function syncPermissionsToRole(roleName: ERoleName, permissionIds: string[]): Promise<void> {
+  const role = await roleRepository.findRoleByName(roleName);
+  if (!role) {
+    throw new Error(`Role ${roleName} not found. Run ensure base roles or seed again.`);
+  }
+
+  const currentRoleState = role.getProps();
+  const updated = await roleRepository.updateRole(role.id.toString(), {
+    name: currentRoleState.name,
+    description: currentRoleState.description,
+    isActive: currentRoleState.isActive,
+    permissionIds
+  });
+  console.log(`3. Role ${roleName}: assigned ${permissionIds.length} permissions (${updated ? 'ok' : 'failed'}).`);
+}
+
+void main().catch((err) => {
+  console.error(err);
+  void databaseService.disconnect().finally(() => process.exit(1));
+});

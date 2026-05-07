@@ -1,5 +1,5 @@
 import Container from '@/bootstrap/container';
-import { DatabasePort } from '@/infrastructure/persistence/mongodb/database';
+import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { type Server as SocketIOServer } from 'socket.io';
 
