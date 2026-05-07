@@ -10,16 +10,16 @@ export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel> {
     const record: HashtagModel = {
       _id: clone.id.toString(),
       name: clone.name,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(hashtagSchema, record);
   }
   toDomain(record: HashtagModel): HashtagEntity {
     const entity = new HashtagEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
         name: record.name
       }

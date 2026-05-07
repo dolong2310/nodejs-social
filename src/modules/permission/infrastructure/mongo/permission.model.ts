@@ -9,8 +9,8 @@ export const permissionSchema = object({
   path: string(),
   method: enum_(EHttpMethod),
   module: string(),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type PermissionModel = InferOutput<typeof permissionSchema>;

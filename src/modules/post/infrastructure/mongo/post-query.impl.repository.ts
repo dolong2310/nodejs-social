@@ -1,8 +1,8 @@
-import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model'; // TODO: do not depend on bookmark module
+import { BookmarkModel } from '@/modules/bookmark/infrastructure/mongo/bookmark.model'; // TODO: post module should not depend on bookmark module
 import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
-import { LikeModel } from '@/modules/like/infrastructure/mongo/like.model'; // TODO: do not depend on like module
+import { LikeModel } from '@/modules/like/infrastructure/mongo/like.model'; // TODO: post module should not depend on like module
 import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import {
   IFindGuestPostsInput,
@@ -43,11 +43,14 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     // const p = new ObjectId(data.postId);
     const [like, bookmark, comment] = await Promise.all([
       // Tìm like của viewer với post (likes.findOne)
-      this.likesCollection.findOne({ userId, postId }, { projection: { _id: 1 } }),
+      this.likesCollection.findOne({ user_id: userId, post_id: postId }, { projection: { _id: 1 } }),
       // Tìm bookmark của viewer với post (bookmarks.findOne)
-      this.bookmarksCollection.findOne({ userId, postId }, { projection: { _id: 1 } }),
+      this.bookmarksCollection.findOne({ user_id: userId, post_id: postId }, { projection: { _id: 1 } }),
       // Tìm comment mà viewer comment vào post đó (posts.findOne với parentId = postId và type = COMMENT)
-      this.dbCollection.findOne({ userId, parentId: postId, type: EPostType.COMMENT }, { projection: { _id: 1 } })
+      this.dbCollection.findOne(
+        { user_id: userId, parent_id: postId, type: EPostType.COMMENT },
+        { projection: { _id: 1 } }
+      )
     ]);
     // Nếu có ít nhất 1 trong 3 loại tương tác thì trả true
     return like !== null || bookmark !== null || comment !== null;
@@ -62,7 +65,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       },
       {
         $addFields: {
-          allowStrangerComments: { $ifNull: ['$allowStrangerComments', true] }
+          allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] }
         }
       },
       {
@@ -82,8 +85,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               in: {
                 id: '$$hashtag._id',
                 name: '$$hashtag.name',
-                createdAt: '$$hashtag.createdAt',
-                updatedAt: '$$hashtag.updatedAt'
+                createdAt: '$$hashtag.created_at',
+                updatedAt: '$$hashtag.updated_at'
               }
             }
           }
@@ -117,7 +120,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         $lookup: {
           from: 'bookmarks',
           let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$postId', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
+          pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
           as: 'bookmarkCountLookupResults'
         }
       },
@@ -125,7 +128,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         $lookup: {
           from: 'posts',
           let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$parentId', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
+          pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
           as: 'childPostsWithTypeOnly'
         }
       },
@@ -165,12 +168,19 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       },
       {
         $replaceRoot: {
-          newRoot: { $mergeObjects: [{ id: '$_id' }, '$$ROOT'] }
+          newRoot: { $mergeObjects: [postOutputProjection(), '$$ROOT'] }
         }
       },
       {
         $project: {
           _id: 0,
+          user_id: 0,
+          allow_stranger_comments: 0,
+          parent_id: 0,
+          guest_views: 0,
+          user_views: 0,
+          created_at: 0,
+          updated_at: 0,
           bookmarkCountLookupResults: 0,
           childPostsWithTypeOnly: 0
         }
@@ -190,56 +200,56 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const [fromLikes, fromBookmarks, fromComments] = await Promise.all([
       this.likesCollection
         .aggregate<{ _id: string }>([
-          { $match: { userId: viewerId } },
+          { $match: { user_id: viewerId } },
           {
             $lookup: {
               from: 'posts',
-              localField: 'postId',
+              localField: 'post_id',
               foreignField: '_id',
               as: 'post'
             }
           },
           { $unwind: '$post' },
-          { $match: { 'post.userId': { $in: authorIds } } },
-          { $group: { _id: '$postId' } }
+          { $match: { 'post.user_id': { $in: authorIds } } },
+          { $group: { _id: '$post_id' } }
         ])
         .toArray(),
       this.bookmarksCollection
         .aggregate<{ _id: string }>([
-          { $match: { userId: viewerId } },
+          { $match: { user_id: viewerId } },
           {
             $lookup: {
               from: 'posts',
-              localField: 'postId',
+              localField: 'post_id',
               foreignField: '_id',
               as: 'post'
             }
           },
           { $unwind: '$post' },
-          { $match: { 'post.userId': { $in: authorIds } } },
-          { $group: { _id: '$postId' } }
+          { $match: { 'post.user_id': { $in: authorIds } } },
+          { $group: { _id: '$post_id' } }
         ])
         .toArray(),
       this.dbCollection
         .aggregate<{ _id: string }>([
           {
             $match: {
-              userId: viewerId,
+              user_id: viewerId,
               type: EPostType.COMMENT,
-              parentId: { $ne: null }
+              parent_id: { $ne: null }
             }
           },
           {
             $lookup: {
               from: 'posts',
-              localField: 'parentId',
+              localField: 'parent_id',
               foreignField: '_id',
               as: 'parent'
             }
           },
           { $unwind: '$parent' },
-          { $match: { 'parent.userId': { $in: authorIds } } },
-          { $group: { _id: '$parentId' } }
+          { $match: { 'parent.user_id': { $in: authorIds } } },
+          { $group: { _id: '$parent_id' } }
         ])
         .toArray()
     ]);
@@ -280,8 +290,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     };
     if (cursor) {
       match.$or = [
-        { createdAt: { $lt: cursor.raw().createdAt } },
-        { createdAt: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+        { created_at: { $lt: cursor.raw().createdAt } },
+        { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
       ];
     }
 
@@ -297,13 +307,13 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
   async findPostsType(data: IFindPostsTypeInput): Promise<IPostDetailOutput[]> {
     const { cursor, limit, postId, type } = data;
     const match: Record<string, unknown> = {
-      parentId: postId,
+      parent_id: postId,
       type
     };
     if (cursor) {
       match.$or = [
-        { createdAt: { $lt: cursor.raw().createdAt } },
-        { createdAt: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+        { created_at: { $lt: cursor.raw().createdAt } },
+        { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
       ];
     }
 
@@ -362,12 +372,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       const orVisibility: Record<string, unknown>[] = [
         {
           audience: EPostAudience.PUBLIC,
-          userId: { $nin: blocked }
+          user_id: { $nin: blocked }
         },
-        { userId: userId },
+        { user_id: userId },
         {
           audience: EPostAudience.FRIENDS_ONLY,
-          userId: { $in: friendIdsFriendsOnly, $nin: blocked }
+          user_id: { $in: friendIdsFriendsOnly, $nin: blocked }
         }
       ];
       // nếu viewer từng tương tác (like/bookmark/comment) với bài của các tác giả bị block, thì vẫn lấy ra postId của các bài đó để hiển thị (Unknown user)
@@ -380,11 +390,11 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         // tìm kiếm theo bạn bè và không phải bạn bè
         if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
           $and.push({
-            userId: people === ESearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds }
+            user_id: people === ESearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds }
           });
         } else if (people === ESearchPeople.ONLY_ME) {
           // tìm kiếm theo chính mình
-          $and.push({ userId: { $eq: userId } });
+          $and.push({ user_id: { $eq: userId } });
         }
       }
     } else {
@@ -402,8 +412,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       // Ý nghĩa nghiệp vụ: đảm bảo khi nhiều post có cùng createdAt, việc paging vẫn không bị trùng/miss do dùng thêm _id làm tie-breaker.
       const cursorFilter = {
         $or: [
-          { createdAt: { $lt: cursor.raw().createdAt } },
-          { createdAt: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+          { created_at: { $lt: cursor.raw().createdAt } },
+          { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
         ]
       };
       match['$and'] = [match, cursorFilter];
@@ -433,12 +443,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const orBranches: Record<string, unknown>[] = [
       {
         audience: EPostAudience.PUBLIC,
-        userId: { $nin: blocked }
+        user_id: { $nin: blocked }
       },
-      { userId: viewerId },
+      { user_id: viewerId },
       {
         audience: EPostAudience.FRIENDS_ONLY,
-        userId: { $in: friendIds, $nin: blocked }
+        user_id: { $in: friendIds, $nin: blocked }
       }
     ];
     if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
@@ -455,8 +465,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         base,
         {
           $or: [
-            { createdAt: { $lt: cursor.raw().createdAt } },
-            { createdAt: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+            { created_at: { $lt: cursor.raw().createdAt } },
+            { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
           ]
         }
       ]
@@ -480,7 +490,7 @@ function buildBasePostPipeline({
 
   if (match) {
     pipeline.push({ $match: match });
-    pipeline.push({ $sort: { createdAt: -1, _id: -1 } });
+    pipeline.push({ $sort: { created_at: -1, _id: -1 } });
   }
 
   if (typeof skip === 'number') {
@@ -496,7 +506,7 @@ function buildBasePostPipeline({
       {
         $lookup: {
           from: 'users',
-          localField: 'userId',
+          localField: 'user_id',
           foreignField: '_id',
           pipeline: [
             {
@@ -549,8 +559,8 @@ function buildBasePostPipeline({
             in: {
               id: '$$hashtag._id',
               name: '$$hashtag.name',
-              createdAt: '$$hashtag.createdAt',
-              updatedAt: '$$hashtag.updatedAt'
+              createdAt: '$$hashtag.created_at',
+              updatedAt: '$$hashtag.updated_at'
             }
           }
         }
@@ -566,7 +576,7 @@ function buildBasePostPipeline({
     },
     {
       $addFields: {
-        allowStrangerComments: { $ifNull: ['$allowStrangerComments', true] },
+        allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] },
         mentions: {
           $map: {
             input: '$mentions',
@@ -585,7 +595,7 @@ function buildBasePostPipeline({
       $lookup: {
         from: 'bookmarks',
         let: { rootPostId: '$_id' },
-        pipeline: [{ $match: { $expr: { $eq: ['$postId', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
+        pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
         as: 'bookmarkCountLookupResults'
       }
     },
@@ -593,7 +603,7 @@ function buildBasePostPipeline({
       $lookup: {
         from: 'posts',
         let: { rootPostId: '$_id' },
-        pipeline: [{ $match: { $expr: { $eq: ['$parentId', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
+        pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
         as: 'childPostsWithTypeOnly'
       }
     },
@@ -633,12 +643,19 @@ function buildBasePostPipeline({
     },
     {
       $replaceRoot: {
-        newRoot: { $mergeObjects: [{ id: '$_id' }, '$$ROOT'] }
+        newRoot: { $mergeObjects: [postOutputProjection(), '$$ROOT'] }
       }
     },
     {
       $project: {
         _id: 0,
+        user_id: 0,
+        allow_stranger_comments: 0,
+        parent_id: 0,
+        guest_views: 0,
+        user_views: 0,
+        created_at: 0,
+        updated_at: 0,
         bookmarkCountLookupResults: 0,
         childPostsWithTypeOnly: 0
       }
@@ -646,4 +663,17 @@ function buildBasePostPipeline({
   );
 
   return pipeline;
+}
+
+function postOutputProjection(): Record<string, unknown> {
+  return {
+    id: '$_id',
+    userId: '$user_id',
+    allowStrangerComments: '$allow_stranger_comments',
+    parentId: '$parent_id',
+    guestViews: '$guest_views',
+    userViews: '$user_views',
+    createdAt: '$created_at',
+    updatedAt: '$updated_at'
+  };
 }

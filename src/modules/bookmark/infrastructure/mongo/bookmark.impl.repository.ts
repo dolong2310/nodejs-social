@@ -28,15 +28,15 @@ export class BookmarkRepository
   async createBookmark({ userId, postId }: ICreateBookmarkInput): Promise<BookmarkEntity | null> {
     const now = new Date();
     const result = await this.dbCollection.findOneAndUpdate(
-      { userId, postId },
-      { $setOnInsert: { userId, postId, createdAt: now, updatedAt: now } },
+      { user_id: userId, post_id: postId },
+      { $setOnInsert: { user_id: userId, post_id: postId, created_at: now, updated_at: now } },
       { upsert: true, returnDocument: 'after' }
     );
     return result ? this.mapper.toDomain(result) : null;
   }
 
   async deleteBookmark({ userId, postId }: IDeleteBookmarkInput): Promise<BookmarkEntity | null> {
-    const result = await this.dbCollection.findOneAndDelete({ userId, postId });
+    const result = await this.dbCollection.findOneAndDelete({ user_id: userId, post_id: postId });
     return result ? this.mapper.toDomain(result) : null;
   }
 }

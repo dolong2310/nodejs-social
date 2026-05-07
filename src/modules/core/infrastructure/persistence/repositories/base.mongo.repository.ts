@@ -7,6 +7,10 @@ import {
   RepositoryPort
 } from '@/modules/core/domain/repositories/port.repository';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import {
+  toMongoFieldName,
+  toMongoFieldRecord
+} from '@/modules/core/infrastructure/persistence/repositories/mongo-field-name.helper';
 import type { ClientSession, Collection, Db, Filter, MongoClient, OptionalUnlessRequiredId } from 'mongodb';
 
 export abstract class MongoRepositoryBase<
@@ -32,7 +36,7 @@ export abstract class MongoRepositoryBase<
   async findById(id: string, options?: Options): Promise<Entity | null> {
     const record = await this.dbCollection.findOne<DbModel>(this._buildIdFilter(id), {
       session: this.session,
-      projection: options?.projection
+      projection: this._toDbProjection(options?.projection)
     });
     return record ? this.mapper.toDomain(record) : null;
   }
@@ -40,21 +44,24 @@ export abstract class MongoRepositoryBase<
   async findOne(entity: Partial<Entity>, options?: Options): Promise<Entity | null> {
     const record = await this.dbCollection.findOne<DbModel>(this._toDbFilter(entity), {
       session: this.session,
-      projection: options?.projection
+      projection: this._toDbProjection(options?.projection)
     });
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async find(entity: Partial<Entity>, options?: Options): Promise<Entity[]> {
     const records = await this.dbCollection
-      .find<DbModel>(this._toDbFilter(entity), { session: this.session, projection: options?.projection })
+      .find<DbModel>(this._toDbFilter(entity), {
+        session: this.session,
+        projection: this._toDbProjection(options?.projection)
+      })
       .toArray();
     return records.map((record) => this.mapper.toDomain(record));
   }
 
   async findAll(options?: Options): Promise<Entity[]> {
     const records = await this.dbCollection
-      .find<DbModel>({}, { session: this.session, projection: options?.projection })
+      .find<DbModel>({}, { session: this.session, projection: this._toDbProjection(options?.projection) })
       .toArray();
     return records.map((record) => this.mapper.toDomain(record));
   }
@@ -66,18 +73,18 @@ export abstract class MongoRepositoryBase<
     const records = await this.dbCollection
       .find<DbModel>({ _id: { $in: uniqueIds } } as Filter<DbModel>, {
         session: this.session,
-        projection: options?.projection
+        projection: this._toDbProjection(options?.projection)
       })
       .toArray();
     return records.map((record) => this.mapper.toDomain(record));
   }
 
   async findAllPaginated(params: PaginatedQueryParams, options?: Options): Promise<Paginated<Entity>> {
-    const sortField = params.orderBy.field === true ? '_id' : params.orderBy.field;
+    const sortField = params.orderBy.field === true ? '_id' : toMongoFieldName(String(params.orderBy.field));
     const sortDirection = params.orderBy.param === 'asc' ? 1 : -1;
     const [records, count] = await Promise.all([
       this.dbCollection
-        .find<DbModel>({}, { session: this.session, projection: options?.projection })
+        .find<DbModel>({}, { session: this.session, projection: this._toDbProjection(options?.projection) })
         .sort({ [sortField]: sortDirection } as Record<string, 1 | -1>)
         .skip(params.offset)
         .limit(params.limit)
@@ -132,13 +139,13 @@ export abstract class MongoRepositoryBase<
       {
         $set: {
           ...updateData,
-          updatedAt: new Date()
+          updated_at: new Date()
         }
       },
       {
         session: this.session,
         returnDocument: 'after',
-        projection: options?.projection
+        projection: this._toDbProjection(options?.projection)
       }
     );
     return record ? this.mapper.toDomain(record as DbModel) : null;
@@ -151,7 +158,7 @@ export abstract class MongoRepositoryBase<
       {
         $set: {
           ...updateData,
-          updatedAt: new Date()
+          updated_at: new Date()
         }
       },
       { session: this.session }
@@ -166,7 +173,7 @@ export abstract class MongoRepositoryBase<
       {
         $set: {
           ...updateData,
-          updatedAt: new Date()
+          updated_at: new Date()
         }
       },
       { session: this.session }
@@ -224,7 +231,7 @@ export abstract class MongoRepositoryBase<
       if (key === 'id') {
         acc['_id'] = value;
       } else {
-        acc[key] = value;
+        acc[toMongoFieldName(key)] = value;
       }
 
       return acc;
@@ -239,11 +246,16 @@ export abstract class MongoRepositoryBase<
 
       if (key === 'id') return acc; // omit id
 
-      acc[key] = value;
+      acc[toMongoFieldName(key)] = value;
       return acc;
     }, {});
 
     return mapped as Partial<DbModel>;
+  }
+
+  protected _toDbProjection(projection?: Record<string, unknown>): Record<string, unknown> | undefined {
+    if (!projection) return undefined;
+    return toMongoFieldRecord(projection);
   }
 
   // insertBulk(entity: Entity): Promise<void> {

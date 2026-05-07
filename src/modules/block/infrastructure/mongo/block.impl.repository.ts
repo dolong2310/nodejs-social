@@ -22,8 +22,8 @@ export class BlockRepository extends MongoRepositoryBase<BlockEntity, BlockModel
     const record = await this.dbCollection.findOne(
       {
         $or: [
-          { blockerId: userIdA, blockedId: userIdB },
-          { blockerId: userIdB, blockedId: userIdA }
+          { blocker_id: userIdA, blocked_id: userIdB },
+          { blocker_id: userIdB, blocked_id: userIdA }
         ]
       },
       { projection: { _id: 1 } }
@@ -32,7 +32,7 @@ export class BlockRepository extends MongoRepositoryBase<BlockEntity, BlockModel
   }
 
   async listBlockedUserIdsForBlocker(blockerId: string): Promise<string[]> {
-    const ids = await this.dbCollection.distinct('blockedId', { blockerId });
+    const ids = await this.dbCollection.distinct('blocked_id', { blocker_id: blockerId });
     return ids;
   }
 
@@ -41,8 +41,8 @@ export class BlockRepository extends MongoRepositoryBase<BlockEntity, BlockModel
    */
   async listUserIdsBlockedInEitherDirection(userId: string): Promise<string[]> {
     const [blockerIds, blockedIds] = await Promise.all([
-      this.dbCollection.distinct('blockedId', { blockerId: userId }),
-      this.dbCollection.distinct('blockerId', { blockedId: userId })
+      this.dbCollection.distinct('blocked_id', { blocker_id: userId }),
+      this.dbCollection.distinct('blocker_id', { blocked_id: userId })
     ]);
     return Array.from(new Set([...blockerIds, ...blockedIds])); // dedupe ids
   }
@@ -62,8 +62,8 @@ export class BlockRepository extends MongoRepositoryBase<BlockEntity, BlockModel
 
   async deleteBlock(blockerId: string, blockedId: string): Promise<number> {
     const result = await this.dbCollection.deleteOne({
-      blockerId,
-      blockedId
+      blocker_id: blockerId,
+      blocked_id: blockedId
     });
     return result.deletedCount;
   }

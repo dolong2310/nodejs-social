@@ -9,23 +9,23 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
     const clone = entity.getProps();
     const record: ChatMessageModel = {
       _id: clone.id.toString(),
-      conversationId: clone.conversationId,
-      senderId: clone.senderId,
+      conversation_id: clone.conversationId,
+      sender_id: clone.senderId,
       text: clone.text,
       attachments: clone.attachments,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(chatMessageSchema, record);
   }
   toDomain(record: ChatMessageModel): ChatMessageEntity {
     const entity = new ChatMessageEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        conversationId: record.conversationId,
-        senderId: record.senderId,
+        conversationId: record.conversation_id,
+        senderId: record.sender_id,
         text: record.text,
         attachments: record.attachments
       }

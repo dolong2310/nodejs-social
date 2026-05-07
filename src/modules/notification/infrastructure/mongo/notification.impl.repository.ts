@@ -33,20 +33,20 @@ export class NotificationRepository
     limit,
     before
   }: IFindNotificationsInput): Promise<NotificationEntity[]> {
-    const filter: Filter<NotificationModel> = { recipientId };
+    const filter: Filter<NotificationModel> = { recipient_id: recipientId };
     if (actorUserIdNin && actorUserIdNin.length > 0) {
-      filter['actor.userId'] = { $nin: actorUserIdNin };
+      filter['actor.user_id'] = { $nin: actorUserIdNin };
     }
     if (unreadOnly) {
       filter.read = false;
     }
     if (before) {
       filter.$or = [
-        { createdAt: { $lt: before.raw().createdAt } },
-        { createdAt: before.raw().createdAt, _id: { $lt: before.raw().id } }
+        { created_at: { $lt: before.raw().createdAt } },
+        { created_at: before.raw().createdAt, _id: { $lt: before.raw().id } }
       ];
     }
-    const results = await this.dbCollection.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit).toArray();
+    const results = await this.dbCollection.find(filter).sort({ created_at: -1, _id: -1 }).limit(limit).toArray();
     const result = results.map((record) => this.mapper.toDomain(record));
     return result;
   }
@@ -58,8 +58,8 @@ export class NotificationRepository
   }: IFindOldestNotificationIdsForTrimInput): Promise<string[]> {
     if (limit <= 0) return [];
     const notifications = await this.dbCollection
-      .find({ recipientId })
-      .sort({ read: -1, createdAt: 1, _id: 1 })
+      .find({ recipient_id: recipientId })
+      .sort({ read: -1, created_at: 1, _id: 1 })
       .limit(limit)
       .project({ _id: 1 })
       .toArray();
@@ -82,16 +82,16 @@ export class NotificationRepository
   async updateReadByIds({ ids, recipientId }: IUpdateReadByIdsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const result = await this.dbCollection.updateMany(
-      { recipientId, _id: { $in: ids }, read: false },
-      { $set: { read: true, readAt: new Date() } }
+      { recipient_id: recipientId, _id: { $in: ids }, read: false },
+      { $set: { read: true, read_at: new Date() } }
     );
     return result.modifiedCount;
   }
 
   async updateAllRead(recipientId: string): Promise<number> {
     const result = await this.dbCollection.updateMany(
-      { recipientId, read: false },
-      { $set: { read: true, readAt: new Date() } }
+      { recipient_id: recipientId, read: false },
+      { $set: { read: true, read_at: new Date() } }
     );
     return result.modifiedCount;
   }

@@ -9,21 +9,21 @@ export class BookmarkMapper implements Mapper<BookmarkEntity, BookmarkModel> {
     const clone = entity.getProps();
     const record: BookmarkModel = {
       _id: clone.id.toString(),
-      userId: clone.userId,
-      postId: clone.postId,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      user_id: clone.userId,
+      post_id: clone.postId,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(bookmarkSchema, record);
   }
   toDomain(record: BookmarkModel): BookmarkEntity {
     const entity = new BookmarkEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        userId: record.userId,
-        postId: record.postId
+        userId: record.user_id,
+        postId: record.post_id
       }
     });
     return entity;

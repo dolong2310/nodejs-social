@@ -22,7 +22,7 @@ export class ConversationMemberRepository
   extends MongoRepositoryBase<ConversationMemberEntity, ConversationMemberModel>
   implements ConversationMemberRepositoryPort
 {
-  protected collectionName = 'conversationMembers';
+  protected collectionName = 'conversation_members';
 
   constructor(
     protected readonly db: Db,
@@ -35,22 +35,26 @@ export class ConversationMemberRepository
 
   async findMember({ conversationId, userId }: IFindMemberInput): Promise<ConversationMemberEntity | null> {
     const result = await this.dbCollection.findOne({
-      conversationId,
-      userId
+      conversation_id: conversationId,
+      user_id: userId
     });
     return result ? this.mapper.toDomain(result) : null;
   }
 
   async findMembersByUsers({ conversationId, userIds }: IFindMembersByUsersInput): Promise<ConversationMemberEntity[]> {
     if (userIds.length === 0) return [];
-    const results = await this.dbCollection.find({ conversationId, userId: { $in: userIds } }).toArray();
+    const results = await this.dbCollection
+      .find({ conversation_id: conversationId, user_id: { $in: userIds } })
+      .toArray();
     const result = results.map((record) => this.mapper.toDomain(record));
     return result;
   }
 
   async findMembers({ conversationIds, userId }: IFindMembersInput): Promise<ConversationMemberEntity[]> {
     if (conversationIds.length === 0) return [];
-    const results = await this.dbCollection.find({ conversationId: { $in: conversationIds }, userId }).toArray();
+    const results = await this.dbCollection
+      .find({ conversation_id: { $in: conversationIds }, user_id: userId })
+      .toArray();
     const result = results.map((record) => this.mapper.toDomain(record));
     return result;
   }
@@ -64,21 +68,21 @@ export class ConversationMemberRepository
 
   async deleteMember({ conversationId, userId }: IDeleteMemberInput): Promise<number> {
     const result = await this.dbCollection.deleteOne({
-      conversationId,
-      userId
+      conversation_id: conversationId,
+      user_id: userId
     });
     return result.deletedCount;
   }
 
   async listMembers(conversationId: string): Promise<ConversationMemberEntity[]> {
-    const results = await this.dbCollection.find({ conversationId }).toArray();
+    const results = await this.dbCollection.find({ conversation_id: conversationId }).toArray();
     const result = results.map((record) => this.mapper.toDomain(record));
     return result;
   }
 
   async updateRole({ conversationId, userId, role }: IUpdateRoleInput): Promise<ConversationMemberEntity | null> {
     const result = await this.dbCollection.findOneAndUpdate(
-      { conversationId, userId },
+      { conversation_id: conversationId, user_id: userId },
       { $set: { role } },
       { returnDocument: 'after' }
     );
@@ -89,18 +93,18 @@ export class ConversationMemberRepository
     const { conversationId, joinedAt, oldAdminUserId, newAdminUserId } = data;
     await this.transaction(async () => {
       await this.dbCollection.updateOne(
-        { conversationId, userId: oldAdminUserId },
+        { conversation_id: conversationId, user_id: oldAdminUserId },
         { $set: { role: EConversationMemberRole.MANAGER } },
         { session: this.session }
       );
       await this.dbCollection.updateOne(
-        { conversationId, userId: newAdminUserId },
+        { conversation_id: conversationId, user_id: newAdminUserId },
         { $set: { role: EConversationMemberRole.ADMIN } },
         { session: this.session }
       );
       await this.db
         .collection<ConversationModel>('conversations')
-        .updateOne({ _id: conversationId }, { $set: { updatedAt: joinedAt } }, { session: this.session });
+        .updateOne({ _id: conversationId }, { $set: { updated_at: joinedAt } }, { session: this.session });
     });
   }
 
@@ -111,21 +115,21 @@ export class ConversationMemberRepository
     lastReadMessageId
   }: IUpdateReadStateInput): Promise<ConversationMemberEntity | null> {
     const result = await this.dbCollection.findOneAndUpdate(
-      { conversationId, userId },
-      { $set: { lastReadMessageId, lastReadAt } },
+      { conversation_id: conversationId, user_id: userId },
+      { $set: { last_read_message_id: lastReadMessageId, last_read_at: lastReadAt } },
       { returnDocument: 'after' }
     );
     return result ? this.mapper.toDomain(result) : null;
   }
 
   async countMembers(conversationId: string): Promise<number> {
-    const result = await this.dbCollection.countDocuments({ conversationId });
+    const result = await this.dbCollection.countDocuments({ conversation_id: conversationId });
     return result;
   }
 
   async countAdmins(conversationId: string): Promise<number> {
     const result = await this.dbCollection.countDocuments({
-      conversationId,
+      conversation_id: conversationId,
       role: EConversationMemberRole.ADMIN
     });
     return result;

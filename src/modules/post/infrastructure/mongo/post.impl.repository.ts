@@ -39,12 +39,12 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
   ): Promise<PostEntity | null> {
     const { postId, ownerUserId, audience, allowStrangerComments } = data;
     const result = await this.dbCollection.findOneAndUpdate(
-      { _id: postId, userId: ownerUserId },
+      { _id: postId, user_id: ownerUserId },
       {
         $set: {
           audience,
-          allowStrangerComments,
-          updatedAt: new Date()
+          allow_stranger_comments: allowStrangerComments,
+          updated_at: new Date()
         }
       },
       { returnDocument: 'after' }

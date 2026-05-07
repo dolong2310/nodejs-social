@@ -9,21 +9,21 @@ export class BlockMapper implements Mapper<BlockEntity, BlockModel> {
     const clone = entity.getProps();
     const record: BlockModel = {
       _id: clone.id.toString(),
-      blockerId: clone.blockerId,
-      blockedId: clone.blockedId,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      blocker_id: clone.blockerId,
+      blocked_id: clone.blockedId,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(blockSchema, record);
   }
   toDomain(record: BlockModel): BlockEntity {
     const entity = new BlockEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        blockerId: record.blockerId,
-        blockedId: record.blockedId
+        blockerId: record.blocker_id,
+        blockedId: record.blocked_id
       }
     });
     return entity;

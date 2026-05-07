@@ -6,6 +6,7 @@ import {
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
   IFriendRequestNotificationPayload,
+  INotificationPayload,
   INewMessageNotificationPayload
 } from '@/modules/notification/domain/entities/notification.type';
 import { NotificationModel, notificationSchema } from '@/modules/notification/infrastructure/mongo/notification.model';
@@ -16,12 +17,16 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
     const clone = entity.getProps();
     const commonRecord = {
       _id: clone.id.toString(),
-      recipientId: clone.recipientId,
+      recipient_id: clone.recipientId,
       read: clone.read,
-      readAt: clone.readAt ?? new Date(),
-      actor: clone.actor,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      read_at: clone.readAt ?? new Date(),
+      actor: {
+        user_id: clone.actor.userId,
+        display_name: clone.actor.displayName,
+        avatar: clone.actor.avatar
+      },
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
 
     switch (clone.type) {
@@ -29,41 +34,85 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
         return parse(notificationSchema, {
           ...commonRecord,
           type: ENotificationType.FRIEND_REQUEST,
-          payload: clone.payload as IFriendRequestNotificationPayload
+          payload: {
+            from_user_id: (clone.payload as IFriendRequestNotificationPayload).fromUserId
+          }
         });
       case ENotificationType.FRIEND_ACCEPTED:
         return parse(notificationSchema, {
           ...commonRecord,
           type: ENotificationType.FRIEND_ACCEPTED,
-          payload: clone.payload as IFriendAcceptedNotificationPayload
+          payload: {
+            friend_user_id: (clone.payload as IFriendAcceptedNotificationPayload).friendUserId
+          }
         });
-      case ENotificationType.NEW_MESSAGE:
+      case ENotificationType.NEW_MESSAGE: {
+        const newMessagePayload = clone.payload as INewMessageNotificationPayload;
         return parse(notificationSchema, {
           ...commonRecord,
           type: ENotificationType.NEW_MESSAGE,
-          payload: clone.payload as INewMessageNotificationPayload
+          payload: {
+            conversation_id: newMessagePayload.conversationId,
+            message_id: newMessagePayload.messageId,
+            preview_text: newMessagePayload.previewText,
+            preview_kind: newMessagePayload.previewKind
+          }
         });
-      case ENotificationType.ADDED_TO_GROUP:
+      }
+      case ENotificationType.ADDED_TO_GROUP: {
+        const addedToGroupPayload = clone.payload as IAddedToGroupNotificationPayload;
         return parse(notificationSchema, {
           ...commonRecord,
           type: ENotificationType.ADDED_TO_GROUP,
-          payload: clone.payload as IAddedToGroupNotificationPayload
+          payload: {
+            conversation_id: addedToGroupPayload.conversationId,
+            chat_name: addedToGroupPayload.chatName
+          }
         });
+      }
       default:
         throw new Error(`Unsupported notification type: ${String(clone.type)}`);
     }
   }
   toDomain(record: NotificationModel): NotificationEntity {
+    let payload: INotificationPayload;
+    switch (record.type) {
+      case ENotificationType.FRIEND_REQUEST:
+        payload = { fromUserId: record.payload.from_user_id };
+        break;
+      case ENotificationType.FRIEND_ACCEPTED:
+        payload = { friendUserId: record.payload.friend_user_id };
+        break;
+      case ENotificationType.NEW_MESSAGE:
+        payload = {
+          conversationId: record.payload.conversation_id,
+          messageId: record.payload.message_id,
+          previewText: record.payload.preview_text,
+          previewKind: record.payload.preview_kind
+        };
+        break;
+      case ENotificationType.ADDED_TO_GROUP:
+        payload = {
+          conversationId: record.payload.conversation_id,
+          chatName: record.payload.chat_name
+        };
+        break;
+    }
+
     const entity = new NotificationEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        recipientId: record.recipientId,
+        recipientId: record.recipient_id,
         read: record.read,
         type: record.type,
-        actor: record.actor,
-        payload: record.payload
+        actor: {
+          userId: record.actor.user_id,
+          displayName: record.actor.display_name,
+          avatar: record.actor.avatar
+        },
+        payload
       }
     });
     return entity;

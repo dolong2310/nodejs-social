@@ -9,23 +9,23 @@ export class RefreshTokenMapper implements Mapper<RefreshTokenEntity, RefreshTok
     const clone = entity.getProps();
     const record: RefreshTokenModel = {
       _id: clone.id.toString(),
-      userId: clone.userId,
+      user_id: clone.userId,
       token: clone.token,
-      expiresAt: clone.expiresAt,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      expires_at: clone.expiresAt,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(refreshTokenSchema, record);
   }
   toDomain(record: RefreshTokenModel): RefreshTokenEntity {
     const entity = new RefreshTokenEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        userId: record.userId,
+        userId: record.user_id,
         token: record.token,
-        expiresAt: record.expiresAt
+        expiresAt: record.expires_at
       }
     });
     return entity;

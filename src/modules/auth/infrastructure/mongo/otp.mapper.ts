@@ -12,22 +12,22 @@ export class OtpMapper implements Mapper<OtpEntity, OtpModel> {
       email: clone.email,
       code: clone.code,
       type: clone.type,
-      expiresAt: clone.expiresAt,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      expires_at: clone.expiresAt,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(otpSchema, record);
   }
   toDomain(record: OtpModel): OtpEntity {
     const entity = new OtpEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
         email: record.email,
         code: record.code,
         type: record.type,
-        expiresAt: record.expiresAt
+        expiresAt: record.expires_at
       }
     });
     return entity;

@@ -38,17 +38,17 @@ export class FriendshipRepository
 
   async findFriendIdsByUserId(userId: string): Promise<string[]> {
     const [asLow, asHigh] = await Promise.all([
-      this.dbCollection.find({ userIdLow: userId }).project({ userIdHigh: 1, _id: 0 }).toArray(),
-      this.dbCollection.find({ userIdHigh: userId }).project({ userIdLow: 1, _id: 0 }).toArray()
+      this.dbCollection.find({ user_id_low: userId }).project({ user_id_high: 1, _id: 0 }).toArray(),
+      this.dbCollection.find({ user_id_high: userId }).project({ user_id_low: 1, _id: 0 }).toArray()
     ]);
-    const fromLow = asLow.map((d) => d.userIdHigh).filter(Boolean);
-    const fromHigh = asHigh.map((d) => d.userIdLow).filter(Boolean);
+    const fromLow = asLow.map((d) => d.user_id_high).filter(Boolean);
+    const fromHigh = asHigh.map((d) => d.user_id_low).filter(Boolean);
     return [...fromLow, ...fromHigh].map((id) => id.toString());
   }
 
   async findFriendshipPair(userIdA: string, userIdB: string): Promise<FriendshipEntity | null> {
     const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
-    const record = await this.dbCollection.findOne({ userIdLow, userIdHigh });
+    const record = await this.dbCollection.findOne({ user_id_low: userIdLow, user_id_high: userIdHigh });
     return record ? this.mapper.toDomain(record) : null;
   }
 
@@ -56,13 +56,13 @@ export class FriendshipRepository
     const pipeline = [
       {
         $match: {
-          $or: [{ userIdLow: userId }, { userIdHigh: userId }]
+          $or: [{ user_id_low: userId }, { user_id_high: userId }]
         }
       },
       {
         $project: {
           _id: 0,
-          friendId: { $cond: [{ $eq: ['$userIdLow', userId] }, '$userIdHigh', '$userIdLow'] }
+          friendId: { $cond: [{ $eq: ['$user_id_low', userId] }, '$user_id_high', '$user_id_low'] }
         }
       },
       ...(cursor ? [{ $match: { friendId: { $gt: cursor } } }] : []),
@@ -95,7 +95,7 @@ export class FriendshipRepository
 
   async deleteFriendship(userIdA: string, userIdB: string): Promise<number> {
     const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
-    const result = await this.dbCollection.deleteOne({ userIdLow, userIdHigh });
+    const result = await this.dbCollection.deleteOne({ user_id_low: userIdLow, user_id_high: userIdHigh });
     return result.deletedCount;
   }
 
@@ -110,8 +110,8 @@ export class FriendshipRepository
     if (otherUserIds.length === 0) return 0;
     const result = await this.dbCollection.countDocuments({
       $or: [
-        { userIdLow: userId, userIdHigh: { $in: otherUserIds } },
-        { userIdHigh: userId, userIdLow: { $in: otherUserIds } }
+        { user_id_low: userId, user_id_high: { $in: otherUserIds } },
+        { user_id_high: userId, user_id_low: { $in: otherUserIds } }
       ]
     });
     return result;

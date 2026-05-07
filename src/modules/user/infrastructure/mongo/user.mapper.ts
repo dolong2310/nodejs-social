@@ -14,39 +14,39 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
       email: clone.email,
       password: clone.password,
       birthday: clone.birthday,
-      roleId: clone.roleId,
+      role_id: clone.roleId,
       status: clone.status,
-      totpSecret: clone.totpSecret,
+      totp_secret: clone.totpSecret,
       bio: clone.bio,
       location: clone.location,
       website: clone.website,
       username: clone.username,
       avatar: clone.avatar,
-      coverPhoto: clone.coverPhoto,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      cover_photo: clone.coverPhoto,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(userSchema, record);
   }
   toDomain(record: UserModel): UserEntity {
     const entity = new UserEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
         name: record.name,
         email: record.email,
         password: record.password,
         birthday: new Date(record.birthday),
-        roleId: record.roleId,
+        roleId: record.role_id,
         status: record.status,
-        totpSecret: record.totpSecret,
+        totpSecret: record.totp_secret,
         bio: record.bio,
         location: record.location,
         website: record.website,
         username: record.username,
         avatar: record.avatar,
-        coverPhoto: record.coverPhoto
+        coverPhoto: record.cover_photo
       }
     });
     return entity;
@@ -58,17 +58,17 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
       email: record.email,
       password: record.password,
       birthday: record.birthday,
-      roleId: record.roleId,
+      roleId: record.role_id,
       status: record.status,
-      totpSecret: record.totpSecret,
+      totpSecret: record.totp_secret,
       bio: record.bio,
       location: record.location,
       website: record.website,
       username: record.username,
       avatar: record.avatar,
-      coverPhoto: record.coverPhoto,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt
+      coverPhoto: record.cover_photo,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at
     };
   }
 }

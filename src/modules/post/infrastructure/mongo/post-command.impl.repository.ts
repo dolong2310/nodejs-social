@@ -22,14 +22,14 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
   async increasePostViews({ postId, userId }: IIncreasePostViewsInput): Promise<IIncreasePostViewsOutput | null> {
     const result = await this.dbCollection.findOneAndUpdate(
       { _id: postId },
-      { $inc: userId ? { userViews: 1 } : { guestViews: 1 }, $currentDate: { updatedAt: true } },
-      { returnDocument: 'after', projection: { userViews: 1, guestViews: 1, updatedAt: 1 } }
+      { $inc: userId ? { user_views: 1 } : { guest_views: 1 }, $currentDate: { updated_at: true } },
+      { returnDocument: 'after', projection: { user_views: 1, guest_views: 1, updated_at: 1 } }
     );
     return result
       ? {
-          userViews: result.userViews,
-          guestViews: result.guestViews,
-          updatedAt: result.updatedAt
+          userViews: result.user_views,
+          guestViews: result.guest_views,
+          updatedAt: result.updated_at
         }
       : null;
   }
@@ -39,8 +39,8 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
     const res = await this.dbCollection.updateMany(
       { _id: { $in: ids } },
       {
-        $inc: isAuthenticatedViewer ? { userViews: 1 } : { guestViews: 1 },
-        $currentDate: { updatedAt: true }
+        $inc: isAuthenticatedViewer ? { user_views: 1 } : { guest_views: 1 },
+        $currentDate: { updated_at: true }
       }
     );
     return res.modifiedCount;

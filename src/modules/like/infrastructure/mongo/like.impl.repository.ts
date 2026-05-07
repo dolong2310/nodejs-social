@@ -23,7 +23,7 @@ export class LikeRepository extends MongoRepositoryBase<LikeEntity, LikeModel> i
     const entity = LikeEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.dbCollection.findOneAndUpdate(
-      { userId: record.userId, postId: record.postId },
+      { user_id: record.user_id, post_id: record.post_id },
       { $setOnInsert: record },
       { upsert: true, returnDocument: 'after' }
     );
@@ -31,7 +31,7 @@ export class LikeRepository extends MongoRepositoryBase<LikeEntity, LikeModel> i
   }
 
   async deleteLike(data: IDeleteLikeInput): Promise<LikeEntity | null> {
-    const record = await this.dbCollection.findOneAndDelete({ userId: data.userId, postId: data.postId });
+    const record = await this.dbCollection.findOneAndDelete({ user_id: data.userId, post_id: data.postId });
     return record ? this.mapper.toDomain(record) : null;
   }
 }

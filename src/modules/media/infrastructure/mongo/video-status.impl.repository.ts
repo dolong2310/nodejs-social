@@ -11,7 +11,7 @@ export class VideoStatusRepository
   extends MongoRepositoryBase<VideoStatusEntity, VideoStatusModel>
   implements VideoStatusRepositoryPort
 {
-  protected collectionName = 'videoStatus';
+  protected collectionName = 'video_status';
 
   constructor(
     protected readonly db: Db,
@@ -27,7 +27,7 @@ export class VideoStatusRepository
       { name: data.name },
       {
         $set: { status: data.status, message: data.message ?? '' },
-        $currentDate: { updatedAt: true }
+        $currentDate: { updated_at: true }
       }
     );
     return result.modifiedCount > 0;

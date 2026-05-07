@@ -35,7 +35,7 @@ import { faker } from '@faker-js/faker';
 
 // ID của user viewer/admin đã tồn tại trong DB (format: "entity_<uuidv7>").
 // Tìm trong MongoDB collection `users` field `id`.
-const MYID = 'user_019dd51e-a438-76df-84c3-04caea0c1bd3';
+const MYID = 'user_019e02a3-f8b8-753a-b950-253dbfd67e1f';
 const PASSWORD = '@Bc123';
 const USER_COUNT = 10;
 const POST_PER_USER = 10;

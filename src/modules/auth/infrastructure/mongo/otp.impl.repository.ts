@@ -36,14 +36,14 @@ export class OtpRepository extends MongoRepositoryBase<OtpEntity, OtpModel> impl
       {
         $set: {
           code: record.code,
-          expiresAt: record.expiresAt,
-          updatedAt: record.updatedAt
+          expires_at: record.expires_at,
+          updated_at: record.updated_at
         },
         $setOnInsert: {
           _id: record._id,
           email: record.email,
           type: record.type,
-          createdAt: record.createdAt
+          created_at: record.created_at
         }
       },
       { upsert: true, returnDocument: 'after' }

@@ -3,10 +3,10 @@ import { type InferOutput, date, minLength, object, optional, pipe, string } fro
 
 export const likeSchema = object({
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  userId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  postId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  post_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type LikeModel = InferOutput<typeof likeSchema>;

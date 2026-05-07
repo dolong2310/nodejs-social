@@ -1,5 +1,6 @@
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
+import { toMongoFieldRecord } from '@/modules/core/infrastructure/persistence/repositories/mongo-field-name.helper';
 import { RoleEntity } from '@/modules/role/domain/entities/role.entity';
 import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
 import {
@@ -46,7 +47,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
     const entity = RoleEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.dbCollection.findOneAndUpdate(
-      { name: record.name, description: record.description, isActive: record.isActive },
+      { name: record.name, description: record.description, is_active: record.is_active },
       { $setOnInsert: record },
       { upsert: true, returnDocument: 'after' }
     );
@@ -65,7 +66,11 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
   }
 
   async updateRole(id: string, data: IUpdateRoleInput): Promise<RoleEntity | null> {
-    const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: data }, { returnDocument: 'after' });
+    const record = await this.dbCollection.findOneAndUpdate(
+      { _id: id },
+      { $set: toMongoFieldRecord(data as Record<string, unknown>) },
+      { returnDocument: 'after' }
+    );
     return record ? this.mapper.toDomain(record) : null;
   }
 
@@ -77,6 +82,6 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
   }
 
   async countRolesWithPermissionId(permissionId: string): Promise<number> {
-    return this.dbCollection.countDocuments({ permissionIds: permissionId });
+    return this.dbCollection.countDocuments({ permission_ids: permissionId });
   }
 }

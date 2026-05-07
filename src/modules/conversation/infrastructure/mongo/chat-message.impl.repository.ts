@@ -14,7 +14,7 @@ export class ChatMessageRepository
   extends MongoRepositoryBase<ChatMessageEntity, ChatMessageModel>
   implements ChatMessageRepositoryPort
 {
-  protected collectionName = 'chatMessages';
+  protected collectionName = 'chat_messages';
 
   constructor(
     protected readonly db: Db,
@@ -44,19 +44,19 @@ export class ChatMessageRepository
 
   async findMessages(id: string, data: IFindMessagesInput): Promise<ChatMessageEntity[]> {
     const { limit, before } = data;
-    const filter: Filter<ChatMessageModel> = { conversationId: id };
+    const filter: Filter<ChatMessageModel> = { conversation_id: id };
     if (before) {
       // Chỉ lấy tin “đứng trước” điểm đó: createdAt < before.createdAt hoặc cùng createdAt nhưng _id < before._id.
       filter.$or = [
-        { createdAt: { $lt: before.raw().createdAt } },
-        { createdAt: before.raw().createdAt, _id: { $lt: before.raw().id } }
+        { created_at: { $lt: before.raw().createdAt } },
+        { created_at: before.raw().createdAt, _id: { $lt: before.raw().id } }
       ];
     }
     // Sort: createdAt: -1, _id: -1
     // => mới trước, cũ sau trong kết quả.
     const results = await this.dbCollection
       .find<ChatMessageModel>(filter)
-      .sort({ createdAt: -1, _id: -1 })
+      .sort({ created_at: -1, _id: -1 })
       .limit(limit)
       .toArray();
 

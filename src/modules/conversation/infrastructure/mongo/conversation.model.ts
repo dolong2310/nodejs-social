@@ -5,13 +5,13 @@ import { type InferOutput, date, enum_, minLength, nullable, object, optional, p
 export const conversationSchema = object({
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   type: enum_(EConversationType),
-  createdBy: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  created_by: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   name: optional(string()),
-  avatarMediaId: optional(nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)),
-  userIdLow: optional(pipe(string(), minLength(ENTITY_ID_LENGTH))),
-  userIdHigh: optional(pipe(string(), minLength(ENTITY_ID_LENGTH))),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  avatar_media_id: optional(nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)),
+  user_id_low: optional(pipe(string(), minLength(ENTITY_ID_LENGTH))),
+  user_id_high: optional(pipe(string(), minLength(ENTITY_ID_LENGTH))),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type ConversationModel = InferOutput<typeof conversationSchema>;

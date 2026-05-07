@@ -15,37 +15,37 @@ import {
 } from 'valibot';
 
 const friendRequestPayloadSchema = object({
-  fromUserId: pipe(string(), minLength(ENTITY_ID_LENGTH))
+  from_user_id: pipe(string(), minLength(ENTITY_ID_LENGTH))
 });
 
 const friendAcceptedPayloadSchema = object({
-  friendUserId: pipe(string(), minLength(ENTITY_ID_LENGTH))
+  friend_user_id: pipe(string(), minLength(ENTITY_ID_LENGTH))
 });
 
 const newMessagePayloadSchema = object({
-  conversationId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  messageId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  previewText: optional(string()),
-  previewKind: enum_(ENewMessagePreviewKind)
+  conversation_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  message_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  preview_text: optional(string()),
+  preview_kind: enum_(ENewMessagePreviewKind)
 });
 
 const addedToGroupPayloadSchema = object({
-  conversationId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  chatName: optional(string())
+  conversation_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  chat_name: optional(string())
 });
 
 const baseNotificationSchema = {
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  recipientId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  recipient_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   read: boolean(),
-  readAt: optional(date(), new Date()),
+  read_at: optional(date(), new Date()),
   actor: object({
-    userId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-    displayName: string(),
+    user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+    display_name: string(),
     avatar: optional(string())
   }),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 };
 
 export const notificationSchema = variant('type', [

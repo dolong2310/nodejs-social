@@ -12,16 +12,16 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
       name: clone.name,
       status: clone.status,
       message: clone.message,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(videoStatusSchema, record);
   }
   toDomain(record: VideoStatusModel): VideoStatusEntity {
     const entity = new VideoStatusEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
         name: record.name,
         status: record.status,

@@ -8,17 +8,17 @@ export const userSchema = object({
   email: string(),
   password: string(),
   birthday: date(),
-  roleId: string(),
+  role_id: string(),
   status: enum_(EUserStatus),
-  totpSecret: optional(string()),
+  totp_secret: optional(string()),
   bio: optional(string()),
   location: optional(string()),
   website: optional(string()),
   username: optional(string()),
   avatar: optional(string()),
-  coverPhoto: optional(string()),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  cover_photo: optional(string()),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type UserModel = InferOutput<typeof userSchema>;

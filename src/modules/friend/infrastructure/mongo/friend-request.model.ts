@@ -3,10 +3,10 @@ import { type InferOutput, date, minLength, object, optional, pipe, string } fro
 
 export const friendRequestSchema = object({
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  fromUserId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  toUserId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  from_user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  to_user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type FriendRequestModel = InferOutput<typeof friendRequestSchema>;

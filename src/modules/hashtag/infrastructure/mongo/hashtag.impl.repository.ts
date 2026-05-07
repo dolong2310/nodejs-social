@@ -81,7 +81,7 @@ export class HashtagRepository
   }
 
   async updateHashtag(id: string, data: IUpdateHashtagInput): Promise<HashtagEntity | null> {
-    const patch: Record<string, unknown> = { ...data, updatedAt: new Date() };
+    const patch: Record<string, unknown> = { ...data, updated_at: new Date() };
     const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: patch }, { returnDocument: 'after' });
     return record ? this.mapper.toDomain(record) : null;
   }

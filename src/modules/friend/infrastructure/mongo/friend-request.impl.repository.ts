@@ -19,7 +19,7 @@ export class FriendRequestRepository
   extends MongoRepositoryBase<FriendRequestEntity, FriendRequestModel>
   implements FriendRequestRepositoryPort
 {
-  protected collectionName = 'friendRequests';
+  protected collectionName = 'friend_requests';
 
   constructor(
     protected readonly db: Db,
@@ -35,34 +35,34 @@ export class FriendRequestRepository
     toUserId
   }: IFindPendingRequestByUserPairInput): Promise<FriendRequestEntity | null> {
     const record = await this.dbCollection.findOne({
-      fromUserId,
-      toUserId
+      from_user_id: fromUserId,
+      to_user_id: toUserId
     });
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async listIncomingForUser({ toUserId, limit, cursor }: IListIncomingForUserInput): Promise<FriendRequestEntity[]> {
-    const filter: Record<string, unknown> = { toUserId };
+    const filter: Record<string, unknown> = { to_user_id: toUserId };
     if (cursor) {
       filter.$or = [
-        { createdAt: { $lt: cursor.raw().createdAt } },
-        { createdAt: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+        { created_at: { $lt: cursor.raw().createdAt } },
+        { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
       ];
     }
-    const results = await this.dbCollection.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit).toArray();
+    const results = await this.dbCollection.find(filter).sort({ created_at: -1, _id: -1 }).limit(limit).toArray();
     const result = results.map((record) => this.mapper.toDomain(record));
     return result;
   }
 
   async listOutgoingForUser({ fromUserId, limit, cursor }: IListOutgoingForUserInput): Promise<FriendRequestEntity[]> {
-    const filter: Record<string, unknown> = { fromUserId };
+    const filter: Record<string, unknown> = { from_user_id: fromUserId };
     if (cursor) {
       filter.$or = [
-        { createdAt: { $lt: cursor.raw().createdAt } },
-        { createdAt: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+        { created_at: { $lt: cursor.raw().createdAt } },
+        { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
       ];
     }
-    const results = await this.dbCollection.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit).toArray();
+    const results = await this.dbCollection.find(filter).sort({ created_at: -1, _id: -1 }).limit(limit).toArray();
     const result = results.map((record) => this.mapper.toDomain(record));
     return result;
   }
@@ -86,8 +86,8 @@ export class FriendRequestRepository
 
   async deletePendingRequest({ fromUserId, toUserId }: IDeletePendingRequestInput): Promise<number> {
     const result = await this.dbCollection.deleteOne({
-      fromUserId,
-      toUserId
+      from_user_id: fromUserId,
+      to_user_id: toUserId
     });
     return result.deletedCount;
   }
@@ -98,8 +98,8 @@ export class FriendRequestRepository
   async deleteAllRequestsBetweenUsers({ fromUserId, toUserId }: IDeleteAllRequestsBetweenUsersInput): Promise<void> {
     await this.dbCollection.deleteMany({
       $or: [
-        { fromUserId: fromUserId, toUserId: toUserId },
-        { fromUserId: toUserId, toUserId: fromUserId }
+        { from_user_id: fromUserId, to_user_id: toUserId },
+        { from_user_id: toUserId, to_user_id: fromUserId }
       ]
     });
   }
@@ -110,8 +110,8 @@ export class FriendRequestRepository
     dayEndExclusive
   }: ICountOutgoingRequestsCreatedOnUtcDayInput): Promise<number> {
     const result = await this.dbCollection.countDocuments({
-      fromUserId,
-      createdAt: { $gte: dayStart, $lt: dayEndExclusive }
+      from_user_id: fromUserId,
+      created_at: { $gte: dayStart, $lt: dayEndExclusive }
     });
     return result;
   }

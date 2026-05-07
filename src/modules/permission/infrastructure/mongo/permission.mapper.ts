@@ -14,16 +14,16 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
       path: clone.path,
       method: clone.method,
       module: clone.module,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(permissionSchema, record);
   }
   toDomain(record: PermissionModel): PermissionEntity {
     const entity = new PermissionEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
         name: record.name,
         description: record.description,

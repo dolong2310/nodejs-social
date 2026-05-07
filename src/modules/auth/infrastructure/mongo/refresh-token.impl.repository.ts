@@ -14,7 +14,7 @@ export class RefreshTokenRepository
   extends MongoRepositoryBase<RefreshTokenEntity, RefreshTokenModel>
   implements RefreshTokenRepositoryPort
 {
-  protected collectionName = 'refreshTokens';
+  protected collectionName = 'refresh_tokens';
 
   constructor(
     protected readonly db: Db,
@@ -45,7 +45,7 @@ export class RefreshTokenRepository
   async rotateRefreshToken({ userId, oldToken, newToken }: IRotateRefreshTokenInput): Promise<boolean> {
     const result = await this.dbCollection.updateOne(
       {
-        userId: userId,
+        user_id: userId,
         token: oldToken
       },
       {

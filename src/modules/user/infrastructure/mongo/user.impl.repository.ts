@@ -68,7 +68,7 @@ export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> i
         $set: {
           password: data.password
         },
-        $currentDate: { updatedAt: true }
+        $currentDate: { updated_at: true }
       }
     );
     return result.modifiedCount > 0;
@@ -82,14 +82,14 @@ export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> i
           password: data.password
         },
         $currentDate: {
-          updatedAt: true
+          updated_at: true
         }
       },
       {
         returnDocument: 'after',
         projection: {
           password: 0,
-          totpSecret: 0
+          totp_secret: 0
         }
       }
     );

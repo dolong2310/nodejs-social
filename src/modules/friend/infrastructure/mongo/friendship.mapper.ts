@@ -9,21 +9,21 @@ export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipMode
     const clone = entity.getProps();
     const record: FriendshipModel = {
       _id: clone.id.toString(),
-      userIdLow: clone.userIdLow,
-      userIdHigh: clone.userIdHigh,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      user_id_low: clone.userIdLow,
+      user_id_high: clone.userIdHigh,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(friendshipSchema, record);
   }
   toDomain(record: FriendshipModel): FriendshipEntity {
     const entity = new FriendshipEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        userIdLow: record.userIdLow,
-        userIdHigh: record.userIdHigh
+        userIdLow: record.user_id_low,
+        userIdHigh: record.user_id_high
       }
     });
     return entity;

@@ -47,8 +47,8 @@ export class ConversationRepository
     const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
     const result = await this.dbCollection.findOne({
       type: EConversationType.DIRECT,
-      userIdLow,
-      userIdHigh
+      user_id_low: userIdLow,
+      user_id_high: userIdHigh
     });
     return result ? this.mapper.toDomain(result) : null;
   }
@@ -112,7 +112,7 @@ export class ConversationRepository
       if (allMembers.length > 0) {
         const memberRecords = allMembers.map((member) => this.conversationMemberMapper.toPersistence(member));
         await this.db
-          .collection<ConversationMemberModel>('conversationMembers')
+          .collection<ConversationMemberModel>('conversation_members')
           .insertMany(memberRecords, { session: this.session });
       }
     });
@@ -121,18 +121,18 @@ export class ConversationRepository
   }
 
   async updateConversation(id: string, data: IUpdateConversationInput): Promise<ConversationEntity | null> {
-    const $set: Record<string, unknown> = { updatedAt: new Date() };
+    const $set: Record<string, unknown> = { updated_at: new Date() };
     if (data.name !== undefined) {
       $set.name = data.name;
     }
     if (data.avatarMediaId !== undefined) {
-      $set.avatarMediaId = data.avatarMediaId === null ? null : data.avatarMediaId;
+      $set.avatar_media_id = data.avatarMediaId === null ? null : data.avatarMediaId;
     }
     const result = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set }, { returnDocument: 'after' });
     return result ? this.mapper.toDomain(result) : null;
   }
 
   async touchUpdatedAt(id: string, data: ITouchUpdatedAtInput): Promise<void> {
-    await this.dbCollection.updateOne({ _id: id }, { $set: { updatedAt: data.updatedAt } });
+    await this.dbCollection.updateOne({ _id: id }, { $set: { updated_at: data.updatedAt } });
   }
 }

@@ -4,14 +4,14 @@ import { type InferOutput, date, enum_, minLength, nullable, object, optional, p
 
 export const conversationMemberSchema = object({
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  conversationId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  userId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  conversation_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   role: enum_(EConversationMemberRole),
-  joinedAt: date(),
-  lastReadAt: optional(nullable(date(), null)),
-  lastReadMessageId: optional(nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  joined_at: date(),
+  last_read_at: optional(nullable(date(), null)),
+  last_read_message_id: optional(nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type ConversationMemberModel = InferOutput<typeof conversationMemberSchema>;

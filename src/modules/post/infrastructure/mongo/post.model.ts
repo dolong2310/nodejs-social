@@ -20,12 +20,12 @@ import {
 
 export const postSchema = object({
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  userId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   type: enum_(EPostType),
   audience: enum_(EPostAudience),
-  allowStrangerComments: boolean(),
+  allow_stranger_comments: boolean(),
   content: string(),
-  parentId: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
+  parent_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
   hashtags: array(pipe(string(), minLength(ENTITY_ID_LENGTH))),
   mentions: array(pipe(string(), minLength(ENTITY_ID_LENGTH))),
   media: array(
@@ -34,10 +34,10 @@ export const postSchema = object({
       type: enum_(EMediaType)
     })
   ),
-  guestViews: optional(number(), 0),
-  userViews: optional(number(), 0),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  guest_views: optional(number(), 0),
+  user_views: optional(number(), 0),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type PostModel = InferOutput<typeof postSchema>;

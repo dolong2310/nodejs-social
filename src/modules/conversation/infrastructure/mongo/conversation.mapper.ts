@@ -10,28 +10,28 @@ export class ConversationMapper implements Mapper<ConversationEntity, Conversati
     const record: ConversationModel = {
       _id: clone.id.toString(),
       type: clone.type,
-      createdBy: clone.createdBy,
+      created_by: clone.createdBy,
       name: clone.name,
-      avatarMediaId: clone.avatarMediaId,
-      userIdLow: clone.userIdLow,
-      userIdHigh: clone.userIdHigh,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      avatar_media_id: clone.avatarMediaId,
+      user_id_low: clone.userIdLow,
+      user_id_high: clone.userIdHigh,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(conversationSchema, record);
   }
   toDomain(record: ConversationModel): ConversationEntity {
     const entity = new ConversationEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
         type: record.type,
-        createdBy: record.createdBy,
+        createdBy: record.created_by,
         name: record.name,
-        avatarMediaId: record.avatarMediaId,
-        userIdLow: record.userIdLow,
-        userIdHigh: record.userIdHigh
+        avatarMediaId: record.avatar_media_id,
+        userIdLow: record.user_id_low,
+        userIdHigh: record.user_id_high
       }
     });
     return entity;

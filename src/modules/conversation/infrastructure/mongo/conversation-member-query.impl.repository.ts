@@ -13,7 +13,7 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
   ) {}
 
   get dbCollection(): Collection<ConversationMemberModel> {
-    return this.db.collection<ConversationMemberModel>('conversationMembers');
+    return this.db.collection<ConversationMemberModel>('conversation_members');
   }
 
   async listConversationsForUser({
@@ -27,32 +27,32 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
       matchCursor.push({
         $match: {
           $or: [
-            { 'conv.updatedAt': { $lt: updatedAt } },
-            { $and: [{ 'conv.updatedAt': updatedAt }, { 'conv._id': { $lt: id } }] }
+            { 'conv.updated_at': { $lt: updatedAt } },
+            { $and: [{ 'conv.updated_at': updatedAt }, { 'conv._id': { $lt: id } }] }
           ]
         }
       });
     }
 
     const pipeline: Document[] = [
-      { $match: { userId } },
+      { $match: { user_id: userId } },
       {
         $lookup: {
           from: 'conversations',
-          localField: 'conversationId',
+          localField: 'conversation_id',
           foreignField: '_id',
           as: 'conv'
         }
       },
       { $unwind: '$conv' },
       ...matchCursor,
-      { $sort: { 'conv.updatedAt': -1, 'conv._id': -1 } },
+      { $sort: { 'conv.updated_at': -1, 'conv._id': -1 } },
       { $limit: limit },
       {
         $project: {
           _id: 0,
           conversationId: '$conv._id',
-          updatedAt: '$conv.updatedAt'
+          updatedAt: '$conv.updated_at'
         }
       }
     ];

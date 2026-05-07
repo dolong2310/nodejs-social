@@ -12,29 +12,29 @@ export class ConversationMemberMapper implements Mapper<ConversationMemberEntity
     const clone = entity.getProps();
     const record: ConversationMemberModel = {
       _id: clone.id.toString(),
-      conversationId: clone.conversationId,
-      userId: clone.userId,
+      conversation_id: clone.conversationId,
+      user_id: clone.userId,
       role: clone.role,
-      joinedAt: clone.joinedAt,
-      lastReadAt: clone.lastReadAt,
-      lastReadMessageId: clone.lastReadMessageId,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      joined_at: clone.joinedAt,
+      last_read_at: clone.lastReadAt,
+      last_read_message_id: clone.lastReadMessageId,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(conversationMemberSchema, record);
   }
   toDomain(record: ConversationMemberModel): ConversationMemberEntity {
     const entity = new ConversationMemberEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        conversationId: record.conversationId,
-        userId: record.userId,
+        conversationId: record.conversation_id,
+        userId: record.user_id,
         role: record.role,
-        joinedAt: record.joinedAt,
-        lastReadAt: record.lastReadAt,
-        lastReadMessageId: record.lastReadMessageId
+        joinedAt: record.joined_at,
+        lastReadAt: record.last_read_at,
+        lastReadMessageId: record.last_read_message_id
       }
     });
     return entity;

@@ -42,19 +42,19 @@ export class MongoDatabase implements MongoDatabasePort {
     return this.db.collection('users');
   }
   private get refreshTokens(): Collection<Document> {
-    return this.db.collection('refreshTokens');
+    return this.db.collection('refresh_tokens');
   }
   private get otps(): Collection<Document> {
     return this.db.collection('otps');
   }
   private get videoStatuses(): Collection<Document> {
-    return this.db.collection('videoStatus');
+    return this.db.collection('video_status');
   }
   private get friendships(): Collection<Document> {
     return this.db.collection('friendships');
   }
   private get friendRequests(): Collection<Document> {
-    return this.db.collection('friendRequests');
+    return this.db.collection('friend_requests');
   }
   private get blocks(): Collection<Document> {
     return this.db.collection('blocks');
@@ -78,10 +78,10 @@ export class MongoDatabase implements MongoDatabasePort {
     return this.db.collection('conversations');
   }
   private get conversationMembers(): Collection<Document> {
-    return this.db.collection('conversationMembers');
+    return this.db.collection('conversation_members');
   }
   private get chatMessages(): Collection<Document> {
-    return this.db.collection('chatMessages');
+    return this.db.collection('chat_messages');
   }
 
   private async indexExistsSafe(collection: Collection<Document>, indexNames: string[]): Promise<boolean> {
@@ -116,20 +116,23 @@ export class MongoDatabase implements MongoDatabasePort {
   }
 
   private async createRefreshTokensIndex() {
-    const expiresAtIndex = await this.findIndexSafe(this.refreshTokens, 'expiresAt_1');
+    const expiresAtIndex = await this.findIndexSafe(this.refreshTokens, 'expires_at_1');
     if (expiresAtIndex?.expireAfterSeconds !== undefined) {
-      await this.refreshTokens.dropIndex('expiresAt_1');
+      await this.refreshTokens.dropIndex('expires_at_1');
     }
 
-    await Promise.all([this.refreshTokens.createIndex({ token: 1 }), this.refreshTokens.createIndex({ expiresAt: 1 })]);
+    await Promise.all([
+      this.refreshTokens.createIndex({ token: 1 }),
+      this.refreshTokens.createIndex({ expires_at: 1 })
+    ]);
   }
 
   private async createOtpsIndex() {
-    const isIndexExists = await this.indexExistsSafe(this.otps, ['email_1_type_1', 'expiresAt_1']);
+    const isIndexExists = await this.indexExistsSafe(this.otps, ['email_1_type_1', 'expires_at_1']);
     if (isIndexExists) return;
     await Promise.all([
       this.otps.createIndex({ email: 1, type: 1 }, { unique: true }),
-      this.otps.createIndex({ expiresAt: 1 })
+      this.otps.createIndex({ expires_at: 1 })
     ]);
   }
 
@@ -140,33 +143,33 @@ export class MongoDatabase implements MongoDatabasePort {
   }
 
   private async createFriendshipIndexes() {
-    const isIndexExists = await this.indexExistsSafe(this.friendships, ['userIdLow_1_userIdHigh_1']);
+    const isIndexExists = await this.indexExistsSafe(this.friendships, ['user_id_low_1_user_id_high_1']);
     if (isIndexExists) return;
     await Promise.all([
-      this.friendships.createIndex({ userIdLow: 1, userIdHigh: 1 }, { unique: true }),
-      this.friendships.createIndex({ userIdLow: 1 }),
-      this.friendships.createIndex({ userIdHigh: 1 })
+      this.friendships.createIndex({ user_id_low: 1, user_id_high: 1 }, { unique: true }),
+      this.friendships.createIndex({ user_id_low: 1 }),
+      this.friendships.createIndex({ user_id_high: 1 })
     ]);
   }
 
   private async createFriendRequestIndexes() {
-    const isIndexExists = await this.indexExistsSafe(this.friendRequests, ['fromUserId_1_toUserId_1']);
+    const isIndexExists = await this.indexExistsSafe(this.friendRequests, ['from_user_id_1_to_user_id_1']);
     if (isIndexExists) return;
     await Promise.all([
-      this.friendRequests.createIndex({ fromUserId: 1, toUserId: 1 }, { unique: true }),
-      this.friendRequests.createIndex({ toUserId: 1, createdAt: -1 }),
-      this.friendRequests.createIndex({ fromUserId: 1, createdAt: -1 }),
-      this.friendRequests.createIndex({ fromUserId: 1, createdAt: 1 })
+      this.friendRequests.createIndex({ from_user_id: 1, to_user_id: 1 }, { unique: true }),
+      this.friendRequests.createIndex({ to_user_id: 1, created_at: -1 }),
+      this.friendRequests.createIndex({ from_user_id: 1, created_at: -1 }),
+      this.friendRequests.createIndex({ from_user_id: 1, created_at: 1 })
     ]);
   }
 
   private async createBlockIndexes() {
-    const isIndexExists = await this.indexExistsSafe(this.blocks, ['blockerId_1_blockedId_1']);
+    const isIndexExists = await this.indexExistsSafe(this.blocks, ['blocker_id_1_blocked_id_1']);
     if (isIndexExists) return;
     await Promise.all([
-      this.blocks.createIndex({ blockerId: 1, blockedId: 1 }, { unique: true }),
-      this.blocks.createIndex({ blockerId: 1 }),
-      this.blocks.createIndex({ blockedId: 1 })
+      this.blocks.createIndex({ blocker_id: 1, blocked_id: 1 }, { unique: true }),
+      this.blocks.createIndex({ blocker_id: 1 }),
+      this.blocks.createIndex({ blocked_id: 1 })
     ]);
   }
 
@@ -180,31 +183,31 @@ export class MongoDatabase implements MongoDatabasePort {
     await Promise.all([
       // For findPostsType / countPostsType queries: { parentId, type }
       // Also used by the $lookup self-join in aggregation pipelines that counts child posts (comments/reposts/quotes)
-      this.posts.createIndex({ parentId: 1, type: 1 }, { sparse: true }),
+      this.posts.createIndex({ parent_id: 1, type: 1 }, { sparse: true }),
       // For cursor-based findPostsType query: match { parentId, type } + sort/filter by createdAt, _id
-      this.posts.createIndex({ parentId: 1, type: 1, createdAt: -1, _id: -1 }, { sparse: true }),
+      this.posts.createIndex({ parent_id: 1, type: 1, created_at: -1, _id: -1 }, { sparse: true }),
       // For new-feed queries: { userId: { $in: [...] }, $or: [audience conditions] }
-      this.posts.createIndex({ userId: 1, audience: 1 }),
+      this.posts.createIndex({ user_id: 1, audience: 1 }),
       // For guest feed & audience-only filters: { audience }
       this.posts.createIndex({ audience: 1 }),
       // For guest cursor feeds: match audience + sort/filter by createdAt, _id
-      this.posts.createIndex({ audience: 1, createdAt: -1, _id: -1 })
+      this.posts.createIndex({ audience: 1, created_at: -1, _id: -1 })
     ]);
   }
 
   private async createBookmarksIndex() {
     await Promise.all([
       // For bookmark create (upsert) and delete: { userId, postId } — also prevents duplicate bookmarks
-      this.bookmarks.createIndex({ userId: 1, postId: 1 }, { unique: true }),
+      this.bookmarks.createIndex({ user_id: 1, post_id: 1 }, { unique: true }),
       // For the $lookup in post aggregation pipelines that calculates bookmarkCount per post
-      this.bookmarks.createIndex({ postId: 1 })
+      this.bookmarks.createIndex({ post_id: 1 })
     ]);
   }
 
   private async createLikesIndex() {
     await Promise.all([
-      this.likes.createIndex({ userId: 1, postId: 1 }, { unique: true }),
-      this.likes.createIndex({ postId: 1 })
+      this.likes.createIndex({ user_id: 1, post_id: 1 }, { unique: true }),
+      this.likes.createIndex({ post_id: 1 })
     ]);
   }
 
@@ -228,9 +231,9 @@ export class MongoDatabase implements MongoDatabasePort {
 
   private async createNotificationIndexes() {
     const col = this.notifications;
-    const listIdx = 'recipientId_1_createdAt_-1__id_-1';
+    const listIdx = 'recipient_id_1_created_at_-1__id_-1';
     if (!(await this.indexExistsSafe(col, [listIdx]))) {
-      await col.createIndex({ recipientId: 1, createdAt: -1, _id: -1 }, { name: listIdx });
+      await col.createIndex({ recipient_id: 1, created_at: -1, _id: -1 }, { name: listIdx });
     }
   }
 
@@ -264,41 +267,41 @@ export class MongoDatabase implements MongoDatabasePort {
 
   private async _ensureConversationDocumentsIndexes(): Promise<void> {
     const col = this.conversations;
-    const directPair = 'userIdLow_1_userIdHigh_1';
+    const directPair = 'user_id_low_1_user_id_high_1';
     if (!(await this.indexExistsSafe(col, [directPair]))) {
       await col.createIndex(
-        { userIdLow: 1, userIdHigh: 1 },
+        { user_id_low: 1, user_id_high: 1 },
         { unique: true, partialFilterExpression: { type: 'direct' } }
       );
     }
-    const updated = 'updatedAt_-1';
+    const updated = 'updated_at_-1';
     if (!(await this.indexExistsSafe(col, [updated]))) {
-      await col.createIndex({ updatedAt: -1 });
+      await col.createIndex({ updated_at: -1 });
     }
   }
 
   private async _ensureConversationMembersIndexes(): Promise<void> {
     const col = this.conversationMembers;
-    const uniq = 'conversationId_1_userId_1';
+    const uniq = 'conversation_id_1_user_id_1';
     if (!(await this.indexExistsSafe(col, [uniq]))) {
-      await col.createIndex({ conversationId: 1, userId: 1 }, { unique: true });
+      await col.createIndex({ conversation_id: 1, user_id: 1 }, { unique: true });
     }
-    const byUser = 'userId_1_conversationId_1';
+    const byUser = 'user_id_1_conversation_id_1';
     if (!(await this.indexExistsSafe(col, [byUser]))) {
-      await col.createIndex({ userId: 1, conversationId: 1 });
+      await col.createIndex({ user_id: 1, conversation_id: 1 });
     }
 
-    const byChatRole = 'conversationId_1_role_1';
+    const byChatRole = 'conversation_id_1_role_1';
     if (!(await this.indexExistsSafe(col, [byChatRole]))) {
-      await col.createIndex({ conversationId: 1, role: 1 });
+      await col.createIndex({ conversation_id: 1, role: 1 });
     }
   }
 
   private async _ensureChatMessagesIndexes(): Promise<void> {
     const col = this.chatMessages;
-    const history = 'conversationId_1_createdAt_-1__id_-1';
+    const history = 'conversation_id_1_created_at_-1__id_-1';
     if (!(await this.indexExistsSafe(col, [history]))) {
-      await col.createIndex({ conversationId: 1, createdAt: -1, _id: -1 }, { name: history });
+      await col.createIndex({ conversation_id: 1, created_at: -1, _id: -1 }, { name: history });
     }
   }
 }

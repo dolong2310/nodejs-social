@@ -7,9 +7,9 @@ export const otpSchema = object({
   email: pipe(string(), minLength(1)),
   code: pipe(string(), minLength(1)),
   type: enum_(EOtpType),
-  expiresAt: date(),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  expires_at: date(),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type OtpModel = InferOutput<typeof otpSchema>;

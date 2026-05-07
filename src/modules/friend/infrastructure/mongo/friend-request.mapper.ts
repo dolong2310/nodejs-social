@@ -9,21 +9,21 @@ export class FriendRequestMapper implements Mapper<FriendRequestEntity, FriendRe
     const clone = entity.getProps();
     const record: FriendRequestModel = {
       _id: clone.id.toString(),
-      fromUserId: clone.fromUserId,
-      toUserId: clone.toUserId,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      from_user_id: clone.fromUserId,
+      to_user_id: clone.toUserId,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(friendRequestSchema, record);
   }
   toDomain(record: FriendRequestModel): FriendRequestEntity {
     const entity = new FriendRequestEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        fromUserId: record.fromUserId,
-        toUserId: record.toUserId
+        fromUserId: record.from_user_id,
+        toUserId: record.to_user_id
       }
     });
     return entity;

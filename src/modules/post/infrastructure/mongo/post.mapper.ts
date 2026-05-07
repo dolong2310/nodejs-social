@@ -11,39 +11,39 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
     const clone = entity.getProps();
     const record: PostModel = {
       _id: clone.id.toString(),
-      userId: clone.userId,
+      user_id: clone.userId,
       type: clone.type,
       audience: clone.audience,
-      allowStrangerComments: clone.allowStrangerComments,
+      allow_stranger_comments: clone.allowStrangerComments,
       content: clone.content,
-      parentId: clone.parentId,
+      parent_id: clone.parentId,
       hashtags: clone.hashtags,
       mentions: clone.mentions,
       media: clone.media.map((media) => ({ url: media.raw().url, type: media.raw().type })),
-      guestViews: clone.guestViews ?? 0,
-      userViews: clone.userViews ?? 0,
-      createdAt: clone.createdAt,
-      updatedAt: clone.updatedAt
+      guest_views: clone.guestViews ?? 0,
+      user_views: clone.userViews ?? 0,
+      created_at: clone.createdAt,
+      updated_at: clone.updatedAt
     };
     return parse(postSchema, record);
   }
   toDomain(record: PostModel): PostEntity {
     const entity = new PostEntity({
       id: new UniqueEntityID(record._id),
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
       props: {
-        userId: record.userId,
+        userId: record.user_id,
         type: record.type,
         audience: record.audience,
-        allowStrangerComments: record.allowStrangerComments,
+        allowStrangerComments: record.allow_stranger_comments,
         content: record.content,
-        parentId: record.parentId,
+        parentId: record.parent_id,
         hashtags: record.hashtags,
         mentions: record.mentions,
         media: record.media.map((media) => new Media({ url: media.url, type: media.type })),
-        guestViews: record.guestViews,
-        userViews: record.userViews
+        guestViews: record.guest_views,
+        userViews: record.user_views
       }
     });
     return entity;
@@ -51,19 +51,19 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
   toResponse(record: PostModel): PostFullProps {
     return {
       id: record._id,
-      userId: record.userId,
+      userId: record.user_id,
       type: record.type,
       audience: record.audience,
-      allowStrangerComments: record.allowStrangerComments,
+      allowStrangerComments: record.allow_stranger_comments,
       content: record.content,
-      parentId: record.parentId,
+      parentId: record.parent_id,
       hashtags: record.hashtags,
       mentions: record.mentions,
       media: record.media.map((media) => new Media({ url: media.url, type: media.type })),
-      guestViews: record.guestViews,
-      userViews: record.userViews,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt
+      guestViews: record.guest_views,
+      userViews: record.user_views,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at
     };
   }
 }

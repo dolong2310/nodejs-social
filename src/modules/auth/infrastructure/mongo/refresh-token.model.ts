@@ -3,11 +3,11 @@ import { type InferOutput, date, minLength, object, optional, pipe, string } fro
 
 export const refreshTokenSchema = object({
   _id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
-  userId: pipe(string(), minLength(ENTITY_ID_LENGTH)),
+  user_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   token: string(),
-  expiresAt: date(),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  expires_at: date(),
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type RefreshTokenModel = InferOutput<typeof refreshTokenSchema>;

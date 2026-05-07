@@ -7,8 +7,8 @@ export const videoStatusSchema = object({
   name: string(),
   status: enum_(EEncodingVideoStatus),
   message: optional(string()),
-  createdAt: optional(date(), new Date()),
-  updatedAt: optional(date(), new Date())
+  created_at: optional(date(), new Date()),
+  updated_at: optional(date(), new Date())
 });
 
 export type VideoStatusModel = InferOutput<typeof videoStatusSchema>;

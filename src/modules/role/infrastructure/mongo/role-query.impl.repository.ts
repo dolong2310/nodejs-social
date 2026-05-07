@@ -21,7 +21,7 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
       {
         $lookup: {
           from: 'permissions',
-          let: { ids: { $ifNull: ['$permissionIds', []] } },
+          let: { ids: { $ifNull: ['$permission_ids', []] } },
           pipeline: [{ $match: { $expr: { $in: ['$_id', '$$ids'] } } }],
           as: '_permissionDocs'
         }
@@ -30,7 +30,7 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
         $addFields: {
           permissions: {
             $map: {
-              input: { $ifNull: ['$permissionIds', []] },
+              input: { $ifNull: ['$permission_ids', []] },
               as: 'pid',
               in: {
                 $let: {
@@ -55,8 +55,8 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
                         path: '$$d.path',
                         method: '$$d.method',
                         module: '$$d.module',
-                        createdAt: '$$d.createdAt',
-                        updatedAt: '$$d.updatedAt'
+                        createdAt: '$$d.created_at',
+                        updatedAt: '$$d.updated_at'
                       },
                       else: null
                     }
@@ -84,9 +84,9 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
           id: '$_id',
           name: 1,
           description: 1,
-          isActive: 1,
-          createdAt: 1,
-          updatedAt: 1,
+          isActive: '$is_active',
+          createdAt: '$created_at',
+          updatedAt: '$updated_at',
           permissions: 1
         }
       }
