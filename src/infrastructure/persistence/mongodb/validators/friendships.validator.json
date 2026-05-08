@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "friendships — aligned with modules/friend/infrastructure/mongo/friendship.model (invariant userIdLow < userIdHigh enforced in domain)",
+    "title": "friendships — aligned with modules/relationship/infrastructure/persistence/mongo/friendship.model (invariant userIdLow < userIdHigh enforced in domain)",
     "bsonType": "object",
     "required": ["_id", "userIdLow", "userIdHigh"],
     "properties": {

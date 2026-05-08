@@ -1,6 +1,6 @@
+import { EHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import { MODULE_TAG_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { EHttpMethod } from '@/modules/permission/domain/entities/permission.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { RequestHandlerType } from '@/presentation/http/express/types';

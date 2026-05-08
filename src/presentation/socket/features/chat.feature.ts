@@ -1,4 +1,4 @@
-import { AccessTokenPayload } from '@/modules/auth/application/services/token.service.type';
+import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.type';
 import {
   SOCKET_CLIENT_CHAT_SUBSCRIBE,
   SOCKET_CLIENT_CHAT_TYPING,

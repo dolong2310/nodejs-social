@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "blocks — aligned with modules/block/infrastructure/mongo/block.model",
+    "title": "blocks — aligned with modules/relationship/infrastructure/persistence/mongo/block.model",
     "bsonType": "object",
     "required": ["_id", "blockerId", "blockedId"],
     "properties": {

@@ -1,3 +1,4 @@
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
@@ -6,7 +7,6 @@ import {
   GetMessagesResult
 } from '@/modules/conversation/application/use-cases/get-messages/get-messages.port';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 
 /**
  * Nghiệp vụ tổng thể:

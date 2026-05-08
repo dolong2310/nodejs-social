@@ -68,10 +68,7 @@ const ENV_KEYS = [
   // Rate Limit
   'RATE_LIMIT_ENABLED',
   'RATE_LIMIT_WINDOW_MS',
-  'RATE_LIMIT_MAX',
-
-  // Cache
-  'SEARCH_CACHE_TTL_SECONDS'
+  'RATE_LIMIT_MAX'
 ] as const;
 
 type EnvKey = (typeof ENV_KEYS)[number];

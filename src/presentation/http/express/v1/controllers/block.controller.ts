@@ -1,6 +1,6 @@
-import { BlockUserPort } from '@/modules/block/application/use-cases/block-user/block-user.port';
-import { GetBlockedUserPort } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.port';
-import { UnblockUserPort } from '@/modules/block/application/use-cases/unblock-user/unblock-user.port';
+import { BlockUserPort } from '@/modules/relationship/application/use-cases/block-user/block-user.port';
+import { GetBlockedUserPort } from '@/modules/relationship/application/use-cases/get-blocked-user/get-blocked-user.port';
+import { UnblockUserPort } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';

@@ -1,5 +1,4 @@
 import { SearchUsersQuery } from '@/modules/user/application/use-cases/search-users/search-users.port';
-import { appConfig } from '@/bootstrap/config/app.config';
 import { createHash } from 'crypto';
 
 export const CACHE_KEYS = {
@@ -14,5 +13,5 @@ export const CACHE_KEYS = {
 
 export const CACHE_TTL = {
   USER: 300, // 5 minutes — user profile changes infrequently
-  SEARCH_USERS: appConfig.searchCache.ttlSeconds // env-driven; 0 disables cache
+  SEARCH_USERS: 30 // 30 seconds
 } as const;

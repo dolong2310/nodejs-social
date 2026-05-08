@@ -1,5 +1,5 @@
 import { IContainer } from '@/bootstrap/container';
-import { AccessTokenPayload, TokenServicePort } from '@/modules/auth/application/services/token.service.type';
+import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
 import { userRoom } from '@/modules/common/constants/socket.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';

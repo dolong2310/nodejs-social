@@ -1,5 +1,5 @@
+import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/application/ports/queries/conversation-member-query.repository';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   ConversationItem,
@@ -8,9 +8,9 @@ import {
   GetConversationsResult
 } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
 import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 
 export class GetConversationsUseCase extends GetConversationsPort {
   constructor(

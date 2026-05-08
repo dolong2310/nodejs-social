@@ -1,18 +1,18 @@
-import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
-import { PostNotFoundException } from '@/modules/post/application/post.exception';
+import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { BlockServicePort } from '@/modules/block/application/services/block.service';
-import { PostServicePort } from '@/modules/post/application/services/post.service';
+import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
 import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
+import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetPostsTypePort,
   GetPostsTypeQuery,
   GetPostsTypeResult
 } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
+import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import { IPostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 
 export class GetPostsTypeUseCase extends GetPostsTypePort {
   private readonly log: LoggerPort;

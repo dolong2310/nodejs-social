@@ -1,4 +1,4 @@
-import { AccessTokenPayload } from '@/modules/auth/application/services/token.service.type';
+import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.type';
 import { Server, Socket } from 'socket.io';
 
 export interface ISocketFeature {

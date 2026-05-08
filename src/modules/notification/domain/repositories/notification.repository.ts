@@ -1,5 +1,5 @@
-import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
   IFindNotificationsInput,
   IFindOldestNotificationIdsForTrimInput,

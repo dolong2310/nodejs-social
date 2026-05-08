@@ -6,65 +6,65 @@ import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
-import { TwoFactorAuthService } from '@/infrastructure/services/2fa.service';
-import { EmailService, EmailServicePort } from '@/infrastructure/services/email.service';
-import { GoogleOAuthService } from '@/infrastructure/services/google-oauth.service';
-import { HashingService } from '@/infrastructure/services/hashing.service';
-import { JwtService } from '@/infrastructure/services/jwt.service';
-import { S3Service } from '@/infrastructure/services/s3.service';
-import { LocalFileStorage } from '@/infrastructure/services/storages/file-storage.service';
-import { SharpImageProcessor } from '@/infrastructure/services/storages/image-processor.service';
-import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
-import { EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
-import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-oauth.out-port';
-import { JwtPort } from '@/modules/auth/application/ports/jwt.port';
-import { AuthService, AuthServicePort } from '@/modules/auth/application/services/auth.service';
-import { OtpService, OtpServicePort } from '@/modules/auth/application/services/otp.service';
-import { TokenService } from '@/modules/auth/application/services/token.service';
-import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
-import { OtpRepositoryPort } from '@/modules/auth/domain/repositories/otp.repository';
-import { RefreshTokenRepositoryPort } from '@/modules/auth/domain/repositories/refresh-token.repository';
-import { BlockService, BlockServicePort } from '@/modules/block/application/services/block.service';
-import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
-import { BookmarkRepositoryPort } from '@/modules/bookmark/domain/repositories/bookmark.repository';
-import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/application/ports/queries/conversation-member-query.repository';
+import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.out-port';
+import { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
+import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import { AuthService, AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import { OtpService, OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import { TokenService } from '@/modules/authentication/application/services/token.service';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
+import { TwoFactorAuthService } from '@/modules/authentication/infrastructure/services/2fa.service';
+import { GoogleOAuthService } from '@/modules/authentication/infrastructure/services/google-oauth.service';
+import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
+import { JwtService } from '@/modules/authentication/infrastructure/services/jwt.service';
+import { RoleService, RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import {
   ConversationService,
   ConversationServicePort
 } from '@/modules/conversation/application/services/conversation.service';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { FriendService, FriendServicePort } from '@/modules/friend/application/services/friend.service';
-import { FriendRequestRepositoryPort } from '@/modules/friend/domain/repositories/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
-import { HashtagRepositoryPort } from '@/modules/hashtag/domain/repositories/hashtag.repository';
-import { LikeRepositoryPort } from '@/modules/like/domain/repositories/like.repository';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { LocalFileStorage } from '@/modules/media/infrastructure/services/file-storage.service';
+import { S3Service } from '@/modules/media/infrastructure/services/s3-storage.service';
+import { SharpImageProcessor } from '@/modules/media/infrastructure/services/sharp-image-processor.service';
 import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import {
   NotificationService,
   NotificationServicePort
 } from '@/modules/notification/application/services/notification.service';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
-import { PostCommandRepositoryPort } from '@/modules/post/application/ports/command/post-command.repository';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
 import { PostService, PostServicePort } from '@/modules/post/application/services/post.service';
+import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
+import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
+import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import { RoleQueryRepositoryPort } from '@/modules/role/application/ports/queries/role-query.repository';
-import { RoleService, RoleServicePort } from '@/modules/role/application/services/role.service';
-import { RoleRepositoryPort } from '@/modules/role/domain/repositories/role.repository';
-import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
+import { BlockService, BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import { FriendService, FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import { UserService, UserServicePort } from '@/modules/user/application/services/user.service';
+import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { APP_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
@@ -88,7 +88,7 @@ export class Container implements IContainer {
   private readonly fileStorage: FileStoragePort;
   private readonly imageProcessor: ImageProcessorPort;
 
-  private readonly emailQueue: EmailQueuePort;
+  private readonly otpEmailQueue: OtpEmailQueuePort;
   private readonly videoStreamQueue: VideoStreamQueuePort;
   private readonly notificationTrimQueue: NotificationTrimQueuePort;
   private readonly postViewsQueue: PostViewsQueuePort;
@@ -122,8 +122,8 @@ export class Container implements IContainer {
   private readonly twoFactorService: TwoFactorAuthPort;
   private readonly googleOAuthService: GoogleOAuthServicePort;
 
-  private readonly s3Service: StoragePort;
-  private readonly emailService: EmailServicePort;
+  private readonly s3Service: ObjectStoragePort;
+  private readonly otpEmailSender: SesOtpEmailSender;
 
   private readonly authService: AuthServicePort;
   private readonly userService: UserServicePort;
@@ -150,7 +150,7 @@ export class Container implements IContainer {
     this.realtimeEmitter = new RealtimeEmitter(socket);
 
     const queues = createContainerQueues(this.logger);
-    this.emailQueue = queues.emailQueue;
+    this.otpEmailQueue = queues.otpEmailQueue;
     this.videoStreamQueue = queues.videoStreamQueue;
     this.notificationTrimQueue = queues.notificationTrimQueue;
     this.postViewsQueue = queues.postViewsQueue;
@@ -182,7 +182,7 @@ export class Container implements IContainer {
     this.tokenService = new TokenService(this.jwtService, appConfig);
     this.googleOAuthService = new GoogleOAuthService();
     this.s3Service = new S3Service(this.logger, this.fileStorage);
-    this.emailService = new EmailService(this.logger, this.fileStorage);
+    this.otpEmailSender = new SesOtpEmailSender(this.logger);
 
     this.authService = new AuthService(this.refreshTokenRepository, this.tokenService);
     this.userService = new UserService(this.userRepository, this.userQueryRepository, this.redis);
@@ -206,7 +206,7 @@ export class Container implements IContainer {
       realtimeEmitter: this.realtimeEmitter,
       fileStorage: this.fileStorage,
       imageProcessor: this.imageProcessor,
-      emailQueue: this.emailQueue,
+      otpEmailQueue: this.otpEmailQueue,
       videoStreamQueue: this.videoStreamQueue,
       googleOAuthService: this.googleOAuthService,
       s3Service: this.s3Service,
@@ -268,10 +268,10 @@ export class Container implements IContainer {
 
   public getWorkerDeps() {
     return {
-      emailService: this.emailService,
+      otpEmailSender: this.otpEmailSender,
       otpRepository: this.otpRepository,
       postCommandRepository: this.postCommandRepository,
-      notificationRepository: this.notificationRepository,
+      notificationService: this.notificationsService,
       mediaRepository: this.videoStatusRepository,
       s3Service: this.s3Service,
       fileStorage: this.fileStorage

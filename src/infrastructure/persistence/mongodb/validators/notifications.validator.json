@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "notifications — aligned with modules/notification/infrastructure/mongo/notification.model",
+    "title": "notifications — aligned with modules/notification/infrastructure/persistence/mongo/notification.model",
     "bsonType": "object",
     "required": ["_id", "recipientId", "read", "type", "actor", "payload"],
     "properties": {

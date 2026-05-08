@@ -1,11 +1,10 @@
-import { UploadedFilePort } from '@/modules/media/application/ports/file-upload.port';
-import { UseCase } from '@/modules/core/application/base.usecase';
 import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UploadVideoStreamCommand {
-  files: UploadedFilePort[];
-  constructor(payload: { files: UploadedFilePort[] }) {
-    this.files = payload.files;
+  files: { filepath: string; filename: string; mimetype: string }[];
+  constructor(files: { filepath: string; filename: string; mimetype: string }[]) {
+    this.files = files;
   }
 }
 

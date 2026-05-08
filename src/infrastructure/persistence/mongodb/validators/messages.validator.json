@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "chatMessages — aligned with modules/conversation/infrastructure/mongo/chat-message.model; collection `chatMessages`",
+    "title": "chatMessages — aligned with modules/conversation/infrastructure/persistence/mongo/chat-message.model; collection `chatMessages`",
     "bsonType": "object",
     "required": ["_id", "conversationId", "senderId"],
     "properties": {

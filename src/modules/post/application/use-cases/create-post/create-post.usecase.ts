@@ -1,21 +1,21 @@
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   CannotEngagePostBlockedException,
   CannotEngageWithInaccessiblePostException,
   PostNotFoundException,
   StrangerCommentsNotAllowedException
-} from '@/modules/post/application/post.exception';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { BlockServicePort } from '@/modules/block/application/services/block.service';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
+} from '@/modules/post/application/exceptions/post.exception';
 import {
   CreatePostCommand,
   CreatePostPort,
   CreatePostResult
 } from '@/modules/post/application/use-cases/create-post/create-post.port';
-import { HashtagEntity } from '@/modules/hashtag/domain/entities/hashtag.entity';
+import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
 import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { HashtagRepositoryPort } from '@/modules/hashtag/domain/repositories/hashtag.repository';
+import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
 export class CreatePostUseCase extends CreatePostPort {
   private readonly log: LoggerPort;

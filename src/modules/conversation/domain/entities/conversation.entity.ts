@@ -1,14 +1,14 @@
-import { Entity } from '@/modules/core/domain/entities/base.entity';
-import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
-import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
-import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
   ConversationProps,
   CreateDirectConversationProps,
   CreateGroupConversationProps,
   EConversationType
 } from '@/modules/conversation/domain/entities/conversation.type';
+import { Entity } from '@/modules/core/domain/entities/base.entity';
+import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
+import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
+import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
+import { invariant } from '@/modules/core/domain/helpers/invariant';
 
 export class ConversationEntity extends Entity<ConversationProps> {
   static create(createProps: CreateDirectConversationProps | CreateGroupConversationProps) {

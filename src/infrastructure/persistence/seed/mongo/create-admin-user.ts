@@ -17,14 +17,14 @@
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
-import { HashingService } from '@/infrastructure/services/hashing.service';
-import { ERoleName } from '@/modules/role/domain/entities/role.type';
-import { RoleRepository } from '@/modules/role/infrastructure/mongo/role.impl.repository';
-import { RoleMapper } from '@/modules/role/infrastructure/mongo/role.mapper';
+import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
+import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository';
+import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';
-import { UserRepository } from '@/modules/user/infrastructure/mongo/user.impl.repository';
-import { UserMapper } from '@/modules/user/infrastructure/mongo/user.mapper';
+import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository';
+import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? 'ddl.231098@gmail.com';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? '@Bc123';

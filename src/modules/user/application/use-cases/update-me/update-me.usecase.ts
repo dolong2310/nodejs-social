@@ -1,12 +1,15 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import {
+  UsernameAlreadyExistsException,
+  UserNotFoundException
+} from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   UpdateMeCommand,
   UpdateMePort,
   UpdateMeResult
 } from '@/modules/user/application/use-cases/update-me/update-me.port';
-import { UsernameAlreadyExistsException, UserNotFoundException } from '@/modules/user/application/user.exception';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class UpdateMeUseCase extends UpdateMePort {

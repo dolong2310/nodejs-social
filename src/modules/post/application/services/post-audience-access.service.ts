@@ -1,17 +1,17 @@
-import { BlockServicePort } from '@/modules/block/application/services/block.service';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
 import {
   CannotViewPostBlockedException,
   GuestCannotAccessNonPublicPostException,
   OnlyFriendsCanViewPostsException,
   OnlyOwnerCanViewPostsException
-} from '@/modules/post/application/post.exception';
+} from '@/modules/post/application/exceptions/post.exception';
 import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { EPostAudience } from '@/modules/post/domain/entities/post.type';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import { IPostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { UserIsBannedException, UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserIsBannedException, UserNotFoundException } from '@/modules/user/application/user.exception';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';
 
 export interface PostAudienceAccessServicePort {

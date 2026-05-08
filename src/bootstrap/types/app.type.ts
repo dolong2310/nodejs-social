@@ -24,9 +24,6 @@ export interface IAppConfig {
   api: {
     prefix: string;
   };
-  searchCache: {
-    ttlSeconds: number;
-  };
   cors: CorsOptions;
   rateLimit: Partial<RateLimitOptions> & { enabled: boolean };
 }

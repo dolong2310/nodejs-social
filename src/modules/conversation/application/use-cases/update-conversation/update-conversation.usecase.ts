@@ -1,4 +1,4 @@
-import { ConversationRoleForbiddenException } from '@/modules/conversation/application/conversation.exception';
+import { ConversationRoleForbiddenException } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   UpdateConversationCommand,

@@ -1,5 +1,5 @@
-import { CreateLikePort } from '@/modules/like/application/use-cases/like-post/like-post.port';
-import { UnlikePort } from '@/modules/like/application/use-cases/unlike-post/unlike-post.port';
+import { CreateLikePort } from '@/modules/post/application/use-cases/like-post/like-post.port';
+import { UnlikePort } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';

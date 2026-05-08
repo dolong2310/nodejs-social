@@ -1,5 +1,3 @@
-'use strict';
-
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constant';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
 

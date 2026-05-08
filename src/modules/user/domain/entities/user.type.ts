@@ -17,7 +17,6 @@ export interface UserProps {
   coverPhoto?: string;
 }
 
-// Properties that are needed for a user retrieval
 export interface UserFullProps extends Prettify<UserProps & Omit<BaseEntityProps, 'id'> & { id: string }> {}
 
 // Remove sensitive data from the user props
@@ -25,7 +24,6 @@ export interface UserSafeProps extends Prettify<Omit<UserFullProps, 'password' |
 
 export interface UserRecordProps extends Pick<UserFullProps, 'id' | 'name' | 'username' | 'avatar'> {}
 
-// Properties that are needed for a user creation
 export interface CreateUserProps extends MarkOptional<UserProps, 'status'> {}
 
 export enum EUserStatus {

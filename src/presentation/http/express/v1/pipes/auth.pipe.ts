@@ -1,4 +1,4 @@
-import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
+import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { ConfirmPasswordMustMatchException } from '@/presentation/http/express/exceptions/auth.exception';
 import { RequestHandlerType } from '@/presentation/http/express/types';

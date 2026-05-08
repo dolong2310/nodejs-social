@@ -1,5 +1,5 @@
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import {
   IChangePasswordInput,
   IResetPasswordInput,

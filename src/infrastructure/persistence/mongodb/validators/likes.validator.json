@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "likes — aligned with modules/like/infrastructure/mongo/like.model",
+    "title": "likes — aligned with modules/post/infrastructure/persistence/mongo/like.model",
     "bsonType": "object",
     "required": ["_id", "userId", "postId"],
     "properties": {

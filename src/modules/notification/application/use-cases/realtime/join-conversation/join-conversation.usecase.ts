@@ -1,10 +1,10 @@
+import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
   JoinConversationCommand,
   JoinConversationPort,
   JoinConversationResult
 } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
-import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class JoinConversationUseCase extends JoinConversationPort {
   constructor(private readonly conversationMemberRepository: ConversationMemberRepositoryPort) {

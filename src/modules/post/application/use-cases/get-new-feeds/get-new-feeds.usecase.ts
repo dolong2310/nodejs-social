@@ -1,17 +1,17 @@
-import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
+import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { BlockServicePort } from '@/modules/block/application/services/block.service';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetNewFeedsPort,
   GetNewFeedsQuery,
   GetNewFeedsResult
 } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
+import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
 /**
  * Lấy danh sách bài viết mới nhất cho user đã đăng nhập

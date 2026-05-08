@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "friendRequests — aligned with modules/friend/infrastructure/mongo/friend-request.model",
+    "title": "friendRequests — aligned with modules/relationship/infrastructure/persistence/mongo/friend-request.model",
     "bsonType": "object",
     "required": ["_id", "fromUserId", "toUserId"],
     "properties": {

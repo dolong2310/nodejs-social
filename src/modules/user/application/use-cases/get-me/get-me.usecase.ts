@@ -1,4 +1,4 @@
-import { UserNotFoundException } from '@/modules/user/application/user.exception';
+import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { GetMePort, GetMeQuery, GetMeResult } from '@/modules/user/application/use-cases/get-me/get-me.port';
 

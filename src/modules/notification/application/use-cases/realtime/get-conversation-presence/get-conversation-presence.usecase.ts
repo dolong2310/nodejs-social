@@ -1,8 +1,8 @@
+import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import {
   GetConversationPresenceCommand,
   GetConversationPresencePort
 } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.port';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class GetConversationPresenceUseCase extends GetConversationPresencePort {
   constructor(private readonly conversationMemberRepository: ConversationMemberRepositoryPort) {

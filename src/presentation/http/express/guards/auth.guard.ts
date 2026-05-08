@@ -1,10 +1,10 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { AccessTokenPayload, TokenServicePort } from '@/modules/auth/application/services/token.service.type';
+import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constant';
+import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { EHttpMethod, PermissionFullProps } from '@/modules/permission/domain/entities/permission.type';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/role/application/constants/cache.constant';
-import { RoleQueryRepositoryPort } from '@/modules/role/application/ports/queries/role-query.repository';
-import { RoleWithPermissions } from '@/modules/role/application/ports/queries/role-query.type';
 import {
   NoTokenProvidedException,
   TokenHasExpiredException

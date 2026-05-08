@@ -1,6 +1,5 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { IContainer } from '@/bootstrap/container';
-import logger from '@/infrastructure/logger/create-logger';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant';
 import { HttpExceptionFilter } from '@/presentation/http/express/filters/exception.filter';

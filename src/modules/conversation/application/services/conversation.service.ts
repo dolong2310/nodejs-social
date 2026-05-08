@@ -1,7 +1,7 @@
 import {
   ConversationNotFoundException,
   ConversationNotMemberException
-} from '@/modules/conversation/application/conversation.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import {
   AssertMemberPayload,
   ConversationDetailResult,

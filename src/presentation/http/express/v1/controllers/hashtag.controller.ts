@@ -1,20 +1,20 @@
 import {
   CreateHashtagCommand,
   CreateHashtagPort
-} from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.port';
+} from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.port';
 import {
   DeleteHashtagCommand,
   DeleteHashtagPort
-} from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.port';
-import { GetHashtagPort, GetHashtagQuery } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.port';
+} from '@/modules/post/application/use-cases/delete-hashtag/delete-hashtag.port';
+import { GetHashtagPort, GetHashtagQuery } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.port';
 import {
   ListHashtagsPort,
   ListHashtagsQuery
-} from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.port';
+} from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 import {
   UpdateHashtagCommand,
   UpdateHashtagPort
-} from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.port';
+} from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';

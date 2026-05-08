@@ -1,6 +1,6 @@
-import { IPostDetailWithAuthorOutput } from '@/modules/post/application/ports/queries/post-query.type';
-import { UseCase } from '@/modules/core/application/base.usecase';
 import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { UseCase } from '@/modules/core/application/base.usecase';
+import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class SearchPostsQuery {
   userId?: string;

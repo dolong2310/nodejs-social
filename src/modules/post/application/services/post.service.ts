@@ -2,16 +2,13 @@ import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constant';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
-import {
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput
-} from '@/modules/post/application/ports/queries/post-query.type';
 import {
   GetBlockedPostIdsPayload,
   IsViewerInteractedWithPostPayload,
   UpdatePostsViewsPayload
 } from '@/modules/post/application/services/post.service.type';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import { IPostDetailOutput, IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export interface PostServicePort {
   updatePostsViews<T extends IPostDetailOutput | IPostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];

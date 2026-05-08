@@ -1,14 +1,14 @@
 import {
   ConversationGroupNeedsMemberException,
   ConversationPeerNotFriendException
-} from '@/modules/conversation/application/conversation.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import {
   CreateGroupCommand,
   CreateGroupPort,
   CreateGroupResult
 } from '@/modules/conversation/application/use-cases/create-group/create-group.port';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
+import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export class CreateGroupUseCase extends CreateGroupPort {
   constructor(

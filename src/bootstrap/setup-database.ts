@@ -1,6 +1,6 @@
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
-import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
 import { EnumDatabaseDriver, type DatabasePort } from '@/infrastructure/persistence/database.port';
+import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
 import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
 
 export async function setupDatabase(): Promise<DatabasePort> {

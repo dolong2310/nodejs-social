@@ -1,5 +1,3 @@
-import { StringEnum } from '@techmely/types';
-
 declare module 'mitt' {
   declare type EventType = string | symbol;
   declare type Handler<T = unknown> = (event: T) => void;
@@ -18,7 +16,7 @@ declare module 'mitt' {
     off(type: '*', handler: WildcardHandler<Events>): void;
     emit<Key extends keyof Events>(type: Key, event: Events[Key]): void;
     emit<Key extends keyof Events>(type: undefined extends Events[Key] ? Key : never): void;
-    emitAsync<Key extends keyof Events>(type: StringEnum<Key>, event: unknown): Promise<void>;
+    // emitAsync<Key extends keyof Events>(type: StringEnum<Key>, event: unknown): Promise<void>; // StringEnum
   }
 
   /**

@@ -1,6 +1,5 @@
-import { FormidableFileUploadService } from '@/infrastructure/services/storages/file-upload.service';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { StoragePort } from '@/modules/core/application/ports/storage.port';
+import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
 import {
   GetVideoStatusPort,
@@ -26,6 +25,7 @@ import {
   VideoNotFoundException
 } from '@/presentation/http/express/exceptions/media.exception';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
+import { parseUploadedFiles } from '@/presentation/http/express/utils/parse-uploaded-files.util';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
 import { FilenameParamsDTO, VideoStreamParamsDTO } from '@/presentation/http/express/v1/dtos/media/media.request.dto';
 import { NextFunction, Request, Response } from 'express';
@@ -50,7 +50,7 @@ export class MediaController extends BaseController implements IMediaController 
     private readonly uploadImageUC: UploadImagePort,
     private readonly uploadVideoUC: UploadVideoPort,
     private readonly uploadVideoStreamUC: UploadVideoStreamPort,
-    private readonly s3Service: StoragePort,
+    private readonly s3Service: ObjectStoragePort,
     private readonly fileStorage: FileStoragePort
   ) {
     super();
@@ -107,19 +107,18 @@ export class MediaController extends BaseController implements IMediaController 
   @AutoBind()
   async getStaticVideoStreamMaster(req: Request<Pick<VideoStreamParamsDTO, 'id'>>, res: Response) {
     const { id } = req.params;
-    await this.s3Service.sendFileFromS3(res, `videos-stream/${id}/master.m3u8`);
+    await this.s3Service.streamFile(res, `videos-stream/${id}/master.m3u8`);
   }
 
   @AutoBind()
   async getStaticVideoStreamSegment(req: Request<VideoStreamParamsDTO>, res: Response) {
     const { id, version, segment } = req.params;
-    await this.s3Service.sendFileFromS3(res, `videos-stream/${id}/${version}/${segment}`);
+    await this.s3Service.streamFile(res, `videos-stream/${id}/${version}/${segment}`);
   }
 
   @AutoBind()
   async uploadImage(req: Request) {
-    const uploader = new FormidableFileUploadService(req);
-    const files = await uploader.uploadImages();
+    const files = await parseUploadedFiles(req, 'image');
 
     const results = await this.uploadImageUC.execute({ files });
 
@@ -131,8 +130,7 @@ export class MediaController extends BaseController implements IMediaController 
 
   @AutoBind()
   async uploadVideo(req: Request) {
-    const uploader = new FormidableFileUploadService(req);
-    const files = await uploader.uploadVideos();
+    const files = await parseUploadedFiles(req, 'video');
 
     const results = await this.uploadVideoUC.execute({ files });
 
@@ -144,8 +142,7 @@ export class MediaController extends BaseController implements IMediaController 
 
   @AutoBind()
   async uploadVideoStream(req: Request) {
-    const uploader = new FormidableFileUploadService(req);
-    const files = await uploader.uploadVideosStream();
+    const files = await parseUploadedFiles(req, 'video-stream');
 
     const results = await this.uploadVideoStreamUC.execute({ files });
 

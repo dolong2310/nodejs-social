@@ -1,14 +1,14 @@
-import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
-import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
+import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import {
   ListNotificationsPort,
   ListNotificationsQuery,
   ListNotificationsResult,
   NotificationSummary
 } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
-import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
+import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Hàm dùng để lấy danh sách thông báo (notifications) cho một user đang xem, có hỗ trợ:

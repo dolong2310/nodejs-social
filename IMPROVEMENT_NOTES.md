@@ -8,7 +8,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 
 - Runtime chỉ dùng một database driver qua `PERSISTENCE_DRIVER`; không fallback sang Mongo khi chọn Postgres.
 - Mongo adapter giữ nguyên logic hiện tại, chỉ refactor path/naming khi cần.
-- Mapper hiện tại đã được move từ `infrastructure/mappers` sang `infrastructure/mongo` cho các module.
+- Mapper hiện tại đã được move từ `infrastructure/mappers` sang `infrastructure/persistence/mongo` cho các module.
 - Postgres persistence dùng snake_case ở database/model; domain/application vẫn dùng camelCase.
 - Postgres model naming dùng `*Schema` / `*Model`, đồng nhất concept với Mongo.
 - Permission/role Postgres adapter đã được implement trước; user Postgres adapter là mục tiêu tiếp theo.

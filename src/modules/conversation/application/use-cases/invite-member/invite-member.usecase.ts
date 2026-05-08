@@ -2,10 +2,8 @@ import {
   ConversationInviteNotFriendException,
   ConversationNotFoundException,
   ConversationUserAlreadyMemberException
-} from '@/modules/conversation/application/conversation.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import {
   InviteMemberCommand,
   InviteMemberPort,
@@ -15,6 +13,8 @@ import { EConversationMemberRole } from '@/modules/conversation/domain/entities/
 import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
 /**
  * Mời thành viên vào group

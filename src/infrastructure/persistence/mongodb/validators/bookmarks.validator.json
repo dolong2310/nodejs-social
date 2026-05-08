@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "bookmarks — aligned with modules/bookmark/infrastructure/mongo/bookmark.model",
+    "title": "bookmarks — aligned with modules/post/infrastructure/persistence/mongo/bookmark.model",
     "bsonType": "object",
     "required": ["_id", "userId", "postId"],
     "properties": {

@@ -1,7 +1,7 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
-import { UserQueryRepositoryPort } from '@/modules/user/application/ports/queries/user-query.repository';
 import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export interface UserServicePort {

@@ -4,8 +4,10 @@ import {
   SOCKET_SERVER_CHAT_READ_UPDATED,
   userRoom
 } from '@/modules/common/constants/socket.constant';
-import { SendMessageResult } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type {
+  RealtimeEmitterPort,
+  RealtimeMessagePayload
+} from '@/modules/core/application/ports/realtime-emitter.port';
 import { type Server as SocketIOServer } from 'socket.io';
 
 export class RealtimeEmitter implements RealtimeEmitterPort {
@@ -15,7 +17,7 @@ export class RealtimeEmitter implements RealtimeEmitterPort {
     this.io.to(userRoom(userId)).emit(event, data);
   }
 
-  public emitMessageCreated(conversationId: string, memberUserIds: string[], message: SendMessageResult): void {
+  public emitMessageCreated(conversationId: string, memberUserIds: string[], message: RealtimeMessagePayload): void {
     const rooms = [chatRoom(conversationId), ...memberUserIds.map((id) => userRoom(id))];
     this.io.to(rooms).emit(SOCKET_SERVER_CHAT_MESSAGE_NEW, { message });
   }

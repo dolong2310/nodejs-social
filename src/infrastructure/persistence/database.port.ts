@@ -1,5 +1,5 @@
 export enum EnumDatabaseDriver {
-  MONGO = 'mongodb',
+  MONGO = 'mongo',
   POSTGRES = 'postgres'
 }
 

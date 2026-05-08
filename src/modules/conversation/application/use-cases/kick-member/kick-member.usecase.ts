@@ -2,8 +2,7 @@ import {
   ConversationCannotKickMemberException,
   ConversationDirectNoKickException,
   ConversationNotMemberException
-} from '@/modules/conversation/application/conversation.exception';
-import { UserNotFoundException } from '@/modules/user/application/user.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   KickMemberCommand,
@@ -13,6 +12,7 @@ import { EConversationMemberRole } from '@/modules/conversation/domain/entities/
 import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**
  * Đuổi thành viên khỏi group

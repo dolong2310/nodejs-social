@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "posts — aligned with modules/post/infrastructure/mongo/post.model (Valibot postSchema)",
+    "title": "posts — aligned with modules/post/infrastructure/persistence/mongo/post.model (Valibot postSchema)",
     "bsonType": "object",
     "required": [
       "_id",

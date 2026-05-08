@@ -1,8 +1,20 @@
-import { CreateRoleCommand, CreateRolePort } from '@/modules/role/application/use-cases/create-role/create-role.port';
-import { DeleteRoleCommand, DeleteRolePort } from '@/modules/role/application/use-cases/delete-role/delete-role.port';
-import { GetRolePort, GetRoleQuery } from '@/modules/role/application/use-cases/get-role/get-role.port';
-import { ListRolesPort, ListRolesQuery } from '@/modules/role/application/use-cases/list-roles/list-roles.port';
-import { UpdateRoleCommand, UpdateRolePort } from '@/modules/role/application/use-cases/update-role/update-role.port';
+import {
+  CreateRoleCommand,
+  CreateRolePort
+} from '@/modules/authorization/application/use-cases/create-role/create-role.port';
+import {
+  DeleteRoleCommand,
+  DeleteRolePort
+} from '@/modules/authorization/application/use-cases/delete-role/delete-role.port';
+import { GetRolePort, GetRoleQuery } from '@/modules/authorization/application/use-cases/get-role/get-role.port';
+import {
+  ListRolesPort,
+  ListRolesQuery
+} from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
+import {
+  UpdateRoleCommand,
+  UpdateRolePort
+} from '@/modules/authorization/application/use-cases/update-role/update-role.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';

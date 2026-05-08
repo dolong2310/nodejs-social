@@ -1,4 +1,4 @@
-import { BookmarkFullProps } from '@/modules/bookmark/domain/entities/bookmark.type';
+import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.type';
 
 export class CreateBookmarkResponseDTO implements BookmarkFullProps {
   id: string;

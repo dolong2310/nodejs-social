@@ -1,4 +1,4 @@
-import { EOtpType } from '@/modules/auth/domain/entities/otp.type';
+import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
 
 export class RegisterRequestDTO {
   name: string;

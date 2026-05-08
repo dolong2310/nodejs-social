@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "users — aligned with modules/user/infrastructure/mongo/user.model (Valibot userSchema)",
+    "title": "users — aligned with modules/user/infrastructure/persistence/mongo/user.model (Valibot userSchema)",
     "bsonType": "object",
     "required": ["_id", "name", "email", "password", "birthday", "roleId", "status"],
     "properties": {

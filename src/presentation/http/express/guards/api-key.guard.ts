@@ -1,8 +1,8 @@
 import { BaseGuard } from '@/presentation/http/express/guards/base.guard';
 import { UnauthorizedException } from '@/presentation/http/express/responses/error.response';
 import { extractApiKeyFromHeader } from '@/presentation/http/express/utils/token.util';
-import { createHash, timingSafeEqual } from 'node:crypto';
 import { Request } from 'express';
+import { createHash, timingSafeEqual } from 'node:crypto';
 
 export class ApiKeyGuard extends BaseGuard {
   constructor(private readonly apiKey: string) {

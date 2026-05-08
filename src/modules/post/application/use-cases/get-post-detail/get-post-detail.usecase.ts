@@ -1,10 +1,10 @@
-import { PostNotFoundException } from '@/modules/post/application/post.exception';
-import { PostQueryRepositoryPort } from '@/modules/post/application/ports/queries/post-query.repository';
+import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
 import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
   GetPostDetailPort,
   GetPostDetailQuery
 } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 
 export class GetPostDetailUseCase extends GetPostDetailPort {
   constructor(

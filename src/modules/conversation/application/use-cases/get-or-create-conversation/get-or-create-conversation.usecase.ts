@@ -3,18 +3,18 @@ import {
   ConversationNotFoundException,
   ConversationPeerBlockedException,
   ConversationPeerNotFriendException
-} from '@/modules/conversation/application/conversation.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
 import {
   GetOrCreateConversationCommand,
   GetOrCreateConversationPort,
   GetOrCreateConversationResult
 } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
 import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Tạo phòng direct nếu chưa tồn tại, nếu đã tồn tại thì trả về phòng đó

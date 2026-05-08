@@ -1,5 +1,5 @@
 import { RANGE_HEADER_REGEX } from '@/modules/common/constants/regex.constants';
-import { RequestedRangeNotSatisfiableException } from '@/modules/media/application/media.exception';
+import { RequestedRangeNotSatisfiableException } from '@/modules/media/application/exceptions/media.exception';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import {
   GetStaticVideoStreamPort,

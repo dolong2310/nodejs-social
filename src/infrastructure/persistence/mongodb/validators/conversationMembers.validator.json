@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "conversationMembers — aligned with modules/conversation/infrastructure/mongo/conversation-member.model",
+    "title": "conversationMembers — aligned with modules/conversation/infrastructure/persistence/mongo/conversation-member.model",
     "bsonType": "object",
     "required": ["_id", "conversationId", "userId", "role", "joinedAt"],
     "properties": {

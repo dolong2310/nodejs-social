@@ -12,12 +12,12 @@ import {
   buildStubHttpRouters,
   permissionModuleTagFromBaseRoutePath
 } from '@/infrastructure/persistence/seed/stub-http-routers.seed';
-import { EHttpMethod, PermissionFullProps } from '@/modules/permission/domain/entities/permission.type';
-import { PermissionRepository } from '@/modules/permission/infrastructure/postgres/permission.impl.repository';
-import { PermissionMapper } from '@/modules/permission/infrastructure/postgres/permission.mapper';
-import { ERoleName } from '@/modules/role/domain/entities/role.type';
-import { RoleRepository } from '@/modules/role/infrastructure/postgres/role.impl.repository';
-import { RoleMapper } from '@/modules/role/infrastructure/postgres/role.mapper';
+import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { PermissionRepository } from '@/modules/authorization/infrastructure/persistence/postgres/permission.impl.repository';
+import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/postgres/permission.mapper';
+import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
+import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import type { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import type { Router } from 'express';
 

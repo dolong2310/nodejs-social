@@ -1,7 +1,4 @@
-import {
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput
-} from '@/modules/post/application/ports/queries/post-query.type';
+import { IPostDetailOutput, IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export interface UpdatePostsViewsPayload<T extends IPostDetailOutput | IPostDetailWithAuthorOutput> {
   posts: T[];

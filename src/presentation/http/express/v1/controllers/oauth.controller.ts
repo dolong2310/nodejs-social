@@ -1,6 +1,6 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { GetGoogleAuthUrlPort } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.port';
-import { LoginGooglePort } from '@/modules/auth/application/use-cases/login-google/login-google.port';
+import { GetGoogleAuthUrlPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
+import { LoginGooglePort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,

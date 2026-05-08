@@ -1,5 +1,4 @@
-import { EUserStatus } from '@/modules/user/domain/entities/user.type';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
 export class UserResponseDTO implements UserSafeProps {
   id: string;

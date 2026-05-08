@@ -10,6 +10,5 @@ export const CACHE_KEYS = {
 } as const;
 
 export const CACHE_TTL = {
-  BLOCKED_INTERACTION_POST_IDS: 30, // short-lived: used for feed/search block-interaction exception checks
-  BLOCKED_USER_IDS: 30 // short-lived: block graph can change frequently
+  BLOCKED_INTERACTION_POST_IDS: 30 // short-lived: used for feed/search block-interaction exception checks
 } as const;

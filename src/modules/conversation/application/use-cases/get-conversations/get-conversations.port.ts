@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
 import { ConversationFullProps, EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class GetConversationsQuery {
   userId: string;

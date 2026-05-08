@@ -1,9 +1,9 @@
+import { ChatMessageProps, CreateChatMessageProps } from '@/modules/conversation/domain/entities/chat-message.type';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { ChatMessageProps, CreateChatMessageProps } from '@/modules/conversation/domain/entities/chat-message.type';
 
 export class ChatMessageEntity extends Entity<ChatMessageProps> {
   static create(createProps: CreateChatMessageProps) {

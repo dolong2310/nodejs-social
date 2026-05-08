@@ -1,4 +1,4 @@
-import { EHttpMethod } from '@/modules/permission/domain/entities/permission.type';
+import { EHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class CreatePermissionBodyDTO {

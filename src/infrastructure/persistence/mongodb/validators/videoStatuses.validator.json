@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "videoStatus collection — aligned with modules/media/infrastructure/mongo/video-status.model (DB collection name: videoStatus)",
+    "title": "videoStatus collection — aligned with modules/media/infrastructure/persistence/mongo/video-status.model (DB collection name: videoStatus)",
     "bsonType": "object",
     "required": ["_id", "name", "status"],
     "properties": {

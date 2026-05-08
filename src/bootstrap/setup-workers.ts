@@ -1,26 +1,26 @@
 import { IContainer } from '@/bootstrap/container';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
-import { EmailWorker } from '@/infrastructure/queue/email/email.worker';
-import { NotificationTrimWorker } from '@/infrastructure/queue/notification-trim/notification-trim.worker';
-import { PostViewsWorker } from '@/infrastructure/queue/post-views/post-views.worker';
-import { VideoStreamWorker } from '@/infrastructure/queue/video-stream/video-stream.worker';
+import { OtpEmailWorker } from '@/modules/authentication/infrastructure/queue/otp-email.worker';
+import { VideoStreamWorker } from '@/modules/media/infrastructure/queue/video-stream.worker';
+import { NotificationTrimWorker } from '@/modules/notification/infrastructure/queue/notification-trim.worker';
+import { PostViewsWorker } from '@/modules/post/infrastructure/queue/post-views.worker';
 
 export function setupWorkers(container: IContainer): void {
   const connection = buildBullMQConnection(dbConfig.redis);
   const logger = container.getLogger();
   const {
-    emailService,
+    otpEmailSender,
     otpRepository,
     postCommandRepository,
-    notificationRepository,
+    notificationService,
     mediaRepository,
     s3Service,
     fileStorage
   } = container.getWorkerDeps();
 
-  new EmailWorker(emailService, otpRepository, logger).run(connection);
+  new OtpEmailWorker(otpEmailSender, otpRepository, logger).run(connection);
   new PostViewsWorker(postCommandRepository, logger).run(connection);
-  new NotificationTrimWorker(notificationRepository, logger).run(connection);
+  new NotificationTrimWorker(notificationService, logger).run(connection);
   new VideoStreamWorker(mediaRepository, s3Service, fileStorage, logger).run(connection);
 }

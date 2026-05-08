@@ -1,10 +1,9 @@
-import { BlockRepositoryPort } from '@/modules/block/domain/repositories/block.repository';
 import {
   AttachmentTooLargeException,
   ConversationNotFoundException,
   MessageEmptyException,
   MessageForbiddenException
-} from '@/modules/conversation/application/conversation.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   SendMessageCommand,
@@ -19,6 +18,7 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Nghiệp vụ tổng thể:

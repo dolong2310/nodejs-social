@@ -1,27 +1,32 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { ContainerRepositories } from '@/bootstrap/di/repositories';
-import { TwoFactorAuthPort } from '@/modules/auth/application/ports/2fa.port';
-import { EmailQueuePort } from '@/modules/auth/application/ports/email-job.port';
-import { GoogleOAuthServicePort } from '@/modules/auth/application/ports/google-oauth.out-port';
-import { AuthServicePort } from '@/modules/auth/application/services/auth.service';
-import { OtpServicePort } from '@/modules/auth/application/services/otp.service';
-import { TokenServicePort } from '@/modules/auth/application/services/token.service.type';
-import { Disable2FAUseCase } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.usecase';
-import { ForgotPasswordUseCase } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.usecase';
-import { GetGoogleAuthUrlUseCase } from '@/modules/auth/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
-import { LoginEmailUseCase } from '@/modules/auth/application/use-cases/login-email/login-email.usecase';
-import { LoginGoogleUseCase } from '@/modules/auth/application/use-cases/login-google/login-google.usecase';
-import { LogoutUseCase } from '@/modules/auth/application/use-cases/logout/logout.usecase';
-import { RefreshTokenUseCase } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.usecase';
-import { RegisterUseCase } from '@/modules/auth/application/use-cases/register/register.usecase';
-import { SendOtpUseCase } from '@/modules/auth/application/use-cases/send-otp/send-otp.usecase';
-import { Setup2FAUseCase } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.usecase';
-import { BlockServicePort } from '@/modules/block/application/services/block.service';
-import { BlockUserUseCase } from '@/modules/block/application/use-cases/block-user/block-user.usecase';
-import { GetBlockedUserUseCase } from '@/modules/block/application/use-cases/get-blocked-user/get-blocked-user.usecase';
-import { UnblockUserUseCase } from '@/modules/block/application/use-cases/unblock-user/unblock-user.usecase';
-import { BookmarkPostUseCase } from '@/modules/bookmark/application/use-cases/bookmark-post/bookmark-post.usecase';
-import { UnbookmarkPostUseCase } from '@/modules/bookmark/application/use-cases/unbookmark-post/unbookmark-post.usecase';
+import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.out-port';
+import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
+import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
+import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
+import { LoginEmailUseCase } from '@/modules/authentication/application/use-cases/login-email/login-email.usecase';
+import { LoginGoogleUseCase } from '@/modules/authentication/application/use-cases/login-google/login-google.usecase';
+import { LogoutUseCase } from '@/modules/authentication/application/use-cases/logout/logout.usecase';
+import { RefreshTokenUseCase } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.usecase';
+import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
+import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
+import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
+import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import { CreatePermissionUseCase } from '@/modules/authorization/application/use-cases/create-permission/create-permission.usecase';
+import { CreateRoleUseCase } from '@/modules/authorization/application/use-cases/create-role/create-role.usecase';
+import { DeletePermissionUseCase } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.usecase';
+import { DeleteRoleUseCase } from '@/modules/authorization/application/use-cases/delete-role/delete-role.usecase';
+import { GetPermissionUseCase } from '@/modules/authorization/application/use-cases/get-permission/get-permission.usecase';
+import { GetRoleUseCase } from '@/modules/authorization/application/use-cases/get-role/get-role.usecase';
+import { ListPermissionsUseCase } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.usecase';
+import { ListRolesUseCase } from '@/modules/authorization/application/use-cases/list-roles/list-roles.usecase';
+import { UpdatePermissionUseCase } from '@/modules/authorization/application/use-cases/update-permission/update-permission.usecase';
+import { UpdateRoleUseCase } from '@/modules/authorization/application/use-cases/update-role/update-role.usecase';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import { CreateGroupUseCase } from '@/modules/conversation/application/use-cases/create-group/create-group.usecase';
 import { GetConversationDetailUseCase } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.usecase';
@@ -40,25 +45,9 @@ import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { FriendServicePort } from '@/modules/friend/application/services/friend.service';
-import { AcceptIncomingRequestUseCase } from '@/modules/friend/application/use-cases/accept-incoming-request/accept-incoming-request.usecase';
-import { DeclineIncomingRequestUseCase } from '@/modules/friend/application/use-cases/decline-incoming-request/decline-incoming-request.usecase';
-import { GetFriendsUseCase } from '@/modules/friend/application/use-cases/get-friends/get-friends.usecase';
-import { GetIncomingRequestsUseCase } from '@/modules/friend/application/use-cases/get-incoming-requests/get-incoming-requests.usecase';
-import { GetOutgoingRequestsUseCase } from '@/modules/friend/application/use-cases/get-outgoing-requests/get-outgoing-requests.usecase';
-import { RevokeOutgoingRequestUseCase } from '@/modules/friend/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.usecase';
-import { SendFriendRequestUseCase } from '@/modules/friend/application/use-cases/send-friend-request/send-friend-request.usecase';
-import { UnfriendUseCase } from '@/modules/friend/application/use-cases/unfriend/unfriend.usecase';
-import { CreateHashtagUseCase } from '@/modules/hashtag/application/use-cases/create-hashtag/create-hashtag.usecase';
-import { DeleteHashtagUseCase } from '@/modules/hashtag/application/use-cases/delete-hashtag/delete-hashtag.usecase';
-import { GetHashtagUseCase } from '@/modules/hashtag/application/use-cases/get-hashtag/get-hashtag.usecase';
-import { ListHashtagsUseCase } from '@/modules/hashtag/application/use-cases/list-hashtags/list-hashtags.usecase';
-import { UpdateHashtagUseCase } from '@/modules/hashtag/application/use-cases/update-hashtag/update-hashtag.usecase';
-import { LikePostUseCase } from '@/modules/like/application/use-cases/like-post/like-post.usecase';
-import { UnlikePostUseCase } from '@/modules/like/application/use-cases/unlike-post/unlike-post.usecase';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { GetStaticVideoStreamUseCase } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.usecase';
 import { GetVideoStatusUseCase } from '@/modules/media/application/use-cases/get-video-status/get-video-status.usecase';
@@ -69,27 +58,38 @@ import { NotificationServicePort } from '@/modules/notification/application/serv
 import { ListNotificationsUseCase } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.usecase';
 import { MarkNotificationReadUseCase } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.usecase';
 import { MarkNotificationsReadUseCase } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.usecase';
-import { CreatePermissionUseCase } from '@/modules/permission/application/use-cases/create-permission/create-permission.usecase';
-import { DeletePermissionUseCase } from '@/modules/permission/application/use-cases/delete-permission/delete-permission.usecase';
-import { GetPermissionUseCase } from '@/modules/permission/application/use-cases/get-permission/get-permission.usecase';
-import { ListPermissionsUseCase } from '@/modules/permission/application/use-cases/list-permissions/list-permissions.usecase';
-import { UpdatePermissionUseCase } from '@/modules/permission/application/use-cases/update-permission/update-permission.usecase';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
+import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
+import { CreateHashtagUseCase } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.usecase';
 import { CreatePostUseCase } from '@/modules/post/application/use-cases/create-post/create-post.usecase';
+import { DeleteHashtagUseCase } from '@/modules/post/application/use-cases/delete-hashtag/delete-hashtag.usecase';
 import { GetGuestNewFeedsUseCase } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.usecase';
+import { GetHashtagUseCase } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.usecase';
 import { GetNewFeedsUseCase } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.usecase';
 import { GetPostDetailUseCase } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.usecase';
 import { GetPostsTypeUseCase } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.usecase';
 import { IncreaseViewsUseCase } from '@/modules/post/application/use-cases/increase-views/increase-views.usecase';
+import { LikePostUseCase } from '@/modules/post/application/use-cases/like-post/like-post.usecase';
+import { ListHashtagsUseCase } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.usecase';
 import { SearchPostsUseCase } from '@/modules/post/application/use-cases/search-posts/search-posts.usecase';
+import { UnbookmarkPostUseCase } from '@/modules/post/application/use-cases/unbookmark-post/unbookmark-post.usecase';
+import { UnlikePostUseCase } from '@/modules/post/application/use-cases/unlike-post/unlike-post.usecase';
+import { UpdateHashtagUseCase } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.usecase';
 import { UpdatePostUseCase } from '@/modules/post/application/use-cases/update-post/update-post.usecase';
-import { RoleServicePort } from '@/modules/role/application/services/role.service';
-import { CreateRoleUseCase } from '@/modules/role/application/use-cases/create-role/create-role.usecase';
-import { DeleteRoleUseCase } from '@/modules/role/application/use-cases/delete-role/delete-role.usecase';
-import { GetRoleUseCase } from '@/modules/role/application/use-cases/get-role/get-role.usecase';
-import { ListRolesUseCase } from '@/modules/role/application/use-cases/list-roles/list-roles.usecase';
-import { UpdateRoleUseCase } from '@/modules/role/application/use-cases/update-role/update-role.usecase';
+import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { AcceptIncomingRequestUseCase } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.usecase';
+import { BlockUserUseCase } from '@/modules/relationship/application/use-cases/block-user/block-user.usecase';
+import { DeclineIncomingRequestUseCase } from '@/modules/relationship/application/use-cases/decline-incoming-request/decline-incoming-request.usecase';
+import { GetBlockedUserUseCase } from '@/modules/relationship/application/use-cases/get-blocked-user/get-blocked-user.usecase';
+import { GetFriendsUseCase } from '@/modules/relationship/application/use-cases/get-friends/get-friends.usecase';
+import { GetIncomingRequestsUseCase } from '@/modules/relationship/application/use-cases/get-incoming-requests/get-incoming-requests.usecase';
+import { GetOutgoingRequestsUseCase } from '@/modules/relationship/application/use-cases/get-outgoing-requests/get-outgoing-requests.usecase';
+import { RevokeOutgoingRequestUseCase } from '@/modules/relationship/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.usecase';
+import { SendFriendRequestUseCase } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.usecase';
+import { UnblockUserUseCase } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.usecase';
+import { UnfriendUseCase } from '@/modules/relationship/application/use-cases/unfriend/unfriend.usecase';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { ChangePasswordUseCase } from '@/modules/user/application/use-cases/change-password/change-password.usecase';
 import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me.usecase';
@@ -166,10 +166,10 @@ export type HttpContext = ContainerRepositories & {
   realtimeEmitter: RealtimeEmitterPort;
   fileStorage: FileStoragePort;
   imageProcessor: ImageProcessorPort;
-  emailQueue: EmailQueuePort;
+  otpEmailQueue: OtpEmailQueuePort;
   videoStreamQueue: VideoStreamQueuePort;
   googleOAuthService: GoogleOAuthServicePort;
-  s3Service: StoragePort;
+  s3Service: ObjectStoragePort;
   tokenService: TokenServicePort;
   authService: AuthServicePort;
   userService: UserServicePort;
@@ -213,7 +213,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     realtimeEmitter,
     fileStorage,
     imageProcessor,
-    emailQueue,
+    otpEmailQueue,
     videoStreamQueue,
     googleOAuthService,
     s3Service,
@@ -235,14 +235,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
 
-  const registerUC = new RegisterUseCase(
-    userRepository,
-    authService,
-    hashingService,
-    otpRepository,
-    otpService,
-    roleService
-  );
+  const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
   const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
   const logoutUC = new LogoutUseCase(refreshTokenRepository);
   const refreshTokenUC = new RefreshTokenUseCase(
@@ -259,7 +252,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userService,
     otpService
   );
-  const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, emailQueue);
+  const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, otpEmailQueue);
   const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, redis);
   const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, redis);
 

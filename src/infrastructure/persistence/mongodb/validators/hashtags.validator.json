@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "hashtags — aligned with modules/hashtag/infrastructure/mongo/hashtag.model",
+    "title": "hashtags — aligned with modules/hashtag/infrastructure/persistence/mongo/hashtag.model",
     "bsonType": "object",
     "required": ["_id", "name"],
     "properties": {

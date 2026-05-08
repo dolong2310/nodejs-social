@@ -5,18 +5,18 @@
  */
 import { appConfig } from '@/bootstrap/config/app.config';
 // import { envConfig } from '@/bootstrap/config/env.config';
-import { EHttpMethod, PermissionFullProps } from '@/modules/permission/domain/entities/permission.type';
-import { ERoleName } from '@/modules/role/domain/entities/role.type';
 import logger from '@/infrastructure/logger/create-logger';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
-import { PermissionRepository } from '@/modules/permission/infrastructure/mongo/permission.impl.repository';
-import { PermissionMapper } from '@/modules/permission/infrastructure/mongo/permission.mapper';
-import { RoleRepository } from '@/modules/role/infrastructure/mongo/role.impl.repository';
-import { RoleMapper } from '@/modules/role/infrastructure/mongo/role.mapper';
 import {
   buildStubHttpRouters,
   permissionModuleTagFromBaseRoutePath
 } from '@/infrastructure/persistence/seed/stub-http-routers.seed';
+import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { PermissionRepository } from '@/modules/authorization/infrastructure/persistence/mongo/permission.impl.repository';
+import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
+import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository';
+import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import type { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import type { Router } from 'express';
 // import dotenv from 'dotenv';

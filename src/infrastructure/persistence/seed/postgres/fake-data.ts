@@ -11,26 +11,26 @@
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
-import { HashingService } from '@/infrastructure/services/hashing.service';
+import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
+import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
+import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
+import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
+import { PostRepository } from '@/modules/post/infrastructure/persistence/postgres/post.impl.repository';
+import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
 import {
   FriendshipRepository,
   normalizeFriendshipPair
-} from '@/modules/friend/infrastructure/postgres/friendship.impl.repository';
-import { FriendshipMapper } from '@/modules/friend/infrastructure/postgres/friendship.mapper';
-import { HashtagRepository } from '@/modules/hashtag/infrastructure/postgres/hashtag.impl.repository';
-import { HashtagMapper } from '@/modules/hashtag/infrastructure/postgres/hashtag.mapper';
-import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
-import { PostRepository } from '@/modules/post/infrastructure/postgres/post.impl.repository';
-import { PostMapper } from '@/modules/post/infrastructure/postgres/post.mapper';
-import { ERoleName } from '@/modules/role/domain/entities/role.type';
-import { RoleRepository } from '@/modules/role/infrastructure/postgres/role.impl.repository';
-import { RoleMapper } from '@/modules/role/infrastructure/postgres/role.mapper';
+} from '@/modules/relationship/infrastructure/persistence/postgres/friendship.impl.repository';
+import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { EUserStatus } from '@/modules/user/domain/entities/user.type';
-import { UserRepository } from '@/modules/user/infrastructure/postgres/user.impl.repository';
-import { UserMapper } from '@/modules/user/infrastructure/postgres/user.mapper';
+import { UserRepository } from '@/modules/user/infrastructure/persistence/postgres/user.impl.repository';
+import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { faker } from '@faker-js/faker';
 
 const MYID = 'user_019e01ec-9b31-72f0-b97a-391a40d02dc0';

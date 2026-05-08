@@ -1,11 +1,11 @@
-import { Disable2FAPort } from '@/modules/auth/application/use-cases/disable-2fa/disable-2fa.port';
-import { ForgotPasswordPort } from '@/modules/auth/application/use-cases/forgot-password/forgot-password.port';
-import { LoginEmailPort } from '@/modules/auth/application/use-cases/login-email/login-email.port';
-import { LogoutPort } from '@/modules/auth/application/use-cases/logout/logout.port';
-import { RefreshTokenPort } from '@/modules/auth/application/use-cases/refresh-token/refresh-token.port';
-import { RegisterPort } from '@/modules/auth/application/use-cases/register/register.port';
-import { SendOtpPort } from '@/modules/auth/application/use-cases/send-otp/send-otp.port';
-import { Setup2FAPort } from '@/modules/auth/application/use-cases/setup-2fa/setup-2fa.port';
+import { Disable2FAPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
+import { ForgotPasswordPort } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
+import { LoginEmailPort } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
+import { LogoutPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
+import { RefreshTokenPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
+import { RegisterPort } from '@/modules/authentication/application/use-cases/register/register.port';
+import { SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
+import { Setup2FAPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,

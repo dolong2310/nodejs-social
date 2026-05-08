@@ -2,8 +2,7 @@ import {
   ConversationNotFoundException,
   ConversationNotMemberException,
   ConversationRoleForbiddenException
-} from '@/modules/conversation/application/conversation.exception';
-import { UserNotFoundException } from '@/modules/user/application/user.exception';
+} from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   UpdateMemberRoleCommand,
@@ -13,6 +12,7 @@ import {
 import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**
  * Cập nhật quyền thành viên trong group

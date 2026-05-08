@@ -1,6 +1,6 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
 import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationFullProps, EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class TransferAdminCommand {
   userId: string;

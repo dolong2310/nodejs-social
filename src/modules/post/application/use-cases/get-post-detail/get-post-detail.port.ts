@@ -1,5 +1,5 @@
-import { IPostDetailOutput } from '@/modules/post/application/ports/queries/post-query.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
+import { IPostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class GetPostDetailQuery {
   postId: string;

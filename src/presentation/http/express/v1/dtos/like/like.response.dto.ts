@@ -1,4 +1,4 @@
-import { LikeFullProps } from '@/modules/like/domain/entities/like.type';
+import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
 
 export class CreateLikeResponseDTO implements LikeFullProps {
   id: string;

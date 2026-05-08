@@ -62,10 +62,6 @@ export const appConfig: IAppConfig = {
     prefix: '/api'
   },
 
-  searchCache: {
-    ttlSeconds: Math.max(0, parseInt(envConfig.SEARCH_CACHE_TTL_SECONDS ?? '0', 10))
-  },
-
   cors: {
     origin: getCorsAllowedOrigins(),
     credentials: true

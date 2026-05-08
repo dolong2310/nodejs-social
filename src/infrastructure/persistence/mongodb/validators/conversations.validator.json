@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "conversations — aligned with modules/conversation/infrastructure/mongo/conversation.model; collection `conversations`",
+    "title": "conversations — aligned with modules/conversation/infrastructure/persistence/mongo/conversation.model; collection `conversations`",
     "oneOf": [
       {
         "bsonType": "object",

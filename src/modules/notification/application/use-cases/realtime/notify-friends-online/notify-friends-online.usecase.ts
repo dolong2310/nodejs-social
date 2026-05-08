@@ -2,7 +2,7 @@ import {
   NotifyFriendsOnlineCommand,
   NotifyFriendsOnlinePort
 } from '@/modules/notification/application/use-cases/realtime/notify-friends-online/notify-friends-online.port';
-import { FriendshipRepositoryPort } from '@/modules/friend/domain/repositories/friendship.repository';
+import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export class NotifyFriendsOnlineUseCase extends NotifyFriendsOnlinePort {
   constructor(private readonly friendshipRepository: FriendshipRepositoryPort) {

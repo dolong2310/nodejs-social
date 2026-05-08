@@ -1,9 +1,9 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
 import {
   ConversationMemberFullProps,
   EConversationMemberRole
 } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationFullProps, EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UpdateMemberRoleCommand {
   userId: string;

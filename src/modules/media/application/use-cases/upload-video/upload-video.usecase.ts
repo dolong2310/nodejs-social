@@ -1,7 +1,7 @@
+import { EMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { StoragePort } from '@/modules/core/application/ports/storage.port';
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import {
   UploadVideoCommand,
   UploadVideoPort,
@@ -10,7 +10,7 @@ import {
 
 export class UploadVideoUseCase extends UploadVideoPort {
   constructor(
-    private readonly s3Service: StoragePort,
+    private readonly s3Service: ObjectStoragePort,
     private readonly fileStorage: FileStoragePort
   ) {
     super();

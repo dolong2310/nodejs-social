@@ -1,9 +1,6 @@
-import { HashtagFullProps } from '@/modules/hashtag/domain/entities/hashtag.type';
-import {
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput
-} from '@/modules/post/application/ports/queries/post-query.type';
+import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { IPostDetailOutput, IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
 import { Prettify } from 'ts-essentials';

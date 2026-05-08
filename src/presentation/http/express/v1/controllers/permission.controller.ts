@@ -1,23 +1,23 @@
 import {
   CreatePermissionCommand,
   CreatePermissionPort
-} from '@/modules/permission/application/use-cases/create-permission/create-permission.port';
+} from '@/modules/authorization/application/use-cases/create-permission/create-permission.port';
 import {
   DeletePermissionCommand,
   DeletePermissionPort
-} from '@/modules/permission/application/use-cases/delete-permission/delete-permission.port';
+} from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.port';
 import {
   GetPermissionPort,
   GetPermissionQuery
-} from '@/modules/permission/application/use-cases/get-permission/get-permission.port';
+} from '@/modules/authorization/application/use-cases/get-permission/get-permission.port';
 import {
   ListPermissionsPort,
   ListPermissionsQuery
-} from '@/modules/permission/application/use-cases/list-permissions/list-permissions.port';
+} from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
 import {
   UpdatePermissionCommand,
   UpdatePermissionPort
-} from '@/modules/permission/application/use-cases/update-permission/update-permission.port';
+} from '@/modules/authorization/application/use-cases/update-permission/update-permission.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
 import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';

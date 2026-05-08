@@ -1,5 +1,5 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import logger from '@/infrastructure/logger/create-logger';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import RedisClient, { type RedisOptions } from 'ioredis';
 
 const log = logger.child({ module: 'redis' });

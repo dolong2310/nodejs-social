@@ -1,6 +1,6 @@
 {
   "$jsonSchema": {
-    "title": "refreshTokens — aligned with modules/auth/infrastructure/mongo/refresh-token.model",
+    "title": "refreshTokens — aligned with modules/auth/infrastructure/persistence/mongo/refresh-token.model",
     "bsonType": "object",
     "required": ["_id", "userId", "token", "expiresAt"],
     "properties": {

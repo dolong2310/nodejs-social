@@ -1,10 +1,10 @@
+import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
   LeaveConversationCommand,
   LeaveConversationPort,
   LeaveConversationResult
 } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
-import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class LeaveConversationUseCase extends LeaveConversationPort {
   constructor(private readonly conversationMemberRepository: ConversationMemberRepositoryPort) {
