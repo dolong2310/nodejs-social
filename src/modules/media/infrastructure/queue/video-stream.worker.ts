@@ -1,33 +1,51 @@
+import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
 import { encodeStreamWithMultipleVideoStreams } from '@/modules/common/utils/video.util';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
-import { IVideoStreamJobData, IVideoStreamJobResult } from '@/modules/media/application/ports/video-stream-job.port';
+import { VideoStreamJobData, VideoStreamJobResult } from '@/modules/media/application/ports/video-stream-job.port';
 import { EEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { VIDEO_STREAM_QUEUE_NAME } from '@/modules/media/infrastructure/queue/video-stream.queue';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant'; // TODO: move to infrastructure layer
-import { Worker, type ConnectionOptions, type Job } from 'bullmq';
+import { type ConnectionOptions, type Job } from 'bullmq';
 import { get } from 'lodash-es';
 import path from 'path';
 
 // Consumer
-export class VideoStreamWorker {
+export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStreamJobResult> {
   private readonly log: LoggerPort;
 
   constructor(
+    protected readonly connection: ConnectionOptions,
     private readonly mediaRepository: VideoStatusRepositoryPort,
     private readonly s3Service: ObjectStoragePort,
     private readonly fileStorage: FileStoragePort,
     private readonly logger: LoggerPort
   ) {
+    super({ name: VIDEO_STREAM_QUEUE_NAME, workerOptions: { connection, concurrency: 2 } });
+
     this.log = this.logger.child({ module: 'video-stream-worker' });
+
+    this.worker.on('failed', async (job, err) => {
+      const jobId = get(job, 'id', '');
+      const idName = get(job, 'data.idName', '');
+      const attemptsMade = get(job, 'attemptsMade', 0);
+      const jobOptsAttempts = get(job, 'opts.attempts', 1);
+      const message = get(err, 'message', '');
+      this.log.error({ jobId, idName, attemptsMade, err }, 'job failed');
+      if (job && attemptsMade >= jobOptsAttempts) {
+        await this.mediaRepository
+          .updateVideoStatus({ name: idName, status: EEncodingVideoStatus.FAILED, message: message })
+          .catch((dbErr) => this.log.error({ err: dbErr, idName }, 'failed to mark video as FAILED in DB'));
+      }
+    });
   }
 
-  private async processVideoStreamJob(
-    job: Job<IVideoStreamJobData, IVideoStreamJobResult>
-  ): Promise<IVideoStreamJobResult> {
+  protected override async process(
+    job: Job<VideoStreamJobData, VideoStreamJobResult, string>
+  ): Promise<VideoStreamJobResult> {
     const { filepath, idName } = job.data;
 
     await this.mediaRepository.updateVideoStatus({ name: idName, status: EEncodingVideoStatus.PROCESSING });
@@ -58,42 +76,6 @@ export class VideoStreamWorker {
     await this.mediaRepository.updateVideoStatus({ name: idName, status: EEncodingVideoStatus.SUCCESS });
 
     return { idName };
-  }
-
-  public run(connection: ConnectionOptions): Worker<IVideoStreamJobData, IVideoStreamJobResult> {
-    const worker = new Worker<IVideoStreamJobData, IVideoStreamJobResult>(
-      VIDEO_STREAM_QUEUE_NAME,
-      this.processVideoStreamJob.bind(this),
-      { connection, concurrency: 2 }
-    );
-
-    worker.on('progress', (job, progress) => {
-      this.log.debug({ jobId: job.id, progress }, 'job progress');
-    });
-
-    worker.on('completed', (job) => {
-      this.log.info({ jobId: job.id, idName: job.data.idName }, 'job completed');
-    });
-
-    worker.on('failed', async (job, err) => {
-      const jobId = get(job, 'id', '');
-      const idName = get(job, 'data.idName', '');
-      const attemptsMade = get(job, 'attemptsMade', 0);
-      const jobOptsAttempts = get(job, 'opts.attempts', 1);
-      const message = get(err, 'message', '');
-      this.log.error({ jobId, idName, attemptsMade, err }, 'job failed');
-      if (job && attemptsMade >= jobOptsAttempts) {
-        await this.mediaRepository
-          .updateVideoStatus({ name: idName, status: EEncodingVideoStatus.FAILED, message: message })
-          .catch((dbErr) => this.log.error({ err: dbErr, idName }, 'failed to mark video as FAILED in DB'));
-      }
-    });
-
-    worker.on('error', (err) => {
-      this.log.error({ err }, 'worker error');
-    });
-
-    return worker;
   }
 }
 

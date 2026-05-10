@@ -45,12 +45,14 @@ export class RefreshTokenUseCase extends RefreshTokenPort {
         roleId: user.roleId,
         roleName: user.role.name
       });
+      const decodedNewRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken);
 
       // 3. Rotate refresh token
       const rotated = await this.refreshTokenRepository.rotateRefreshToken({
         userId: decoded.userId,
         oldToken: command.refreshToken,
-        newToken: refreshToken
+        newToken: refreshToken,
+        expiresAt: new Date(decodedNewRefreshToken.exp * 1000)
       });
 
       if (!rotated) {

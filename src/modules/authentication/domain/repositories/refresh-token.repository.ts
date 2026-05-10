@@ -9,5 +9,6 @@ export interface RefreshTokenRepositoryPort extends RepositoryPort<RefreshTokenE
   findRefreshToken(token: string): Promise<RefreshTokenEntity | null>;
   createRefreshToken(data: ICreateRefreshTokenInput): Promise<RefreshTokenEntity>;
   deleteRefreshToken(token: string): Promise<boolean>;
+  deleteExpiredRefreshTokens(now: Date): Promise<number>;
   rotateRefreshToken(data: IRotateRefreshTokenInput): Promise<boolean>;
 }

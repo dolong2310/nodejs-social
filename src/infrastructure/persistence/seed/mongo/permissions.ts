@@ -6,6 +6,7 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 // import { envConfig } from '@/bootstrap/config/env.config';
 import logger from '@/infrastructure/logger/create-logger';
+import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
 import {
   buildStubHttpRouters,
@@ -59,9 +60,7 @@ const USER_MODULE_ALLOWLIST: ReadonlySet<string> = new Set([
 
 const VALID_HTTP_METHODS = new Set<string>(Object.values(EHttpMethod));
 
-const MONGO_URI = 'mongodb+srv://longdo_user:ulhEbHYI8DiFB57U@nodejs-social.vy5jesg.mongodb.net/?appName=Nodejs-Social';
-const MONGO_DB_NAME = 'nodejs-social';
-const databaseService = new MongoDatabase({ uri: MONGO_URI, databaseName: MONGO_DB_NAME });
+const databaseService = new MongoDatabase({ uri: dbConfig.mongodb.uri, databaseName: dbConfig.mongodb.name });
 const permissionRepository = new PermissionRepository(
   databaseService.db,
   databaseService.dbClient,

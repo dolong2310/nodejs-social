@@ -42,7 +42,12 @@ export class RefreshTokenRepository
     return result.deletedCount > 0;
   }
 
-  async rotateRefreshToken({ userId, oldToken, newToken }: IRotateRefreshTokenInput): Promise<boolean> {
+  async deleteExpiredRefreshTokens(now: Date): Promise<number> {
+    const result = await this.dbCollection.deleteMany({ expires_at: { $lt: now } });
+    return result.deletedCount;
+  }
+
+  async rotateRefreshToken({ userId, oldToken, newToken, expiresAt }: IRotateRefreshTokenInput): Promise<boolean> {
     const result = await this.dbCollection.updateOne(
       {
         user_id: userId,
@@ -50,7 +55,9 @@ export class RefreshTokenRepository
       },
       {
         $set: {
-          token: newToken
+          token: newToken,
+          expires_at: expiresAt,
+          updated_at: new Date()
         }
       }
     );

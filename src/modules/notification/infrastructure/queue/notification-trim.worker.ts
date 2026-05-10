@@ -1,25 +1,28 @@
+import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
-  INotificationTrimJobData,
-  INotificationTrimJobResult
+  NotificationTrimJobData,
+  NotificationTrimJobResult
 } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/modules/notification/infrastructure/queue/notification-trim.queue';
-import { Worker, type ConnectionOptions, type Job } from 'bullmq';
+import { type ConnectionOptions, type Job } from 'bullmq';
 
-export class NotificationTrimWorker {
+export class NotificationTrimWorker extends BaseWorker<NotificationTrimJobData, NotificationTrimJobResult> {
   private readonly log: LoggerPort;
 
   constructor(
+    protected readonly connection: ConnectionOptions,
     private readonly notificationService: NotificationServicePort,
     private readonly logger: LoggerPort
   ) {
+    super({ name: NOTIFICATION_TRIM_QUEUE_NAME, workerOptions: { connection, concurrency: 1 } });
     this.log = this.logger.child({ module: 'notification-trim-worker' });
   }
 
-  private async processNotificationTrimJob(
-    job: Job<INotificationTrimJobData, INotificationTrimJobResult>
-  ): Promise<INotificationTrimJobResult> {
+  protected override async process(
+    job: Job<NotificationTrimJobData, NotificationTrimJobResult>
+  ): Promise<NotificationTrimJobResult> {
     const recipientUserIds = [...new Set(job.data.recipientUserIds)];
 
     // Limit DB pressure during trimming (best-effort).
@@ -40,27 +43,5 @@ export class NotificationTrimWorker {
     }
 
     return { processedRecipients };
-  }
-
-  public run(connection: ConnectionOptions): Worker<INotificationTrimJobData, INotificationTrimJobResult> {
-    const worker = new Worker<INotificationTrimJobData, INotificationTrimJobResult>(
-      NOTIFICATION_TRIM_QUEUE_NAME,
-      this.processNotificationTrimJob.bind(this),
-      { connection, concurrency: 1 }
-    );
-
-    worker.on('completed', (job) => {
-      this.log.info({ jobId: job.id, processedRecipients: job.returnvalue?.processedRecipients }, 'job completed');
-    });
-
-    worker.on('failed', (job, err) => {
-      this.log.error({ err, jobId: job?.id, attemptsMade: job?.attemptsMade }, 'notification trim job failed');
-    });
-
-    worker.on('error', (err) => {
-      this.log.error({ err }, 'notification trim worker error');
-    });
-
-    return worker;
   }
 }

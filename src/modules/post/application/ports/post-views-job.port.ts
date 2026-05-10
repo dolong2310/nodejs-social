@@ -1,13 +1,13 @@
-export interface IPostViewsJobData {
+export interface PostViewsJobData {
   postIds: string[];
   isAuthenticatedViewer: boolean;
 }
 
-export interface IPostViewsJobResult {
+export interface PostViewsJobResult {
   updatedCount: number;
 }
 
 export interface PostViewsQueuePort {
-  add(data: IPostViewsJobData): Promise<void>;
+  add(data: PostViewsJobData): Promise<void>;
   close(): Promise<void>;
 }

@@ -42,14 +42,19 @@ export class RefreshTokenRepository
     return (result.rowCount ?? 0) > 0;
   }
 
-  async rotateRefreshToken({ userId, oldToken, newToken }: IRotateRefreshTokenInput): Promise<boolean> {
+  async deleteExpiredRefreshTokens(now: Date): Promise<number> {
+    const result = await this.query(`DELETE FROM refresh_tokens WHERE expires_at < $1`, [now]);
+    return result.rowCount ?? 0;
+  }
+
+  async rotateRefreshToken({ userId, oldToken, newToken, expiresAt }: IRotateRefreshTokenInput): Promise<boolean> {
     const result = await this.query(
       `
         UPDATE refresh_tokens
-        SET token = $3, updated_at = NOW()
+        SET token = $3, expires_at = $4, updated_at = NOW()
         WHERE user_id = $1 AND token = $2
       `,
-      [userId, oldToken, newToken]
+      [userId, oldToken, newToken, expiresAt]
     );
     return (result.rowCount ?? 0) > 0;
   }

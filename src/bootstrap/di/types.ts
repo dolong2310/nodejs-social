@@ -1,3 +1,4 @@
+import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
@@ -26,6 +27,7 @@ export interface IContainer {
     mediaRepository: VideoStatusRepositoryPort;
     s3Service: ObjectStoragePort;
     fileStorage: FileStoragePort;
+    deleteExpiredRefreshTokensUC: DeleteExpiredRefreshTokensPort;
   };
   getLogger(): LoggerPort;
 }

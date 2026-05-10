@@ -14,6 +14,8 @@ import { AuthService, AuthServicePort } from '@/modules/authentication/applicati
 import { OtpService, OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import { TokenService } from '@/modules/authentication/application/services/token.service';
 import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
+import { DeleteExpiredRefreshTokensUseCase } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.usecase';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
@@ -134,6 +136,7 @@ export class Container implements IContainer {
   private readonly otpService: OtpServicePort;
   private readonly roleService: RoleServicePort;
   private readonly notificationsService: NotificationServicePort;
+  private readonly deleteExpiredRefreshTokensUC: DeleteExpiredRefreshTokensPort;
 
   private readonly presenceFeature: PresenceFeature;
   private readonly chatFeature: ChatFeature;
@@ -192,6 +195,7 @@ export class Container implements IContainer {
     this.conversationService = new ConversationService(this.conversationRepository, this.conversationMemberRepository);
     this.otpService = new OtpService(this.otpRepository, this.twoFactorService);
     this.roleService = new RoleService(this.roleRepository);
+    this.deleteExpiredRefreshTokensUC = new DeleteExpiredRefreshTokensUseCase(this.refreshTokenRepository);
     this.notificationsService = new NotificationService(
       this.notificationRepository,
       this.notificationTrimQueue,
@@ -274,7 +278,8 @@ export class Container implements IContainer {
       notificationService: this.notificationsService,
       mediaRepository: this.videoStatusRepository,
       s3Service: this.s3Service,
-      fileStorage: this.fileStorage
+      fileStorage: this.fileStorage,
+      deleteExpiredRefreshTokensUC: this.deleteExpiredRefreshTokensUC
     };
   }
 }

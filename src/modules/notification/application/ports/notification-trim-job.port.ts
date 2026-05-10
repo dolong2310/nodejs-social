@@ -1,12 +1,12 @@
-export interface INotificationTrimJobData {
+export interface NotificationTrimJobData {
   recipientUserIds: string[];
 }
 
-export interface INotificationTrimJobResult {
+export interface NotificationTrimJobResult {
   processedRecipients: number;
 }
 
 export interface NotificationTrimQueuePort {
-  add(data: INotificationTrimJobData): Promise<void>;
+  add(data: NotificationTrimJobData): Promise<void>;
   close(): Promise<void>;
 }

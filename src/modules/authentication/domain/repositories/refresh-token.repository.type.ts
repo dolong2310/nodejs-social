@@ -5,7 +5,7 @@ import {
 
 export interface ICreateRefreshTokenInput extends CreateRefreshTokenProps {}
 
-export interface IRotateRefreshTokenInput extends Pick<RefreshTokenProps, 'userId'> {
+export interface IRotateRefreshTokenInput extends Pick<RefreshTokenProps, 'userId' | 'expiresAt'> {
   oldToken: string;
   newToken: string;
 }
