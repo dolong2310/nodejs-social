@@ -1,6 +1,7 @@
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import {
   IChangePasswordInput,
@@ -27,11 +28,14 @@ export class UserRepository extends PostgresRepositoryBase<UserEntity, UserModel
   }
 
   async findUserByUsername(username: string): Promise<UserEntity | null> {
-    return this.findOne({ username } as Partial<UserEntity>);
+    const normalizedUsername = normalizeUsername(username);
+    if (!normalizedUsername) return null;
+
+    return this.findOne({ username: normalizedUsername } as Partial<UserEntity>);
   }
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
-    return this.findOne({ email } as Partial<UserEntity>);
+    return this.findOne({ email: normalizeUserEmail(email) } as Partial<UserEntity>);
   }
 
   async findUserByEmailIncludeNameEmail(email: string): Promise<UserEntity | null> {
@@ -43,7 +47,7 @@ export class UserRepository extends PostgresRepositoryBase<UserEntity, UserModel
   }
 
   async updateMe(id: string, data: IUpdateMeInput): Promise<UserEntity | null> {
-    return this.update(id, data as Partial<UserEntity>);
+    return this.update(id, { ...data, username: normalizeUsername(data.username) } as Partial<UserEntity>);
   }
 
   async resetPassword(id: string, data: IResetPasswordInput): Promise<boolean> {

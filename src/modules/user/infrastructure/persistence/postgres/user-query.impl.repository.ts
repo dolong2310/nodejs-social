@@ -1,6 +1,7 @@
 import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
 import { ESearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { IFindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
@@ -49,13 +50,20 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
   }
 
   async findSafeUserByUsername(username: string): Promise<UserSafeProps | null> {
-    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "username" = $1 LIMIT 1`, [username]);
+    const normalizedUsername = normalizeUsername(username);
+    if (!normalizedUsername) return null;
+
+    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "username" = $1 LIMIT 1`, [
+      normalizedUsername
+    ]);
     const [record] = result.rows;
     return record ? this.toSafeUser(record) : null;
   }
 
   async findSafeUserByEmail(email: string): Promise<UserSafeProps | null> {
-    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "email" = $1 LIMIT 1`, [email]);
+    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "email" = $1 LIMIT 1`, [
+      normalizeUserEmail(email)
+    ]);
     const [record] = result.rows;
     return record ? this.toSafeUser(record) : null;
   }
@@ -100,7 +108,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
         WHERE u.email = $1
         LIMIT 1
       `,
-      [email]
+      [normalizeUserEmail(email)]
     );
     const [record] = result.rows;
     return record ? this.toUserWithRole(record) : null;

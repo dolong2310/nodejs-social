@@ -325,6 +325,14 @@ export class PostgresDatabase implements PostgresDatabasePort {
         END IF;
       END $$;
 
+      UPDATE users
+      SET
+        email = lower(btrim(email)),
+        username = NULLIF(lower(btrim(username)), ''),
+        updated_at = NOW()
+      WHERE email <> lower(btrim(email))
+        OR username IS DISTINCT FROM NULLIF(lower(btrim(username)), '');
+
       CREATE TABLE IF NOT EXISTS role_permissions (
         role_id TEXT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
         permission_id TEXT NOT NULL REFERENCES permissions(id) ON DELETE RESTRICT,
@@ -334,6 +342,8 @@ export class PostgresDatabase implements PostgresDatabasePort {
 
       CREATE INDEX IF NOT EXISTS role_permissions_permission_id_idx ON role_permissions(permission_id);
       CREATE INDEX IF NOT EXISTS role_permissions_role_id_position_idx ON role_permissions(role_id, position);
+      CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_unique ON users (lower(email));
+      CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_unique ON users (lower(username)) WHERE username IS NOT NULL;
       CREATE INDEX IF NOT EXISTS users_role_id_idx ON users(role_id);
       CREATE INDEX IF NOT EXISTS users_created_at_id_idx ON users(created_at DESC, id DESC);
       CREATE INDEX IF NOT EXISTS otps_expires_at_idx ON otps(expires_at);

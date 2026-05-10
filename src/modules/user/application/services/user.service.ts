@@ -1,6 +1,7 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
@@ -49,12 +50,15 @@ export class UserService implements UserServicePort {
     username: string,
     options?: { querySafe?: boolean }
   ): Promise<UserSafeProps | UserFullProps | null> {
+    const normalizedUsername = normalizeUsername(username);
+    if (!normalizedUsername) return null;
+
     const user = await this.cacheManager.getOrSet(
-      CACHE_KEYS.userByUsername(username),
+      CACHE_KEYS.userByUsername(normalizedUsername),
       () =>
         options?.querySafe
-          ? this.userQueryRepository.findSafeUserByUsername(username)
-          : this.userRepository.findUserByUsername(username).then((user) => user?.toObject() ?? null),
+          ? this.userQueryRepository.findSafeUserByUsername(normalizedUsername)
+          : this.userRepository.findUserByUsername(normalizedUsername).then((user) => user?.toObject() ?? null),
       CACHE_TTL.USER
     );
     if (!user) return null;
@@ -67,9 +71,10 @@ export class UserService implements UserServicePort {
     email: string,
     options?: { querySafe?: boolean }
   ): Promise<UserSafeProps | UserFullProps | null> {
+    const normalizedEmail = normalizeUserEmail(email);
     const user = options?.querySafe
-      ? await this.userQueryRepository.findSafeUserByEmail(email)
-      : await this.userRepository.findUserByEmail(email).then((user) => user?.toObject() ?? null);
+      ? await this.userQueryRepository.findSafeUserByEmail(normalizedEmail)
+      : await this.userRepository.findUserByEmail(normalizedEmail).then((user) => user?.toObject() ?? null);
     if (!user) return null;
     return user;
   }

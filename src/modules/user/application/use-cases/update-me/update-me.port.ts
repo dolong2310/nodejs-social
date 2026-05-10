@@ -1,5 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 
 export class UpdateMeCommand {
   userId: string;
@@ -28,7 +29,7 @@ export class UpdateMeCommand {
     if (payload.bio !== undefined) this.bio = payload.bio.trim();
     if (payload.location !== undefined) this.location = payload.location.trim();
     if (payload.website !== undefined) this.website = payload.website.trim();
-    if (payload.username !== undefined) this.username = payload.username.trim();
+    if (payload.username !== undefined) this.username = normalizeUsername(payload.username);
     if (payload.avatar !== undefined) this.avatar = payload.avatar;
     if (payload.coverPhoto !== undefined) this.coverPhoto = payload.coverPhoto;
   }

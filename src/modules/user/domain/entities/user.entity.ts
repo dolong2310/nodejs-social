@@ -9,11 +9,17 @@ import {
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import { type CreateUserProps, type UserProps, EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 
 export class UserEntity extends Entity<UserProps> {
   static create(createProps: CreateUserProps) {
     const id = new UniqueEntityID(generatePrefixId('user'));
-    const props: UserProps = { status: EUserStatus.ACTIVE, ...createProps };
+    const props: UserProps = {
+      status: EUserStatus.ACTIVE,
+      ...createProps,
+      email: normalizeUserEmail(createProps.email),
+      username: normalizeUsername(createProps.username)
+    };
     const user = new UserEntity({ id, props });
     return user;
   }
