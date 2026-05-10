@@ -53,4 +53,9 @@ export class OtpRepository extends PostgresRepositoryBase<OtpEntity, OtpModel> i
     const [record] = result.rows;
     return record ? this.mapper.toDomain(record) : null;
   }
+
+  async deleteExpiredOtps(now: Date): Promise<number> {
+    const result = await this.query(`DELETE FROM otps WHERE expires_at < $1`, [now]);
+    return result.rowCount ?? 0;
+  }
 }

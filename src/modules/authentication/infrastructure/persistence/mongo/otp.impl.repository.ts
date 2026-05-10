@@ -57,4 +57,9 @@ export class OtpRepository extends MongoRepositoryBase<OtpEntity, OtpModel> impl
     });
     return record ? this.mapper.toDomain(record) : null;
   }
+
+  async deleteExpiredOtps(now: Date): Promise<number> {
+    const result = await this.dbCollection.deleteMany({ expires_at: { $lt: now } });
+    return result.deletedCount;
+  }
 }

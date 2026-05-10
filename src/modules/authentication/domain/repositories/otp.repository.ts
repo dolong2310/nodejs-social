@@ -7,4 +7,5 @@ export interface OtpRepositoryPort extends RepositoryPort<OtpEntity> {
   findUniqueOtpCode(data: { email: string; type: EOtpType }): Promise<OtpEntity | null>;
   createOtp(data: ICreateOtpInput): Promise<OtpEntity | null>;
   deleteOtp(id: string): Promise<OtpEntity | null>;
+  deleteExpiredOtps(now: Date): Promise<number>;
 }

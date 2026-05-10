@@ -2,6 +2,7 @@ import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { OtpEmailQueue } from '@/modules/authentication/infrastructure/queue/otp-email.queue';
+import { OtpCleanupSchedule } from '@/modules/authentication/infrastructure/schedule/otp-cleanup.schedule';
 import { RefreshTokenCleanupSchedule } from '@/modules/authentication/infrastructure/schedule/refresh-token-cleanup.schedule';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
@@ -22,6 +23,7 @@ export function createContainerQueues(logger: LoggerPort): ContainerQueues {
   const connection = buildBullMQConnection(dbConfig.redis);
 
   // register schedules
+  new OtpCleanupSchedule(connection, logger);
   new RefreshTokenCleanupSchedule(connection, logger);
 
   // register queues

@@ -44,12 +44,12 @@ export class UpdateMeUseCase extends UpdateMePort {
     const userEntity = await this.userRepository.updateMe(userId, {
       name: name ?? current?.name ?? '',
       birthday: new Date(birthday ?? current?.birthday ?? new Date()),
-      bio: bio ?? '',
-      location: location ?? '',
-      website: website ?? '',
-      username: username ?? '',
-      avatar: avatar ?? '',
-      coverPhoto: coverPhoto ?? ''
+      bio,
+      location,
+      website,
+      username,
+      avatar,
+      coverPhoto
     });
     const user = userEntity?.toObject();
 
