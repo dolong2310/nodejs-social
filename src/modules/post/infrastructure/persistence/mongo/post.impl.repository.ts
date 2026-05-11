@@ -31,7 +31,7 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
     const entity = PostEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
-    return this.mapper.toDomain(record);
+    return entity;
   }
 
   async updatePostAudienceAndStrangerComments(

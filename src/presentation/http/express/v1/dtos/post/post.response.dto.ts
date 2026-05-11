@@ -13,11 +13,6 @@ export class PostResponseDTO implements PostFullProps {
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
-  hashtags: string[];
-  mentions: string[];
-  media: Media[];
-  guestViews: number;
-  userViews: number;
   createdAt: Date;
   updatedAt: Date;
   constructor(payload: PostFullProps) {
@@ -28,11 +23,6 @@ export class PostResponseDTO implements PostFullProps {
     this.allowStrangerComments = payload.allowStrangerComments;
     this.content = payload.content;
     this.parentId = payload.parentId;
-    this.hashtags = payload.hashtags;
-    this.mentions = payload.mentions;
-    this.media = payload.media;
-    this.guestViews = payload.guestViews ?? 0;
-    this.userViews = payload.userViews ?? 0;
     this.createdAt = payload.createdAt;
     this.updatedAt = payload.updatedAt;
   }

@@ -2,7 +2,6 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { PostModel, postSchema } from '@/modules/post/infrastructure/persistence/postgres/post.model';
 import { parse } from 'valibot';
 
@@ -17,11 +16,6 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
       allow_stranger_comments: clone.allowStrangerComments,
       content: clone.content,
       parent_id: clone.parentId,
-      hashtags: clone.hashtags,
-      mentions: clone.mentions,
-      media: clone.media.map((media) => ({ url: media.raw().url, type: media.raw().type })),
-      guest_views: clone.guestViews ?? 0,
-      user_views: clone.userViews ?? 0,
       created_at: clone.createdAt,
       updated_at: clone.updatedAt
     };
@@ -38,12 +32,7 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
         audience: record.audience,
         allowStrangerComments: record.allow_stranger_comments,
         content: record.content,
-        parentId: record.parent_id,
-        hashtags: record.hashtags,
-        mentions: record.mentions,
-        media: record.media.map((media) => new Media({ url: media.url, type: media.type })),
-        guestViews: record.guest_views,
-        userViews: record.user_views
+        parentId: record.parent_id
       }
     });
   }
@@ -56,11 +45,6 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
       allowStrangerComments: record.allow_stranger_comments,
       content: record.content,
       parentId: record.parent_id,
-      hashtags: record.hashtags,
-      mentions: record.mentions,
-      media: record.media.map((media) => new Media({ url: media.url, type: media.type })),
-      guestViews: record.guest_views,
-      userViews: record.user_views,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };

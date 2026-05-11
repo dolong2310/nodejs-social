@@ -20,7 +20,7 @@ import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.ty
 import { Media } from '@/modules/post/domain/value-objects/media.value-object.js';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository.js';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper.js';
-import { PostRepository } from '@/modules/post/infrastructure/persistence/mongo/post.impl.repository.js';
+import { PostCommandRepository } from '@/modules/post/infrastructure/persistence/mongo/post-command.impl.repository.js';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper.js';
 import {
   FriendshipRepository,
@@ -52,7 +52,7 @@ const { db, dbClient } = mongo;
 
 const hashingService = new HashingService();
 const userRepository = new UserRepository(db, dbClient, new UserMapper(), logger);
-const postRepository = new PostRepository(db, dbClient, new PostMapper(), logger);
+const postCommandRepository = new PostCommandRepository(db, dbClient, new PostMapper());
 const friendshipRepository = new FriendshipRepository(db, dbClient, new FriendshipMapper(), logger);
 const hashtagRepository = new HashtagRepository(db, dbClient, new HashtagMapper(), logger);
 const roleRepository = new RoleRepository(db, dbClient, new RoleMapper(), logger);
@@ -213,21 +213,21 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
       const hashtags = await hashtagRepository.insertBulk(data.hashtagNames);
       const hashtagIds = hashtags.map((h) => h.id.toString());
 
-      const post = await postRepository.createPost({
+      const post = await postCommandRepository.publishPost({
         userId: data.userId,
         type: data.type,
         audience: data.audience,
         allowStrangerComments: data.allowStrangerComments,
         content: data.content,
         parentId: data.parentId,
-        hashtags: hashtagIds,
-        mentions: data.mentions,
+        hashtagIds,
+        mentionedUserIds: data.mentions,
         media: data.media
       });
 
       // Nếu là post gốc thì lưu lại id để làm parent cho các post con sau này
-      if (post.getProps().type === EPostType.POST) {
-        parentPostIds.push(post.id.toString());
+      if (post.type === EPostType.POST) {
+        parentPostIds.push(post.id);
       }
 
       count++;

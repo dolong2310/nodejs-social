@@ -148,21 +148,45 @@ export class PostgresDatabase implements PostgresDatabasePort {
         allow_stranger_comments BOOLEAN NOT NULL DEFAULT TRUE,
         content TEXT NOT NULL,
         parent_id TEXT REFERENCES posts(id) ON DELETE CASCADE,
-        hashtags TEXT[] NOT NULL DEFAULT '{}',
-        mentions TEXT[] NOT NULL DEFAULT '{}',
-        media JSONB NOT NULL DEFAULT '[]'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS post_hashtags (
+        post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        hashtag_id TEXT NOT NULL REFERENCES hashtags(id) ON DELETE RESTRICT,
+        position INTEGER NOT NULL CHECK (position >= 0),
+        PRIMARY KEY (post_id, hashtag_id),
+        CONSTRAINT post_hashtags_post_position_unique UNIQUE (post_id, position)
+      );
+
+      CREATE TABLE IF NOT EXISTS post_mentions (
+        post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        mentioned_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        position INTEGER NOT NULL CHECK (position >= 0),
+        PRIMARY KEY (post_id, mentioned_user_id),
+        CONSTRAINT post_mentions_post_position_unique UNIQUE (post_id, position)
+      );
+
+      CREATE TABLE IF NOT EXISTS post_media (
+        id TEXT PRIMARY KEY,
+        post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        url TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('image', 'video', 'video-stream')),
+        position INTEGER NOT NULL CHECK (position >= 0),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT post_media_url_not_empty CHECK (length(btrim(url)) > 0),
+        CONSTRAINT post_media_post_position_unique UNIQUE (post_id, position)
+      );
+
+      CREATE TABLE IF NOT EXISTS post_counters (
+        post_id TEXT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE,
         guest_views INTEGER NOT NULL DEFAULT 0 CHECK (guest_views >= 0),
         user_views INTEGER NOT NULL DEFAULT 0 CHECK (user_views >= 0),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
-
-      COMMENT ON COLUMN posts.hashtags IS
-        'Mongo-shape migration field. Revisit normalization when post updates include hashtags.';
-      COMMENT ON COLUMN posts.mentions IS
-        'Mongo-shape migration field. Revisit normalization when post updates include mentions.';
-      COMMENT ON COLUMN posts.media IS
-        'Mongo-shape migration field. Revisit JSONB/normalization when post updates include media/content.';
 
       CREATE TABLE IF NOT EXISTS likes (
         id TEXT PRIMARY KEY,
@@ -357,8 +381,14 @@ export class PostgresDatabase implements PostgresDatabasePort {
       CREATE INDEX IF NOT EXISTS posts_user_audience_idx ON posts(user_id, audience);
       CREATE INDEX IF NOT EXISTS posts_audience_created_id_idx ON posts(audience, created_at DESC, id DESC);
       CREATE INDEX IF NOT EXISTS posts_created_id_idx ON posts(created_at DESC, id DESC);
-      CREATE INDEX IF NOT EXISTS posts_media_gin_idx ON posts USING GIN (media jsonb_path_ops);
       CREATE INDEX IF NOT EXISTS posts_content_fts_idx ON posts USING GIN (to_tsvector('simple', content));
+      CREATE INDEX IF NOT EXISTS post_hashtags_hashtag_post_idx ON post_hashtags(hashtag_id, post_id);
+      CREATE INDEX IF NOT EXISTS post_hashtags_post_position_idx ON post_hashtags(post_id, position);
+      CREATE INDEX IF NOT EXISTS post_mentions_user_post_idx ON post_mentions(mentioned_user_id, post_id);
+      CREATE INDEX IF NOT EXISTS post_mentions_post_position_idx ON post_mentions(post_id, position);
+      CREATE INDEX IF NOT EXISTS post_media_post_type_idx ON post_media(post_id, type);
+      CREATE INDEX IF NOT EXISTS post_media_post_position_idx ON post_media(post_id, position);
+      CREATE INDEX IF NOT EXISTS post_counters_updated_at_idx ON post_counters(updated_at);
       CREATE INDEX IF NOT EXISTS likes_post_id_idx ON likes(post_id);
       CREATE INDEX IF NOT EXISTS bookmarks_post_id_idx ON bookmarks(post_id);
       CREATE UNIQUE INDEX IF NOT EXISTS conversations_direct_pair_unique

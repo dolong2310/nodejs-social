@@ -11,9 +11,11 @@ import {
   CreatePostResult
 } from '@/modules/post/application/use-cases/create-post/create-post.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import { IPostAccessSnapshot } from '@/modules/post/domain/repositories/post.query.type';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
@@ -21,7 +23,8 @@ export class CreatePostUseCase extends CreatePostPort {
   private readonly log: LoggerPort;
 
   constructor(
-    private readonly postRepository: PostRepositoryPort,
+    private readonly postCommandRepository: PostCommandRepositoryPort,
+    private readonly postQueryRepository: PostQueryRepositoryPort,
     private readonly hashtagRepository: HashtagRepositoryPort,
     private readonly blockService: BlockServicePort,
     private readonly friendService: FriendServicePort,
@@ -48,8 +51,7 @@ export class CreatePostUseCase extends CreatePostPort {
         throw new PostNotFoundException();
       }
       // lấy bài post cha
-      const postEntity = await this.postRepository.findPostById(parentId);
-      const parent = postEntity?.toObject();
+      const parent = await this.postQueryRepository.findPostAccessSnapshotById(parentId);
       if (!parent) {
         throw new PostNotFoundException();
       }
@@ -65,7 +67,7 @@ export class CreatePostUseCase extends CreatePostPort {
       // Xác định vai trò người tương tác với bài cha
       const ownerId = parent.userId;
       const isOwner = userId === ownerId; // chính chủ bài cha
-      const isMention = parent.mentions.some((mentionId) => mentionId === userId); // được tag trong bài cha
+      const isMention = parent.mentionedUserIds.some((mentionId) => mentionId === userId); // được tag trong bài cha
       // Chỉ xử lý rule "stranger comments" khi bài cha là PUBLIC và viewer là stranger.
       const isPublic = parent.audience === EPostAudience.PUBLIC;
 
@@ -85,7 +87,7 @@ export class CreatePostUseCase extends CreatePostPort {
     // tạo post mới
     const hashtagEntities = await this.createHashtags(hashtagsPayload);
     const hashtagIds = hashtagEntities.filter((h) => h !== null).map((hashtag) => hashtag.id.toString());
-    const postEntity = await this.postRepository.createPost({
+    const post = await this.postCommandRepository.publishPost({
       userId,
       type,
       parentId,
@@ -93,10 +95,9 @@ export class CreatePostUseCase extends CreatePostPort {
       audience,
       allowStrangerComments,
       media,
-      mentions,
-      hashtags: hashtagIds
+      mentionedUserIds: mentions,
+      hashtagIds
     });
-    const post = postEntity.toObject();
     return new CreatePostResult(post);
   }
 
@@ -115,7 +116,7 @@ export class CreatePostUseCase extends CreatePostPort {
   /**
    * Hàm này chỉ tập trung vào khả năng truy cập bài cha
    */
-  private async assertViewerCanSeeParentForInteraction(viewerId: string, parent: PostFullProps): Promise<void> {
+  private async assertViewerCanSeeParentForInteraction(viewerId: string, parent: IPostAccessSnapshot): Promise<void> {
     const ownerId = parent.userId;
     // Nếu viewer là chủ bài cha (viewerId === ownerId) thì không cần kiểm tra quyền truy cập.
     if (viewerId === ownerId) {
@@ -126,7 +127,7 @@ export class CreatePostUseCase extends CreatePostPort {
     const isPublic = audienceStr === EPostAudience.PUBLIC;
     const isFriendsOnly = audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
     const isOnlyMe = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
-    const isMention = parent.mentions.some((mentionId) => mentionId === viewerId);
+    const isMention = parent.mentionedUserIds.some((mentionId) => mentionId === viewerId);
     // Nếu bài cha là ONLY_ME thì không cho phép truy cập.
     if (isOnlyMe) {
       throw new CannotEngageWithInaccessiblePostException();

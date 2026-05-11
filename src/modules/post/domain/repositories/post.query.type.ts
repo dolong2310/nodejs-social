@@ -1,7 +1,8 @@
 import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
 import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
-import { EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
 import { Prettify } from 'ts-essentials';
 
@@ -50,9 +51,20 @@ export interface IFindPostsForSearchInput {
 
 // Output
 
-export interface IPostDetailOutput extends Omit<PostFullProps, 'mentions' | 'hashtags'> {
+export interface IPostAccessSnapshot {
+  id: string;
+  userId: string;
+  audience: EPostAudience;
+  allowStrangerComments: boolean;
+  mentionedUserIds: string[];
+}
+
+export interface IPostDetailOutput extends PostFullProps {
   hashtags: HashtagFullProps[];
   mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
+  media: Media[];
+  guestViews: number;
+  userViews: number;
   bookmarkCount: number;
   repostCount: number;
   commentCount: number;

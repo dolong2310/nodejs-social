@@ -62,6 +62,18 @@ export class MongoDatabase implements MongoDatabasePort {
   private get posts(): Collection<Document> {
     return this.db.collection('posts');
   }
+  private get postHashtags(): Collection<Document> {
+    return this.db.collection('post_hashtags');
+  }
+  private get postMentions(): Collection<Document> {
+    return this.db.collection('post_mentions');
+  }
+  private get postMedia(): Collection<Document> {
+    return this.db.collection('post_media');
+  }
+  private get postCounters(): Collection<Document> {
+    return this.db.collection('post_counters');
+  }
   private get bookmarks(): Collection<Document> {
     return this.db.collection('bookmarks');
   }
@@ -216,11 +228,16 @@ export class MongoDatabase implements MongoDatabasePort {
     await this.hashtags.createIndex({ name: 1 }, { unique: true });
   }
 
-  /** Search posts: filters on audience + media.type (video / image) combine often in $match. */
-  private async createSearchPostsAudienceMediaIndex() {
-    const name = 'audience_1_media.type_1';
-    if (await this.indexExistsSafe(this.posts, [name])) return;
-    await this.posts.createIndex({ audience: 1, 'media.type': 1 }, { name });
+  private async createPostAssociationIndexes() {
+    await Promise.all([
+      this.postHashtags.createIndex({ post_id: 1, position: 1 }, { unique: true }),
+      this.postHashtags.createIndex({ hashtag_id: 1, post_id: 1 }),
+      this.postMentions.createIndex({ post_id: 1, position: 1 }, { unique: true }),
+      this.postMentions.createIndex({ mentioned_user_id: 1, post_id: 1 }),
+      this.postMedia.createIndex({ post_id: 1, position: 1 }, { unique: true }),
+      this.postMedia.createIndex({ type: 1, post_id: 1 }),
+      this.postCounters.createIndex({ post_id: 1 }, { unique: true })
+    ]);
   }
 
   private async createUsersSearchIndex() {
@@ -249,7 +266,7 @@ export class MongoDatabase implements MongoDatabasePort {
       this.createBlockIndexes(),
       this.createPostsIndex(),
       this.createPostsAdditionalIndexes(),
-      this.createSearchPostsAudienceMediaIndex(),
+      this.createPostAssociationIndexes(),
       this.createBookmarksIndex(),
       this.createLikesIndex(),
       this.createHashtagsIndex(),

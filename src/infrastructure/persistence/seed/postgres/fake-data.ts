@@ -20,7 +20,7 @@ import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.ty
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
-import { PostRepository } from '@/modules/post/infrastructure/persistence/postgres/post.impl.repository';
+import { PostCommandRepository } from '@/modules/post/infrastructure/persistence/postgres/post-command.impl.repository';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
 import {
   FriendshipRepository,
@@ -48,7 +48,8 @@ const postgres = new PostgresDatabase({
 
 const hashingService = new HashingService();
 const userRepository = new UserRepository(postgres.pool, new UserMapper(), logger);
-const postRepository = new PostRepository(postgres.pool, new PostMapper(), logger);
+const postMapper = new PostMapper();
+const postCommandRepository = new PostCommandRepository(postgres.pool, postMapper);
 const friendshipRepository = new FriendshipRepository(postgres.pool, new FriendshipMapper(), logger);
 const hashtagRepository = new HashtagRepository(postgres.pool, new HashtagMapper(), logger);
 const roleRepository = new RoleRepository(postgres.pool, new RoleMapper(), logger);
@@ -185,20 +186,20 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
       const hashtags = await hashtagRepository.insertBulk(data.hashtagNames);
       const hashtagIds = hashtags.map((hashtag) => hashtag.id.toString());
 
-      const post = await postRepository.createPost({
+      const post = await postCommandRepository.publishPost({
         userId: data.userId,
         type: data.type,
         audience: data.audience,
         allowStrangerComments: data.allowStrangerComments,
         content: data.content,
         parentId: data.parentId,
-        hashtags: hashtagIds,
-        mentions: data.mentions,
+        hashtagIds,
+        mentionedUserIds: data.mentions,
         media: data.media
       });
 
-      if (post.getProps().type === EPostType.POST) {
-        parentPostIds.push(post.id.toString());
+      if (post.type === EPostType.POST) {
+        parentPostIds.push(post.id);
       }
 
       count++;

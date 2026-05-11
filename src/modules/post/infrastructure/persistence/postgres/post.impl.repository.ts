@@ -38,15 +38,10 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
           allow_stranger_comments,
           content,
           parent_id,
-          hashtags,
-          mentions,
-          media,
-          guest_views,
-          user_views,
           created_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13, $14)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
       `,
       [
@@ -57,11 +52,6 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
         record.allow_stranger_comments,
         record.content,
         record.parent_id,
-        record.hashtags,
-        record.mentions,
-        JSON.stringify(record.media),
-        record.guest_views,
-        record.user_views,
         record.created_at,
         record.updated_at
       ]

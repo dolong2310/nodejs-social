@@ -9,10 +9,7 @@
       "audience",
       "allowStrangerComments",
       "content",
-      "parentId",
-      "hashtags",
-      "mentions",
-      "media"
+      "parentId"
     ],
     "properties": {
       "_id": {
@@ -46,51 +43,6 @@
             "maxLength": 128
           }
         ]
-      },
-      "hashtags": {
-        "bsonType": "array",
-        "items": {
-          "bsonType": "string",
-          "minLength": 36,
-          "maxLength": 128,
-          "description": "Hashtag document id"
-        }
-      },
-      "mentions": {
-        "bsonType": "array",
-        "items": {
-          "bsonType": "string",
-          "minLength": 36,
-          "maxLength": 128,
-          "description": "Mentioned user id"
-        }
-      },
-      "media": {
-        "bsonType": "array",
-        "items": {
-          "bsonType": "object",
-          "required": ["url", "type"],
-          "additionalProperties": false,
-          "properties": {
-            "url": {
-              "bsonType": "string",
-              "description": "IMedia.url (absolute http(s))"
-            },
-            "type": {
-              "bsonType": "string",
-              "enum": ["image", "video", "video-stream"],
-              "description": "EMediaType"
-            }
-          }
-        }
-      },
-      "guestViews": {
-        "bsonType": ["int", "long", "double"],
-        "minimum": 0
-      },
-      "userViews": {
-        "bsonType": ["int", "long", "double"],
-        "minimum": 0
       },
       "createdAt": { "bsonType": "date" },
       "updatedAt": { "bsonType": "date" }

@@ -10,6 +10,7 @@ import {
   IFindPostsInput,
   IFindPostsTypeInput,
   IIsViewerInteractedWithPostInput,
+  IPostAccessSnapshot,
   IPostDetailOutput,
   IPostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.type';
@@ -38,6 +39,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return this.db.collection<BookmarkModel>('bookmarks');
   }
 
+  get postMediaCollection(): Collection<Document> {
+    return this.db.collection('post_media');
+  }
+
   async isViewerInteractedWithPost({ postId, viewerId: userId }: IIsViewerInteractedWithPostInput): Promise<boolean> {
     // const v = new ObjectId(data.viewerId);
     // const p = new ObjectId(data.postId);
@@ -57,138 +62,46 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
   }
 
   async findPostDetailById(id: string): Promise<IPostDetailOutput> {
-    const pipelineGetDetailPost = [
-      {
-        $match: {
-          _id: id
-        }
-      },
-      {
-        $addFields: {
-          allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] }
-        }
-      },
-      {
-        $lookup: {
-          from: 'hashtags',
-          localField: 'hashtags',
-          foreignField: '_id',
-          as: 'hashtags'
-        }
-      },
-      {
-        $addFields: {
-          hashtags: {
-            $map: {
-              input: '$hashtags',
-              as: 'hashtag',
-              in: {
-                id: '$$hashtag._id',
-                name: '$$hashtag.name',
-                createdAt: '$$hashtag.created_at',
-                updatedAt: '$$hashtag.updated_at'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'mentions',
-          foreignField: '_id',
-          as: 'mentions'
-        }
-      },
-      {
-        $addFields: {
-          mentions: {
-            $map: {
-              input: '$mentions',
-              as: 'mention',
-              in: {
-                id: '$$mention._id',
-                name: '$$mention.name',
-                username: '$$mention.username',
-                status: '$$mention.status'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'bookmarks',
-          let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
-          as: 'bookmarkCountLookupResults'
-        }
-      },
-      {
-        $lookup: {
-          from: 'posts',
-          let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
-          as: 'childPostsWithTypeOnly'
-        }
-      },
-      {
-        $addFields: {
-          bookmarkCount: {
-            $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
-          },
-          repostCount: {
-            $size: {
-              $filter: {
-                input: '$childPostsWithTypeOnly',
-                as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EPostType.REPOST] }
-              }
-            }
-          },
-          commentCount: {
-            $size: {
-              $filter: {
-                input: '$childPostsWithTypeOnly',
-                as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EPostType.COMMENT] }
-              }
-            }
-          },
-          quoteCount: {
-            $size: {
-              $filter: {
-                input: '$childPostsWithTypeOnly',
-                as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EPostType.QUOTE] }
-              }
-            }
-          }
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: { $mergeObjects: [postOutputProjection(), '$$ROOT'] }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          user_id: 0,
-          allow_stranger_comments: 0,
-          parent_id: 0,
-          guest_views: 0,
-          user_views: 0,
-          created_at: 0,
-          updated_at: 0,
-          bookmarkCountLookupResults: 0,
-          childPostsWithTypeOnly: 0
-        }
-      }
-    ];
+    const pipelineGetDetailPost = buildBasePostPipeline({
+      match: { _id: id },
+      limit: 1,
+      includeAuthor: false
+    });
     const [post] = await this.dbCollection.aggregate<IPostDetailOutput>(pipelineGetDetailPost).toArray();
 
     return post;
+  }
+
+  async findPostAccessSnapshotById(id: string): Promise<IPostAccessSnapshot | null> {
+    const [post] = await this.dbCollection
+      .aggregate<IPostAccessSnapshot>([
+        { $match: { _id: id } },
+        {
+          $lookup: {
+            from: 'post_mentions',
+            let: { rootPostId: '$_id' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+              { $sort: { position: 1 } },
+              { $project: { _id: 0, mentioned_user_id: 1 } }
+            ],
+            as: 'mentionRows'
+          }
+        },
+        {
+          $replaceRoot: {
+            newRoot: {
+              id: '$_id',
+              userId: '$user_id',
+              audience: '$audience',
+              allowStrangerComments: { $ifNull: ['$allow_stranger_comments', true] },
+              mentionedUserIds: '$mentionRows.mentioned_user_id'
+            }
+          }
+        }
+      ])
+      .toArray();
+    return post ?? null;
   }
 
   async findPostIdsWhereViewerInteractedWithAuthors(
@@ -340,7 +253,6 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
   }: IFindPostsForSearchInput): Promise<IPostDetailWithAuthorOutput[]> {
     // const baseMatch = await this._getPostMatch(payload);
     // const match = this._mergeCreatedAtIdCursor(baseMatch, cursor);
-    const match: Record<string, unknown> = {};
     const $and: Record<string, unknown>[] = [];
 
     if (query) {
@@ -355,9 +267,13 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     if (type) {
       // tìm kiếm theo type của post
       if ([ESearchType.VIDEO, ESearchType.VIDEO_STREAM].includes(type)) {
-        $and.push({ 'media.type': { $in: [EMediaType.VIDEO, EMediaType.VIDEO_STREAM] } });
+        const ids = await this.findPostIdsByMediaTypes([EMediaType.VIDEO, EMediaType.VIDEO_STREAM]);
+        if (ids.length === 0) return [];
+        $and.push({ _id: { $in: ids } });
       } else if (type === ESearchType.IMAGE) {
-        $and.push({ 'media.type': type });
+        const ids = await this.findPostIdsByMediaTypes([EMediaType.IMAGE]);
+        if (ids.length === 0) return [];
+        $and.push({ _id: { $in: ids } });
       }
     }
 
@@ -401,11 +317,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       $and.push({ audience: EPostAudience.PUBLIC });
     }
 
-    if ($and.length === 1) {
-      match['$and'] = $and[0];
-    } else {
-      match['$and'] = $and;
-    }
+    let match: Record<string, unknown> = $and.length === 1 ? $and[0] : { $and };
 
     // build cursor filter
     if (cursor) {
@@ -416,7 +328,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
         ]
       };
-      match['$and'] = [match, cursorFilter];
+      match = { $and: [match, cursorFilter] };
     }
 
     const pipelineGetNewFeeds = buildBasePostPipeline({
@@ -425,6 +337,11 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       includeAuthor: true
     });
     return this.dbCollection.aggregate<IPostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
+  }
+
+  private async findPostIdsByMediaTypes(types: EMediaType[]): Promise<string[]> {
+    const ids = await this.postMediaCollection.distinct<string>('post_id', { type: { $in: types } });
+    return ids;
   }
 
   private buildFeedMatch({
@@ -544,51 +461,83 @@ function buildBasePostPipeline({
   pipeline.push(
     {
       $lookup: {
-        from: 'hashtags',
-        localField: 'hashtags',
-        foreignField: '_id',
+        from: 'post_hashtags',
+        let: { rootPostId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $sort: { position: 1 } },
+          {
+            $lookup: {
+              from: 'hashtags',
+              localField: 'hashtag_id',
+              foreignField: '_id',
+              as: 'hashtag'
+            }
+          },
+          { $unwind: '$hashtag' },
+          {
+            $replaceRoot: {
+              newRoot: {
+                id: '$hashtag._id',
+                name: '$hashtag.name',
+                createdAt: '$hashtag.created_at',
+                updatedAt: '$hashtag.updated_at'
+              }
+            }
+          }
+        ],
         as: 'hashtags'
       }
     },
     {
-      $addFields: {
-        hashtags: {
-          $map: {
-            input: '$hashtags',
-            as: 'hashtag',
-            in: {
-              id: '$$hashtag._id',
-              name: '$$hashtag.name',
-              createdAt: '$$hashtag.created_at',
-              updatedAt: '$$hashtag.updated_at'
+      $lookup: {
+        from: 'post_mentions',
+        let: { rootPostId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $sort: { position: 1 } },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'mentioned_user_id',
+              foreignField: '_id',
+              as: 'mention'
+            }
+          },
+          { $unwind: '$mention' },
+          {
+            $replaceRoot: {
+              newRoot: {
+                id: '$mention._id',
+                name: '$mention.name',
+                email: '$mention.email',
+                username: '$mention.username',
+                status: '$mention.status'
+              }
             }
           }
-        }
-      }
-    },
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'mentions',
-        foreignField: '_id',
+        ],
         as: 'mentions'
       }
     },
     {
-      $addFields: {
-        allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] },
-        mentions: {
-          $map: {
-            input: '$mentions',
-            as: 'mention',
-            in: {
-              id: '$$mention._id',
-              name: '$$mention.name',
-              username: '$$mention.username',
-              status: '$$mention.status'
-            }
-          }
-        }
+      $lookup: {
+        from: 'post_media',
+        let: { rootPostId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $sort: { position: 1 } },
+          { $project: { _id: 0, url: 1, type: 1 } }
+        ],
+        as: 'media'
+      }
+    },
+    {
+      $lookup: {
+        from: 'post_counters',
+        localField: '_id',
+        foreignField: 'post_id',
+        as: 'counter'
       }
     },
     {
@@ -609,6 +558,9 @@ function buildBasePostPipeline({
     },
     {
       $addFields: {
+        allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] },
+        guest_views: { $ifNull: [{ $arrayElemAt: ['$counter.guest_views', 0] }, 0] },
+        user_views: { $ifNull: [{ $arrayElemAt: ['$counter.user_views', 0] }, 0] },
         bookmarkCount: {
           $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
         },
@@ -656,6 +608,7 @@ function buildBasePostPipeline({
         user_views: 0,
         created_at: 0,
         updated_at: 0,
+        counter: 0,
         bookmarkCountLookupResults: 0,
         childPostsWithTypeOnly: 0
       }

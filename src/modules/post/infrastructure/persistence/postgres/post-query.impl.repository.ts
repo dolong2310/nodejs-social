@@ -10,6 +10,7 @@ import {
   IFindPostsInput,
   IFindPostsTypeInput,
   IIsViewerInteractedWithPostInput,
+  IPostAccessSnapshot,
   IPostDetailOutput,
   IPostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.type';
@@ -66,6 +67,44 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       limit: 1
     });
     return rows[0] as IPostDetailOutput;
+  }
+
+  async findPostAccessSnapshotById(id: string): Promise<IPostAccessSnapshot | null> {
+    const result = await this.pool.query<{
+      id: string;
+      user_id: string;
+      audience: EPostAudience;
+      allow_stranger_comments: boolean;
+      mentioned_user_ids: string[];
+    }>(
+      `
+        SELECT
+          p.id,
+          p.user_id,
+          p.audience,
+          p.allow_stranger_comments,
+          COALESCE(mentions.items, ARRAY[]::text[]) AS mentioned_user_ids
+        FROM posts p
+        LEFT JOIN LATERAL (
+          SELECT array_agg(pm.mentioned_user_id ORDER BY pm.position) AS items
+          FROM post_mentions pm
+          WHERE pm.post_id = p.id
+        ) mentions ON TRUE
+        WHERE p.id = $1
+        LIMIT 1
+      `,
+      [id]
+    );
+    const [row] = result.rows;
+    return row
+      ? {
+          id: row.id,
+          userId: row.user_id,
+          audience: row.audience,
+          allowStrangerComments: row.allow_stranger_comments,
+          mentionedUserIds: row.mentioned_user_ids
+        }
+      : null;
   }
 
   async findPostIdsWhereViewerInteractedWithAuthors({
@@ -183,13 +222,22 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     if (type) {
       if ([ESearchType.VIDEO, ESearchType.VIDEO_STREAM].includes(type)) {
         whereParts.push(
-          `(p.media @> ${this.addParam(params, JSON.stringify([{ type: EMediaType.VIDEO }]))}::jsonb OR p.media @> ${this.addParam(
-            params,
-            JSON.stringify([{ type: EMediaType.VIDEO_STREAM }])
-          )}::jsonb)`
+          `EXISTS (
+            SELECT 1
+            FROM post_media pm
+            WHERE pm.post_id = p.id
+              AND pm.type = ANY(${this.addParam(params, [EMediaType.VIDEO, EMediaType.VIDEO_STREAM])}::text[])
+          )`
         );
       } else if (type === ESearchType.IMAGE) {
-        whereParts.push(`p.media @> ${this.addParam(params, JSON.stringify([{ type: EMediaType.IMAGE }]))}::jsonb`);
+        whereParts.push(
+          `EXISTS (
+            SELECT 1
+            FROM post_media pm
+            WHERE pm.post_id = p.id
+              AND pm.type = ${this.addParam(params, EMediaType.IMAGE)}
+          )`
+        );
       }
     }
 
@@ -266,9 +314,9 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           bp.parent_id,
           COALESCE(hashtags.items, '[]'::json) AS hashtags,
           COALESCE(mentions.items, '[]'::json) AS mentions,
-          bp.media,
-          bp.guest_views,
-          bp.user_views,
+          COALESCE(media.items, '[]'::json) AS media,
+          COALESCE(counters.guest_views, 0)::int AS guest_views,
+          COALESCE(counters.user_views, 0)::int AS user_views,
           bp.created_at,
           bp.updated_at,
           COALESCE(bookmarks.total, 0)::int AS bookmark_count,
@@ -302,10 +350,11 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               'createdAt', h.created_at,
               'updatedAt', h.updated_at
             )
-            ORDER BY input.ord
+            ORDER BY ph.position
           ) AS items
-          FROM unnest(bp.hashtags) WITH ORDINALITY input(id, ord)
-          JOIN hashtags h ON h.id = input.id
+          FROM post_hashtags ph
+          JOIN hashtags h ON h.id = ph.hashtag_id
+          WHERE ph.post_id = bp.id
         ) hashtags ON TRUE
         LEFT JOIN LATERAL (
           SELECT json_agg(
@@ -315,11 +364,28 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               'username', u.username,
               'status', u.status
             )
-            ORDER BY input.ord
+            ORDER BY pm.position
           ) AS items
-          FROM unnest(bp.mentions) WITH ORDINALITY input(id, ord)
-          JOIN users u ON u.id = input.id
+          FROM post_mentions pm
+          JOIN users u ON u.id = pm.mentioned_user_id
+          WHERE pm.post_id = bp.id
         ) mentions ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT json_agg(
+            json_build_object(
+              'url', pm.url,
+              'type', pm.type
+            )
+            ORDER BY pm.position
+          ) AS items
+          FROM post_media pm
+          WHERE pm.post_id = bp.id
+        ) media ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT pc.guest_views, pc.user_views
+          FROM post_counters pc
+          WHERE pc.post_id = bp.id
+        ) counters ON TRUE
         LEFT JOIN LATERAL (
           SELECT COUNT(*)::int AS total
           FROM bookmarks b

@@ -96,7 +96,7 @@ export function createPostgresContainerRepositories(
   };
 
   const commandRepositories = {
-    postCommandRepository: new PostCommandRepository(database.pool)
+    postCommandRepository: new PostCommandRepository(database.pool, postMapper)
   };
 
   return {
