@@ -5,7 +5,7 @@ import {
   Setup2FAPort,
   Setup2FAResult
 } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -17,7 +17,7 @@ export class Setup2FAUseCase extends Setup2FAPort {
     private readonly userRepository: UserRepositoryPort,
     private readonly userService: UserServicePort,
     private readonly twoFactorAuthenticationService: TwoFactorAuthPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -41,7 +41,7 @@ export class Setup2FAUseCase extends Setup2FAPort {
     await this.userRepository.updateOne(userId, { totpSecret: secret } as Partial<UserEntity>);
 
     // 4. Delete user from cache
-    await this.cacheManager.del(CACHE_KEYS.user(user.id));
+    await this.cache.invalidate(CACHE_KEYS.user(user.id));
 
     // 5. Return secret key và URI
     return new Setup2FAResult({

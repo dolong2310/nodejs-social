@@ -4,6 +4,7 @@ import { createContainerQueues } from '@/bootstrap/di/queues';
 import { createContainerRepositories } from '@/bootstrap/di/repositories';
 import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
+import { CacheStrategy } from '@/infrastructure/cache/cache.strategy';
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
@@ -14,10 +15,10 @@ import { AuthService, AuthServicePort } from '@/modules/authentication/applicati
 import { OtpService, OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import { TokenService } from '@/modules/authentication/application/services/token.service';
 import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
-import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
-import { DeleteExpiredRefreshTokensUseCase } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.usecase';
 import { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredOtpsUseCase } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.usecase';
+import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
+import { DeleteExpiredRefreshTokensUseCase } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.usecase';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
@@ -37,6 +38,7 @@ import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/do
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
@@ -85,6 +87,7 @@ export class Container implements IContainer {
 
   private readonly database: DatabasePort;
   private readonly redis: CacheManagerPort;
+  private readonly cacheStrategy: CacheStrategyPort;
   private readonly logger: LoggerPort = logger;
 
   private readonly realtimeEmitter: RealtimeEmitterPort;
@@ -148,6 +151,7 @@ export class Container implements IContainer {
     this.database = database;
     this.redis = redis;
 
+    this.cacheStrategy = new CacheStrategy(this.redis);
     this.jwtService = new JwtService();
     this.hashingService = new HashingService();
     this.twoFactorService = new TwoFactorAuthService();
@@ -191,10 +195,10 @@ export class Container implements IContainer {
     this.otpEmailSender = new SesOtpEmailSender(this.logger);
 
     this.authService = new AuthService(this.refreshTokenRepository, this.tokenService);
-    this.userService = new UserService(this.userRepository, this.userQueryRepository, this.redis);
-    this.friendService = new FriendService(this.friendshipRepository, this.redis);
-    this.blockService = new BlockService(this.blockRepository, this.redis);
-    this.postService = new PostService(this.postQueryRepository, this.postViewsQueue, this.redis, this.logger);
+    this.userService = new UserService(this.userRepository, this.userQueryRepository, this.cacheStrategy);
+    this.friendService = new FriendService(this.friendshipRepository, this.cacheStrategy);
+    this.blockService = new BlockService(this.blockRepository, this.cacheStrategy);
+    this.postService = new PostService(this.postQueryRepository, this.postViewsQueue, this.cacheStrategy, this.logger);
     this.conversationService = new ConversationService(this.conversationRepository, this.conversationMemberRepository);
     this.otpService = new OtpService(this.otpRepository, this.twoFactorService);
     this.roleService = new RoleService(this.roleRepository);
@@ -210,7 +214,7 @@ export class Container implements IContainer {
     this.routers = buildHttpRouters({
       ...repos,
       logger: this.logger,
-      redis: this.redis,
+      cacheStrategy: this.cacheStrategy,
       realtimeEmitter: this.realtimeEmitter,
       fileStorage: this.fileStorage,
       imageProcessor: this.imageProcessor,

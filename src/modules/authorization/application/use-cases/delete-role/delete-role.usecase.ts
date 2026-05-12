@@ -1,3 +1,4 @@
+import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constant';
 import {
   RoleNotFoundException,
   SystemRoleCannotBeDeletedException
@@ -7,12 +8,12 @@ import {
   DeleteRolePort
 } from '@/modules/authorization/application/use-cases/delete-role/delete-role.port';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 
 export class DeleteRoleUseCase extends DeleteRolePort {
   constructor(
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -25,10 +26,11 @@ export class DeleteRoleUseCase extends DeleteRolePort {
     if (current.isSystemRole()) {
       throw new SystemRoleCannotBeDeletedException();
     }
-    const removed = await this.roleRepository.deleteRole(command.id);
-    if (!removed) {
-      throw new RoleNotFoundException();
-    }
-    await this.cacheManager.del(`role:${command.id}`);
+    await this.cache.delete(CACHE_KEYS.role(command.id), async () => {
+      const removed = await this.roleRepository.deleteRole(command.id);
+      if (!removed) {
+        throw new RoleNotFoundException();
+      }
+    });
   }
 }

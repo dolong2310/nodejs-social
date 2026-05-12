@@ -1,6 +1,6 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import {
@@ -14,7 +14,7 @@ export class SearchUsersUseCase extends SearchUsersPort {
   constructor(
     private readonly userQueryRepository: UserQueryRepositoryPort,
     private readonly friendService: FriendServicePort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -51,6 +51,7 @@ export class SearchUsersUseCase extends SearchUsersPort {
       limit
     });
 
-    return this.cacheManager.getOrSet(key, load, CACHE_TTL.SEARCH_USERS);
+    const result = await this.cache.get(key, load, { ttlSeconds: CACHE_TTL.SEARCH_USERS });
+    return result ?? load();
   }
 }

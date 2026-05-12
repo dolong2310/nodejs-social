@@ -60,7 +60,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 
 ### Testing và verification còn thiếu
 
-- `npm test` hiện fail vì thiếu `tests/setup/register-argv.mjs`. Cần sửa test harness trước khi tin vào test suite.
+- `pnpm test` hiện fail vì thiếu `tests/setup/register-argv.mjs`. Cần sửa test harness trước khi tin vào test suite.
 - Cần contract tests cho repository ports để Mongo/Postgres cùng satisfy behavior: permission, role, role query, sau đó user.
 - Cần integration tests với Postgres thật, tốt nhất qua test database/container, để kiểm tra FK, unique constraint, transaction rollback, và order của `role_permissions`.
 - Cần parity tests giữa Mongo và Postgres cho các use case quan trọng: create/update/delete permission, create/update/delete role, role with permissions.
@@ -77,7 +77,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 
 ### Suggested next steps
 
-1. Sửa test harness `tests/setup/register-argv.mjs` hoặc script `npm test`.
+1. Sửa test harness `tests/setup/register-argv.mjs` hoặc script `pnpm test`.
 2. Viết contract/integration tests cho permission + role Postgres adapters.
 3. Implement user Postgres adapter sau khi có tests nền.
 4. Thêm schema `users` với FK/unique/index/search strategy rõ ràng.
@@ -143,7 +143,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 
 ### Testing và verification còn thiếu
 
-- `npm test` vẫn fail vì thiếu `tests/setup/register-argv.mjs`; đây là blocker trước khi tin vào regression suite.
+- `pnpm test` vẫn fail vì thiếu `tests/setup/register-argv.mjs`; đây là blocker trước khi tin vào regression suite.
 - Cần contract tests cho auth-critical repository ports: `UserRepositoryPort`, `UserQueryRepositoryPort`, `OtpRepositoryPort`, `RefreshTokenRepositoryPort`, `RoleRepositoryPort`, `RoleQueryRepositoryPort`.
 - Cần integration tests với Mongo thật hoặc test container để verify unique index `{ email, type }` và migration TTL -> regular index cho `refreshTokens.expiresAt`.
 - Cần integration tests với Postgres thật để verify FK `refresh_tokens.user_id`, unique token, `ON DELETE CASCADE`, OTP upsert `ON CONFLICT(email, type)`, và `expires_at` indexes.
@@ -152,7 +152,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 
 ### Suggested next steps bổ sung
 
-1. Sửa test harness để `npm test` chạy được.
+1. Sửa test harness để `pnpm test` chạy được.
 2. Thêm contract tests cho `otp` và `refresh-token` repositories trước.
 3. Viết migration/dedupe plan cho Mongo `otps` duplicate trước khi bật unique `{ email, type }` trên dữ liệu thật.
 4. Implement cronjob cleanup cho expired `refresh_tokens` và `otps` ở cả Mongo/Postgres.
@@ -220,7 +220,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 - Cần integration tests cho post visibility: guest, owner, friend, non-friend, blocked, friends-only, only-me, visible post ids, and interacted authors.
 - Cần tests cho cursor semantics `created_at DESC, id DESC`, đặc biệt khi nhiều row có cùng `created_at`.
 - Cần tests cho cascade delete: delete user/post phải cleanup block/friend/like/bookmark/post children đúng kỳ vọng.
-- `npm run lint` còn pass với warnings cũ ở các module khác. Nên dọn dần để warnings không che lỗi mới.
+- `pnpm run lint` còn pass với warnings cũ ở các module khác. Nên dọn dần để warnings không che lỗi mới.
 
 ### Suggested next steps bổ sung
 
@@ -299,7 +299,7 @@ Ghi chú tổng hợp các vấn đề tồn đọng để cải thiện dần. 
 - Cần integration tests cho chat message attachment JSONB, empty message check, cursor same timestamp tie-breaker, and sender FK restrict.
 - Cần integration tests cho `video_status`: insert via base repository, duplicate name `23505`, update message `undefined -> ''`, lookup by name, and status/name CHECK constraints.
 - Cần privacy tests cho notification/realtime paths khi block xảy ra trước và sau event creation.
-- `npm test` vẫn là blocker nếu test harness chưa sửa; hiện verification chủ yếu là `npm run build` và `npm run lint`.
+- `pnpm test` vẫn là blocker nếu test harness chưa sửa; hiện verification chủ yếu là `pnpm run build` và `pnpm run lint`.
 
 ### Suggested next steps bổ sung
 

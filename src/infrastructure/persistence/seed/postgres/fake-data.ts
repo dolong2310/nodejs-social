@@ -2,10 +2,10 @@
  * Seed fake data for Postgres.
  *
  * Run:
- * `npm run seed:fake-data:postgres -- --env=development`
+ * `pnpm run seed:fake-data:postgres -- --env=development`
  *
  * Prerequisites:
- *  1. Run `npm run seed:permissions:postgres -- --env=development` first to ensure roles exist.
+ *  1. Run `pnpm run seed:permissions:postgres -- --env=development` first to ensure roles exist.
  *  2. Set MYID to the entity ID of the existing viewer/admin user in Postgres.
  */
 import logger from '@/infrastructure/logger/create-logger';
@@ -216,7 +216,7 @@ const main = async (): Promise<void> => {
   const userRole = await roleRepository.findRoleByName(ERoleName.USER);
   if (!userRole) {
     throw new Error(
-      `Role "${ERoleName.USER}" not found. Run 'npm run seed:permissions:postgres -- --env=development' first.`
+      `Role "${ERoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
     );
   }
 

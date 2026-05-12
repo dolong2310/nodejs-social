@@ -2,10 +2,10 @@
  * Create or repair the initial admin user in Postgres.
  *
  * Run:
- * `npm run seed:create-admin-user:postgres -- --env=development`
+ * `pnpm run seed:create-admin-user:postgres -- --env=development`
  *
  * Prerequisite:
- * Run `npm run seed:permissions:postgres -- --env=development` first so the ADMIN role exists.
+ * Run `pnpm run seed:permissions:postgres -- --env=development` first so the ADMIN role exists.
  *
  * Optional environment overrides:
  * - SEED_ADMIN_EMAIL
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
   const adminRole = await roleRepository.findRoleByName(ERoleName.ADMIN);
   if (!adminRole) {
     throw new Error(
-      `Role "${ERoleName.ADMIN}" not found. Run 'npm run seed:permissions:postgres -- --env=development' first.`
+      `Role "${ERoleName.ADMIN}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
     );
   }
 

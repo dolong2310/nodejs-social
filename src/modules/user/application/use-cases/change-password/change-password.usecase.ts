@@ -1,4 +1,4 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
@@ -11,7 +11,7 @@ export class ChangePasswordUseCase extends ChangePasswordPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly hashingService: HashingPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -20,7 +20,7 @@ export class ChangePasswordUseCase extends ChangePasswordPort {
     const hashedPassword = await this.hashingService.hash(password);
 
     await this.userRepository.changePassword(userId, { password: hashedPassword });
-    await this.cacheManager.del(CACHE_KEYS.user(userId));
+    await this.cache.invalidate(CACHE_KEYS.user(userId));
 
     return true;
   }

@@ -1,7 +1,15 @@
 export interface CacheManagerPort {
   get<T>(key: string): Promise<T | null>;
-  set<T>(key: string, value: T, ttlSeconds?: number): Promise<void>;
+  set<T>(
+    key: string,
+    value: T,
+    options?: {
+      ttlSeconds?: number;
+    }
+  ): Promise<void>;
   del(...keys: string[]): Promise<void>;
   clear(): Promise<void>;
-  getOrSet<T>(key: string, fn: () => Promise<T>, ttlSeconds: number): Promise<T>;
+
+  acquireLock(key: string, ttlMs: number): Promise<{ token: string } | null>;
+  releaseLock(key: string, token: string): Promise<void>;
 }

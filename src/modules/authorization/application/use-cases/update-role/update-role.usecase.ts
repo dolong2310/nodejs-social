@@ -1,3 +1,4 @@
+import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constant';
 import {
   CannotDeactivateAdminRoleException,
   CannotRenameSystemRoleException,
@@ -12,12 +13,12 @@ import {
 import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { IUpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 
 export class UpdateRoleUseCase extends UpdateRolePort {
   constructor(
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -59,7 +60,7 @@ export class UpdateRoleUseCase extends UpdateRolePort {
       throw new RoleNotFoundException();
     }
 
-    await this.cacheManager.del(`role:${command.id}`);
+    await this.cache.invalidate(CACHE_KEYS.role(command.id));
     return new RoleListItem(updated.toObject());
   }
 }

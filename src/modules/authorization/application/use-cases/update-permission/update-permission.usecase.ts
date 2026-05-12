@@ -10,12 +10,12 @@ import {
 import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 import { IUpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.type';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 
 export class UpdatePermissionUseCase extends UpdatePermissionPort {
   constructor(
     private readonly permissionRepository: PermissionRepositoryPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -56,7 +56,7 @@ export class UpdatePermissionUseCase extends UpdatePermissionPort {
       throw new PermissionNotFoundException();
     }
 
-    // await this.cacheManager.del(`role:${role.id}`);
+    // await this.cache.invalidate(`role:${role.id}`);
 
     return new PermissionListItem(updated.toObject());
   }

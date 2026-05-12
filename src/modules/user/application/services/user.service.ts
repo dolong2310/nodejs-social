@@ -1,4 +1,4 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
@@ -26,19 +26,21 @@ export class UserService implements UserServicePort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly userQueryRepository: UserQueryRepositoryPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {}
 
   async findUserById(userId: string, options: { querySafe: true }): Promise<UserSafeProps | null>;
   async findUserById(userId: string, options?: { querySafe: false }): Promise<UserFullProps | null>;
   async findUserById(userId: string, options?: { querySafe?: boolean }): Promise<UserSafeProps | UserFullProps | null> {
-    const user = await this.cacheManager.getOrSet(
+    const user = await this.cache.get(
       CACHE_KEYS.user(userId),
       () =>
         options?.querySafe
           ? this.userQueryRepository.findSafeUserById(userId)
           : this.userRepository.findUserById(userId).then((user) => user?.toObject() ?? null),
-      CACHE_TTL.USER
+      {
+        ttlSeconds: CACHE_TTL.USER
+      }
     );
     if (!user) return null;
     return user;
@@ -53,13 +55,13 @@ export class UserService implements UserServicePort {
     const normalizedUsername = normalizeUsername(username);
     if (!normalizedUsername) return null;
 
-    const user = await this.cacheManager.getOrSet(
+    const user = await this.cache.get(
       CACHE_KEYS.userByUsername(normalizedUsername),
       () =>
         options?.querySafe
           ? this.userQueryRepository.findSafeUserByUsername(normalizedUsername)
           : this.userRepository.findUserByUsername(normalizedUsername).then((user) => user?.toObject() ?? null),
-      CACHE_TTL.USER
+      { ttlSeconds: CACHE_TTL.USER }
     );
     if (!user) return null;
     return user;

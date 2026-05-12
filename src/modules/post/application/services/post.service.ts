@@ -1,4 +1,4 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constant';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
@@ -22,7 +22,7 @@ export class PostService implements PostServicePort {
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
     private readonly postViewsQueue: PostViewsQueuePort,
-    private readonly cacheManager: CacheManagerPort,
+    private readonly cache: CacheStrategyPort,
     private readonly logger: LoggerPort
   ) {
     this.log = this.logger.child({ module: 'posts-service' });
@@ -74,12 +74,12 @@ export class PostService implements PostServicePort {
     const authorIds = blockedAuthorIds.filter((id) => id !== userId).sort();
     if (authorIds.length === 0) return [];
     const key = CACHE_KEYS.blockedPostIds({ userId, blockedAuthorIds: authorIds });
-    const extraVisiblePostIds = await this.cacheManager.getOrSet(
+    const extraVisiblePostIds = await this.cache.get(
       key,
       () => this.postQueryRepository.findPostIdsWhereViewerInteractedWithAuthors({ viewerId: userId, authorIds }),
-      CACHE_TTL.BLOCKED_INTERACTION_POST_IDS
+      { ttlSeconds: CACHE_TTL.BLOCKED_INTERACTION_POST_IDS }
     );
 
-    return extraVisiblePostIds;
+    return extraVisiblePostIds ?? [];
   }
 }

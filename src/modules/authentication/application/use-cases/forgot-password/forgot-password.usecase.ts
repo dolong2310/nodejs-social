@@ -6,7 +6,7 @@ import {
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
 import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -15,11 +15,11 @@ import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repo
 export class ForgotPasswordUseCase extends ForgotPasswordPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
-    private readonly cacheManager: CacheManagerPort,
     private readonly otpRepository: OtpRepositoryPort,
     private readonly hashingService: HashingPort,
     private readonly userService: UserServicePort,
-    private readonly otpService: OtpServicePort
+    private readonly otpService: OtpServicePort,
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -60,7 +60,7 @@ export class ForgotPasswordUseCase extends ForgotPasswordPort {
 
     // 6. Execute promises
     await Promise.all([updateUserPasswordPromise, deleteOtpCodePromise]);
-    await this.cacheManager.del(CACHE_KEYS.user(user.id));
+    await this.cache.invalidate(CACHE_KEYS.user(user.id));
 
     // 7. Return true success
     return true;

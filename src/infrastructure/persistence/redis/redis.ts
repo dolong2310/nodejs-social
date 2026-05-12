@@ -1,6 +1,7 @@
 import logger from '@/infrastructure/logger/create-logger';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import RedisClient, { type RedisOptions } from 'ioredis';
+import { randomUUID } from 'node:crypto';
 
 const log = logger.child({ module: 'redis' });
 
@@ -49,6 +50,14 @@ export class Redis implements CacheManagerPort {
     await this.client.ping();
   }
 
+  async sendRawCommand(...args: string[]): Promise<unknown> {
+    if (args.length === 0) {
+      throw new Error('Redis command missing');
+    }
+    const [command, ...rest] = args;
+    return this.client.call(command, ...rest);
+  }
+
   async get<T>(key: string): Promise<T | null> {
     const raw = await this.client.get(key);
     if (raw === null) return null;
@@ -59,12 +68,12 @@ export class Redis implements CacheManagerPort {
     }
   }
 
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    const serialized = JSON.stringify(value);
-    if (ttlSeconds) {
-      await this.client.set(key, serialized, 'EX', ttlSeconds);
+  async set<T>(key: string, value: T, options?: { ttlSeconds?: number }): Promise<void> {
+    const raw = JSON.stringify(value);
+    if (options?.ttlSeconds) {
+      await this.client.set(key, raw, 'EX', options.ttlSeconds);
     } else {
-      await this.client.set(key, serialized);
+      await this.client.set(key, raw);
     }
   }
 
@@ -78,20 +87,25 @@ export class Redis implements CacheManagerPort {
     await this.client.flushall();
   }
 
-  async getOrSet<T>(key: string, fn: () => Promise<T>, ttlSeconds: number): Promise<T> {
-    const cached = await this.get<T>(key);
-    if (cached !== null) return cached;
+  async acquireLock(key: string, ttlMs: number): Promise<{ token: string } | null> {
+    const token = randomUUID();
 
-    const value = await fn();
-    await this.set(key, value, ttlSeconds);
-    return value;
+    const result = await this.client.set(key, token, 'PX', ttlMs, 'NX');
+
+    if (result !== 'OK') return null;
+
+    return { token };
   }
 
-  async sendRawCommand(...args: string[]): Promise<unknown> {
-    if (args.length === 0) {
-      throw new Error('Redis command missing');
-    }
-    const [command, ...rest] = args;
-    return this.client.call(command, ...rest);
+  async releaseLock(key: string, token: string): Promise<void> {
+    const script = `
+      if redis.call("GET", KEYS[1]) == ARGV[1] then
+        return redis.call("DEL", KEYS[1])
+      else
+        return 0
+      end
+    `;
+
+    await this.client.eval(script, 1, key, token);
   }
 }

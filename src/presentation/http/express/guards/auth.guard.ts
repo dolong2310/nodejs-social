@@ -4,7 +4,7 @@ import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/const
 import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import {
   NoTokenProvidedException,
   TokenHasExpiredException
@@ -25,10 +25,9 @@ export class AuthGuard extends BaseGuard {
   constructor(
     private readonly roleQueryRepository: RoleQueryRepositoryPort,
     private readonly tokenService: TokenServicePort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
-    // this.cacheManager.clear();
   }
 
   protected override async canActivate(request: Request): Promise<boolean> {
@@ -75,24 +74,28 @@ export class AuthGuard extends BaseGuard {
     });
     const roleId = decoded.roleId;
 
-    let cachedRole = await this.cacheManager.get<CachedRole>(CACHE_KEYS.role(roleId));
+    const cachedRole = await this.cache.get<CachedRole>(
+      CACHE_KEYS.role(roleId),
+      async () => {
+        const rolePermissions = await this.roleQueryRepository.findRoleWithPermissionsById(roleId);
+
+        if (!rolePermissions) {
+          return null;
+        }
+
+        // Key by method and path (mục đích transform lại thành method:path để dễ dàng check canAccess bằng object)
+        const permissionsMap = keyBy(rolePermissions.permissions, (p) => `${p.method}-${p.path}`);
+
+        return {
+          ...rolePermissions,
+          permissionsMap
+        };
+      },
+      { ttlSeconds: CACHE_TTL.ROLE }
+    );
 
     if (!cachedRole) {
-      const rolePermissions = await this.roleQueryRepository.findRoleWithPermissionsById(roleId);
-
-      if (!rolePermissions) {
-        throw new ForbiddenException();
-      }
-
-      // Key by method and path (mục đích transform lại thành method:path để dễ dàng check canAccess bằng object)
-      const permissionsMap = keyBy(rolePermissions.permissions, (p) => `${p.method}-${p.path}`);
-
-      cachedRole = {
-        ...rolePermissions,
-        permissionsMap
-      };
-
-      await this.cacheManager.set(CACHE_KEYS.role(roleId), cachedRole, CACHE_TTL.ROLE);
+      throw new ForbiddenException();
     }
 
     // Check if user is active and has permission to access the route

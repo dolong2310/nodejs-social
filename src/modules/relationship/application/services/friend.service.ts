@@ -1,4 +1,4 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/relationship/application/constants/cache.constant';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
@@ -12,7 +12,7 @@ export interface FriendServicePort {
 export class FriendService implements FriendServicePort {
   constructor(
     private readonly friendshipRepository: FriendshipRepositoryPort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     this.findFriendUserIds = this.findFriendUserIds.bind(this);
   }
@@ -26,7 +26,7 @@ export class FriendService implements FriendServicePort {
   }
 
   async invalidateFriendCache(userId: string): Promise<void> {
-    await this.cacheManager.del(CACHE_KEYS.friends(userId));
+    await this.cache.invalidate(CACHE_KEYS.friends(userId));
   }
 
   async isFriendOf({ userId, otherUserId }: { userId: string; otherUserId: string }): Promise<boolean> {
@@ -35,12 +35,13 @@ export class FriendService implements FriendServicePort {
   }
 
   async findFriendUserIds(userId: string): Promise<string[]> {
-    const idsCached = await this.cacheManager.get<string[]>(CACHE_KEYS.friends(userId));
-    if (!idsCached) {
-      const friendUserIds = await this.friendshipRepository.findFriendIdsByUserId(userId);
-      await this.cacheManager.set(CACHE_KEYS.friends(userId), friendUserIds, CACHE_TTL.FRIENDS_GRAPH);
-      return friendUserIds;
-    }
-    return idsCached;
+    const ids = await this.cache.get(
+      CACHE_KEYS.friends(userId),
+      () => this.friendshipRepository.findFriendIdsByUserId(userId),
+      {
+        ttlSeconds: CACHE_TTL.FRIENDS_GRAPH
+      }
+    );
+    return ids ?? [];
   }
 }

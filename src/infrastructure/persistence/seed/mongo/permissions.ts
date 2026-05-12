@@ -1,7 +1,7 @@
 /**
  * Đồng bộ permission từ các route HTTP (Express) + gán cho role ADMIN/USER.
- * Chạy: `npm run seed:permissions -- --env=development` (cần `.env.development` hoặc đổi `--env`).
- * `npx tsc` chỉ biên dịch, không chạy script — dùng `tsx` như trên hoặc `npm run build` rồi `node dist/...`.
+ * Chạy: `pnpm run seed:permissions -- --env=development` (cần `.env.development` hoặc đổi `--env`).
+ * `npx tsc` chỉ biên dịch, không chạy script — dùng `tsx` như trên hoặc `pnpm run build` rồi `node dist/...`.
  */
 import { appConfig } from '@/bootstrap/config/app.config';
 // import { envConfig } from '@/bootstrap/config/env.config';

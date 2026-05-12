@@ -1,4 +1,4 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
   UsernameAlreadyExistsException,
@@ -16,7 +16,7 @@ export class UpdateMeUseCase extends UpdateMePort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly userService: UserServicePort,
-    private readonly cacheManager: CacheManagerPort
+    private readonly cache: CacheStrategyPort
   ) {
     super();
   }
@@ -80,6 +80,6 @@ export class UpdateMeUseCase extends UpdateMePort {
 
   async invalidateUserCache({ userId, usernames }: { userId: string; usernames: string[] }): Promise<void> {
     const keys = [CACHE_KEYS.user(userId), ...usernames.map((username) => CACHE_KEYS.userByUsername(username))];
-    await this.cacheManager.del(...new Set(keys));
+    await Promise.all([...new Set(keys)].map((key) => this.cache.invalidate(key)));
   }
 }
