@@ -496,6 +496,9 @@ components:
             bookmarkCount:
               type: integer
               example: 5
+            likeCount:
+              type: integer
+              example: 7
             repostCount:
               type: integer
               example: 3
@@ -557,6 +560,7 @@ components:
                 username: 'nguyenvana'
                 avatar: 'https://cdn.example.com/avatars/user.jpg'
               bookmarkCount: 5
+              likeCount: 7
               repostCount: 3
               commentCount: 12
               quoteCount: 1

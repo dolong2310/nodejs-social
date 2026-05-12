@@ -53,6 +53,7 @@ export class PostDetailResponseDTO implements IPostDetailOutput {
   userViews: number;
   createdAt: Date;
   updatedAt: Date;
+  likeCount: number;
   bookmarkCount: number;
   repostCount: number;
   commentCount: number;
@@ -78,6 +79,7 @@ export class PostDetailResponseDTO implements IPostDetailOutput {
     this.userViews = payload.userViews ?? 0;
     this.createdAt = payload.createdAt;
     this.updatedAt = payload.updatedAt;
+    this.likeCount = payload.likeCount;
     this.bookmarkCount = payload.bookmarkCount;
     this.repostCount = payload.repostCount;
     this.commentCount = payload.commentCount;
@@ -100,6 +102,7 @@ export class PostDetailWithAuthorResponseDTO implements IPostDetailWithAuthorOut
   userViews: number;
   createdAt: Date;
   updatedAt: Date;
+  likeCount: number;
   bookmarkCount: number;
   repostCount: number;
   commentCount: number;
@@ -126,6 +129,7 @@ export class PostDetailWithAuthorResponseDTO implements IPostDetailWithAuthorOut
     this.userViews = payload.userViews ?? 0;
     this.createdAt = payload.createdAt;
     this.updatedAt = payload.updatedAt;
+    this.likeCount = payload.likeCount;
     this.bookmarkCount = payload.bookmarkCount;
     this.repostCount = payload.repostCount;
     this.commentCount = payload.commentCount;

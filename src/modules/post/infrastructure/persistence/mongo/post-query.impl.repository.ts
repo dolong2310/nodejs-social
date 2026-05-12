@@ -118,6 +118,14 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       },
       {
         $lookup: {
+          from: 'likes',
+          let: { rootPostId: '$_id' },
+          pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalLikes' }],
+          as: 'likeCountLookupResults'
+        }
+      },
+      {
+        $lookup: {
           from: 'bookmarks',
           let: { rootPostId: '$_id' },
           pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
@@ -134,6 +142,9 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       },
       {
         $addFields: {
+          likeCount: {
+            $ifNull: [{ $arrayElemAt: ['$likeCountLookupResults.totalLikes', 0] }, 0]
+          },
           bookmarkCount: {
             $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
           },
@@ -181,6 +192,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           user_views: 0,
           created_at: 0,
           updated_at: 0,
+          likeCountLookupResults: 0,
           bookmarkCountLookupResults: 0,
           childPostsWithTypeOnly: 0
         }
@@ -593,6 +605,14 @@ function buildBasePostPipeline({
     },
     {
       $lookup: {
+        from: 'likes',
+        let: { rootPostId: '$_id' },
+        pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalLikes' }],
+        as: 'likeCountLookupResults'
+      }
+    },
+    {
+      $lookup: {
         from: 'bookmarks',
         let: { rootPostId: '$_id' },
         pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
@@ -609,6 +629,9 @@ function buildBasePostPipeline({
     },
     {
       $addFields: {
+        likeCount: {
+          $ifNull: [{ $arrayElemAt: ['$likeCountLookupResults.totalLikes', 0] }, 0]
+        },
         bookmarkCount: {
           $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
         },
@@ -656,6 +679,7 @@ function buildBasePostPipeline({
         user_views: 0,
         created_at: 0,
         updated_at: 0,
+        likeCountLookupResults: 0,
         bookmarkCountLookupResults: 0,
         childPostsWithTypeOnly: 0
       }

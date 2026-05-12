@@ -32,6 +32,7 @@ type DetailedPostRow = {
   user_views: number;
   created_at: Date;
   updated_at: Date;
+  like_count: number;
   bookmark_count: number;
   repost_count: number;
   comment_count: number;
@@ -271,6 +272,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           bp.user_views,
           bp.created_at,
           bp.updated_at,
+          COALESCE(likes.total, 0)::int AS like_count,
           COALESCE(bookmarks.total, 0)::int AS bookmark_count,
           COALESCE(children.repost_count, 0)::int AS repost_count,
           COALESCE(children.comment_count, 0)::int AS comment_count,
@@ -322,6 +324,11 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         ) mentions ON TRUE
         LEFT JOIN LATERAL (
           SELECT COUNT(*)::int AS total
+          FROM likes l
+          WHERE l.post_id = bp.id
+        ) likes ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*)::int AS total
           FROM bookmarks b
           WHERE b.post_id = bp.id
         ) bookmarks ON TRUE
@@ -366,6 +373,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       userViews: row.user_views,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      likeCount: Number(row.like_count),
       bookmarkCount: Number(row.bookmark_count),
       repostCount: Number(row.repost_count),
       commentCount: Number(row.comment_count),

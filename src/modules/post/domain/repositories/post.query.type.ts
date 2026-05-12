@@ -53,6 +53,7 @@ export interface IFindPostsForSearchInput {
 export interface IPostDetailOutput extends Omit<PostFullProps, 'mentions' | 'hashtags'> {
   hashtags: HashtagFullProps[];
   mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
+  likeCount: number;
   bookmarkCount: number;
   repostCount: number;
   commentCount: number;
