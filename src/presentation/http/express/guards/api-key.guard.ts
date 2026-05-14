@@ -1,15 +1,13 @@
-import { BaseGuard } from '@/presentation/http/express/guards/base.guard';
+import { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import { UnauthorizedException } from '@/presentation/http/express/responses/error.response';
 import { extractApiKeyFromHeader } from '@/presentation/http/express/utils/token.util';
 import { Request } from 'express';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
-export class ApiKeyGuard extends BaseGuard {
-  constructor(private readonly apiKey: string) {
-    super();
-  }
+export class ApiKeyGuard implements BaseGuard {
+  constructor(private readonly apiKey: string) {}
 
-  protected override async canActivate(request: Request): Promise<boolean> {
+  async canActivate(request: Request): Promise<boolean> {
     const providedApiKey = extractApiKeyFromHeader(request);
 
     if (typeof providedApiKey !== 'string' || !this.isValidApiKey(providedApiKey)) {

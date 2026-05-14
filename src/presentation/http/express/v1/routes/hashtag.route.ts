@@ -1,8 +1,12 @@
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
 import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 
 export class HashtagRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -11,42 +15,68 @@ export class HashtagRoute extends BaseRoute {
   constructor(
     private readonly hashtagController: IHashtagController,
     private readonly hashtagsPipe: IHashtagsPipe,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttlerGuard: ThrottlerProxyGuard,
+    private readonly loggingInterceptor: LoggingInterceptor,
+    private readonly transformResponseInterceptor: TransformResponseInterceptor,
+    private readonly timeoutInterceptor: TimeoutInterceptor
   ) {
     super();
     this.createRoutes();
   }
 
   protected override createRoutes(): void {
-    const hashtagIdParam = this.hashtagsPipe.hashtagIdParam();
-    const createBodyPipe = this.hashtagsPipe.createBodyPipe();
-    const updateBodyPipe = this.hashtagsPipe.updateBodyPipe();
-    const authGuard = this.authGuard.handler;
-    const throttler = this.throttlerGuard();
+    const throttler = this.throttlerGuard.handler();
 
-    this.router.get('/', throttler, authGuard, validatePaginationQuery, this.interceptor(this.hashtagController.list));
-    this.router.post('/', throttler, authGuard, createBodyPipe, this.interceptor(this.hashtagController.create));
+    this.router.get(
+      '/',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [validatePaginationQuery],
+        controller: this.hashtagController.list
+      })
+    );
+    this.router.post(
+      '/',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.hashtagsPipe.createBodyPipe],
+        controller: this.hashtagController.create
+      })
+    );
     this.router.get(
       '/:hashtagId',
-      throttler,
-      authGuard,
-      hashtagIdParam,
-      this.interceptor(this.hashtagController.getById)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.hashtagsPipe.hashtagIdParam],
+        controller: this.hashtagController.getById
+      })
     );
     this.router.put(
       '/:hashtagId',
-      throttler,
-      authGuard,
-      hashtagIdParam,
-      updateBodyPipe,
-      this.interceptor(this.hashtagController.update)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.hashtagsPipe.hashtagIdParam, this.hashtagsPipe.updateBodyPipe],
+        controller: this.hashtagController.update
+      })
     );
     this.router.delete(
       '/:hashtagId',
-      throttler,
-      authGuard,
-      hashtagIdParam,
-      this.interceptor(this.hashtagController.remove)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.hashtagsPipe.hashtagIdParam],
+        controller: this.hashtagController.remove
+      })
     );
   }
 }

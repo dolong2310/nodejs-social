@@ -18,7 +18,7 @@ import { PermissionRepository } from '@/modules/authorization/infrastructure/per
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
-import type { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import type { BaseRoute } from '@/presentation/http/express/core/base.route';
 import type { Router } from 'express';
 // import dotenv from 'dotenv';
 

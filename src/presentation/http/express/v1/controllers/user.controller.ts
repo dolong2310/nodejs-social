@@ -2,8 +2,10 @@ import { ChangePasswordPort } from '@/modules/user/application/use-cases/change-
 import { GetMePort } from '@/modules/user/application/use-cases/get-me/get-me.port';
 import { GetUserProfilePort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
 import { UpdateMePort } from '@/modules/user/application/use-cases/update-me/update-me.port';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   ChangePasswordRequestDTO,
   GetUserProfileParamsDTO,
@@ -11,14 +13,26 @@ import {
   UpdateMeRequestDTO
 } from '@/presentation/http/express/v1/dtos/user/user.request.dto';
 import { ChangePasswordResponseDTO, UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IUserController {
-  getMe(req: Request): Promise<unknown>;
-  updateMe(req: Request<ParamsDictionary, object, UpdateMeRequestBody>): Promise<unknown>;
-  getUserProfile(req: Request<GetUserProfileParamsDTO>): Promise<unknown>;
-  changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>): Promise<unknown>;
+  getMe(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<SuccessResponse<UserResponseDTO>>;
+  updateMe(
+    req: ExpressRequest<ParamsDictionary, object, UpdateMeRequestBody>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<UserResponseDTO>>;
+  getUserProfile(
+    req: ExpressRequest<GetUserProfileParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<UserResponseDTO>>;
+  changePassword(
+    req: ExpressRequest<ParamsDictionary, object, ChangePasswordRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<ChangePasswordResponseDTO>>;
 }
 
 export class UserController extends BaseController implements IUserController {
@@ -32,7 +46,7 @@ export class UserController extends BaseController implements IUserController {
   }
 
   @AutoBind()
-  async getMe(req: Request) {
+  async getMe(req: ExpressRequest) {
     const userId = this.getUserId(req);
 
     const user = await this.getMeUC.execute({ userId });
@@ -44,7 +58,7 @@ export class UserController extends BaseController implements IUserController {
   }
 
   @AutoBind()
-  async updateMe(req: Request<ParamsDictionary, object, UpdateMeRequestBody>) {
+  async updateMe(req: ExpressRequest<ParamsDictionary, object, UpdateMeRequestBody>) {
     const userId = this.getUserId(req);
     const dto = new UpdateMeRequestDTO(req.body);
 
@@ -67,7 +81,7 @@ export class UserController extends BaseController implements IUserController {
   }
 
   @AutoBind()
-  async getUserProfile(req: Request<GetUserProfileParamsDTO>) {
+  async getUserProfile(req: ExpressRequest<GetUserProfileParamsDTO>) {
     const { username } = req.params;
     const userId = this.getUserId(req, { optional: true });
 
@@ -80,7 +94,7 @@ export class UserController extends BaseController implements IUserController {
   }
 
   @AutoBind()
-  async changePassword(req: Request<ParamsDictionary, object, ChangePasswordRequestDTO>) {
+  async changePassword(req: ExpressRequest<ParamsDictionary, object, ChangePasswordRequestDTO>) {
     const dto = new ChangePasswordRequestDTO(req.body);
     const userId = this.getUserId(req);
 

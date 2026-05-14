@@ -14,23 +14,17 @@ import {
   PostContentMustBeEmptyStringException,
   PostContentMustBeNonEmptyStringException
 } from '@/presentation/http/express/exceptions/post.exception';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import {
-  CreatePostRequestDTO,
-  GetPostDetailParamsDTO,
-  PatchPostRequestDTO
-} from '@/presentation/http/express/v1/dtos/post/post.request.dto';
-import { RequestHandler } from 'express';
-import { Query } from 'express-serve-static-core';
+import { CreatePostRequestDTO } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
 import { checkSchema, Location } from 'express-validator';
 import { isEmpty } from 'lodash-es';
 
 export interface IPostPipe {
-  createPostPipe: RequestHandlerType;
-  postIdPipe: (key: string, location: Location) => RequestHandlerType;
-  patchPostPipe: RequestHandler<GetPostDetailParamsDTO, object, PatchPostRequestDTO, Query, Record<string, unknown>>;
-  postTypePipe: RequestHandlerType;
+  postIdPipe: (key: string, location: Location) => ExpressRequestHandler;
+  createPostPipe: ExpressRequestHandler;
+  patchPostPipe: ExpressRequestHandler;
+  postTypePipe: ExpressRequestHandler;
 }
 
 export class PostsPipe implements IPostPipe {

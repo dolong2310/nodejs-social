@@ -1,7 +1,7 @@
 import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { ConfirmPasswordMustMatchException } from '@/presentation/http/express/exceptions/auth.exception';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { birthdaySchema, nameSchema } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema, ParamSchema } from 'express-validator';
@@ -77,11 +77,11 @@ export const confirmPasswordSchema: ParamSchema = {
 };
 
 export interface IAuthPipe {
-  registerPipe: RequestHandlerType;
-  loginPipe: RequestHandlerType;
-  forgotPasswordPipe: RequestHandlerType;
-  sendOtpPipe: RequestHandlerType;
-  disable2faPipe: RequestHandlerType;
+  registerPipe: ExpressRequestHandler;
+  loginPipe: ExpressRequestHandler;
+  forgotPasswordPipe: ExpressRequestHandler;
+  sendOtpPipe: ExpressRequestHandler;
+  disable2faPipe: ExpressRequestHandler;
 }
 
 export class AuthPipe implements IAuthPipe {

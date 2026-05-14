@@ -11,9 +11,10 @@ import {
   refreshTokenCookieSharedOptions,
   refreshTokenMaxAgeMs
 } from '@/presentation/http/express/constants/auth.constant';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { Created } from '@/presentation/http/express/responses/success.response';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { Created, SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   Disable2faRequestDTO,
   ForgotPasswordRequestDTO,
@@ -33,18 +34,46 @@ import {
   RegisterResponseDTO,
   SendOtpResponseDTO
 } from '@/presentation/http/express/v1/dtos/auth/auth.response.dto';
-import { Request, Response } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IAuthController {
-  register(req: Request<ParamsDictionary, object, RegisterRequestDTO>): Promise<unknown>;
-  login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response): Promise<unknown>;
-  logout(req: Request, res: Response): Promise<unknown>;
-  refreshToken(req: Request, res: Response): Promise<unknown>;
-  forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>): Promise<unknown>;
-  sendOtp(req: Request<ParamsDictionary, object, SendOtpRequestDTO>): Promise<unknown>;
-  enable2fa(req: Request): Promise<unknown>;
-  disable2fa(req: Request<ParamsDictionary, object, Disable2faRequestDTO>): Promise<unknown>;
+  register(
+    req: ExpressRequest<ParamsDictionary, object, RegisterRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<RegisterResponseDTO>>;
+  login(
+    req: ExpressRequest<ParamsDictionary, object, LoginRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<LoginResponseDTO>>;
+  logout(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<SuccessResponse<LogoutResponseDTO>>;
+  refreshToken(
+    req: ExpressRequest,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<RefreshTokenResponseDTO>>;
+  forgotPassword(
+    req: ExpressRequest<ParamsDictionary, object, ForgotPasswordRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<ForgotPasswordResponseDTO>>;
+  sendOtp(
+    req: ExpressRequest<ParamsDictionary, object, SendOtpRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<SendOtpResponseDTO>>;
+  enable2fa(
+    req: ExpressRequest,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<Enable2faResponseDTO>>;
+  disable2fa(
+    req: ExpressRequest<ParamsDictionary, object, Disable2faRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<SuccessResponse<Disable2faResponseDTO>>;
 }
 
 export class AuthController extends BaseController implements IAuthController {
@@ -62,7 +91,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async register(req: Request<ParamsDictionary, object, RegisterRequestDTO>) {
+  async register(req: ExpressRequest<ParamsDictionary, object, RegisterRequestDTO>) {
     const dto = new RegisterRequestDTO(req.body);
 
     const user = await this.registerUC.execute(dto);
@@ -75,7 +104,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async login(req: Request<ParamsDictionary, object, LoginRequestDTO>, res: Response) {
+  async login(req: ExpressRequest<ParamsDictionary, object, LoginRequestDTO>, res: ExpressResponse) {
     const dto = new LoginRequestDTO(req.body);
 
     const { accessToken, refreshToken } = await this.loginEmailUC.execute(dto);
@@ -92,7 +121,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async logout(req: Request, res: Response) {
+  async logout(req: ExpressRequest, res: ExpressResponse) {
     const dto = new LogoutRequestDTO(req.cookies[REFRESH_TOKEN_COOKIE_NAME]);
 
     await this.logoutUC.execute({
@@ -107,7 +136,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async refreshToken(req: Request, res: Response) {
+  async refreshToken(req: ExpressRequest, res: ExpressResponse) {
     const dto = new RefreshTokenRequestDTO(req.cookies[REFRESH_TOKEN_COOKIE_NAME]);
 
     const { accessToken, refreshToken } = await this.refreshTokenUC.execute({
@@ -126,7 +155,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async forgotPassword(req: Request<ParamsDictionary, object, ForgotPasswordRequestDTO>) {
+  async forgotPassword(req: ExpressRequest<ParamsDictionary, object, ForgotPasswordRequestDTO>) {
     const dto = new ForgotPasswordRequestDTO(req.body);
 
     await this.forgotPasswordUC.execute(dto);
@@ -137,7 +166,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async sendOtp(req: Request<ParamsDictionary, object, SendOtpRequestDTO>) {
+  async sendOtp(req: ExpressRequest<ParamsDictionary, object, SendOtpRequestDTO>) {
     const dto = new SendOtpRequestDTO(req.body);
 
     await this.sendOtpUC.execute(dto);
@@ -148,7 +177,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async enable2fa(req: Request) {
+  async enable2fa(req: ExpressRequest) {
     const userId = this.getUserId(req);
 
     const data = await this.setup2faUC.execute({ userId });
@@ -160,7 +189,7 @@ export class AuthController extends BaseController implements IAuthController {
   }
 
   @AutoBind()
-  async disable2fa(req: Request<ParamsDictionary, object, Disable2faRequestDTO>) {
+  async disable2fa(req: ExpressRequest<ParamsDictionary, object, Disable2faRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new Disable2faRequestDTO(req.body);
 

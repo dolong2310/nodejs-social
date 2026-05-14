@@ -2,18 +2,23 @@ import { CreateLikePort } from '@/modules/post/application/use-cases/like-post/l
 import { UnlikePort } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { CreateLikeRequestDTO, DeleteLikeParamsDTO } from '@/presentation/http/express/v1/dtos/like/like.request.dto';
 import {
   CreateLikeResponseDTO,
   DeleteLikeResponseDTO
 } from '@/presentation/http/express/v1/dtos/like/like.response.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ILikeController {
-  createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>): Promise<unknown>;
-  deleteLike(req: Request<DeleteLikeParamsDTO>): Promise<unknown>;
+  createLike(
+    req: ExpressRequest<ParamsDictionary, object, CreateLikeRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  deleteLike(req: ExpressRequest<DeleteLikeParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
 export class LikeController extends BaseController implements ILikeController {
@@ -25,7 +30,7 @@ export class LikeController extends BaseController implements ILikeController {
   }
 
   @AutoBind()
-  async createLike(req: Request<ParamsDictionary, object, CreateLikeRequestDTO>) {
+  async createLike(req: ExpressRequest<ParamsDictionary, object, CreateLikeRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new CreateLikeRequestDTO(req.body);
 
@@ -42,7 +47,7 @@ export class LikeController extends BaseController implements ILikeController {
   }
 
   @AutoBind()
-  async deleteLike(req: Request<DeleteLikeParamsDTO>) {
+  async deleteLike(req: ExpressRequest<DeleteLikeParamsDTO>) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 

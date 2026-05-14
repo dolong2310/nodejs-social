@@ -73,7 +73,7 @@ import { UserService, UserServicePort } from '@/modules/user/application/service
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { APP_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ChatFeature } from '@/presentation/socket/features/chat.feature';
 import { PresenceFeature } from '@/presentation/socket/features/presence.feature';
 import { RealtimeEmitter } from '@/presentation/socket/realtime-emitter';

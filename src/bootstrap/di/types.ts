@@ -1,6 +1,6 @@
-import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
-import { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
+import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -10,7 +10,7 @@ import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/v
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ISocketFeature } from '@/presentation/socket/socket.type';
 
 export interface IContainer {

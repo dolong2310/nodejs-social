@@ -13,7 +13,7 @@ import {
   UserNotFoundException,
   UsernameFormatInvalidException
 } from '@/presentation/http/express/exceptions/user.exception';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { confirmPasswordSchema, passwordSchema } from '@/presentation/http/express/v1/pipes/auth.pipe';
 import { NextFunction, Request, Response } from 'express';
@@ -64,10 +64,10 @@ export const imageSchema: ParamSchema = {
 };
 
 export interface IUserPipe {
-  updateMePipe: RequestHandlerType;
-  userActivePipe: RequestHandlerType;
-  userIdPipe: (key: string, location: Location) => RequestHandlerType;
-  changePasswordPipe: RequestHandlerType;
+  updateMePipe: ExpressRequestHandler;
+  userActivePipe: ExpressRequestHandler;
+  userIdPipe: (key: string, location: Location) => ExpressRequestHandler;
+  changePasswordPipe: ExpressRequestHandler;
 }
 
 export class UsersPipe implements IUserPipe {

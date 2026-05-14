@@ -1,9 +1,6 @@
-import {
-  BaseInterceptor,
-  CallHandler,
-  ControllerResult
-} from '@/presentation/http/express/interceptors/base.interceptor';
+import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { RequestTimeoutException } from '@/presentation/http/express/responses/error.response';
+import type { ControllerResult, ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 
 const DEFAULT_TIMEOUT_MS = 30000;
 
@@ -18,7 +15,11 @@ export class TimeoutInterceptor implements BaseInterceptor {
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
-  async intercept(_context: unknown, next: CallHandler): Promise<ControllerResult> {
+  async intercept(
+    _req: ExpressRequest,
+    _res: ExpressResponse,
+    next: () => Promise<unknown>
+  ): Promise<ControllerResult> {
     let timeoutId: NodeJS.Timeout | undefined;
     const timeout = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
@@ -27,7 +28,7 @@ export class TimeoutInterceptor implements BaseInterceptor {
     });
 
     try {
-      return await Promise.race([next.handle(), timeout]);
+      return await Promise.race([next(), timeout]);
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
     }

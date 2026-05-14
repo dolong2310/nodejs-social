@@ -15,24 +15,37 @@ import {
   UpdateRoleCommand,
   UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   CreateRoleBodyDTO,
   RoleIdParamsDTO,
   UpdateRoleBodyDTO
 } from '@/presentation/http/express/v1/dtos/role/role.request.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IRoleController {
-  list(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown>;
-  create(req: Request<ParamsDictionary, object, CreateRoleBodyDTO>): Promise<unknown>;
-  getById(req: Request<RoleIdParamsDTO>): Promise<unknown>;
-  update(req: Request<RoleIdParamsDTO, object, UpdateRoleBodyDTO>): Promise<unknown>;
-  remove(req: Request<RoleIdParamsDTO>): Promise<unknown>;
+  list(
+    req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  create(
+    req: ExpressRequest<ParamsDictionary, object, CreateRoleBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getById(req: ExpressRequest<RoleIdParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
+  update(
+    req: ExpressRequest<RoleIdParamsDTO, object, UpdateRoleBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  remove(req: ExpressRequest<RoleIdParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
 export class RoleController extends BaseController implements IRoleController {
@@ -47,7 +60,7 @@ export class RoleController extends BaseController implements IRoleController {
   }
 
   @AutoBind()
-  async list(req: Request<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
+  async list(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
     const { items, total } = await this.listRolesUC.execute(new ListRolesQuery({ page, limit }));
@@ -59,7 +72,7 @@ export class RoleController extends BaseController implements IRoleController {
   }
 
   @AutoBind()
-  async create(req: Request<ParamsDictionary, object, CreateRoleBodyDTO>): Promise<unknown> {
+  async create(req: ExpressRequest<ParamsDictionary, object, CreateRoleBodyDTO>): Promise<unknown> {
     const dto = new CreateRoleBodyDTO(req.body);
     const item = await this.createRoleUC.execute(
       new CreateRoleCommand({
@@ -73,14 +86,14 @@ export class RoleController extends BaseController implements IRoleController {
   }
 
   @AutoBind()
-  async getById(req: Request<RoleIdParamsDTO>): Promise<unknown> {
+  async getById(req: ExpressRequest<RoleIdParamsDTO>): Promise<unknown> {
     const { roleId } = req.params;
     const item = await this.getRoleUC.execute(new GetRoleQuery(roleId));
     return this.response({ data: item, message: 'Get role successfully' });
   }
 
   @AutoBind()
-  async update(req: Request<RoleIdParamsDTO, object, UpdateRoleBodyDTO>): Promise<unknown> {
+  async update(req: ExpressRequest<RoleIdParamsDTO, object, UpdateRoleBodyDTO>): Promise<unknown> {
     const { roleId } = req.params;
     const dto = new UpdateRoleBodyDTO(req.body);
     const item = await this.updateRoleUC.execute(
@@ -96,7 +109,7 @@ export class RoleController extends BaseController implements IRoleController {
   }
 
   @AutoBind()
-  async remove(req: Request<RoleIdParamsDTO>): Promise<unknown> {
+  async remove(req: ExpressRequest<RoleIdParamsDTO>): Promise<unknown> {
     const { roleId } = req.params;
     await this.deleteRoleUC.execute(new DeleteRoleCommand(roleId));
     return this.response({ message: 'Role deleted successfully' });

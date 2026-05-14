@@ -6,9 +6,10 @@ import { GetOutgoingRequestsPort } from '@/modules/relationship/application/use-
 import { RevokeOutgoingRequestPort } from '@/modules/relationship/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.port';
 import { SendFriendRequestPort } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.port';
 import { UnfriendPort } from '@/modules/relationship/application/use-cases/unfriend/unfriend.port';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   AcceptDeclineRequestParamsDTO,
@@ -20,18 +21,46 @@ import {
   FriendRequestResponseDTO,
   FriendUserResponseDTO
 } from '@/presentation/http/express/v1/dtos/friend/friend.response.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IFriendController {
-  listFriends(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
-  listIncoming(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
-  listOutgoing(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
-  sendFriendRequest(req: Request<ParamsDictionary, object, SendFriendRequestBodyDTO>): Promise<unknown>;
-  acceptIncomingRequest(req: Request<AcceptDeclineRequestParamsDTO>): Promise<unknown>;
-  declineIncomingRequest(req: Request<AcceptDeclineRequestParamsDTO>): Promise<unknown>;
-  revokeOutgoingRequest(req: Request<RevokeOutgoingRequestParamsDTO>): Promise<unknown>;
-  unfriend(req: Request<UnfriendParamsDTO>): Promise<unknown>;
+  listFriends(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  listIncoming(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  listOutgoing(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  sendFriendRequest(
+    req: ExpressRequest<ParamsDictionary, object, SendFriendRequestBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  acceptIncomingRequest(
+    req: ExpressRequest<AcceptDeclineRequestParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  declineIncomingRequest(
+    req: ExpressRequest<AcceptDeclineRequestParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  revokeOutgoingRequest(
+    req: ExpressRequest<RevokeOutgoingRequestParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  unfriend(req: ExpressRequest<UnfriendParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
 export class FriendController extends BaseController implements IFriendController {
@@ -49,7 +78,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async listFriends(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async listFriends(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
 
@@ -67,7 +96,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async listIncoming(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async listIncoming(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
 
@@ -85,7 +114,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async listOutgoing(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async listOutgoing(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
 
@@ -103,7 +132,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async sendFriendRequest(req: Request<ParamsDictionary, object, SendFriendRequestBodyDTO>) {
+  async sendFriendRequest(req: ExpressRequest<ParamsDictionary, object, SendFriendRequestBodyDTO>) {
     console.log('req.body: ', req.body);
     const userId = this.getUserId(req);
     console.log('userId: ', userId);
@@ -119,7 +148,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async acceptIncomingRequest(req: Request<AcceptDeclineRequestParamsDTO>) {
+  async acceptIncomingRequest(req: ExpressRequest<AcceptDeclineRequestParamsDTO>) {
     const userId = this.getUserId(req);
     const { fromUserId } = req.params;
 
@@ -129,7 +158,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async declineIncomingRequest(req: Request<AcceptDeclineRequestParamsDTO>) {
+  async declineIncomingRequest(req: ExpressRequest<AcceptDeclineRequestParamsDTO>) {
     const userId = this.getUserId(req);
     const { fromUserId } = req.params;
 
@@ -139,7 +168,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async revokeOutgoingRequest(req: Request<RevokeOutgoingRequestParamsDTO>) {
+  async revokeOutgoingRequest(req: ExpressRequest<RevokeOutgoingRequestParamsDTO>) {
     const userId = this.getUserId(req);
     const { toUserId } = req.params;
 
@@ -149,7 +178,7 @@ export class FriendController extends BaseController implements IFriendControlle
   }
 
   @AutoBind()
-  async unfriend(req: Request<UnfriendParamsDTO>) {
+  async unfriend(req: ExpressRequest<UnfriendParamsDTO>) {
     const userId = this.getUserId(req);
     const { userId: otherUserId } = req.params;
 

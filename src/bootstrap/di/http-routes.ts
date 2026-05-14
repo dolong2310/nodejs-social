@@ -96,9 +96,14 @@ import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
@@ -143,7 +148,6 @@ import { IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role
 import { ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
 import { IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
 import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
@@ -234,6 +238,12 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
+
+  const throttlerGuard = new ThrottlerProxyGuard(appConfig);
+
+  const loggingInterceptor = new LoggingInterceptor(logger);
+  const transformResponseInterceptor = new TransformResponseInterceptor();
+  const timeoutInterceptor = new TimeoutInterceptor();
 
   const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
   const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
@@ -512,29 +522,160 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const hashtagsPipe: IHashtagsPipe = new HashtagsPipe();
 
   const routers: BaseRoute[] = [
-    new AuthRoute(authController, authPipe, authGuard),
-    new UserRoute(userController, userPipe, authGuard, authOptionGuard),
-    new BookmarkRoute(bookmarkController, userPipe, postPipe, authGuard),
-    new LikeRoute(likeController, userPipe, postPipe, authGuard),
-    new MediaRoute(mediaController, userPipe, authGuard),
-    new OAuthRoute(oauthController),
-    new PostRoute(postController, postPipe, userPipe, authGuard, authOptionGuard),
-    new SearchRoute(searchController, searchPipe, userPipe, authOptionGuard),
-    new FriendRoute(friendController, friendPipe, userPipe, authGuard),
-    new BlockRoute(blocksController, blocksPipe, userPipe, authGuard),
+    new AuthRoute(
+      authController,
+      authPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new UserRoute(
+      userController,
+      userPipe,
+      authGuard,
+      authOptionGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new BookmarkRoute(
+      bookmarkController,
+      userPipe,
+      postPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new LikeRoute(
+      likeController,
+      userPipe,
+      postPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new MediaRoute(
+      mediaController,
+      userPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new OAuthRoute(
+      oauthController,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new PostRoute(
+      postController,
+      postPipe,
+      userPipe,
+      authGuard,
+      authOptionGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new SearchRoute(
+      searchController,
+      searchPipe,
+      userPipe,
+      authOptionGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new FriendRoute(
+      friendController,
+      friendPipe,
+      userPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new BlockRoute(
+      blocksController,
+      blocksPipe,
+      userPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
     new ConversationRoute(
       conversationController,
       conversationPipe,
       chatMessageController,
       chatMessagePipe,
       userPipe,
-      authGuard
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
     ),
-    new StaticRoute(mediaController),
-    new NotificationRoute(notificationController, notificationPipe, userPipe, authGuard),
-    new RoleRoute(roleController, rolesPipe, authGuard, apiKeyGuard),
-    new PermissionRoute(permissionController, permissionsPipe, authGuard, apiKeyGuard),
-    new HashtagRoute(hashtagController, hashtagsPipe, authGuard)
+    new StaticRoute(
+      mediaController,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new NotificationRoute(
+      notificationController,
+      notificationPipe,
+      userPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new RoleRoute(
+      roleController,
+      rolesPipe,
+      authGuard,
+      apiKeyGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new PermissionRoute(
+      permissionController,
+      permissionsPipe,
+      authGuard,
+      apiKeyGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
+    new HashtagRoute(
+      hashtagController,
+      hashtagsPipe,
+      authGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    )
   ];
 
   return routers;

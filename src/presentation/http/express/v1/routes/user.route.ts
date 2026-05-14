@@ -1,9 +1,13 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IUserController } from '@/presentation/http/express/v1/controllers/user.controller';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 
 export class UserRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,30 +17,59 @@ export class UserRoute extends BaseRoute {
     private readonly userController: IUserController,
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
-    private readonly authOptionGuard: AuthOptionGuard
+    private readonly authOptionGuard: AuthOptionGuard,
+    private readonly throttlerGuard: ThrottlerProxyGuard,
+    private readonly loggingInterceptor: LoggingInterceptor,
+    private readonly transformResponseInterceptor: TransformResponseInterceptor,
+    private readonly timeoutInterceptor: TimeoutInterceptor
   ) {
     super();
     this.createRoutes();
   }
 
   protected override createRoutes(): void {
-    const { getMe, updateMe, getUserProfile, changePassword } = this.userController;
-    const { userActivePipe, updateMePipe, changePasswordPipe } = this.userPipe;
-    const authGuard = this.authGuard.handler;
-    const authOptionGuard = this.authOptionGuard.handler;
-    const throttler = this.throttlerGuard();
-    const throttlerAuth = this.throttlerGuard(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
+    const throttler = this.throttlerGuard.handler();
+    const throttlerAuth = this.throttlerGuard.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
 
-    this.router.get('/me', throttler, authGuard, userActivePipe, this.interceptor(getMe));
-    this.router.patch('/me', throttler, authGuard, userActivePipe, updateMePipe, this.interceptor(updateMe));
-    this.router.get('/:username', throttler, authOptionGuard, this.interceptor(getUserProfile));
+    this.router.get(
+      '/me',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe],
+        controller: this.userController.getMe
+      })
+    );
+    this.router.patch(
+      '/me',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.userPipe.updateMePipe],
+        controller: this.userController.updateMe
+      })
+    );
+    this.router.get(
+      '/:username',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authOptionGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [],
+        controller: this.userController.getUserProfile
+      })
+    );
     this.router.put(
       '/change-password',
-      throttlerAuth,
-      authGuard,
-      userActivePipe,
-      changePasswordPipe,
-      this.interceptor(changePassword)
+      this.createRouteHandler({
+        middlewares: [throttlerAuth],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.userPipe.changePasswordPipe],
+        controller: this.userController.changePassword
+      })
     );
   }
 }

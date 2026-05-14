@@ -1,10 +1,10 @@
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 
 export interface IChatMessagePipe {
-  sendMessageBody: RequestHandlerType;
-  markReadBody: RequestHandlerType;
+  sendMessageBody: ExpressRequestHandler;
+  markReadBody: ExpressRequestHandler;
 }
 
 export class ChatMessagesPipe implements IChatMessagePipe {

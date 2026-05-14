@@ -1,6 +1,11 @@
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
@@ -17,7 +22,6 @@ import type { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe'
 import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
 import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
 import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
@@ -77,6 +81,10 @@ function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
 const noopAuthGuard = new Proxy({} as AuthGuard, { get: () => nextOnlyMiddleware });
 const noopApiKeyGuard = new Proxy({} as ApiKeyGuard, { get: () => nextOnlyMiddleware });
 const noopAuthOptionGuard = new Proxy({} as AuthOptionGuard, { get: () => nextOnlyMiddleware });
+const noopThrottlerGuard = new Proxy({} as ThrottlerProxyGuard, { get: () => () => nextOnlyMiddleware });
+const noopInterceptor = new Proxy({} as LoggingInterceptor & TransformResponseInterceptor & TimeoutInterceptor, {
+  get: () => async (_request: unknown, _response: unknown, next?: () => unknown) => next?.()
+});
 
 /**
  * Thứ tự giống `buildHttpRouters` để danh sách route trùng runtime.
@@ -96,45 +104,160 @@ export function buildStubHttpRouters(): BaseRoute[] {
   const hashtagsPipe: IHashtagsPipe = createNoopPipeProxyForRouteRegistration();
 
   return [
-    new AuthRoute(createNoopControllerProxyForRouteRegistration(), authPipe, noopAuthGuard),
-    new UserRoute(createNoopControllerProxyForRouteRegistration(), userPipe, noopAuthGuard, noopAuthOptionGuard),
-    new BookmarkRoute(createNoopControllerProxyForRouteRegistration(), userPipe, postPipe, noopAuthGuard),
-    new LikeRoute(createNoopControllerProxyForRouteRegistration(), userPipe, postPipe, noopAuthGuard),
-    new MediaRoute(createNoopControllerProxyForRouteRegistration(), userPipe, noopAuthGuard),
-    new OAuthRoute(createNoopControllerProxyForRouteRegistration()),
+    new AuthRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      authPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new UserRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userPipe,
+      noopAuthGuard,
+      noopAuthOptionGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new BookmarkRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userPipe,
+      postPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new LikeRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userPipe,
+      postPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new MediaRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      userPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new OAuthRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
     new PostRoute(
       createNoopControllerProxyForRouteRegistration(),
       postPipe,
       userPipe,
       noopAuthGuard,
-      noopAuthOptionGuard
+      noopAuthOptionGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
     ),
-    new SearchRoute(createNoopControllerProxyForRouteRegistration(), searchPipe, userPipe, noopAuthOptionGuard),
-    new FriendRoute(createNoopControllerProxyForRouteRegistration(), friendPipe, userPipe, noopAuthGuard),
-    new BlockRoute(createNoopControllerProxyForRouteRegistration(), blocksPipe, userPipe, noopAuthGuard),
+    new SearchRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      searchPipe,
+      userPipe,
+      noopAuthOptionGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new FriendRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      friendPipe,
+      userPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new BlockRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      blocksPipe,
+      userPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
     new ConversationRoute(
       createNoopControllerProxyForRouteRegistration(),
       conversationPipe,
       createNoopControllerProxyForRouteRegistration(),
       chatMessagePipe,
       userPipe,
-      noopAuthGuard
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
     ),
-    new StaticRoute(createNoopControllerProxyForRouteRegistration()),
-    new NotificationRoute(createNoopControllerProxyForRouteRegistration(), notificationPipe, userPipe, noopAuthGuard),
+    new StaticRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new NotificationRoute(
+      createNoopControllerProxyForRouteRegistration(),
+      notificationPipe,
+      userPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
     new RoleRoute(
       createNoopControllerProxyForRouteRegistration<IRoleController>(),
       rolesPipe,
       noopAuthGuard,
-      noopApiKeyGuard
+      noopApiKeyGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
     ),
     new PermissionRoute(
       createNoopControllerProxyForRouteRegistration<IPermissionController>(),
       permissionsPipe,
       noopAuthGuard,
-      noopApiKeyGuard
+      noopApiKeyGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
     ),
-    new HashtagRoute(createNoopControllerProxyForRouteRegistration<IHashtagController>(), hashtagsPipe, noopAuthGuard)
+    new HashtagRoute(
+      createNoopControllerProxyForRouteRegistration<IHashtagController>(),
+      hashtagsPipe,
+      noopAuthGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    )
   ];
 }
 

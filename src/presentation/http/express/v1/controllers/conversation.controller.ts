@@ -8,9 +8,10 @@ import { LeaveConversationPort } from '@/modules/conversation/application/use-ca
 import { TransferAdminPort } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
 import { UpdateConversationPort } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
 import { UpdateMemberRolePort } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.port';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   ConversationIdParams,
@@ -26,20 +27,56 @@ import {
   ConversationDetailResponseDTO,
   ConversationResponseDTO
 } from '@/presentation/http/express/v1/dtos/conversation/conversation.response.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IConversationController {
-  createDirect(req: Request<ParamsDictionary, object, CreateDirectConversationBodyDTO>): Promise<unknown>;
-  createGroup(req: Request<ParamsDictionary, object, CreateGroupConversationBodyDTO>): Promise<unknown>;
-  listConversations(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
-  getConversation(req: Request<ConversationIdParams>): Promise<unknown>;
-  patchConversation(req: Request<ConversationIdParams, object, PatchConversationBodyDTO>): Promise<unknown>;
-  inviteMember(req: Request<ConversationIdParams, object, InviteConversationMemberBodyDTO>): Promise<unknown>;
-  leaveConversation(req: Request<ConversationIdParams>): Promise<unknown>;
-  kickMember(req: Request<ConversationMemberParams>): Promise<unknown>;
-  patchMemberRole(req: Request<ConversationMemberParams, object, PatchConversationMemberRoleBodyDTO>): Promise<unknown>;
-  transferAdmin(req: Request<ConversationIdParams, object, TransferConversationAdminBodyDTO>): Promise<unknown>;
+  createDirect(
+    req: ExpressRequest<ParamsDictionary, object, CreateDirectConversationBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  createGroup(
+    req: ExpressRequest<ParamsDictionary, object, CreateGroupConversationBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  listConversations(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getConversation(
+    req: ExpressRequest<ConversationIdParams>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  patchConversation(
+    req: ExpressRequest<ConversationIdParams, object, PatchConversationBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  inviteMember(
+    req: ExpressRequest<ConversationIdParams, object, InviteConversationMemberBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  leaveConversation(
+    req: ExpressRequest<ConversationIdParams>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  kickMember(req: ExpressRequest<ConversationMemberParams>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
+  patchMemberRole(
+    req: ExpressRequest<ConversationMemberParams, object, PatchConversationMemberRoleBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  transferAdmin(
+    req: ExpressRequest<ConversationIdParams, object, TransferConversationAdminBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
 }
 
 export class ConversationController extends BaseController implements IConversationController {
@@ -59,7 +96,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async createDirect(req: Request<ParamsDictionary, object, CreateDirectConversationBodyDTO>) {
+  async createDirect(req: ExpressRequest<ParamsDictionary, object, CreateDirectConversationBodyDTO>) {
     const userId = this.getUserId(req);
     const body = new CreateDirectConversationBodyDTO(req.body);
 
@@ -69,7 +106,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async createGroup(req: Request<ParamsDictionary, object, CreateGroupConversationBodyDTO>) {
+  async createGroup(req: ExpressRequest<ParamsDictionary, object, CreateGroupConversationBodyDTO>) {
     const userId = this.getUserId(req);
     const body = new CreateGroupConversationBodyDTO(req.body);
 
@@ -79,7 +116,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async listConversations(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async listConversations(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
 
@@ -97,7 +134,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async getConversation(req: Request<ConversationIdParams>) {
+  async getConversation(req: ExpressRequest<ConversationIdParams>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
 
@@ -110,7 +147,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async patchConversation(req: Request<ConversationIdParams, object, PatchConversationBodyDTO>) {
+  async patchConversation(req: ExpressRequest<ConversationIdParams, object, PatchConversationBodyDTO>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
     const body = new PatchConversationBodyDTO(req.body);
@@ -129,7 +166,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async inviteMember(req: Request<ConversationIdParams, object, InviteConversationMemberBodyDTO>) {
+  async inviteMember(req: ExpressRequest<ConversationIdParams, object, InviteConversationMemberBodyDTO>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
     const body = new InviteConversationMemberBodyDTO(req.body);
@@ -143,7 +180,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async kickMember(req: Request<ConversationMemberParams>) {
+  async kickMember(req: ExpressRequest<ConversationMemberParams>) {
     const userId = this.getUserId(req);
     const { conversationId, userId: targetUserId } = req.params;
 
@@ -153,7 +190,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async leaveConversation(req: Request<ConversationIdParams>) {
+  async leaveConversation(req: ExpressRequest<ConversationIdParams>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
 
@@ -163,7 +200,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async patchMemberRole(req: Request<ConversationMemberParams, object, PatchConversationMemberRoleBodyDTO>) {
+  async patchMemberRole(req: ExpressRequest<ConversationMemberParams, object, PatchConversationMemberRoleBodyDTO>) {
     const userId = this.getUserId(req);
     const { conversationId, userId: targetUserId } = req.params;
     const body = new PatchConversationMemberRoleBodyDTO(req.body);
@@ -182,7 +219,7 @@ export class ConversationController extends BaseController implements IConversat
   }
 
   @AutoBind()
-  async transferAdmin(req: Request<ConversationIdParams, object, TransferConversationAdminBodyDTO>) {
+  async transferAdmin(req: ExpressRequest<ConversationIdParams, object, TransferConversationAdminBodyDTO>) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
     const body = new TransferConversationAdminBodyDTO(req.body);

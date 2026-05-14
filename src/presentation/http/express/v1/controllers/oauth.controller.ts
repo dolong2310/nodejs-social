@@ -6,20 +6,26 @@ import {
   refreshTokenCookieSharedOptions,
   refreshTokenMaxAgeMs
 } from '@/presentation/http/express/constants/auth.constant';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   GetGoogleAuthUrlQueryDTO,
   OAuthGoogleLoginQueryDTO
 } from '@/presentation/http/express/v1/dtos/oauth/oauth.request.dto';
-import { Request, Response } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IOAuthController {
-  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>): void;
+  getGoogleAuthUrl(
+    req: ExpressRequest<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): void;
   googleLogin(
-    req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
-    res: Response
+    req: ExpressRequest<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
   ): Promise<unknown>;
 }
 
@@ -32,7 +38,7 @@ export class OAuthController extends BaseController implements IOAuthController 
   }
 
   @AutoBind()
-  getGoogleAuthUrl(req: Request<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>) {
+  getGoogleAuthUrl(req: ExpressRequest<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>) {
     const { ip, userAgent } = req.query;
     const url = this.getGoogleAuthUrlUC.execute({ ip, userAgent });
     return this.response<string>({
@@ -42,7 +48,10 @@ export class OAuthController extends BaseController implements IOAuthController 
   }
 
   @AutoBind()
-  async googleLogin(req: Request<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>, res: Response) {
+  async googleLogin(
+    req: ExpressRequest<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
+    res: ExpressResponse
+  ) {
     const { state, code } = req.query;
     const { refreshToken } = await this.googleLoginUC.execute({ state, code });
 

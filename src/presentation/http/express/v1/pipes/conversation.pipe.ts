@@ -1,27 +1,27 @@
 import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema } from 'express-validator';
 
 export interface IConversationPipe {
-  conversationIdParam: RequestHandlerType;
-  peerUserIdBody: RequestHandlerType;
-  createGroupBody: RequestHandlerType;
-  patchConversationBody: RequestHandlerType;
-  inviteUserIdBody: RequestHandlerType;
-  patchMemberRoleBody: RequestHandlerType;
-  newAdminUserIdBody: RequestHandlerType;
-  kickTargetUserIdParam: RequestHandlerType;
+  conversationIdParam: ExpressRequestHandler;
+  peerUserIdBody: ExpressRequestHandler;
+  createGroupBody: ExpressRequestHandler;
+  patchConversationBody: ExpressRequestHandler;
+  inviteUserIdBody: ExpressRequestHandler;
+  patchMemberRoleBody: ExpressRequestHandler;
+  newAdminUserIdBody: ExpressRequestHandler;
+  kickTargetUserIdParam: ExpressRequestHandler;
 }
 
 export class ConversationsPipe implements IConversationPipe {
-  kickTargetUserIdParam: RequestHandlerType;
-  peerUserIdBody: RequestHandlerType;
-  inviteUserIdBody: RequestHandlerType;
-  newAdminUserIdBody: RequestHandlerType;
+  kickTargetUserIdParam: ExpressRequestHandler;
+  peerUserIdBody: ExpressRequestHandler;
+  inviteUserIdBody: ExpressRequestHandler;
+  newAdminUserIdBody: ExpressRequestHandler;
 
   constructor(private readonly userPipe: IUserPipe) {
     this.kickTargetUserIdParam = this.userPipe.userIdPipe('userId', 'params');

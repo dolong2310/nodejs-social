@@ -1,20 +1,12 @@
-import {
-  BaseInterceptor,
-  CallHandler,
-  ControllerResult,
-  InterceptorContext
-} from '@/presentation/http/express/interceptors/base.interceptor';
+import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { OK, SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { ExpressResponse } from '@/presentation/http/express/types';
+import type { ControllerResult, ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { Response } from 'express';
 
 export class TransformResponseInterceptor implements BaseInterceptor {
-  async intercept<TRequest, TResponse, TNext>(
-    context: InterceptorContext<TRequest, TResponse, TNext>,
-    next: CallHandler
-  ) {
-    const result = await next.handle();
-    this.send(context.response as ExpressResponse, result);
+  async intercept(_req: ExpressRequest, res: ExpressResponse, next: () => Promise<unknown>) {
+    const result = await next();
+    this.send(res, result);
     return result;
   }
 

@@ -1,11 +1,15 @@
+import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IChatMessageController } from '@/presentation/http/express/v1/controllers/chat-message.controller';
 import { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
 import { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
 import { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
 import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
-import { BaseRoute } from '@/presentation/http/express/v1/routes/base.route';
 
 export class ConversationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,141 +21,179 @@ export class ConversationRoute extends BaseRoute {
     private readonly chatMessageController: IChatMessageController,
     private readonly chatMessagePipe: IChatMessagePipe,
     private readonly userPipe: IUserPipe,
-    private readonly authGuard: AuthGuard
+    private readonly authGuard: AuthGuard,
+    private readonly throttlerGuard: ThrottlerProxyGuard,
+    private readonly loggingInterceptor: LoggingInterceptor,
+    private readonly transformResponseInterceptor: TransformResponseInterceptor,
+    private readonly timeoutInterceptor: TimeoutInterceptor
   ) {
     super();
     this.createRoutes();
   }
 
   protected override createRoutes(): void {
-    const {
-      createDirect,
-      createGroup,
-      listConversations,
-      getConversation,
-      patchConversation,
-      inviteMember,
-      leaveConversation,
-      kickMember,
-      patchMemberRole,
-      transferAdmin
-    } = this.conversationController;
-    const { listMessages, sendMessage, markRead } = this.chatMessageController;
-    const { userActivePipe } = this.userPipe;
-    const {
-      peerUserIdBody,
-      createGroupBody,
-      conversationIdParam,
-      patchConversationBody,
-      inviteUserIdBody,
-      kickTargetUserIdParam,
-      patchMemberRoleBody,
-      newAdminUserIdBody
-    } = this.conversationPipe;
-    const { sendMessageBody, markReadBody } = this.chatMessagePipe;
-    const authGuard = this.authGuard.handler;
-    const throttler = this.throttlerGuard();
+    const throttler = this.throttlerGuard.handler();
 
-    this.router.post('/direct', throttler, authGuard, userActivePipe, peerUserIdBody, this.interceptor(createDirect));
-    this.router.post('/groups', throttler, authGuard, userActivePipe, createGroupBody, this.interceptor(createGroup));
+    this.router.post(
+      '/direct',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.conversationPipe.peerUserIdBody],
+        controller: this.conversationController.createDirect
+      })
+    );
+    this.router.post(
+      '/groups',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.conversationPipe.createGroupBody],
+        controller: this.conversationController.createGroup
+      })
+    );
     this.router.get(
       '/',
-      throttler,
-      authGuard,
-      userActivePipe,
-      validateCursorPaginationQuery,
-      this.interceptor(listConversations)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe],
+        controller: this.conversationController.listConversations
+      })
     );
     this.router.get(
       '/:conversationId',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      this.interceptor(getConversation)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.conversationPipe.conversationIdParam],
+        controller: this.conversationController.getConversation
+      })
     );
     this.router.patch(
       '/:conversationId',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      patchConversationBody,
-      this.interceptor(patchConversation)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.conversationPipe.patchConversationBody
+        ],
+        controller: this.conversationController.patchConversation
+      })
     );
     this.router.post(
       '/:conversationId/members',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      inviteUserIdBody,
-      this.interceptor(inviteMember)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.conversationPipe.inviteUserIdBody
+        ],
+        controller: this.conversationController.inviteMember
+      })
     );
     this.router.delete(
       '/:conversationId/members/me',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      this.interceptor(leaveConversation)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.conversationPipe.conversationIdParam],
+        controller: this.conversationController.leaveConversation
+      })
     );
     this.router.delete(
       '/:conversationId/members/:userId',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      kickTargetUserIdParam,
-      this.interceptor(kickMember)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.conversationPipe.kickTargetUserIdParam
+        ],
+        controller: this.conversationController.kickMember
+      })
     );
     this.router.patch(
       '/:conversationId/members/:userId/role',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      kickTargetUserIdParam,
-      patchMemberRoleBody,
-      this.interceptor(patchMemberRole)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.conversationPipe.kickTargetUserIdParam,
+          this.conversationPipe.patchMemberRoleBody
+        ],
+        controller: this.conversationController.patchMemberRole
+      })
     );
     this.router.post(
       '/:conversationId/admin/transfer',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      newAdminUserIdBody,
-      this.interceptor(transferAdmin)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.conversationPipe.newAdminUserIdBody
+        ],
+        controller: this.conversationController.transferAdmin
+      })
     );
 
     // Chat Messages
     this.router.get(
       '/:conversationId/messages',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      validateCursorPaginationQuery,
-      this.interceptor(listMessages)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe, this.conversationPipe.conversationIdParam],
+        controller: this.chatMessageController.listMessages
+      })
     );
     this.router.post(
       '/:conversationId/messages',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      sendMessageBody,
-      this.interceptor(sendMessage)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.chatMessagePipe.sendMessageBody
+        ],
+        controller: this.chatMessageController.sendMessage
+      })
     );
     this.router.patch(
       '/:conversationId/read',
-      throttler,
-      authGuard,
-      userActivePipe,
-      conversationIdParam,
-      markReadBody,
-      this.interceptor(markRead)
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam,
+          this.chatMessagePipe.markReadBody
+        ],
+        controller: this.chatMessageController.markRead
+      })
     );
   }
 }

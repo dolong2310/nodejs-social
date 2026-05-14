@@ -1,18 +1,18 @@
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema } from 'express-validator';
 
 export interface INotificationPipe {
-  listQuery: RequestHandlerType;
-  markReadBody: RequestHandlerType;
-  notificationIdParam: RequestHandlerType;
+  listQuery: ExpressRequestHandler;
+  markReadBody: ExpressRequestHandler;
+  notificationIdParam: ExpressRequestHandler;
 }
 
 export class NotificationsPipe implements INotificationPipe {
-  readonly notificationIdParam: RequestHandlerType;
+  readonly notificationIdParam: ExpressRequestHandler;
 
   constructor(private readonly userPipe: IUserPipe) {
     this.notificationIdParam = this.userPipe.userIdPipe('notificationId', 'params');

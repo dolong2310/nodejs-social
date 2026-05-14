@@ -1,29 +1,20 @@
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
-import {
-  BaseInterceptor,
-  CallHandler,
-  InterceptorContext
-} from '@/presentation/http/express/interceptors/base.interceptor';
+import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { HttpException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { performance } from 'node:perf_hooks';
 
 export class LoggingInterceptor implements BaseInterceptor {
   constructor(private readonly logger: LoggerPort) {}
 
-  async intercept<TRequest, TResponse, TNext>(
-    context: InterceptorContext<TRequest, TResponse, TNext>,
-    next: CallHandler
-  ) {
+  async intercept(req: ExpressRequest, res: ExpressResponse, next: () => Promise<unknown>) {
     const startedAt = performance.now();
-    const req = context.request as ExpressRequest;
-    const res = context.response as ExpressResponse;
+
     const logPayload = {
       method: req.method,
-      path: req.originalUrl,
-      handler: context.handlerName
+      path: req.originalUrl
     };
     const logOnFinish = () => {
       this.logger.info(
@@ -40,7 +31,7 @@ export class LoggingInterceptor implements BaseInterceptor {
     res.once('finish', logOnFinish);
 
     try {
-      return await next.handle();
+      return await next();
     } catch (error) {
       res.off('finish', logOnFinish);
       const durationMs = this.getDurationMs(startedAt);

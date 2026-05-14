@@ -3,16 +3,16 @@ import { MODULE_TAG_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 
 const HTTP_METHODS = Object.values(EHttpMethod);
 
 export interface IPermissionsPipe {
-  permissionIdParam(): RequestHandlerType;
-  createBodyPipe(): RequestHandlerType;
-  updateBodyPipe(): RequestHandlerType;
+  permissionIdParam(): ExpressRequestHandler;
+  createBodyPipe(): ExpressRequestHandler;
+  updateBodyPipe(): ExpressRequestHandler;
 }
 
 export class PermissionsPipe implements IPermissionsPipe {

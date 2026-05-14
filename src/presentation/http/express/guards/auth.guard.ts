@@ -5,12 +5,12 @@ import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   NoTokenProvidedException,
   TokenHasExpiredException
 } from '@/presentation/http/express/exceptions/auth.exception';
 import { TokenInvalidException } from '@/presentation/http/express/exceptions/token.exception';
-import { BaseGuard } from '@/presentation/http/express/guards/base.guard';
 import { ForbiddenException, UnauthorizedException } from '@/presentation/http/express/responses/error.response';
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { resolveUrlPath } from '@/presentation/http/express/utils/url.util';
@@ -21,16 +21,14 @@ import { Dictionary, Prettify } from 'ts-essentials';
 
 type CachedRole = Prettify<RoleWithPermissions & { permissionsMap: Dictionary<PermissionFullProps> }>;
 
-export class AuthGuard extends BaseGuard {
+export class AuthGuard implements BaseGuard {
   constructor(
     private readonly roleQueryRepository: RoleQueryRepositoryPort,
     private readonly tokenService: TokenServicePort,
     private readonly cache: CacheStrategyPort
-  ) {
-    super();
-  }
+  ) {}
 
-  protected override async canActivate(request: Request): Promise<boolean> {
+  async canActivate(request: Request): Promise<boolean> {
     const decoded = await this.verifyToken(request);
     await this.verifyRole(request, decoded);
     requestContextLogger.syncLogContextFromAuth(request);

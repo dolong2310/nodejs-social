@@ -1,11 +1,11 @@
 import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { RequestHandlerType } from '@/presentation/http/express/types';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 
 export interface ISearchPipe {
-  searchPipe: RequestHandlerType;
+  searchPipe: ExpressRequestHandler;
 }
 
 export class SearchPipe implements ISearchPipe {

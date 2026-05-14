@@ -8,9 +8,10 @@ import {
 import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
 import { UpdatePostPort } from '@/modules/post/application/use-cases/update-post/update-post.port';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   CreatePostRequestDTO,
@@ -23,15 +24,35 @@ import {
   PostDetailWithAuthorResponseDTO,
   PostResponseDTO
 } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostController {
-  getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
-  getPostDetail(req: Request<GetPostDetailParamsDTO>): Promise<unknown>;
-  getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>): Promise<unknown>;
-  createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>): Promise<unknown>;
-  patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>): Promise<unknown>;
+  getNewFeeds(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getPostDetail(
+    req: ExpressRequest<GetPostDetailParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getPostsType(
+    req: ExpressRequest<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  createPost(
+    req: ExpressRequest<ParamsDictionary, object, CreatePostRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  patchPost(
+    req: ExpressRequest<GetPostDetailParamsDTO, object, PatchPostRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
 }
 
 export class PostController extends BaseController implements IPostController {
@@ -48,7 +69,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getNewFeeds(req: Request<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async getNewFeeds(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
     const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
@@ -82,7 +103,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getPostDetail(req: Request<GetPostDetailParamsDTO>) {
+  async getPostDetail(req: ExpressRequest<GetPostDetailParamsDTO>) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
     const postDetail = await this.getPostDetailUC.execute(new GetPostDetailQuery({ postId, viewerUserId: userId }));
@@ -102,7 +123,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getPostsType(req: Request<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>) {
+  async getPostsType(req: ExpressRequest<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>) {
     const { postId, type } = req.params;
     const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
@@ -123,7 +144,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async createPost(req: Request<ParamsDictionary, object, CreatePostRequestDTO>) {
+  async createPost(req: ExpressRequest<ParamsDictionary, object, CreatePostRequestDTO>) {
     const userId = this.getUserId(req);
     const dto = new CreatePostRequestDTO(req.body);
 
@@ -147,7 +168,7 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async patchPost(req: Request<GetPostDetailParamsDTO, object, PatchPostRequestDTO>) {
+  async patchPost(req: ExpressRequest<GetPostDetailParamsDTO, object, PatchPostRequestDTO>) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
     const dto = new PatchPostRequestDTO(req.body);

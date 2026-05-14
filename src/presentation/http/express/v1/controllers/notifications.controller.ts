@@ -1,21 +1,30 @@
 import { ListNotificationsPort } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
 import { MarkNotificationReadPort } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.port';
 import { MarkNotificationsReadPort } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.port';
+import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { BaseController } from '@/presentation/http/express/v1/controllers/base.controller';
+import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   MarkNotificationsReadBodyDTO,
   NotificationIdParams,
   NotificationListQueryDTO
 } from '@/presentation/http/express/v1/dtos/notification/notification.request.dto';
 import { NotificationResponseDTO } from '@/presentation/http/express/v1/dtos/notification/notification.response.dto';
-import { Request } from 'express';
+import { NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface INotificationController {
-  list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>): Promise<unknown>;
-  markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>): Promise<unknown>;
-  markOneRead(req: Request<NotificationIdParams>): Promise<unknown>;
+  list(
+    req: ExpressRequest<ParamsDictionary, object, object, NotificationListQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  markRead(
+    req: ExpressRequest<ParamsDictionary, object, MarkNotificationsReadBodyDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  markOneRead(req: ExpressRequest<NotificationIdParams>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
 export class NotificationsController extends BaseController implements INotificationController {
@@ -28,7 +37,7 @@ export class NotificationsController extends BaseController implements INotifica
   }
 
   @AutoBind()
-  async list(req: Request<ParamsDictionary, object, object, NotificationListQueryDTO>) {
+  async list(req: ExpressRequest<ParamsDictionary, object, object, NotificationListQueryDTO>) {
     const userId = this.getUserId(req);
     const { limit, cursor, unreadOnly: unreadRaw } = req.query;
     const unreadOnly =
@@ -49,7 +58,7 @@ export class NotificationsController extends BaseController implements INotifica
   }
 
   @AutoBind()
-  async markRead(req: Request<ParamsDictionary, object, MarkNotificationsReadBodyDTO>) {
+  async markRead(req: ExpressRequest<ParamsDictionary, object, MarkNotificationsReadBodyDTO>) {
     const userId = this.getUserId(req);
     const body = new MarkNotificationsReadBodyDTO(req.body);
     const ids = body.ids && body.ids.length > 0 ? body.ids : undefined;
@@ -60,7 +69,7 @@ export class NotificationsController extends BaseController implements INotifica
   }
 
   @AutoBind()
-  async markOneRead(req: Request<NotificationIdParams>) {
+  async markOneRead(req: ExpressRequest<NotificationIdParams>) {
     const userId = this.getUserId(req);
     const { notificationId } = req.params;
 
