@@ -23,11 +23,9 @@ import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pi
 import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
-import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
 import { FriendRoute } from '@/presentation/http/express/v1/routes/friend.route';
 import { HashtagRoute } from '@/presentation/http/express/v1/routes/hashtag.route';
-import { LikeRoute } from '@/presentation/http/express/v1/routes/like.route';
 import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
@@ -118,26 +116,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
       userPipe,
       noopAuthGuard,
       noopAuthOptionGuard,
-      noopThrottlerGuard,
-      noopInterceptor,
-      noopInterceptor,
-      noopInterceptor
-    ),
-    new BookmarkRoute(
-      createNoopControllerProxyForRouteRegistration(),
-      userPipe,
-      postPipe,
-      noopAuthGuard,
-      noopThrottlerGuard,
-      noopInterceptor,
-      noopInterceptor,
-      noopInterceptor
-    ),
-    new LikeRoute(
-      createNoopControllerProxyForRouteRegistration(),
-      userPipe,
-      postPipe,
-      noopAuthGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,

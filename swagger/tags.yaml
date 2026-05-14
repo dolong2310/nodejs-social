@@ -8,11 +8,7 @@ tags:
   - name: media
     description: Upload và quản lý media (ảnh, video)
   - name: posts
-    description: Quản lý bài viết, feed, comments
-  - name: bookmarks
-    description: Quản lý bookmark bài viết
-  - name: likes
-    description: Like / bỏ like bài viết (cần verify, kiểm tra quyền xem bài)
+    description: Quản lý bài viết, feed, comments, like và bookmark
   - name: friends
     description: Kết bạn — lời mời, chấp nhận/từ chối, danh sách bạn, hủy kết bạn
   - name: blocks

@@ -51,3 +51,27 @@ export interface GetPostsParamsDTO extends ParamsDictionary {
   postId: string;
   type: EPostType;
 }
+
+export class CreateBookmarkRequestDTO {
+  postId: string;
+
+  constructor(body: { postId: string }) {
+    this.postId = body.postId;
+  }
+}
+
+export interface DeleteBookmarkParamsDTO extends ParamsDictionary {
+  postId: string;
+}
+
+export class CreateLikeRequestDTO {
+  postId: string;
+
+  constructor(body: { postId: string }) {
+    this.postId = body.postId;
+  }
+}
+
+export interface DeleteLikeParamsDTO extends ParamsDictionary {
+  postId: string;
+}

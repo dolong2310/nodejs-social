@@ -31,6 +31,7 @@ export class PostRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
+    const defaultThrottler = this.throttlerGuard.handler();
     const throttler = this.throttlerGuard.handler(THROTTLE.POSTS.WINDOW_MS, THROTTLE.POSTS.MAX);
 
     this.router.get(
@@ -90,6 +91,46 @@ export class PostRoute extends BaseRoute {
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.userPipe.userActivePipe, this.postPipe.createPostPipe],
         controller: this.postController.createPost
+      })
+    );
+    this.router.post(
+      '/bookmarks',
+      this.createRouteHandler({
+        middlewares: [defaultThrottler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'body')],
+        controller: this.postController.createBookmark
+      })
+    );
+    this.router.delete(
+      '/bookmarks/:postId',
+      this.createRouteHandler({
+        middlewares: [defaultThrottler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        controller: this.postController.deleteBookmark
+      })
+    );
+    this.router.post(
+      '/likes',
+      this.createRouteHandler({
+        middlewares: [defaultThrottler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'body')],
+        controller: this.postController.createLike
+      })
+    );
+    this.router.delete(
+      '/likes/:postId',
+      this.createRouteHandler({
+        middlewares: [defaultThrottler],
+        guards: [this.authGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        controller: this.postController.deleteLike
       })
     );
   }

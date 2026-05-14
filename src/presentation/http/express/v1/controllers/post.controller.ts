@@ -1,3 +1,4 @@
+import { BookmarkPostPort } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.port';
 import { CreatePostPort } from '@/modules/post/application/use-cases/create-post/create-post.port';
 import { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
 import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
@@ -7,6 +8,9 @@ import {
 } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
 import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
+import { CreateLikePort } from '@/modules/post/application/use-cases/like-post/like-post.port';
+import { UnbookmarkPostPort } from '@/modules/post/application/use-cases/unbookmark-post/unbookmark-post.port';
+import { UnlikePort } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
 import { UpdatePostPort } from '@/modules/post/application/use-cases/update-post/update-post.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
@@ -14,12 +18,19 @@ import { Created } from '@/presentation/http/express/responses/success.response'
 import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
+  CreateBookmarkRequestDTO,
+  CreateLikeRequestDTO,
   CreatePostRequestDTO,
+  DeleteBookmarkParamsDTO,
+  DeleteLikeParamsDTO,
   GetPostDetailParamsDTO,
   GetPostsParamsDTO,
   PatchPostRequestDTO
 } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
 import {
+  CreateBookmarkResponseDTO,
+  CreateLikeResponseDTO,
+  DeleteLikeResponseDTO,
   PostDetailResponseDTO,
   PostDetailWithAuthorResponseDTO,
   PostResponseDTO
@@ -53,6 +64,22 @@ export interface IPostController {
     res: ExpressResponse,
     next: NextFunction
   ): Promise<unknown>;
+  createBookmark(
+    req: ExpressRequest<ParamsDictionary, object, CreateBookmarkRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  deleteBookmark(
+    req: ExpressRequest<DeleteBookmarkParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  createLike(
+    req: ExpressRequest<ParamsDictionary, object, CreateLikeRequestDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  deleteLike(req: ExpressRequest<DeleteLikeParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
 export class PostController extends BaseController implements IPostController {
@@ -63,7 +90,11 @@ export class PostController extends BaseController implements IPostController {
     private readonly increaseViewsUC: IncreaseViewsPort,
     private readonly getPostsTypeUC: GetPostsTypePort,
     private readonly createPostUC: CreatePostPort,
-    private readonly updatePostUC: UpdatePostPort
+    private readonly updatePostUC: UpdatePostPort,
+    private readonly createBookmarkUC: BookmarkPostPort,
+    private readonly unbookmarkPostUC: UnbookmarkPostPort,
+    private readonly createLikeUC: CreateLikePort,
+    private readonly unlikeUC: UnlikePort
   ) {
     super();
   }
@@ -183,6 +214,71 @@ export class PostController extends BaseController implements IPostController {
     return this.response<PostResponseDTO>({
       data: new PostResponseDTO(post),
       message: 'Post updated successfully'
+    });
+  }
+
+  @AutoBind()
+  async createBookmark(req: ExpressRequest<ParamsDictionary, object, CreateBookmarkRequestDTO>) {
+    const userId = this.getUserId(req);
+    const dto = new CreateBookmarkRequestDTO(req.body);
+
+    const bookmark = await this.createBookmarkUC.execute({
+      userId,
+      postId: dto.postId
+    });
+
+    return this.response<CreateBookmarkResponseDTO>({
+      instance: Created,
+      data: new CreateBookmarkResponseDTO(bookmark),
+      message: 'Bookmark post successfully'
+    });
+  }
+
+  @AutoBind()
+  async deleteBookmark(req: ExpressRequest<DeleteBookmarkParamsDTO>) {
+    const userId = this.getUserId(req);
+    const { postId } = req.params;
+
+    await this.unbookmarkPostUC.execute({
+      userId,
+      postId
+    });
+
+    return this.response({
+      message: 'Unbookmark post successfully'
+    });
+  }
+
+  @AutoBind()
+  async createLike(req: ExpressRequest<ParamsDictionary, object, CreateLikeRequestDTO>) {
+    const userId = this.getUserId(req);
+    const dto = new CreateLikeRequestDTO(req.body);
+
+    const like = await this.createLikeUC.execute({
+      userId,
+      postId: dto.postId
+    });
+
+    return this.response<CreateLikeResponseDTO>({
+      instance: Created,
+      data: new CreateLikeResponseDTO(like),
+      message: 'Post liked successfully'
+    });
+  }
+
+  @AutoBind()
+  async deleteLike(req: ExpressRequest<DeleteLikeParamsDTO>) {
+    const userId = this.getUserId(req);
+    const { postId } = req.params;
+
+    const like = await this.unlikeUC.execute({
+      userId,
+      postId
+    });
+
+    return this.response<DeleteLikeResponseDTO>({
+      data: new DeleteLikeResponseDTO(like),
+      message: 'Like removed successfully'
     });
   }
 }

@@ -45,8 +45,6 @@ const USER_GETS_ALL_PERMISSIONS = false;
 const USER_MODULE_ALLOWLIST: ReadonlySet<string> = new Set([
   'AUTH',
   'USERS',
-  'BOOKMARKS',
-  'LIKES',
   'MEDIA',
   'OAUTH',
   'POSTS',

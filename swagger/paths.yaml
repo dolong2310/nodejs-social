@@ -557,10 +557,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # ==================== BOOKMARKS ====================
-  /bookmarks:
+  # ==================== POST BOOKMARKS ====================
+  /posts/bookmarks:
     post:
-      tags: [bookmarks]
+      tags: [posts]
       summary: Thêm bookmark bài viết
       operationId: createBookmark
       security: [{ bearerAuth: [] }]
@@ -583,9 +583,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /bookmarks/posts/{postId}:
+  /posts/bookmarks/{postId}:
     delete:
-      tags: [bookmarks]
+      tags: [posts]
       summary: Xóa bookmark bài viết
       operationId: deleteBookmark
       security: [{ bearerAuth: [] }]
@@ -609,10 +609,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # ==================== LIKES ====================
-  /likes:
+  # ==================== POST LIKES ====================
+  /posts/likes:
     post:
-      tags: [likes]
+      tags: [posts]
       summary: Thích bài viết
       operationId: createLike
       security: [{ bearerAuth: [] }]
@@ -642,9 +642,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /likes/posts/{postId}:
+  /posts/likes/{postId}:
     delete:
-      tags: [likes]
+      tags: [posts]
       summary: Bỏ like bài viết
       operationId: deleteLike
       security: [{ bearerAuth: [] }]

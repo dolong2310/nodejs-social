@@ -107,10 +107,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
-  BookmarkController,
-  IBookmarkController
-} from '@/presentation/http/express/v1/controllers/bookmark.controller';
-import {
   ChatMessageController,
   IChatMessageController
 } from '@/presentation/http/express/v1/controllers/chat-message.controller';
@@ -120,7 +116,6 @@ import {
 } from '@/presentation/http/express/v1/controllers/conversation.controller';
 import { FriendController, IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import { HashtagController, IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
-import { ILikeController, LikeController } from '@/presentation/http/express/v1/controllers/like.controller';
 import { IMediaController, MediaController } from '@/presentation/http/express/v1/controllers/media.controller';
 import {
   INotificationController,
@@ -149,11 +144,9 @@ import { ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/se
 import { IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
-import { BookmarkRoute } from '@/presentation/http/express/v1/routes/bookmark.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
 import { FriendRoute } from '@/presentation/http/express/v1/routes/friend.route';
 import { HashtagRoute } from '@/presentation/http/express/v1/routes/hashtag.route';
-import { LikeRoute } from '@/presentation/http/express/v1/routes/like.route';
 import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
@@ -410,8 +403,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     disable2faUC
   );
   const userController: IUserController = new UserController(getMeUC, updateMeUC, getUserProfileUC, changePasswordUC);
-  const bookmarkController: IBookmarkController = new BookmarkController(createBookmarkUC, unbookmarkPostUC);
-  const likeController: ILikeController = new LikeController(createLikeUC, unlikeUC);
   const mediaController: IMediaController = new MediaController(
     getVideoStatusUC,
     getStaticVideoStreamUC,
@@ -429,7 +420,11 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     increaseViewsUC,
     getPostsTypeUC,
     createPostUC,
-    updatePostUC
+    updatePostUC,
+    createBookmarkUC,
+    unbookmarkPostUC,
+    createLikeUC,
+    unlikeUC
   );
   const searchController: ISearchController = new SearchController(searchPostsUC, searchUsersUC);
   const friendController: IFriendController = new FriendController(
@@ -536,26 +531,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       userPipe,
       authGuard,
       authOptionGuard,
-      throttlerGuard,
-      loggingInterceptor,
-      transformResponseInterceptor,
-      timeoutInterceptor
-    ),
-    new BookmarkRoute(
-      bookmarkController,
-      userPipe,
-      postPipe,
-      authGuard,
-      throttlerGuard,
-      loggingInterceptor,
-      transformResponseInterceptor,
-      timeoutInterceptor
-    ),
-    new LikeRoute(
-      likeController,
-      userPipe,
-      postPipe,
-      authGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,

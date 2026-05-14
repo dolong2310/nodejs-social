@@ -2,25 +2,25 @@
   "$jsonSchema": {
     "title": "likes — aligned with modules/post/infrastructure/persistence/mongo/like.model",
     "bsonType": "object",
-    "required": ["_id", "userId", "postId"],
+    "required": ["_id", "user_id", "post_id"],
     "properties": {
       "_id": {
         "bsonType": "string",
         "minLength": 36,
         "maxLength": 128
       },
-      "userId": {
+      "user_id": {
         "bsonType": "string",
         "minLength": 36,
         "maxLength": 128
       },
-      "postId": {
+      "post_id": {
         "bsonType": "string",
         "minLength": 36,
         "maxLength": 128
       },
-      "createdAt": { "bsonType": "date" },
-      "updatedAt": { "bsonType": "date" }
+      "created_at": { "bsonType": "date" },
+      "updated_at": { "bsonType": "date" }
     },
     "additionalProperties": false
   }

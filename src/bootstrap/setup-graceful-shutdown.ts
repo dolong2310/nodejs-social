@@ -3,6 +3,14 @@ import { Redis } from '@/infrastructure/persistence/redis/redis';
 import { Server as HttpServer } from 'http';
 import logger from '@/infrastructure/logger/create-logger';
 
+/**
+ * Receive signal
+ * -> Stop accepting new requests
+ * -> Finish all pending requests
+ * -> Cleanup resources
+ * -> Close connection
+ * -> Exit
+ */
 export function setupGracefulShutdown(httpServer: HttpServer, database: DatabasePort, redis: Redis): void {
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'shutting down gracefully');

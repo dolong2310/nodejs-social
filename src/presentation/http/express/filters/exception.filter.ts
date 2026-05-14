@@ -23,7 +23,7 @@ export class HttpExceptionFilter {
     const statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR;
     const message = error.message || HTTP_ERROR_MESSAGE.INTERNAL_SERVER_ERROR;
 
-    request.log.error({ error }, 'Unhandled error');
+    request.log?.error({ error }, 'Unhandled error');
 
     response.status(statusCode).json({ message, errors: {} });
   }

@@ -186,7 +186,7 @@ export class MongoDatabase implements MongoDatabasePort {
       this.posts.createIndex({ parent_id: 1, type: 1 }, { sparse: true }),
       // For cursor-based findPostsType query: match { parentId, type } + sort/filter by createdAt, _id
       this.posts.createIndex({ parent_id: 1, type: 1, created_at: -1, _id: -1 }, { sparse: true }),
-      // For new-feed queries: { userId: { $in: [...] }, $or: [audience conditions] }
+      // For new-feed queries: { user_id: { $in: [...] }, $or: [audience conditions] }
       this.posts.createIndex({ user_id: 1, audience: 1 }),
       // For guest feed & audience-only filters: { audience }
       this.posts.createIndex({ audience: 1 }),
@@ -197,7 +197,7 @@ export class MongoDatabase implements MongoDatabasePort {
 
   private async createBookmarksIndex() {
     await Promise.all([
-      // For bookmark create (upsert) and delete: { userId, postId } — also prevents duplicate bookmarks
+      // For bookmark create (upsert) and delete: { user_id, post_id } — also prevents duplicate bookmarks
       this.bookmarks.createIndex({ user_id: 1, post_id: 1 }, { unique: true }),
       // For the $lookup in post aggregation pipelines that calculates bookmarkCount per post
       this.bookmarks.createIndex({ post_id: 1 })

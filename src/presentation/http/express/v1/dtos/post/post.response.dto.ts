@@ -1,4 +1,6 @@
+import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.type';
 import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
+import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
 import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { IPostDetailOutput, IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
@@ -135,5 +137,49 @@ export class PostDetailWithAuthorResponseDTO implements IPostDetailWithAuthorOut
     this.commentCount = payload.commentCount;
     this.quoteCount = payload.quoteCount;
     this.author = payload.author;
+  }
+}
+
+export class CreateBookmarkResponseDTO implements BookmarkFullProps {
+  id: string;
+  userId: string;
+  postId: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+  constructor(bookmark: BookmarkFullProps) {
+    this.id = bookmark.id;
+    this.userId = bookmark.userId;
+    this.postId = bookmark.postId;
+    this.createdAt = bookmark.createdAt;
+    this.updatedAt = bookmark.updatedAt;
+  }
+}
+
+export class DeleteBookmarkResponseDTO extends CreateBookmarkResponseDTO {
+  constructor(bookmark: BookmarkFullProps) {
+    super(bookmark);
+  }
+}
+
+export class CreateLikeResponseDTO implements LikeFullProps {
+  id: string;
+  userId: string;
+  postId: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+  constructor(like: LikeFullProps) {
+    this.id = like.id;
+    this.userId = like.userId;
+    this.postId = like.postId;
+    this.createdAt = like.createdAt;
+    this.updatedAt = like.updatedAt;
+  }
+}
+
+export class DeleteLikeResponseDTO extends CreateLikeResponseDTO {
+  constructor(like: LikeFullProps) {
+    super(like);
   }
 }
