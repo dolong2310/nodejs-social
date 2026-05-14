@@ -208,7 +208,11 @@ export class PostController extends BaseController implements IPostController {
       userId,
       postId,
       audience: dto.audience,
-      allowStrangerComments: dto.allowStrangerComments
+      allowStrangerComments: dto.allowStrangerComments,
+      content: dto.content,
+      media: dto.media,
+      hashtags: dto.hashtags,
+      mentions: dto.mentions
     });
 
     return this.response<PostResponseDTO>({

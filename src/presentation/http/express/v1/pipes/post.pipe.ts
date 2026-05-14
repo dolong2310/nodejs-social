@@ -8,17 +8,20 @@ import {
   HashtagsMustBeArrayOfStringsException,
   InvalidPostIdException,
   MediaMustBeArrayOfValidItemsException,
+  MediaMustBeEmptyForThisPostTypeException,
   MentionsMustBeArrayOfValidUserIdsException,
   ParentIdMustBeNullException,
   ParentIdMustBeValidPostIdException,
   PostContentMustBeEmptyStringException,
-  PostContentMustBeNonEmptyStringException
+  PostContentMustBeNonEmptyStringException,
+  PostContentOrMediaRequiredException,
+  RepostHashtagsMustBeEmptyException,
+  RepostMentionsMustBeEmptyException
 } from '@/presentation/http/express/exceptions/post.exception';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { CreatePostRequestDTO } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
 import { checkSchema, Location } from 'express-validator';
-import { isEmpty } from 'lodash-es';
 
 export interface IPostPipe {
   postIdPipe: (key: string, location: Location) => ExpressRequestHandler;
@@ -27,8 +30,16 @@ export interface IPostPipe {
   postTypePipe: ExpressRequestHandler;
 }
 
+const MAX_HASHTAGS_PER_POST = 20;
+
 export class PostsPipe implements IPostPipe {
-  private static readonly MAX_HASHTAGS_PER_POST = 20;
+  private static isValidMediaItem(item: Media): boolean {
+    const raw = item.raw();
+    return (
+      typeof raw.url === 'string' &&
+      [EnumMediaType.IMAGE, EnumMediaType.VIDEO, EnumMediaType.VIDEO_STREAM].includes(raw.type as EnumMediaType)
+    );
+  }
 
   createPostPipe = validate(
     checkSchema(
@@ -53,8 +64,7 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
           }
         },
-        // nếu type là repost thì content phải là '' (string rỗng)
-        // nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng
+        // POST hợp lệ khi có content hoặc media; COMMENT/QUOTE phải có content; REPOST không có content riêng.
         content: {
           isString: {
             errorMessage: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_STRING
@@ -62,18 +72,17 @@ export class PostsPipe implements IPostPipe {
           trim: true,
           custom: {
             options: (content: string, { req }) => {
-              const { type, mentions, hashtags } = req.body as CreatePostRequestDTO;
+              const { type, media } = req.body as CreatePostRequestDTO;
 
               if (type === EnumPostType.REPOST && content !== '') {
                 throw PostContentMustBeEmptyStringException;
               }
 
-              if (
-                [EnumPostType.POST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type) &&
-                isEmpty(mentions) &&
-                isEmpty(hashtags) &&
-                content === ''
-              ) {
+              if (type === EnumPostType.POST && content === '' && media.length === 0) {
+                throw PostContentOrMediaRequiredException;
+              }
+
+              if ([EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type) && content === '') {
                 throw PostContentMustBeNonEmptyStringException;
               }
 
@@ -109,8 +118,13 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY
           },
           custom: {
-            options: (hashtags: string[]) => {
-              if (hashtags.length > PostsPipe.MAX_HASHTAGS_PER_POST) {
+            options: (hashtags: string[], { req }) => {
+              const { type } = req.body as CreatePostRequestDTO;
+              if (type === EnumPostType.REPOST && hashtags.length > 0) {
+                throw RepostHashtagsMustBeEmptyException;
+              }
+
+              if (hashtags.length > MAX_HASHTAGS_PER_POST) {
                 throw HashtagsCountMustBeBetween0To20Exception;
               }
 
@@ -128,7 +142,12 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY
           },
           custom: {
-            options: (userIds: string[]) => {
+            options: (userIds: string[], { req }) => {
+              const { type } = req.body as CreatePostRequestDTO;
+              if (type === EnumPostType.REPOST && userIds.length > 0) {
+                throw RepostMentionsMustBeEmptyException;
+              }
+
               if (userIds.length > 0 && !userIds.every((userId) => isValidId(userId))) {
                 throw MentionsMustBeArrayOfValidUserIdsException;
               }
@@ -143,14 +162,16 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY
           },
           custom: {
-            options: (mediaItems: Media[]) => {
-              const validMediaTypes = Object.values(EnumMediaType); // ['image', 'video', 'video-stream']
+            options: (mediaItems: Media[], { req }) => {
+              const { type } = req.body as CreatePostRequestDTO;
               if (
-                mediaItems.length > 0 &&
-                mediaItems.some(
-                  (item) => typeof item.raw().url !== 'string' || !validMediaTypes.includes(item.raw().type)
-                )
+                [EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type) &&
+                mediaItems.length > 0
               ) {
+                throw MediaMustBeEmptyForThisPostTypeException;
+              }
+
+              if (mediaItems.length > 0 && mediaItems.some((item) => !PostsPipe.isValidMediaItem(item))) {
                 throw MediaMustBeArrayOfValidItemsException;
               }
 
@@ -167,6 +188,7 @@ export class PostsPipe implements IPostPipe {
     checkSchema(
       {
         audience: {
+          optional: true,
           isIn: {
             options: [[EnumPostAudience.PUBLIC, EnumPostAudience.FRIENDS_ONLY, EnumPostAudience.ONLY_ME]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
@@ -174,8 +196,65 @@ export class PostsPipe implements IPostPipe {
           trim: true
         },
         allowStrangerComments: {
+          optional: true,
           isBoolean: {
             errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
+          }
+        },
+        content: {
+          optional: true,
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_STRING
+          },
+          trim: true
+        },
+        hashtags: {
+          optional: true,
+          isArray: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY
+          },
+          custom: {
+            options: (hashtags: string[]) => {
+              if (hashtags.length > MAX_HASHTAGS_PER_POST) {
+                throw HashtagsCountMustBeBetween0To20Exception;
+              }
+
+              if (hashtags.length > 0 && !hashtags.every((hashtag) => typeof hashtag === 'string')) {
+                throw HashtagsMustBeArrayOfStringsException;
+              }
+
+              return true;
+            }
+          }
+        },
+        mentions: {
+          optional: true,
+          isArray: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY
+          },
+          custom: {
+            options: (userIds: string[]) => {
+              if (userIds.length > 0 && !userIds.every((userId) => isValidId(userId))) {
+                throw MentionsMustBeArrayOfValidUserIdsException;
+              }
+
+              return true;
+            }
+          }
+        },
+        media: {
+          optional: true,
+          isArray: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY
+          },
+          custom: {
+            options: (mediaItems: Media[]) => {
+              if (mediaItems.length > 0 && mediaItems.some((item) => !PostsPipe.isValidMediaItem(item))) {
+                throw MediaMustBeArrayOfValidItemsException;
+              }
+
+              return true;
+            }
           }
         }
       },

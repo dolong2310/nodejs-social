@@ -44,3 +44,13 @@ export class OnlyOwnerCanUpdatePostSettingsException extends ExceptionBase {
   readonly code = 'POST.ONLY_OWNER_CAN_UPDATE_SETTINGS';
   readonly statusCode = 403;
 }
+
+export class OnlyRootPostCanBeUpdatedException extends ExceptionBase {
+  readonly code = 'POST.ONLY_ROOT_POST_CAN_BE_UPDATED';
+  readonly statusCode = 403;
+}
+
+export class EmptyPostUpdateException extends ExceptionBase {
+  readonly code = 'POST.EMPTY_UPDATE';
+  readonly statusCode = 400;
+}

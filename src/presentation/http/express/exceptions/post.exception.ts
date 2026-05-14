@@ -13,6 +13,9 @@ export const PostContentMustBeEmptyStringException = new BadRequestException(
 export const PostContentMustBeNonEmptyStringException = new BadRequestException(
   VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_NON_EMPTY_STRING
 );
+export const PostContentOrMediaRequiredException = new BadRequestException(
+  VALIDATION_ERROR_MESSAGE.POST_CONTENT_OR_MEDIA_REQUIRED
+);
 export const ParentIdMustBeValidPostIdException = new BadRequestException(
   VALIDATION_ERROR_MESSAGE.PARENT_ID_MUST_BE_A_VALID_POST_ID
 );
@@ -23,11 +26,20 @@ export const HashtagsMustBeArrayOfStringsException = new BadRequestException(
 export const HashtagsCountMustBeBetween0To20Exception = new BadRequestException(
   VALIDATION_ERROR_MESSAGE.HASHTAGS_COUNT_MUST_BE_BETWEEN_0_TO_20
 );
+export const RepostHashtagsMustBeEmptyException = new BadRequestException(
+  VALIDATION_ERROR_MESSAGE.REPOST_HASHTAGS_MUST_BE_EMPTY
+);
 export const MentionsMustBeArrayOfValidUserIdsException = new BadRequestException(
   VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY_OF_VALID_USER_IDS
 );
+export const RepostMentionsMustBeEmptyException = new BadRequestException(
+  VALIDATION_ERROR_MESSAGE.REPOST_MENTIONS_MUST_BE_EMPTY
+);
 export const MediaMustBeArrayOfValidItemsException = new BadRequestException(
   VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY_OF_VALID_MEDIA_ITEMS
+);
+export const MediaMustBeEmptyForThisPostTypeException = new BadRequestException(
+  VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_EMPTY_FOR_THIS_POST_TYPE
 );
 export const InvalidPostIdException = new BadRequestException(VALIDATION_ERROR_MESSAGE.INVALID_POST_ID);
 export const GuestCannotAccessNonPublicPostException = new UnauthorizedException();

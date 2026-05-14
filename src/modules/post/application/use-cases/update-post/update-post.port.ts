@@ -5,13 +5,30 @@ import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 export class UpdatePostCommand {
   userId: string;
   postId: string;
-  audience: EnumPostAudience;
-  allowStrangerComments: boolean;
-  constructor(payload: { userId: string; postId: string; audience: EnumPostAudience; allowStrangerComments: boolean }) {
+  audience?: EnumPostAudience;
+  allowStrangerComments?: boolean;
+  content?: string;
+  hashtags?: string[];
+  mentions?: string[];
+  media?: Media[];
+  constructor(payload: {
+    userId: string;
+    postId: string;
+    audience?: EnumPostAudience;
+    allowStrangerComments?: boolean;
+    content?: string;
+    hashtags?: string[];
+    mentions?: string[];
+    media?: Media[];
+  }) {
     this.userId = payload.userId;
     this.postId = payload.postId;
     this.audience = payload.audience;
     this.allowStrangerComments = payload.allowStrangerComments;
+    this.content = payload.content;
+    this.hashtags = payload.hashtags;
+    this.mentions = payload.mentions;
+    this.media = payload.media;
   }
 }
 

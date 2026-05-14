@@ -331,7 +331,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     logger
   );
   const createPostUC = new CreatePostUseCase(postRepository, hashtagRepository, blockService, friendService, logger);
-  const updatePostUC = new UpdatePostUseCase(postRepository, logger);
+  const updatePostUC = new UpdatePostUseCase(postRepository, hashtagRepository, logger);
 
   const searchPostsUC = new SearchPostsUseCase(postQueryRepository, friendService, postService, blockService);
   const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, cacheStrategy);

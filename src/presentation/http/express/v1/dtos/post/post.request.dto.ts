@@ -34,12 +34,27 @@ export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'g
 }
 
 export class PatchPostRequestDTO {
-  audience: EnumPostAudience;
-  allowStrangerComments: boolean;
+  audience?: EnumPostAudience;
+  allowStrangerComments?: boolean;
+  content?: string;
+  hashtags?: string[];
+  mentions?: string[];
+  media?: Media[];
 
-  constructor(payload: { audience: EnumPostAudience; allowStrangerComments: boolean }) {
+  constructor(payload: {
+    audience?: EnumPostAudience;
+    allowStrangerComments?: boolean;
+    content?: string;
+    hashtags?: string[];
+    mentions?: string[];
+    media?: Media[];
+  }) {
     this.audience = payload.audience;
     this.allowStrangerComments = payload.allowStrangerComments;
+    this.content = payload.content;
+    this.hashtags = payload.hashtags;
+    this.mentions = payload.mentions;
+    this.media = payload.media;
   }
 }
 
