@@ -6,7 +6,7 @@ import { LoggingInterceptor } from '@/presentation/http/express/interceptors/log
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
-import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
 
 export class PermissionRoute extends BaseRoute {
@@ -16,6 +16,7 @@ export class PermissionRoute extends BaseRoute {
   constructor(
     private readonly permissionController: IPermissionController,
     private readonly permissionsPipe: IPermissionsPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -36,7 +37,7 @@ export class PermissionRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validatePaginationQuery],
+        pipes: [this.paginationPipe.paginationQuery],
         controller: this.permissionController.list
       })
     );

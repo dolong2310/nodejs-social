@@ -2,65 +2,73 @@ import {
   LimitMustBeBetweenOneToHundredException,
   PageMustBeGreaterThanZeroException
 } from '@/presentation/http/express/exceptions/pagination.exception';
+import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 
-export const validatePaginationQuery = validate(
-  checkSchema(
-    {
-      page: {
-        isNumeric: true,
-        custom: {
-          options: async (value: string) => {
-            const page = Number(value);
+export interface IPaginationPipe {
+  paginationQuery: ExpressRequestHandler;
+  cursorPaginationQuery: ExpressRequestHandler;
+}
 
-            if (page < 1) {
-              throw PageMustBeGreaterThanZeroException;
+export class PaginationPipe implements IPaginationPipe {
+  paginationQuery = validate(
+    checkSchema(
+      {
+        page: {
+          isNumeric: true,
+          custom: {
+            options: async (value: string) => {
+              const page = Number(value);
+
+              if (page < 1) {
+                throw PageMustBeGreaterThanZeroException;
+              }
+
+              return true;
             }
+          }
+        },
+        limit: {
+          isNumeric: true,
+          custom: {
+            options: async (value: string) => {
+              const limit = Number(value);
 
-            return true;
+              if (limit < 1 || limit > 100) {
+                throw LimitMustBeBetweenOneToHundredException;
+              }
+
+              return true;
+            }
           }
         }
       },
-      limit: {
-        isNumeric: true,
-        custom: {
-          options: async (value: string) => {
-            const limit = Number(value);
+      ['query']
+    )
+  );
 
-            if (limit < 1 || limit > 100) {
-              throw LimitMustBeBetweenOneToHundredException;
+  cursorPaginationQuery = validate(
+    checkSchema(
+      {
+        limit: {
+          isNumeric: true,
+          custom: {
+            options: async (value: string) => {
+              const limit = Number(value);
+              if (limit < 1 || limit > 100) {
+                throw LimitMustBeBetweenOneToHundredException;
+              }
+              return true;
             }
-
-            return true;
           }
-        }
-      }
-    },
-    ['query']
-  )
-);
-
-export const validateCursorPaginationQuery = validate(
-  checkSchema(
-    {
-      limit: {
-        isNumeric: true,
-        custom: {
-          options: async (value: string) => {
-            const limit = Number(value);
-            if (limit < 1 || limit > 100) {
-              throw LimitMustBeBetweenOneToHundredException;
-            }
-            return true;
-          }
+        },
+        cursor: {
+          optional: true,
+          isString: true
         }
       },
-      cursor: {
-        optional: true,
-        isString: true
-      }
-    },
-    ['query']
-  )
-);
+      ['query']
+    )
+  );
+}

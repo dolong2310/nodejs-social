@@ -6,7 +6,7 @@ import { LoggingInterceptor } from '@/presentation/http/express/interceptors/log
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
-import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
 
 export class RoleRoute extends BaseRoute {
@@ -16,6 +16,7 @@ export class RoleRoute extends BaseRoute {
   constructor(
     private readonly roleController: IRoleController,
     private readonly rolesPipe: IRolesPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -36,7 +37,7 @@ export class RoleRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validatePaginationQuery],
+        pipes: [this.paginationPipe.paginationQuery],
         controller: this.roleController.list
       })
     );

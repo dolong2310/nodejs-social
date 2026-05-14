@@ -7,7 +7,7 @@ import { LoggingInterceptor } from '@/presentation/http/express/interceptors/log
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IPostController } from '@/presentation/http/express/v1/controllers/post.controller';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
@@ -18,6 +18,7 @@ export class PostRoute extends BaseRoute {
   constructor(
     private readonly postController: IPostController,
     private readonly postPipe: IPostPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly authOptionGuard: AuthOptionGuard,
@@ -40,7 +41,7 @@ export class PostRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
         controller: this.postController.getNewFeeds
       })
     );
@@ -75,7 +76,7 @@ export class PostRoute extends BaseRoute {
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [
-          validateCursorPaginationQuery,
+          this.paginationPipe.cursorPaginationQuery,
           this.userPipe.userActivePipe,
           this.postPipe.postIdPipe('postId', 'params'),
           this.postPipe.postTypePipe

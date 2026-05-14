@@ -8,7 +8,7 @@ import { IChatMessageController } from '@/presentation/http/express/v1/controlle
 import { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
 import { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
 import { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class ConversationRoute extends BaseRoute {
@@ -20,6 +20,7 @@ export class ConversationRoute extends BaseRoute {
     private readonly conversationPipe: IConversationPipe,
     private readonly chatMessageController: IChatMessageController,
     private readonly chatMessagePipe: IChatMessagePipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -60,7 +61,7 @@ export class ConversationRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
         controller: this.conversationController.listConversations
       })
     );
@@ -163,7 +164,11 @@ export class ConversationRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe, this.conversationPipe.conversationIdParam],
+        pipes: [
+          this.paginationPipe.cursorPaginationQuery,
+          this.userPipe.userActivePipe,
+          this.conversationPipe.conversationIdParam
+        ],
         controller: this.chatMessageController.listMessages
       })
     );

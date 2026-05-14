@@ -6,7 +6,7 @@ import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/tim
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
-import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class BlockRoute extends BaseRoute {
@@ -16,6 +16,7 @@ export class BlockRoute extends BaseRoute {
   constructor(
     private readonly blockController: IBlockController,
     private readonly blockPipe: IBlockPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -36,7 +37,7 @@ export class BlockRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validatePaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.paginationQuery, this.userPipe.userActivePipe],
         controller: this.blockController.listBlocked
       })
     );

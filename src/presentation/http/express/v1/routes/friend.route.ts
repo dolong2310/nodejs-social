@@ -6,7 +6,7 @@ import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/tim
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class FriendRoute extends BaseRoute {
@@ -16,6 +16,7 @@ export class FriendRoute extends BaseRoute {
   constructor(
     private readonly friendController: IFriendController,
     private readonly friendPipe: IFriendPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -36,7 +37,7 @@ export class FriendRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
         controller: this.friendController.listFriends
       })
     );
@@ -46,7 +47,7 @@ export class FriendRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
         controller: this.friendController.listIncoming
       })
     );
@@ -56,7 +57,7 @@ export class FriendRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
         controller: this.friendController.listOutgoing
       })
     );

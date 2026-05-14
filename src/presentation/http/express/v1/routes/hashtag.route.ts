@@ -6,7 +6,7 @@ import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/tim
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import { validatePaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 
 export class HashtagRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -15,6 +15,7 @@ export class HashtagRoute extends BaseRoute {
   constructor(
     private readonly hashtagController: IHashtagController,
     private readonly hashtagsPipe: IHashtagsPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
@@ -34,7 +35,7 @@ export class HashtagRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validatePaginationQuery],
+        pipes: [this.paginationPipe.paginationQuery],
         controller: this.hashtagController.list
       })
     );

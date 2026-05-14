@@ -6,7 +6,7 @@ import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/tim
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
 import { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import { validateCursorPaginationQuery } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class NotificationRoute extends BaseRoute {
@@ -16,6 +16,7 @@ export class NotificationRoute extends BaseRoute {
   constructor(
     private readonly notificationController: INotificationController,
     private readonly notificationPipe: INotificationPipe,
+    private readonly paginationPipe: IPaginationPipe,
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -36,7 +37,11 @@ export class NotificationRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [validateCursorPaginationQuery, this.userPipe.userActivePipe, this.notificationPipe.listQuery],
+        pipes: [
+          this.paginationPipe.cursorPaginationQuery,
+          this.userPipe.userActivePipe,
+          this.notificationPipe.listQuery
+        ],
         controller: this.notificationController.list
       })
     );
