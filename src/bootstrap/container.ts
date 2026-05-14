@@ -214,6 +214,7 @@ export class Container implements IContainer {
     this.routers = buildHttpRouters({
       ...repos,
       logger: this.logger,
+      cacheManager: this.redis,
       cacheStrategy: this.cacheStrategy,
       realtimeEmitter: this.realtimeEmitter,
       fileStorage: this.fileStorage,

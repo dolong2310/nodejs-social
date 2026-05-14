@@ -3,6 +3,8 @@ import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
 import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
@@ -81,9 +83,16 @@ const noopAuthGuard = new Proxy({} as AuthGuard, { get: () => nextOnlyMiddleware
 const noopApiKeyGuard = new Proxy({} as ApiKeyGuard, { get: () => nextOnlyMiddleware });
 const noopAuthOptionGuard = new Proxy({} as AuthOptionGuard, { get: () => nextOnlyMiddleware });
 const noopThrottlerGuard = new Proxy({} as ThrottlerProxyGuard, { get: () => () => nextOnlyMiddleware });
-const noopInterceptor = new Proxy({} as LoggingInterceptor & TransformResponseInterceptor & TimeoutInterceptor, {
-  get: () => async (_request: unknown, _response: unknown, next?: () => unknown) => next?.()
-});
+const noopInterceptor = new Proxy(
+  {} as LoggingInterceptor &
+    TransformResponseInterceptor &
+    TimeoutInterceptor &
+    IdempotencyInterceptor &
+    CacheInterceptor,
+  {
+    get: () => async (_request: unknown, _response: unknown, next?: () => unknown) => next?.()
+  }
+);
 
 /**
  * Thứ tự giống `buildHttpRouters` để danh sách route trùng runtime.
@@ -121,6 +130,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
+      noopInterceptor,
       noopInterceptor
     ),
     new MediaRoute(
@@ -149,6 +159,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
+      noopInterceptor,
       noopInterceptor
     ),
     new SearchRoute(
@@ -171,6 +182,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
+      noopInterceptor,
       noopInterceptor
     ),
     new BlockRoute(
@@ -180,6 +192,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       userPipe,
       noopAuthGuard,
       noopThrottlerGuard,
+      noopInterceptor,
       noopInterceptor,
       noopInterceptor,
       noopInterceptor
@@ -193,6 +206,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       userPipe,
       noopAuthGuard,
       noopThrottlerGuard,
+      noopInterceptor,
       noopInterceptor,
       noopInterceptor,
       noopInterceptor
@@ -213,6 +227,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
+      noopInterceptor,
       noopInterceptor
     ),
     new RoleRoute(
@@ -222,6 +237,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopAuthGuard,
       noopApiKeyGuard,
       noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
       noopInterceptor,
       noopInterceptor,
       noopInterceptor
@@ -235,6 +252,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
+      noopInterceptor,
+      noopInterceptor,
       noopInterceptor
     ),
     new HashtagRoute(
@@ -243,6 +262,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       paginationPipe,
       noopAuthGuard,
       noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
       noopInterceptor,
       noopInterceptor,
       noopInterceptor

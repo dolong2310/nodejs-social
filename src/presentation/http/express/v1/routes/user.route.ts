@@ -3,6 +3,7 @@ import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
@@ -21,7 +22,8 @@ export class UserRoute extends BaseRoute {
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
-    private readonly timeoutInterceptor: TimeoutInterceptor
+    private readonly timeoutInterceptor: TimeoutInterceptor,
+    private readonly idempotencyInterceptor: IdempotencyInterceptor
   ) {
     super();
     this.createRoutes();
@@ -46,7 +48,12 @@ export class UserRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.userPipe.updateMePipe],
         controller: this.userController.updateMe
       })
@@ -66,7 +73,12 @@ export class UserRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttlerAuth],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.userPipe.changePasswordPipe],
         controller: this.userController.changePassword
       })

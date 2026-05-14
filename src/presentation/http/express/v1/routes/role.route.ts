@@ -2,6 +2,8 @@ import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
+import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
@@ -22,7 +24,9 @@ export class RoleRoute extends BaseRoute {
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
-    private readonly timeoutInterceptor: TimeoutInterceptor
+    private readonly timeoutInterceptor: TimeoutInterceptor,
+    private readonly cacheInterceptor: CacheInterceptor,
+    private readonly idempotencyInterceptor: IdempotencyInterceptor
   ) {
     super();
     this.createRoutes();
@@ -36,7 +40,12 @@ export class RoleRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.cacheInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.paginationPipe.paginationQuery],
         controller: this.roleController.list
       })
@@ -46,7 +55,12 @@ export class RoleRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.rolesPipe.createBodyPipe],
         controller: this.roleController.create
       })
@@ -56,7 +70,12 @@ export class RoleRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.cacheInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.rolesPipe.roleIdParam],
         controller: this.roleController.getById
       })
@@ -66,7 +85,12 @@ export class RoleRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.rolesPipe.roleIdParam, this.rolesPipe.updateBodyPipe],
         controller: this.roleController.update
       })
@@ -76,7 +100,12 @@ export class RoleRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.rolesPipe.roleIdParam],
         controller: this.roleController.remove
       })

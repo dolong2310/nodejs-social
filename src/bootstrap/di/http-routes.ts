@@ -41,6 +41,7 @@ import { SendMessageUseCase } from '@/modules/conversation/application/use-cases
 import { TransferAdminUseCase } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.usecase';
 import { UpdateConversationUseCase } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.usecase';
 import { UpdateMemberRoleUseCase } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.usecase';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -101,6 +102,8 @@ import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
+import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
@@ -160,6 +163,7 @@ import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
 
 export type HttpContext = ContainerRepositories & {
   logger: LoggerPort;
+  cacheManager: CacheManagerPort;
   cacheStrategy: CacheStrategyPort;
   realtimeEmitter: RealtimeEmitterPort;
   fileStorage: FileStoragePort;
@@ -207,6 +211,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userQueryRepository,
     conversationMemberQueryRepository,
     logger,
+    cacheManager,
     cacheStrategy,
     realtimeEmitter,
     fileStorage,
@@ -238,6 +243,11 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
   const timeoutInterceptor = new TimeoutInterceptor();
+  const lookupCacheInterceptor = new CacheInterceptor(cacheManager, {
+    ttlSeconds: 60,
+    prefix: 'http-cache:lookup'
+  });
+  const idempotencyInterceptor = new IdempotencyInterceptor(cacheManager);
 
   const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
   const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
@@ -536,7 +546,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new MediaRoute(
       mediaController,
@@ -564,7 +575,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new SearchRoute(
       searchController,
@@ -586,7 +598,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new BlockRoute(
       blocksController,
@@ -597,7 +610,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new ConversationRoute(
       conversationController,
@@ -610,7 +624,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new StaticRoute(
       mediaController,
@@ -628,7 +643,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new RoleRoute(
       roleController,
@@ -639,7 +655,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      lookupCacheInterceptor,
+      idempotencyInterceptor
     ),
     new PermissionRoute(
       permissionController,
@@ -650,7 +668,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      lookupCacheInterceptor,
+      idempotencyInterceptor
     ),
     new HashtagRoute(
       hashtagController,
@@ -660,7 +680,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
-      timeoutInterceptor
+      timeoutInterceptor,
+      lookupCacheInterceptor,
+      idempotencyInterceptor
     )
   ];
 

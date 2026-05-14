@@ -3,6 +3,7 @@ import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
@@ -25,7 +26,8 @@ export class PostRoute extends BaseRoute {
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
-    private readonly timeoutInterceptor: TimeoutInterceptor
+    private readonly timeoutInterceptor: TimeoutInterceptor,
+    private readonly idempotencyInterceptor: IdempotencyInterceptor
   ) {
     super();
     this.createRoutes();
@@ -50,7 +52,12 @@ export class PostRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [
           this.userPipe.userActivePipe,
           this.postPipe.postIdPipe('postId', 'params'),
@@ -89,7 +96,12 @@ export class PostRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [throttler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.postPipe.createPostPipe],
         controller: this.postController.createPost
       })
@@ -99,7 +111,12 @@ export class PostRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [defaultThrottler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'body')],
         controller: this.postController.createBookmark
       })
@@ -109,7 +126,12 @@ export class PostRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [defaultThrottler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deleteBookmark
       })
@@ -119,7 +141,12 @@ export class PostRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [defaultThrottler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'body')],
         controller: this.postController.createLike
       })
@@ -129,7 +156,12 @@ export class PostRoute extends BaseRoute {
       this.createRouteHandler({
         middlewares: [defaultThrottler],
         guards: [this.authGuard],
-        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
         pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deleteLike
       })
