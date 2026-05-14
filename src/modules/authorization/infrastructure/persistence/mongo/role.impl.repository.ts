@@ -7,9 +7,9 @@ import {
 } from '@/modules/authorization/domain/repositories/role.repository.type';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
+import { convertObjectToSnakeCase } from '@/modules/common/utils/object-case.util';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { toMongoFieldRecord } from '@/modules/core/infrastructure/persistence/repositories/mongo-field-name.helper';
 import { Db, MongoClient } from 'mongodb';
 
 export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> implements RoleRepositoryPort {
@@ -68,7 +68,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
   async updateRole(id: string, data: UpdateRoleInput): Promise<RoleEntity | null> {
     const record = await this.dbCollection.findOneAndUpdate(
       { _id: id },
-      { $set: toMongoFieldRecord(data as Record<string, unknown>) },
+      { $set: convertObjectToSnakeCase(data, ['id', '_id'], '_id') },
       { returnDocument: 'after' }
     );
     return record ? this.mapper.toDomain(record) : null;

@@ -1,3 +1,4 @@
+import { convertObjectToSnakeCase } from '@/modules/common/utils/object-case.util';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { Entity as DomainEntity } from '@/modules/core/domain/entities/base.entity';
 import {
@@ -7,10 +8,6 @@ import {
   RepositoryPort
 } from '@/modules/core/domain/repositories/port.repository';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
-import {
-  toMongoFieldName,
-  toMongoFieldRecord
-} from '@/modules/core/infrastructure/persistence/repositories/mongo-field-name.helper';
 import type { ClientSession, Collection, Db, Filter, MongoClient, OptionalUnlessRequiredId } from 'mongodb';
 
 export abstract class MongoRepositoryBase<
@@ -80,7 +77,7 @@ export abstract class MongoRepositoryBase<
   }
 
   async findAllPaginated(params: PaginatedQueryParams, options?: Options): Promise<Paginated<Entity>> {
-    const sortField = params.orderBy.field === true ? '_id' : toMongoFieldName(String(params.orderBy.field));
+    const sortField = params.orderBy.field === true ? '_id' : this._toMongoFieldName(String(params.orderBy.field));
     const sortDirection = params.orderBy.param === 'asc' ? 1 : -1;
     const [records, count] = await Promise.all([
       this.dbCollection
@@ -231,7 +228,7 @@ export abstract class MongoRepositoryBase<
       if (key === 'id') {
         acc['_id'] = value;
       } else {
-        acc[toMongoFieldName(key)] = value;
+        acc[this._toMongoFieldName(key)] = value;
       }
 
       return acc;
@@ -246,7 +243,7 @@ export abstract class MongoRepositoryBase<
 
       if (key === 'id') return acc; // omit id
 
-      acc[toMongoFieldName(key)] = value;
+      acc[this._toMongoFieldName(key)] = value;
       return acc;
     }, {});
 
@@ -255,7 +252,13 @@ export abstract class MongoRepositoryBase<
 
   protected _toDbProjection(projection?: Record<string, unknown>): Record<string, unknown> | undefined {
     if (!projection) return undefined;
-    return toMongoFieldRecord(projection);
+    return convertObjectToSnakeCase(projection, ['id', '_id'], '_id');
+  }
+
+  protected _toMongoFieldName(field: string): string {
+    if (field === 'id' || field === '_id') return '_id';
+    const UPPERCASE_LETTER_REGEX = /[A-Z]/g; // Tìm tất cả ký tự viết hoa (A-Z) trong chuỗi
+    return field.replace(UPPERCASE_LETTER_REGEX, (letter) => `_${letter.toLowerCase()}`);
   }
 
   // insertBulk(entity: Entity): Promise<void> {
