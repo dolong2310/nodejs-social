@@ -3,23 +3,12 @@ import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/r
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import {
-  ICountFriendshipsWithUserAmongOthersInput,
-  IListFriendIdsByCursorInput
+  CountFriendshipsWithUserAmongOthersInput,
+  ListFriendIdsByCursorInput
 } from '@/modules/relationship/domain/repositories/friendship.repository.type';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper';
 import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.model';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
-
-/**
- * Map two user ids to canonical storage order based on string comparison.
- */
-export function normalizeFriendshipPair(a: string, b: string): { userIdLow: string; userIdHigh: string } {
-  const cmp = a.localeCompare(b);
-  if (cmp === 0) {
-    throw new Error('Friendship pair requires two distinct user ids');
-  }
-  return cmp < 0 ? { userIdLow: a, userIdHigh: b } : { userIdLow: b, userIdHigh: a };
-}
 
 export class FriendshipRepository
   extends MongoRepositoryBase<FriendshipEntity, FriendshipModel>
@@ -52,7 +41,7 @@ export class FriendshipRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async listFriendIdsByCursor({ userId, limit, cursor }: IListFriendIdsByCursorInput): Promise<string[]> {
+  async listFriendIdsByCursor({ userId, limit, cursor }: ListFriendIdsByCursorInput): Promise<string[]> {
     const pipeline = [
       {
         $match: {
@@ -106,7 +95,7 @@ export class FriendshipRepository
   async countFriendshipsWithUserAmongOthers({
     userId,
     otherUserIds
-  }: ICountFriendshipsWithUserAmongOthersInput): Promise<number> {
+  }: CountFriendshipsWithUserAmongOthersInput): Promise<number> {
     if (otherUserIds.length === 0) return 0;
     const result = await this.dbCollection.countDocuments({
       $or: [
@@ -116,4 +105,15 @@ export class FriendshipRepository
     });
     return result;
   }
+}
+
+/**
+ * Map two user ids to canonical storage order based on string comparison.
+ */
+export function normalizeFriendshipPair(a: string, b: string): { userIdLow: string; userIdHigh: string } {
+  const cmp = a.localeCompare(b);
+  if (cmp === 0) {
+    throw new Error('Friendship pair requires two distinct user ids');
+  }
+  return cmp < 0 ? { userIdLow: a, userIdHigh: b } : { userIdLow: b, userIdHigh: a };
 }

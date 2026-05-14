@@ -13,7 +13,7 @@ export interface RoleFullProps extends Prettify<RoleProps & Omit<BaseEntityProps
 export interface CreateRoleProps extends MarkOptional<RoleProps, 'description' | 'permissionIds'> {}
 
 /** Tên role mặc định hệ thống (seed) — dùng khi cần so khớp cố định. */
-export enum ERoleName {
+export enum EnumRoleName {
   ADMIN = 'ADMIN',
   USER = 'USER'
 }

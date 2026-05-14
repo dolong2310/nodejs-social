@@ -1,7 +1,7 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import {
-  IOtpCleanupJobData,
-  IOtpCleanupJobResult
+  OtpCleanupJobData,
+  OtpCleanupJobResult
 } from '@/modules/authentication/application/ports/otp-cleanup-job.port';
 import {
   DeleteExpiredOtpsCommand,
@@ -11,7 +11,7 @@ import { OTP_CLEANUP_SCHEDULE_QUEUE_NAME } from '@/modules/authentication/infras
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { type ConnectionOptions, type Job } from 'bullmq';
 
-export class OtpCleanupWorker extends BaseWorker<IOtpCleanupJobData, IOtpCleanupJobResult> {
+export class OtpCleanupWorker extends BaseWorker<OtpCleanupJobData, OtpCleanupJobResult> {
   private readonly log: LoggerPort;
 
   constructor(
@@ -24,7 +24,7 @@ export class OtpCleanupWorker extends BaseWorker<IOtpCleanupJobData, IOtpCleanup
     this.log = this.logger.child({ module: 'otp-cleanup-worker' });
   }
 
-  protected override async process(job: Job<IOtpCleanupJobData, IOtpCleanupJobResult>): Promise<IOtpCleanupJobResult> {
+  protected override async process(job: Job<OtpCleanupJobData, OtpCleanupJobResult>): Promise<OtpCleanupJobResult> {
     const result = await this.deleteExpiredOtpsUC.execute(new DeleteExpiredOtpsCommand());
     this.log.info({ jobId: job.id, deletedCount: result.deletedCount }, 'expired OTPs deleted');
     return { deletedCount: result.deletedCount };

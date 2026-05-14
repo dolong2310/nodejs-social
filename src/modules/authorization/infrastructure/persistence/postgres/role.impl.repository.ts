@@ -1,9 +1,9 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import {
-  ICreateRoleInput,
-  IListRolesInput,
-  IUpdateRoleInput
+  CreateRoleInput,
+  ListRolesInput,
+  UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.type';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
@@ -81,7 +81,7 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async findRoles({ limit, skip = 0 }: IListRolesInput): Promise<RoleEntity[]> {
+  async findRoles({ limit, skip = 0 }: ListRolesInput): Promise<RoleEntity[]> {
     const result = await this.query<RoleModel>(`${roleSelect} ${roleGroupBy} ORDER BY r.name ASC OFFSET $1 LIMIT $2`, [
       skip,
       limit
@@ -93,14 +93,14 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
     return this.count();
   }
 
-  async createRole(data: ICreateRoleInput): Promise<RoleEntity | null> {
+  async createRole(data: CreateRoleInput): Promise<RoleEntity | null> {
     const existing = await this.findRoleByName(data.name);
     if (existing) return existing;
 
     return this.insertRole(data);
   }
 
-  async insertRole(data: ICreateRoleInput): Promise<RoleEntity> {
+  async insertRole(data: CreateRoleInput): Promise<RoleEntity> {
     const entity = RoleEntity.create(data);
     return this.insertEntity(entity);
   }
@@ -127,7 +127,7 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
     return created;
   }
 
-  async updateRole(id: string, data: IUpdateRoleInput): Promise<RoleEntity | null> {
+  async updateRole(id: string, data: UpdateRoleInput): Promise<RoleEntity | null> {
     const current = await this.findRoleById(id);
     if (!current) return null;
 

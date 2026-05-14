@@ -1,4 +1,4 @@
-import { CreateRoleProps, ERoleName, RoleProps } from '@/modules/authorization/domain/entities/role.type';
+import { CreateRoleProps, EnumRoleName, RoleProps } from '@/modules/authorization/domain/entities/role.type';
 import { ROLE_NAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
@@ -21,7 +21,7 @@ export class RoleEntity extends Entity<RoleProps> {
   /** `ADMIN` / `USER` do seed tạo — không đổi tên / xóa qua API thường. */
   isSystemRole(): boolean {
     const { name } = this.getProps();
-    return name === ERoleName.ADMIN || name === ERoleName.USER;
+    return name === EnumRoleName.ADMIN || name === EnumRoleName.USER;
   }
 
   validate(): void {

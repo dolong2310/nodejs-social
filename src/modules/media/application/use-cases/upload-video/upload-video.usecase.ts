@@ -1,4 +1,4 @@
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
@@ -28,7 +28,7 @@ export class UploadVideoUseCase extends UploadVideoPort {
 
       return new UploadVideoResult({
         url: result.url,
-        type: EMediaType.VIDEO
+        type: EnumMediaType.VIDEO
       });
     });
   }

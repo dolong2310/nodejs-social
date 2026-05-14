@@ -4,7 +4,7 @@ import {
   RegisterPort,
   RegisterResult
 } from '@/modules/authentication/application/use-cases/register/register.port';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
@@ -37,7 +37,7 @@ export class RegisterUseCase extends RegisterPort {
     const { name, email, password, birthday, code } = command;
 
     // 1. Check OTP code
-    const otpEntity = await this.otpService.findAndValidateOtpCode({ email, code, type: EOtpType.REGISTER });
+    const otpEntity = await this.otpService.findAndValidateOtpCode({ email, code, type: EnumOtpType.REGISTER });
 
     // 2. Get user role id
     const userRoleId = await this.roleService.getUserRoleId();

@@ -248,7 +248,7 @@ components:
         status:
           type: string
           enum: [ACTIVE, INACTIVE, BANNED, UNKNOWN]
-          description: EUserStatus
+          description: EnumUserStatus
           example: 'ACTIVE'
         createdAt:
           type: string
@@ -1123,7 +1123,7 @@ components:
         conversationId: { $ref: '#/components/schemas/MongoId' }
         messageId: { $ref: '#/components/schemas/MongoId' }
         previewText: { type: string }
-        previewKind: { type: string, enum: [TEXT, ATTACHMENT, MIXED], description: ENewMessagePreviewKind }
+        previewKind: { type: string, enum: [TEXT, ATTACHMENT, MIXED], description: EnumNewMessagePreviewKind }
     NotificationPayloadAddedToGroup:
       type: object
       required: [conversationId]
@@ -1146,7 +1146,7 @@ components:
         type:
           type: string
           enum: [FRIEND_REQUEST, FRIEND_ACCEPTED, NEW_MESSAGE, ADDED_TO_GROUP]
-          description: ENotificationType
+          description: EnumNotificationType
         summary: { type: string }
         actor: { $ref: '#/components/schemas/NotificationActor' }
         payload:

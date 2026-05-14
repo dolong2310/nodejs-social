@@ -12,8 +12,8 @@ import {
   buildStubHttpRouters,
   permissionModuleTagFromBaseRoutePath
 } from '@/infrastructure/persistence/seed/stub-http-routers.seed';
-import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { PermissionRepository } from '@/modules/authorization/infrastructure/persistence/postgres/permission.impl.repository';
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/postgres/permission.mapper';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
@@ -24,7 +24,7 @@ import type { Router } from 'express';
 type AvailableRoute = {
   name: string;
   path: string;
-  method: EHttpMethod;
+  method: EnumHttpMethod;
   module: string;
 };
 
@@ -44,7 +44,7 @@ const USER_MODULE_ALLOWLIST: ReadonlySet<string> = new Set([
   'NOTIFICATIONS'
 ]);
 
-const VALID_HTTP_METHODS = new Set<string>(Object.values(EHttpMethod));
+const VALID_HTTP_METHODS = new Set<string>(Object.values(EnumHttpMethod));
 
 const databaseService = new PostgresDatabase({
   uri: dbConfig.postgres.uri,
@@ -90,7 +90,7 @@ function collectRoutesFromExpressRouter(
       collectedRoutes.push({
         name: `${httpMethod}+${fullHttpPath}`,
         path: fullHttpPath,
-        method: httpMethod as EHttpMethod,
+        method: httpMethod as EnumHttpMethod,
         module: permissionModuleTag
       });
     }
@@ -120,12 +120,12 @@ function discoverApiRoutesFromBaseRouteList(baseRouteList: BaseRoute[]): Availab
 }
 
 async function ensureBaseRoles(): Promise<void> {
-  for (const name of [ERoleName.ADMIN, ERoleName.USER] as const) {
+  for (const name of [EnumRoleName.ADMIN, EnumRoleName.USER] as const) {
     const existing = await roleRepository.findRoleByName(name);
     if (existing) continue;
     const created = await roleRepository.createRole({
       name,
-      description: name === ERoleName.ADMIN ? 'Administrator' : 'User',
+      description: name === EnumRoleName.ADMIN ? 'Administrator' : 'User',
       isActive: true,
       permissionIds: []
     });
@@ -162,8 +162,8 @@ async function main(): Promise<void> {
         .map((permission) => permission.id.toString());
 
   await Promise.all([
-    allPermissionIds.length > 0 ? syncPermissionsToRole(ERoleName.ADMIN, allPermissionIds) : Promise.resolve(),
-    userPermissionIds.length > 0 ? syncPermissionsToRole(ERoleName.USER, userPermissionIds) : Promise.resolve()
+    allPermissionIds.length > 0 ? syncPermissionsToRole(EnumRoleName.ADMIN, allPermissionIds) : Promise.resolve(),
+    userPermissionIds.length > 0 ? syncPermissionsToRole(EnumRoleName.USER, userPermissionIds) : Promise.resolve()
   ]);
 
   console.log('Permissions and role assignments synced successfully.');
@@ -232,7 +232,7 @@ async function deleteRolePermissionLinks(permissionIds: string[]): Promise<void>
   console.log(`0. Removed ${result.rowCount ?? 0} role-permission links for obsolete permissions.`);
 }
 
-async function syncPermissionsToRole(roleName: ERoleName, permissionIds: string[]): Promise<void> {
+async function syncPermissionsToRole(roleName: EnumRoleName, permissionIds: string[]): Promise<void> {
   const role = await roleRepository.findRoleByName(roleName);
   if (!role) {
     throw new Error(`Role ${roleName} not found. Run ensure base roles or seed again.`);

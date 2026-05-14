@@ -1,19 +1,19 @@
-import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class SearchPostsQuery {
   userId?: string;
   query?: string;
-  type?: ESearchType;
-  people?: ESearchPeople;
+  type?: EnumSearchType;
+  people?: EnumSearchPeople;
   limit: number;
   cursor?: string;
   constructor(payload: {
     userId?: string;
     query?: string;
-    type?: ESearchType;
-    people?: ESearchPeople;
+    type?: EnumSearchType;
+    people?: EnumSearchPeople;
     limit: string;
     cursor?: string;
   }) {
@@ -26,7 +26,7 @@ export class SearchPostsQuery {
   }
 }
 
-export class SearchPostsResult<T extends IPostDetailWithAuthorOutput> {
+export class SearchPostsResult<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -37,7 +37,7 @@ export class SearchPostsResult<T extends IPostDetailWithAuthorOutput> {
 
 export abstract class SearchPostsPort implements UseCase<
   SearchPostsQuery,
-  SearchPostsResult<IPostDetailWithAuthorOutput>
+  SearchPostsResult<PostDetailWithAuthorOutput>
 > {
-  abstract execute<T extends IPostDetailWithAuthorOutput>(query: SearchPostsQuery): Promise<SearchPostsResult<T>>;
+  abstract execute<T extends PostDetailWithAuthorOutput>(query: SearchPostsQuery): Promise<SearchPostsResult<T>>;
 }

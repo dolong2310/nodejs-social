@@ -12,7 +12,7 @@ import {
 } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
 import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
@@ -96,7 +96,7 @@ export class SendMessageUseCase extends SendMessagePort {
     const recipientIds: string[] = [];
     // Với chat 1-1 (DIRECT), chỉ tạo thông báo cho người cần nhận nếu không bị block.
     // (assertCanSend ở trên đã gọi isBlockedEitherWay với peer — không cần gọi lại ở đây.)
-    if (convEntity.getProps().type === EConversationType.DIRECT) {
+    if (convEntity.getProps().type === EnumConversationType.DIRECT) {
       recipientIds.push(this.conversationService.getDirectPeerId({ conv: convEntity, userId }));
     } else {
       // Với chat nhóm (GROUP), tạo thông báo cho tất cả thành viên trong conversation ngoại trừ người gửi.
@@ -133,7 +133,7 @@ export class SendMessageUseCase extends SendMessagePort {
    * - Tại sao chỉ DIRECT trong code hiện tại: Nhóm có thể vẫn gửi được trong phòng dù có block cặp đôi (logic notify/realtime xử lý riêng ở dưới).
    */
   private async assertCanSend(userId: string, conv: ConversationEntity) {
-    if (conv.getProps().type === EConversationType.DIRECT) {
+    if (conv.getProps().type === EnumConversationType.DIRECT) {
       const peerId = this.conversationService.getDirectPeerId({ conv, userId });
       if (await this.blockRepository.isBlockedEitherWay(userId, peerId)) {
         throw new MessageForbiddenException();

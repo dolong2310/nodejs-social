@@ -1,17 +1,17 @@
 import { BaseSchedule } from '@/infrastructure/queue/bullmq/base.schedule';
 import {
-  IRefreshTokenCleanupJobData,
-  IRefreshTokenCleanupJobResult
+  RefreshTokenCleanupJobData,
+  RefreshTokenCleanupJobResult
 } from '@/modules/authentication/application/ports/refresh-token-cleanup-job.port';
-import { CronExpression } from '@/modules/common/enums/cron-expression.enum';
+import { EnumCronExpression } from '@/modules/common/enums/cron-expression.enum';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { type ConnectionOptions } from 'bullmq';
 
 export const REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME = 'refresh-token-cleanup-schedule';
 
 export class RefreshTokenCleanupSchedule extends BaseSchedule<
-  IRefreshTokenCleanupJobData,
-  IRefreshTokenCleanupJobResult
+  RefreshTokenCleanupJobData,
+  RefreshTokenCleanupJobResult
 > {
   constructor(
     readonly connection: ConnectionOptions,
@@ -40,7 +40,7 @@ export class RefreshTokenCleanupSchedule extends BaseSchedule<
       await this.queue.upsertJobScheduler(
         REFRESH_TOKEN_CLEANUP_SCHEDULE_ID,
         {
-          pattern: CronExpression.EVERY_DAY_AT_MIDNIGHT,
+          pattern: EnumCronExpression.EVERY_DAY_AT_MIDNIGHT,
           tz: 'Asia/Ho_Chi_Minh'
         },
         {
@@ -52,7 +52,7 @@ export class RefreshTokenCleanupSchedule extends BaseSchedule<
       this.logger
         .child({ module: REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME })
         .info(
-          { cron: CronExpression.EVERY_DAY_AT_MIDNIGHT, timezone: 'Asia/Ho_Chi_Minh' },
+          { cron: EnumCronExpression.EVERY_DAY_AT_MIDNIGHT, timezone: 'Asia/Ho_Chi_Minh' },
           'refresh token cleanup scheduled'
         );
     } catch (error) {

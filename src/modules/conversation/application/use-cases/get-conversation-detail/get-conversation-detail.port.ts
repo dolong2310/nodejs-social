@@ -1,5 +1,5 @@
 import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationFullProps, EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class GetConversationDetailQuery {
@@ -13,7 +13,7 @@ export class GetConversationDetailQuery {
 
 export class GetConversationDetailResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
-  type: EConversationType;
+  type: EnumConversationType;
   createdBy: string;
   name?: string;
   avatarMediaId?: string | null;
@@ -23,7 +23,7 @@ export class GetConversationDetailResult implements Omit<ConversationFullProps, 
   members: ConversationMemberFullProps[];
   constructor(payload: {
     id: string;
-    type: EConversationType;
+    type: EnumConversationType;
     createdBy: string;
     name?: string;
     avatarMediaId?: string | null;

@@ -3,9 +3,9 @@ import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistenc
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import {
-  IFindNotificationsInput,
-  IFindOldestNotificationIdsForTrimInput,
-  IUpdateReadByIdsInput
+  FindNotificationsInput,
+  FindOldestNotificationIdsForTrimInput,
+  UpdateReadByIdsInput
 } from '@/modules/notification/domain/repositories/notification.repository.type';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/postgres/notification.mapper';
 import { NotificationModel } from '@/modules/notification/infrastructure/persistence/postgres/notification.model';
@@ -31,7 +31,7 @@ export class NotificationRepository
     unreadOnly,
     limit,
     before
-  }: IFindNotificationsInput): Promise<NotificationEntity[]> {
+  }: FindNotificationsInput): Promise<NotificationEntity[]> {
     const conditions = ['recipient_id = $1'];
     const values: unknown[] = [recipientId];
 
@@ -70,7 +70,7 @@ export class NotificationRepository
   async findOldestNotificationIdsForTrim({
     recipientId,
     limit
-  }: IFindOldestNotificationIdsForTrimInput): Promise<string[]> {
+  }: FindOldestNotificationIdsForTrimInput): Promise<string[]> {
     if (limit <= 0) return [];
     const result = await this.query<Pick<NotificationModel, 'id'>>(
       `
@@ -157,7 +157,7 @@ export class NotificationRepository
     );
   }
 
-  async updateReadByIds({ ids, recipientId }: IUpdateReadByIdsInput): Promise<number> {
+  async updateReadByIds({ ids, recipientId }: UpdateReadByIdsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const result = await this.query(
       `

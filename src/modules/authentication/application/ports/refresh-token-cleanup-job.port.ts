@@ -1,5 +1,5 @@
-export interface IRefreshTokenCleanupJobData {}
+export interface RefreshTokenCleanupJobData {}
 
-export interface IRefreshTokenCleanupJobResult {
+export interface RefreshTokenCleanupJobResult {
   deletedCount: number;
 }

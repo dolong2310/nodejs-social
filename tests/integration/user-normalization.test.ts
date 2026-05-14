@@ -1,6 +1,6 @@
 import { UpdateMeCommand } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { describe, expect, it } from 'vitest';
 
@@ -12,7 +12,7 @@ describe('user identity normalization', () => {
       password: 'hashed-password',
       birthday: new Date('1990-01-01T00:00:00.000Z'),
       roleId: 'role-user',
-      status: EUserStatus.ACTIVE,
+      status: EnumUserStatus.ACTIVE,
       username: '  Jane_DOE  '
     });
 

@@ -25,7 +25,7 @@
       "status": {
         "bsonType": "string",
         "enum": ["ACTIVE", "INACTIVE", "BANNED", "UNKNOWN"],
-        "description": "EUserStatus"
+        "description": "EnumUserStatus"
       },
       "totpSecret": { "bsonType": "string" },
       "bio": { "bsonType": "string" },

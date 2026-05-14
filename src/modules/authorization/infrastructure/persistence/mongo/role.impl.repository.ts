@@ -1,9 +1,9 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import {
-  ICreateRoleInput,
-  IListRolesInput,
-  IUpdateRoleInput
+  CreateRoleInput,
+  ListRolesInput,
+  UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.type';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
@@ -34,7 +34,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async findRoles({ limit, skip = 0 }: IListRolesInput): Promise<RoleEntity[]> {
+  async findRoles({ limit, skip = 0 }: ListRolesInput): Promise<RoleEntity[]> {
     const records = await this.dbCollection.find({}).sort({ name: 1 }).skip(skip).limit(limit).toArray();
     return records.map((item) => this.mapper.toDomain(item));
   }
@@ -43,7 +43,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
     return this.dbCollection.countDocuments({});
   }
 
-  async createRole(data: ICreateRoleInput): Promise<RoleEntity | null> {
+  async createRole(data: CreateRoleInput): Promise<RoleEntity | null> {
     const entity = RoleEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.dbCollection.findOneAndUpdate(
@@ -54,7 +54,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async insertRole(data: ICreateRoleInput): Promise<RoleEntity> {
+  async insertRole(data: CreateRoleInput): Promise<RoleEntity> {
     const entity = RoleEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
@@ -65,7 +65,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
     return this.mapper.toDomain(doc);
   }
 
-  async updateRole(id: string, data: IUpdateRoleInput): Promise<RoleEntity | null> {
+  async updateRole(id: string, data: UpdateRoleInput): Promise<RoleEntity | null> {
     const record = await this.dbCollection.findOneAndUpdate(
       { _id: id },
       { $set: toMongoFieldRecord(data as Record<string, unknown>) },

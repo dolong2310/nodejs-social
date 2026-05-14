@@ -2,10 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { BookmarkEntity } from '@/modules/post/domain/entities/bookmark.entity';
 import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
-import {
-  ICreateBookmarkInput,
-  IDeleteBookmarkInput
-} from '@/modules/post/domain/repositories/bookmark.repository.type';
+import { CreateBookmarkInput, DeleteBookmarkInput } from '@/modules/post/domain/repositories/bookmark.repository.type';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/postgres/bookmark.mapper';
 import { BookmarkModel } from '@/modules/post/infrastructure/persistence/postgres/bookmark.model';
 import type { Pool } from 'pg';
@@ -24,7 +21,7 @@ export class BookmarkRepository
     super(pool, mapper);
   }
 
-  async createBookmark(data: ICreateBookmarkInput): Promise<BookmarkEntity | null> {
+  async createBookmark(data: CreateBookmarkInput): Promise<BookmarkEntity | null> {
     const entity = BookmarkEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.query(
@@ -44,7 +41,7 @@ export class BookmarkRepository
     return createdOrExisting ? this.mapper.toDomain(createdOrExisting) : null;
   }
 
-  async deleteBookmark(data: IDeleteBookmarkInput): Promise<BookmarkEntity | null> {
+  async deleteBookmark(data: DeleteBookmarkInput): Promise<BookmarkEntity | null> {
     const result = await this.query<BookmarkModel>(
       `DELETE FROM bookmarks WHERE user_id = $1 AND post_id = $2 RETURNING *`,
       [data.userId, data.postId]

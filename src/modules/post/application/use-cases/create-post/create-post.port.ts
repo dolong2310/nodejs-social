@@ -1,11 +1,16 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { CreatePostProps, EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import {
+  CreatePostProps,
+  EnumPostAudience,
+  EnumPostType,
+  PostFullProps
+} from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class CreatePostCommand implements CreatePostProps {
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
@@ -28,8 +33,8 @@ export class CreatePostCommand implements CreatePostProps {
 export class CreatePostResult implements PostFullProps {
   id: string;
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;

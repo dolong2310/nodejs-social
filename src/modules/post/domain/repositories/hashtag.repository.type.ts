@@ -1,12 +1,12 @@
 import { CreateHashtagProps } from '@/modules/post/domain/entities/hashtag.type';
 
-export interface ICreateHashtagInput extends CreateHashtagProps {}
+export interface CreateHashtagInput extends CreateHashtagProps {}
 
-export interface IListHashtagsInput {
+export interface ListHashtagsInput {
   limit: number;
   skip?: number;
 }
 
-export interface IUpdateHashtagInput {
+export interface UpdateHashtagInput {
   name?: string;
 }

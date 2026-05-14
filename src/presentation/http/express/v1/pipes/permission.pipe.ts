@@ -1,4 +1,4 @@
-import { EHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import { MODULE_TAG_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
@@ -7,7 +7,7 @@ import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 
-const HTTP_METHODS = Object.values(EHttpMethod);
+const HTTP_METHODS = Object.values(EnumHttpMethod);
 
 export interface IPermissionsPipe {
   permissionIdParam(): ExpressRequestHandler;
@@ -75,7 +75,7 @@ export class PermissionsPipe implements IPermissionsPipe {
             trim: true,
             custom: {
               options: (value: string) => {
-                if (!HTTP_METHODS.includes(value as EHttpMethod)) {
+                if (!HTTP_METHODS.includes(value as EnumHttpMethod)) {
                   throw new Error(VALIDATION_ERROR_MESSAGE.PERMISSION_METHOD_INVALID);
                 }
                 return true;
@@ -127,7 +127,7 @@ export class PermissionsPipe implements IPermissionsPipe {
             trim: true,
             custom: {
               options: (value: string) => {
-                if (!HTTP_METHODS.includes(value as EHttpMethod)) {
+                if (!HTTP_METHODS.includes(value as EnumHttpMethod)) {
                   throw new Error(VALIDATION_ERROR_MESSAGE.PERMISSION_METHOD_INVALID);
                 }
                 return true;

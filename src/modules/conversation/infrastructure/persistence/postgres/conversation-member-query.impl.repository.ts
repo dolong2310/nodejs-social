@@ -1,7 +1,7 @@
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
 import {
-  IListConversationsForUserInput,
-  IListConversationsForUserOutput
+  ListConversationsForUserInput,
+  ListConversationsForUserOutput
 } from '@/modules/conversation/domain/repositories/conversation-member.query.type';
 import type { Pool } from 'pg';
 
@@ -12,7 +12,7 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
     userId,
     limit,
     cursor
-  }: IListConversationsForUserInput): Promise<IListConversationsForUserOutput[]> {
+  }: ListConversationsForUserInput): Promise<ListConversationsForUserOutput[]> {
     const conditions = ['cm.user_id = $1'];
     const values: unknown[] = [userId];
 

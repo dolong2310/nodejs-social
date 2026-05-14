@@ -5,9 +5,9 @@ import {
   UpdateConversationPort,
   UpdateConversationResult
 } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
 /**
@@ -31,7 +31,7 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
     // kiểm tra user có phải là member của conversation không
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
     // chỉ cho phép admin và manager được sửa metadata của conversation
-    if (self.role === EConversationMemberRole.MEMBER) {
+    if (self.role === EnumConversationMemberRole.MEMBER) {
       throw new ConversationRoleForbiddenException();
     }
 
@@ -59,7 +59,7 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
         createdAt: conv.createdAt
       };
 
-      if (conv.type === EConversationType.DIRECT) {
+      if (conv.type === EnumConversationType.DIRECT) {
         payload.peerUserId = this.conversationService.getDirectPeerId({ conv: convEntity, userId });
       }
 
@@ -87,7 +87,7 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
       createdAt: conv.createdAt
     };
 
-    if (conv.type === EConversationType.DIRECT) {
+    if (conv.type === EnumConversationType.DIRECT) {
       payload.peerUserId = this.conversationService.getDirectPeerId({ conv: convEntity, userId });
     }
 

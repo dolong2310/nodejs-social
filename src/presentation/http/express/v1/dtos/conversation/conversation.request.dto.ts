@@ -1,4 +1,4 @@
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ConversationIdParams extends ParamsDictionary {
@@ -46,9 +46,9 @@ export class InviteConversationMemberBodyDTO {
 }
 
 export class PatchConversationMemberRoleBodyDTO {
-  role: EConversationMemberRole;
+  role: EnumConversationMemberRole;
 
-  constructor(body: { role: EConversationMemberRole }) {
+  constructor(body: { role: EnumConversationMemberRole }) {
     this.role = body.role;
   }
 }

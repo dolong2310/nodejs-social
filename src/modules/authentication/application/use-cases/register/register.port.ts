@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
 export class RegisterCommand {
   name: string;
@@ -12,6 +12,10 @@ export class RegisterCommand {
     this.email = payload.email.toLowerCase().trim();
     this.password = payload.password;
     this.birthday = payload.birthday;
+    // TODO: create constant for code length
+    if (payload.code.length !== 6) {
+      throw new Error('Code must be 6 digits');
+    }
     this.code = payload.code; // length 6 digits
   }
 }
@@ -22,7 +26,7 @@ export class RegisterResult implements UserSafeProps {
   email: string;
   birthday: Date;
   roleId: string;
-  status: EUserStatus;
+  status: EnumUserStatus;
   bio?: string;
   location?: string;
   website?: string;

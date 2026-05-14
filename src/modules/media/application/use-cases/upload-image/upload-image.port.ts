@@ -1,4 +1,4 @@
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UploadImageCommand {
@@ -10,8 +10,8 @@ export class UploadImageCommand {
 
 export class UploadImageResult {
   url: string;
-  type: EMediaType;
-  constructor(payload: { url: string; type: EMediaType }) {
+  type: EnumMediaType;
+  constructor(payload: { url: string; type: EnumMediaType }) {
     this.url = payload.url;
     this.type = payload.type;
   }

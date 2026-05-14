@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { IPostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class GetPostDetailQuery {
   postId: string;
@@ -10,6 +10,6 @@ export class GetPostDetailQuery {
   }
 }
 
-export abstract class GetPostDetailPort implements UseCase<GetPostDetailQuery, IPostDetailOutput> {
-  abstract execute(query: GetPostDetailQuery): Promise<IPostDetailOutput>;
+export abstract class GetPostDetailPort implements UseCase<GetPostDetailQuery, PostDetailOutput> {
+  abstract execute(query: GetPostDetailQuery): Promise<PostDetailOutput>;
 }

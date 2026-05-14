@@ -1,13 +1,13 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class UpdatePostCommand {
   userId: string;
   postId: string;
-  audience: EPostAudience;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
-  constructor(payload: { userId: string; postId: string; audience: EPostAudience; allowStrangerComments: boolean }) {
+  constructor(payload: { userId: string; postId: string; audience: EnumPostAudience; allowStrangerComments: boolean }) {
     this.userId = payload.userId;
     this.postId = payload.postId;
     this.audience = payload.audience;
@@ -18,8 +18,8 @@ export class UpdatePostCommand {
 export class UpdatePostResult implements PostFullProps {
   id: string;
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;

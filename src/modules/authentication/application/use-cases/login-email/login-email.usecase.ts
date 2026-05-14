@@ -6,7 +6,7 @@ import {
   LoginEmailPort,
   LoginEmailResult
 } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
@@ -47,7 +47,7 @@ export class LoginEmailUseCase extends LoginEmailPort {
         emailOtpCode,
         totpSecret: user.totpSecret,
         email: user.email,
-        type: EOtpType.LOGIN
+        type: EnumOtpType.LOGIN
       });
     }
 

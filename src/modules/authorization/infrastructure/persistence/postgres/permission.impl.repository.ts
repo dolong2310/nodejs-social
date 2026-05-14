@@ -1,10 +1,10 @@
 import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 import {
-  ICreatePermissionInput,
-  IFindPermissionByPathAndMethodInput,
-  IListPermissionsInput,
-  IUpdatePermissionInput
+  CreatePermissionInput,
+  FindPermissionByPathAndMethodInput,
+  ListPermissionsInput,
+  UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.type';
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/postgres/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/postgres/permission.model';
@@ -26,7 +26,7 @@ export class PermissionRepository
     super(pool, mapper);
   }
 
-  async findPermissions({ limit, skip = 0 }: IListPermissionsInput): Promise<PermissionEntity[]> {
+  async findPermissions({ limit, skip = 0 }: ListPermissionsInput): Promise<PermissionEntity[]> {
     const result = await this.query<PermissionModel>(
       `SELECT * FROM "permissions" ORDER BY "path" ASC, "method" ASC OFFSET $1 LIMIT $2`,
       [skip, limit]
@@ -46,7 +46,7 @@ export class PermissionRepository
     path,
     method,
     excludeId
-  }: IFindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
+  }: FindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
     const values: unknown[] = [path, method];
     const excludeClause = excludeId === undefined ? '' : ' AND "id" <> $3';
     if (excludeId !== undefined) values.push(excludeId);
@@ -59,17 +59,17 @@ export class PermissionRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async createPermissions(data: ICreatePermissionInput[]): Promise<PermissionEntity[]> {
+  async createPermissions(data: CreatePermissionInput[]): Promise<PermissionEntity[]> {
     const entities = data.map((item) => PermissionEntity.create(item));
     return this.insertMany(entities);
   }
 
-  async createPermission(data: ICreatePermissionInput): Promise<PermissionEntity | null> {
+  async createPermission(data: CreatePermissionInput): Promise<PermissionEntity | null> {
     const entity = PermissionEntity.create(data);
     return this.insert(entity);
   }
 
-  async updatePermission(id: string, data: IUpdatePermissionInput): Promise<PermissionEntity | null> {
+  async updatePermission(id: string, data: UpdatePermissionInput): Promise<PermissionEntity | null> {
     return this.update(id, data as Partial<PermissionEntity>);
   }
 

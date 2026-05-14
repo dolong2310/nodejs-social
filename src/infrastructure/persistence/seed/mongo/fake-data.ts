@@ -12,11 +12,11 @@ import logger from '@/infrastructure/logger/create-logger.js';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config.js';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database.js';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service.js';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type.js';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type.js';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository.js';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper.js';
-import { EMediaType } from '@/modules/common/domain/enums/media.enum.js';
-import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type.js';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum.js';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type.js';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object.js';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository.js';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper.js';
@@ -28,7 +28,7 @@ import {
 } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.impl.repository.js';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper.js';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity.js';
-import { EUserStatus } from '@/modules/user/domain/entities/user.type.js';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.type.js';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository.js';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper.js';
 import { faker } from '@faker-js/faker';
@@ -85,16 +85,16 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   // 1. random type
   const typePool =
     parentPostIds.length === 0
-      ? [EPostType.POST] // chưa có post gốc nào thì chỉ cho phép POST
-      : [EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE];
+      ? [EnumPostType.POST] // chưa có post gốc nào thì chỉ cho phép POST
+      : [EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE];
 
   const randomType = faker.helpers.arrayElement(typePool);
 
   // 2. random audience (phase 3 literals)
   const randomAudience = faker.helpers.arrayElement([
-    EPostAudience.PUBLIC,
-    EPostAudience.FRIENDS_ONLY,
-    EPostAudience.ONLY_ME
+    EnumPostAudience.PUBLIC,
+    EnumPostAudience.FRIENDS_ONLY,
+    EnumPostAudience.ONLY_ME
   ]);
 
   // 3. random hashtags (unique, số lượng 1..HASHTAG_PER_POST)
@@ -115,11 +115,11 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
 
   // 5. random media (unique theo url, số lượng 1..MEDIA_PER_POST)
   const mediaCount = faker.number.int({ min: 1, max: MEDIA_PER_POST });
-  const mediaMap = new Map<string, { url: string; type: EMediaType }>();
+  const mediaMap = new Map<string, { url: string; type: EnumMediaType }>();
   while (mediaMap.size < mediaCount) {
     const url = faker.image.url();
     if (!mediaMap.has(url)) {
-      mediaMap.set(url, { url, type: faker.helpers.arrayElement([EMediaType.IMAGE, EMediaType.VIDEO]) });
+      mediaMap.set(url, { url, type: faker.helpers.arrayElement([EnumMediaType.IMAGE, EnumMediaType.VIDEO]) });
     }
   }
   const randomMedia = Array.from(mediaMap.values()).map((m) => new Media(m));
@@ -129,7 +129,7 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
 
   // 7. parentId theo đúng rule
   // REPOST / COMMENT / QUOTE => phải có parentId là postId của bài viết cha (post gốc)
-  const parentId = randomType === EPostType.POST ? null : faker.helpers.arrayElement(parentPostIds);
+  const parentId = randomType === EnumPostType.POST ? null : faker.helpers.arrayElement(parentPostIds);
 
   return {
     userId,
@@ -150,7 +150,11 @@ const insertMultipleUsers = async (userBodies: UserSeedBody[], roleId: string): 
 
   for (const body of userBodies) {
     // random status
-    const randomStatus = faker.helpers.arrayElement([EUserStatus.ACTIVE, EUserStatus.INACTIVE, EUserStatus.BANNED]);
+    const randomStatus = faker.helpers.arrayElement([
+      EnumUserStatus.ACTIVE,
+      EnumUserStatus.INACTIVE,
+      EnumUserStatus.BANNED
+    ]);
     const hashedPassword = await hashingService.hash(body.password);
 
     const entity = UserEntity.create({
@@ -226,7 +230,7 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
       });
 
       // Nếu là post gốc thì lưu lại id để làm parent cho các post con sau này
-      if (post.getProps().type === EPostType.POST) {
+      if (post.getProps().type === EnumPostType.POST) {
         parentPostIds.push(post.id.toString());
       }
 
@@ -241,9 +245,11 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
 const main = async () => {
   await mongo.connect();
 
-  const userRole = await roleRepository.findRoleByName(ERoleName.USER);
+  const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {
-    throw new Error(`Role "${ERoleName.USER}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`);
+    throw new Error(
+      `Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`
+    );
   }
   const userRoleId = userRole.id.toString();
   console.log(`Using USER role ID: ${userRoleId}`);

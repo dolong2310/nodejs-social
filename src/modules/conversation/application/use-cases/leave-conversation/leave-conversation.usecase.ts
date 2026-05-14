@@ -4,8 +4,8 @@ import {
   LeaveConversationCommand,
   LeaveConversationPort
 } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class LeaveConversationUseCase extends LeaveConversationPort {
@@ -21,7 +21,7 @@ export class LeaveConversationUseCase extends LeaveConversationPort {
     const conv = (await this.conversationService.loadConversation(conversationId)).toObject();
 
     // không cho phép "admin cuối cùng" rời khỏi group mà khiến group không còn admin nào.
-    if (conv.type === EConversationType.GROUP && self.role === EConversationMemberRole.ADMIN) {
+    if (conv.type === EnumConversationType.GROUP && self.role === EnumConversationMemberRole.ADMIN) {
       const adminsCount = await this.conversationMemberRepository.countAdmins(conversationId);
       // nếu chỉ còn 1 admin thì không cho rời group
       if (adminsCount === 1) {

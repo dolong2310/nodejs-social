@@ -1,5 +1,5 @@
 import {
-  ENotificationType,
+  EnumNotificationType,
   INotificationActor,
   INotificationPayload,
   NotificationFullProps
@@ -10,7 +10,7 @@ export class NotificationResponseDTO implements NotificationFullProps {
   recipientId: string;
   read: boolean;
   readAt?: Date;
-  type: ENotificationType;
+  type: EnumNotificationType;
   actor: INotificationActor;
   payload: INotificationPayload;
   createdAt: Date;

@@ -1,7 +1,7 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constant';
-import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
@@ -63,7 +63,7 @@ export class AuthGuard implements BaseGuard {
   }
 
   private async verifyRole(request: Request, decoded: AccessTokenPayload): Promise<void> {
-    const method = request.method as EHttpMethod;
+    const method = request.method as EnumHttpMethod;
     const path = resolveUrlPath({
       path: request.route.path,
       baseUrl: request.baseUrl,

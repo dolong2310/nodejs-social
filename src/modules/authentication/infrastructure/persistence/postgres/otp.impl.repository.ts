@@ -1,7 +1,7 @@
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { ICreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.type';
+import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.type';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/postgres/otp.mapper';
 import { OtpModel } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -19,7 +19,7 @@ export class OtpRepository extends PostgresRepositoryBase<OtpEntity, OtpModel> i
     super(pool, mapper);
   }
 
-  async findUniqueOtpCode(data: { email: string; type: EOtpType }): Promise<OtpEntity | null> {
+  async findUniqueOtpCode(data: { email: string; type: EnumOtpType }): Promise<OtpEntity | null> {
     const result = await this.query<OtpModel>(`SELECT * FROM otps WHERE email = $1 AND type = $2 LIMIT 1`, [
       data.email,
       data.type
@@ -28,7 +28,7 @@ export class OtpRepository extends PostgresRepositoryBase<OtpEntity, OtpModel> i
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async createOtp(data: ICreateOtpInput): Promise<OtpEntity | null> {
+  async createOtp(data: CreateOtpInput): Promise<OtpEntity | null> {
     const entity = OtpEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.query<OtpModel>(

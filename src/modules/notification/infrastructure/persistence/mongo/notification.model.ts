@@ -1,5 +1,8 @@
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
-import { ENewMessagePreviewKind, ENotificationType } from '@/modules/notification/domain/entities/notification.type';
+import {
+  EnumNewMessagePreviewKind,
+  EnumNotificationType
+} from '@/modules/notification/domain/entities/notification.type';
 import {
   type InferOutput,
   boolean,
@@ -26,7 +29,7 @@ const newMessagePayloadSchema = object({
   conversation_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   message_id: pipe(string(), minLength(ENTITY_ID_LENGTH)),
   preview_text: optional(string()),
-  preview_kind: enum_(ENewMessagePreviewKind)
+  preview_kind: enum_(EnumNewMessagePreviewKind)
 });
 
 const addedToGroupPayloadSchema = object({
@@ -51,22 +54,22 @@ const baseNotificationSchema = {
 export const notificationSchema = variant('type', [
   object({
     ...baseNotificationSchema,
-    type: literal(ENotificationType.FRIEND_REQUEST),
+    type: literal(EnumNotificationType.FRIEND_REQUEST),
     payload: friendRequestPayloadSchema
   }),
   object({
     ...baseNotificationSchema,
-    type: literal(ENotificationType.FRIEND_ACCEPTED),
+    type: literal(EnumNotificationType.FRIEND_ACCEPTED),
     payload: friendAcceptedPayloadSchema
   }),
   object({
     ...baseNotificationSchema,
-    type: literal(ENotificationType.NEW_MESSAGE),
+    type: literal(EnumNotificationType.NEW_MESSAGE),
     payload: newMessagePayloadSchema
   }),
   object({
     ...baseNotificationSchema,
-    type: literal(ENotificationType.ADDED_TO_GROUP),
+    type: literal(EnumNotificationType.ADDED_TO_GROUP),
     payload: addedToGroupPayloadSchema
   })
 ]);

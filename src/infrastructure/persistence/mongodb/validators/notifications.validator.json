@@ -19,7 +19,7 @@
       "type": {
         "bsonType": "string",
         "enum": ["FRIEND_REQUEST", "FRIEND_ACCEPTED", "NEW_MESSAGE", "ADDED_TO_GROUP"],
-        "description": "ENotificationType"
+        "description": "EnumNotificationType"
       },
       "actor": {
         "bsonType": "object",
@@ -83,7 +83,7 @@
               "previewKind": {
                 "bsonType": "string",
                 "enum": ["TEXT", "ATTACHMENT", "MIXED"],
-                "description": "ENewMessagePreviewKind"
+                "description": "EnumNewMessagePreviewKind"
               }
             }
           },

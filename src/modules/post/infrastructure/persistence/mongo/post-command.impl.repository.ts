@@ -1,8 +1,8 @@
 import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import {
-  IIncreasePostsViewsInput,
-  IIncreasePostViewsInput,
-  IIncreasePostViewsOutput
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput
 } from '@/modules/post/domain/repositories/post.command.type';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
@@ -19,7 +19,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
     return this.db.collection<PostModel>('posts');
   }
 
-  async increasePostViews({ postId, userId }: IIncreasePostViewsInput): Promise<IIncreasePostViewsOutput | null> {
+  async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
     const result = await this.dbCollection.findOneAndUpdate(
       { _id: postId },
       { $inc: userId ? { user_views: 1 } : { guest_views: 1 }, $currentDate: { updated_at: true } },
@@ -34,7 +34,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
       : null;
   }
 
-  async increasePostsViews({ ids, isAuthenticatedViewer }: IIncreasePostsViewsInput): Promise<number> {
+  async increasePostsViews({ ids, isAuthenticatedViewer }: IncreasePostsViewsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const res = await this.dbCollection.updateMany(
       { _id: { $in: ids } },

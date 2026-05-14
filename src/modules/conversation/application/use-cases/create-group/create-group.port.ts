@@ -1,6 +1,6 @@
 import {
   CreateGroupConversationProps,
-  EConversationType
+  EnumConversationType
 } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
@@ -17,7 +17,7 @@ export class CreateGroupCommand {
 
 export class CreateGroupResult implements CreateGroupConversationProps {
   id: string;
-  type: EConversationType;
+  type: EnumConversationType;
   createdBy: string;
   name?: string;
   avatarMediaId?: string | null;
@@ -25,7 +25,7 @@ export class CreateGroupResult implements CreateGroupConversationProps {
   createdAt: Date;
   constructor(payload: {
     id: string;
-    type: EConversationType;
+    type: EnumConversationType;
     createdBy: string;
     name?: string;
     avatarMediaId?: string | null;

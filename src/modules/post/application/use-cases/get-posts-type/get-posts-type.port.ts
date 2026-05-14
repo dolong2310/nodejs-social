@@ -1,14 +1,14 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EPostType } from '@/modules/post/domain/entities/post.type';
-import { IPostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { PostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class GetPostsTypeQuery {
   userId?: string;
   postId: string;
-  type: EPostType;
+  type: EnumPostType;
   limit: number;
   cursor?: string;
-  constructor(payload: { userId?: string; postId: string; type: EPostType; limit: string; cursor?: string }) {
+  constructor(payload: { userId?: string; postId: string; type: EnumPostType; limit: string; cursor?: string }) {
     this.userId = payload.userId;
     this.postId = payload.postId;
     this.type = payload.type;
@@ -17,7 +17,7 @@ export class GetPostsTypeQuery {
   }
 }
 
-export class GetPostsTypeResult<T extends IPostDetailOutput> {
+export class GetPostsTypeResult<T extends PostDetailOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -26,6 +26,6 @@ export class GetPostsTypeResult<T extends IPostDetailOutput> {
   }
 }
 
-export abstract class GetPostsTypePort implements UseCase<GetPostsTypeQuery, GetPostsTypeResult<IPostDetailOutput>> {
-  abstract execute<T extends IPostDetailOutput>(query: GetPostsTypeQuery): Promise<GetPostsTypeResult<T>>;
+export abstract class GetPostsTypePort implements UseCase<GetPostsTypeQuery, GetPostsTypeResult<PostDetailOutput>> {
+  abstract execute<T extends PostDetailOutput>(query: GetPostsTypeQuery): Promise<GetPostsTypeResult<T>>;
 }

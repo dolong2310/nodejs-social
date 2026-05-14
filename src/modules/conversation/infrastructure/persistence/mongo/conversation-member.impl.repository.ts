@@ -1,15 +1,15 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import {
-  ICreateMemberInput,
-  IDeleteMemberInput,
-  IFindMemberInput,
-  IFindMembersByUsersInput,
-  IFindMembersInput,
-  ITransferAdminRoleInput,
-  IUpdateReadStateInput,
-  IUpdateRoleInput
+  CreateMemberInput,
+  DeleteMemberInput,
+  FindMemberInput,
+  FindMembersByUsersInput,
+  FindMembersInput,
+  TransferAdminRoleInput,
+  UpdateReadStateInput,
+  UpdateRoleInput
 } from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
@@ -33,7 +33,7 @@ export class ConversationMemberRepository
     super(mapper, logger);
   }
 
-  async findMember({ conversationId, userId }: IFindMemberInput): Promise<ConversationMemberEntity | null> {
+  async findMember({ conversationId, userId }: FindMemberInput): Promise<ConversationMemberEntity | null> {
     const result = await this.dbCollection.findOne({
       conversation_id: conversationId,
       user_id: userId
@@ -41,7 +41,7 @@ export class ConversationMemberRepository
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async findMembersByUsers({ conversationId, userIds }: IFindMembersByUsersInput): Promise<ConversationMemberEntity[]> {
+  async findMembersByUsers({ conversationId, userIds }: FindMembersByUsersInput): Promise<ConversationMemberEntity[]> {
     if (userIds.length === 0) return [];
     const results = await this.dbCollection
       .find({ conversation_id: conversationId, user_id: { $in: userIds } })
@@ -50,7 +50,7 @@ export class ConversationMemberRepository
     return result;
   }
 
-  async findMembers({ conversationIds, userId }: IFindMembersInput): Promise<ConversationMemberEntity[]> {
+  async findMembers({ conversationIds, userId }: FindMembersInput): Promise<ConversationMemberEntity[]> {
     if (conversationIds.length === 0) return [];
     const results = await this.dbCollection
       .find({ conversation_id: { $in: conversationIds }, user_id: userId })
@@ -59,14 +59,14 @@ export class ConversationMemberRepository
     return result;
   }
 
-  async createMember(data: ICreateMemberInput): Promise<ConversationMemberEntity> {
+  async createMember(data: CreateMemberInput): Promise<ConversationMemberEntity> {
     const entity = ConversationMemberEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
     return this.mapper.toDomain(record);
   }
 
-  async deleteMember({ conversationId, userId }: IDeleteMemberInput): Promise<number> {
+  async deleteMember({ conversationId, userId }: DeleteMemberInput): Promise<number> {
     const result = await this.dbCollection.deleteOne({
       conversation_id: conversationId,
       user_id: userId
@@ -80,7 +80,7 @@ export class ConversationMemberRepository
     return result;
   }
 
-  async updateRole({ conversationId, userId, role }: IUpdateRoleInput): Promise<ConversationMemberEntity | null> {
+  async updateRole({ conversationId, userId, role }: UpdateRoleInput): Promise<ConversationMemberEntity | null> {
     const result = await this.dbCollection.findOneAndUpdate(
       { conversation_id: conversationId, user_id: userId },
       { $set: { role } },
@@ -89,17 +89,17 @@ export class ConversationMemberRepository
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async transferAdminRole(data: ITransferAdminRoleInput): Promise<void> {
+  async transferAdminRole(data: TransferAdminRoleInput): Promise<void> {
     const { conversationId, joinedAt, oldAdminUserId, newAdminUserId } = data;
     await this.transaction(async () => {
       await this.dbCollection.updateOne(
         { conversation_id: conversationId, user_id: oldAdminUserId },
-        { $set: { role: EConversationMemberRole.MANAGER } },
+        { $set: { role: EnumConversationMemberRole.MANAGER } },
         { session: this.session }
       );
       await this.dbCollection.updateOne(
         { conversation_id: conversationId, user_id: newAdminUserId },
-        { $set: { role: EConversationMemberRole.ADMIN } },
+        { $set: { role: EnumConversationMemberRole.ADMIN } },
         { session: this.session }
       );
       await this.db
@@ -113,7 +113,7 @@ export class ConversationMemberRepository
     userId,
     lastReadAt,
     lastReadMessageId
-  }: IUpdateReadStateInput): Promise<ConversationMemberEntity | null> {
+  }: UpdateReadStateInput): Promise<ConversationMemberEntity | null> {
     const result = await this.dbCollection.findOneAndUpdate(
       { conversation_id: conversationId, user_id: userId },
       { $set: { last_read_message_id: lastReadMessageId, last_read_at: lastReadAt } },
@@ -130,7 +130,7 @@ export class ConversationMemberRepository
   async countAdmins(conversationId: string): Promise<number> {
     const result = await this.dbCollection.countDocuments({
       conversation_id: conversationId,
-      role: EConversationMemberRole.ADMIN
+      role: EnumConversationMemberRole.ADMIN
     });
     return result;
   }

@@ -3,8 +3,8 @@ import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistenc
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import {
-  ICountFriendshipsWithUserAmongOthersInput,
-  IListFriendIdsByCursorInput
+  CountFriendshipsWithUserAmongOthersInput,
+  ListFriendIdsByCursorInput
 } from '@/modules/relationship/domain/repositories/friendship.repository.type';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
 import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.model';
@@ -59,7 +59,7 @@ export class FriendshipRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async listFriendIdsByCursor({ userId, limit, cursor }: IListFriendIdsByCursorInput): Promise<string[]> {
+  async listFriendIdsByCursor({ userId, limit, cursor }: ListFriendIdsByCursorInput): Promise<string[]> {
     const result = await this.query<{ friend_id: string }>(
       `
         SELECT friend_id
@@ -111,7 +111,7 @@ export class FriendshipRepository
   async countFriendshipsWithUserAmongOthers({
     userId,
     otherUserIds
-  }: ICountFriendshipsWithUserAmongOthersInput): Promise<number> {
+  }: CountFriendshipsWithUserAmongOthersInput): Promise<number> {
     if (otherUserIds.length === 0) return 0;
     const result = await this.query<{ count: string }>(
       `

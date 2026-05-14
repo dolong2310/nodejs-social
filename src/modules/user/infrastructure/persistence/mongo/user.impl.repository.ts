@@ -3,9 +3,9 @@ import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/r
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import {
-  IChangePasswordInput,
-  IResetPasswordInput,
-  IUpdateMeInput
+  ChangePasswordInput,
+  ResetPasswordInput,
+  UpdateMeInput
 } from '@/modules/user/domain/repositories/user.repository.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
@@ -54,14 +54,14 @@ export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> i
     return result;
   }
 
-  async updateMe(id: string, data: IUpdateMeInput): Promise<UserEntity | null> {
+  async updateMe(id: string, data: UpdateMeInput): Promise<UserEntity | null> {
     const result = await this.update(id, data as Partial<UserEntity>, {
       projection: { password: 0, totpSecret: 0 }
     });
     return result;
   }
 
-  async resetPassword(id: string, data: IResetPasswordInput): Promise<boolean> {
+  async resetPassword(id: string, data: ResetPasswordInput): Promise<boolean> {
     const result = await this.dbCollection.updateOne(
       { _id: id },
       {
@@ -74,7 +74,7 @@ export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> i
     return result.modifiedCount > 0;
   }
 
-  async changePassword(id: string, data: IChangePasswordInput): Promise<UserEntity | null> {
+  async changePassword(id: string, data: ChangePasswordInput): Promise<UserEntity | null> {
     const result = await this.dbCollection.findOneAndUpdate(
       { _id: id },
       {

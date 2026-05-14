@@ -1,4 +1,4 @@
-import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
@@ -22,7 +22,13 @@ export class SearchPipe implements ISearchPipe {
         type: {
           isIn: {
             options: [
-              [ESearchType.USER, ESearchType.POST, ESearchType.IMAGE, ESearchType.VIDEO, ESearchType.VIDEO_STREAM]
+              [
+                EnumSearchType.USER,
+                EnumSearchType.POST,
+                EnumSearchType.IMAGE,
+                EnumSearchType.VIDEO,
+                EnumSearchType.VIDEO_STREAM
+              ]
             ],
             errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_TYPE_MUST_BE_ONE_OF_THE_FOLLOWING
           },
@@ -31,7 +37,7 @@ export class SearchPipe implements ISearchPipe {
         },
         people: {
           isIn: {
-            options: [[ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS, ESearchPeople.ONLY_ME]],
+            options: [[EnumSearchPeople.FRIENDS, EnumSearchPeople.NOT_FRIENDS, EnumSearchPeople.ONLY_ME]],
             errorMessage: VALIDATION_ERROR_MESSAGE.PEOPLE_MUST_BE_ONE_OF_THE_FOLLOWING
           },
           trim: true,

@@ -11,7 +11,7 @@ import {
 } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { IPostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 
 export class GetPostsTypeUseCase extends GetPostsTypePort {
@@ -28,7 +28,7 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends IPostDetailOutput>({
+  async execute<T extends PostDetailOutput>({
     userId,
     cursor,
     limit,
@@ -66,7 +66,7 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
     }
 
     // Cập nhật lượt xem cho các bài vừa load.
-    const updatedPosts = this.postService.updatePostsViews<IPostDetailOutput>({ posts, userId });
+    const updatedPosts = this.postService.updatePostsViews<PostDetailOutput>({ posts, userId });
 
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;

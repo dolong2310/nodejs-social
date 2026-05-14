@@ -5,7 +5,7 @@ import {
 } from '@/modules/authentication/application/exceptions/auth.exception';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { SendOtpCommand, SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { randomInt } from 'crypto';
@@ -25,11 +25,11 @@ export class SendOtpUseCase extends SendOtpPort {
     // 1. Check email exists in database and check type
     const user = await this.userRepository.findUserByEmail(email);
 
-    if (user && type === EOtpType.REGISTER) {
+    if (user && type === EnumOtpType.REGISTER) {
       throw new EmailAlreadyExistsException();
     }
 
-    if (!user && type === EOtpType.FORGOT_PASSWORD) {
+    if (!user && type === EnumOtpType.FORGOT_PASSWORD) {
       throw new EmailNotFoundException();
     }
 

@@ -8,7 +8,7 @@ import {
 } from '@/modules/post/application/use-cases/search-posts/search-posts.port';
 import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
@@ -22,7 +22,7 @@ export class SearchPostsUseCase extends SearchPostsPort {
     super();
   }
 
-  async execute<T extends IPostDetailWithAuthorOutput>({
+  async execute<T extends PostDetailWithAuthorOutput>({
     userId,
     query = '',
     type,
@@ -72,7 +72,7 @@ export class SearchPostsUseCase extends SearchPostsPort {
     }
 
     // Cập nhật lượt xem cho các bài vừa load
-    const updatedPosts = this.postsService.updatePostsViews<IPostDetailWithAuthorOutput>({ posts, userId });
+    const updatedPosts = this.postsService.updatePostsViews<PostDetailWithAuthorOutput>({ posts, userId });
 
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;

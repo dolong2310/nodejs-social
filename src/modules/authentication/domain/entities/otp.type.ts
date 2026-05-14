@@ -4,7 +4,7 @@ import type { Prettify } from 'ts-essentials';
 export interface OtpProps {
   email: string;
   code: string;
-  type: EOtpType;
+  type: EnumOtpType;
   expiresAt: Date;
 }
 
@@ -12,7 +12,7 @@ export interface OtpFullProps extends Prettify<OtpProps & Omit<BaseEntityProps, 
 
 export interface CreateOtpProps extends OtpProps {}
 
-export enum EOtpType {
+export enum EnumOtpType {
   LOGIN = 'LOGIN',
   REGISTER = 'REGISTER',
   FORGOT_PASSWORD = 'FORGOT_PASSWORD',

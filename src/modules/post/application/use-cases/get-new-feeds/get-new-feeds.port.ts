@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class GetNewFeedsQuery {
   userId: string;
@@ -12,7 +12,7 @@ export class GetNewFeedsQuery {
   }
 }
 
-export class GetNewFeedsResult<T extends IPostDetailWithAuthorOutput> {
+export class GetNewFeedsResult<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -23,7 +23,7 @@ export class GetNewFeedsResult<T extends IPostDetailWithAuthorOutput> {
 
 export abstract class GetNewFeedsPort implements UseCase<
   GetNewFeedsQuery,
-  GetNewFeedsResult<IPostDetailWithAuthorOutput>
+  GetNewFeedsResult<PostDetailWithAuthorOutput>
 > {
-  abstract execute<T extends IPostDetailWithAuthorOutput>(query: GetNewFeedsQuery): Promise<GetNewFeedsResult<T>>;
+  abstract execute<T extends PostDetailWithAuthorOutput>(query: GetNewFeedsQuery): Promise<GetNewFeedsResult<T>>;
 }

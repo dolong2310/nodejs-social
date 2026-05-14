@@ -28,12 +28,12 @@
       "type": {
         "bsonType": "string",
         "enum": ["post", "repost", "comment", "quote"],
-        "description": "EPostType"
+        "description": "EnumPostType"
       },
       "audience": {
         "bsonType": "string",
         "enum": ["public", "friends-only", "only-me"],
-        "description": "EPostAudience"
+        "description": "EnumPostAudience"
       },
       "allowStrangerComments": { "bsonType": "bool" },
       "content": { "bsonType": "string" },
@@ -79,7 +79,7 @@
             "type": {
               "bsonType": "string",
               "enum": ["image", "video", "video-stream"],
-              "description": "EMediaType"
+              "description": "EnumMediaType"
             }
           }
         }

@@ -1,5 +1,5 @@
 import { GoogleAccountNotVerifiedException } from '@/modules/authentication/application/exceptions/auth.exception';
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.out-port';
+import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import {
   LoginGoogleCommand,
@@ -7,7 +7,7 @@ import {
   LoginGoogleResult
 } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { generateId } from '@/modules/core/domain/helpers/ids';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -37,7 +37,7 @@ export class LoginGoogleUseCase extends LoginGooglePort {
 
     if (user) {
       const authSession = await this.authService.createAuthSession(
-        { userId: user.id, roleId: user.roleId, roleName: ERoleName.USER },
+        { userId: user.id, roleId: user.roleId, roleName: EnumRoleName.USER },
         { isCreateInDatabase: true }
       );
       return {
@@ -68,7 +68,7 @@ export class LoginGoogleUseCase extends LoginGooglePort {
       {
         userId: newUser.id.toString(),
         roleId: newUser.getProps().roleId,
-        roleName: ERoleName.USER
+        roleName: EnumRoleName.USER
       },
       { isCreateInDatabase: true }
     );

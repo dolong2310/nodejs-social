@@ -2,7 +2,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
-  ENotificationType,
+  EnumNotificationType,
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
   IFriendRequestNotificationPayload,
@@ -34,27 +34,27 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
     };
 
     switch (clone.type) {
-      case ENotificationType.FRIEND_REQUEST:
+      case EnumNotificationType.FRIEND_REQUEST:
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.FRIEND_REQUEST,
+          type: EnumNotificationType.FRIEND_REQUEST,
           payload: {
             from_user_id: (clone.payload as IFriendRequestNotificationPayload).fromUserId
           }
         });
-      case ENotificationType.FRIEND_ACCEPTED:
+      case EnumNotificationType.FRIEND_ACCEPTED:
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.FRIEND_ACCEPTED,
+          type: EnumNotificationType.FRIEND_ACCEPTED,
           payload: {
             friend_user_id: (clone.payload as IFriendAcceptedNotificationPayload).friendUserId
           }
         });
-      case ENotificationType.NEW_MESSAGE: {
+      case EnumNotificationType.NEW_MESSAGE: {
         const newMessagePayload = clone.payload as INewMessageNotificationPayload;
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.NEW_MESSAGE,
+          type: EnumNotificationType.NEW_MESSAGE,
           payload: {
             conversation_id: newMessagePayload.conversationId,
             message_id: newMessagePayload.messageId,
@@ -63,11 +63,11 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
           }
         });
       }
-      case ENotificationType.ADDED_TO_GROUP: {
+      case EnumNotificationType.ADDED_TO_GROUP: {
         const addedToGroupPayload = clone.payload as IAddedToGroupNotificationPayload;
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.ADDED_TO_GROUP,
+          type: EnumNotificationType.ADDED_TO_GROUP,
           payload: {
             conversation_id: addedToGroupPayload.conversationId,
             chat_name: addedToGroupPayload.chatName
@@ -81,13 +81,13 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
   toDomain(record: NotificationModel): NotificationEntity {
     let payload: INotificationPayload;
     switch (record.type) {
-      case ENotificationType.FRIEND_REQUEST:
+      case EnumNotificationType.FRIEND_REQUEST:
         payload = { fromUserId: record.payload.from_user_id };
         break;
-      case ENotificationType.FRIEND_ACCEPTED:
+      case EnumNotificationType.FRIEND_ACCEPTED:
         payload = { friendUserId: record.payload.friend_user_id };
         break;
-      case ENotificationType.NEW_MESSAGE:
+      case EnumNotificationType.NEW_MESSAGE:
         payload = {
           conversationId: record.payload.conversation_id,
           messageId: record.payload.message_id,
@@ -95,7 +95,7 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
           previewKind: record.payload.preview_kind
         };
         break;
-      case ENotificationType.ADDED_TO_GROUP:
+      case EnumNotificationType.ADDED_TO_GROUP:
         payload = {
           conversationId: record.payload.conversation_id,
           chatName: record.payload.chat_name
@@ -124,13 +124,13 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
   toResponse(record: NotificationModel): NotificationFullProps {
     let payload: INotificationPayload;
     switch (record.type) {
-      case ENotificationType.FRIEND_REQUEST:
+      case EnumNotificationType.FRIEND_REQUEST:
         payload = { fromUserId: record.payload.from_user_id };
         break;
-      case ENotificationType.FRIEND_ACCEPTED:
+      case EnumNotificationType.FRIEND_ACCEPTED:
         payload = { friendUserId: record.payload.friend_user_id };
         break;
-      case ENotificationType.NEW_MESSAGE:
+      case EnumNotificationType.NEW_MESSAGE:
         payload = {
           conversationId: record.payload.conversation_id,
           messageId: record.payload.message_id,
@@ -138,7 +138,7 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
           previewKind: record.payload.preview_kind
         };
         break;
-      case ENotificationType.ADDED_TO_GROUP:
+      case EnumNotificationType.ADDED_TO_GROUP:
         payload = {
           conversationId: record.payload.conversation_id,
           chatName: record.payload.chat_name

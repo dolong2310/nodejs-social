@@ -1,10 +1,10 @@
-import { CreatePostProps, EPostAudience } from '@/modules/post/domain/entities/post.type';
+import { CreatePostProps, EnumPostAudience } from '@/modules/post/domain/entities/post.type';
 
-export interface ICreatePostInput extends CreatePostProps {}
+export interface CreatePostInput extends CreatePostProps {}
 
-export interface IUpdatePostAudienceAndStrangerCommentsInput {
+export interface UpdatePostAudienceAndStrangerCommentsInput {
   postId: string;
   ownerUserId: string;
-  audience: EPostAudience;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
 }

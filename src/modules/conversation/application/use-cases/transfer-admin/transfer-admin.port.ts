@@ -1,5 +1,5 @@
 import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationFullProps, EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class TransferAdminCommand {
@@ -15,7 +15,7 @@ export class TransferAdminCommand {
 
 export class TransferAdminResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
-  type: EConversationType;
+  type: EnumConversationType;
   createdBy: string;
   name?: string;
   avatarMediaId?: string | null;
@@ -25,7 +25,7 @@ export class TransferAdminResult implements Omit<ConversationFullProps, 'userIdL
   members: ConversationMemberFullProps[];
   constructor(payload: {
     id: string;
-    type: EConversationType;
+    type: EnumConversationType;
     createdBy: string;
     name?: string;
     avatarMediaId?: string | null;

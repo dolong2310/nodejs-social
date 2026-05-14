@@ -10,7 +10,7 @@ export class DeleteExpiredRefreshTokensUseCase extends DeleteExpiredRefreshToken
     super();
   }
 
-  async execute(command = new DeleteExpiredRefreshTokensCommand()): Promise<DeleteExpiredRefreshTokensResult> {
+  async execute(command: DeleteExpiredRefreshTokensCommand): Promise<DeleteExpiredRefreshTokensResult> {
     const deletedCount = await this.refreshTokenRepository.deleteExpiredRefreshTokens(command.now);
     return new DeleteExpiredRefreshTokensResult({ deletedCount });
   }

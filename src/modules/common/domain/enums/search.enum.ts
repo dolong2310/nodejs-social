@@ -1,10 +1,10 @@
-export enum ESearchPeople {
+export enum EnumSearchPeople {
   FRIENDS = 'friends',
   NOT_FRIENDS = 'not_friends',
   ONLY_ME = 'only_me'
 }
 
-export enum ESearchType {
+export enum EnumSearchType {
   POST = 'post',
   USER = 'user',
   IMAGE = 'image',

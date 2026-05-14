@@ -1,7 +1,7 @@
 import {
   ConversationMemberProps,
   CreateConversationMemberProps,
-  EConversationMemberRole
+  EnumConversationMemberRole
 } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
@@ -27,7 +27,7 @@ export class ConversationMemberEntity extends Entity<ConversationMemberProps> {
     invariant(conversationId.trim().length > 0, new ArgumentNotProvidedException('Conversation ID is required'));
     invariant(userId.trim().length > 0, new ArgumentNotProvidedException('User ID is required'));
     invariant(
-      Object.values(EConversationMemberRole).includes(role),
+      Object.values(EnumConversationMemberRole).includes(role),
       new ArgumentInvalidException('Invalid conversation member role')
     );
     invariant(joinedAt instanceof Date, new ArgumentInvalidException('Join date must be a valid Date'));

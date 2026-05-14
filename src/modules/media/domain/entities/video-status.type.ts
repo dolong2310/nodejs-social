@@ -3,7 +3,7 @@ import { Prettify } from 'ts-essentials';
 
 export interface VideoStatusProps {
   name: string;
-  status: EEncodingVideoStatus;
+  status: EnumEncodingVideoStatus;
   message?: string;
 }
 
@@ -13,7 +13,7 @@ export interface VideoStatusFullProps extends Prettify<
 
 export interface CreateVideoStatusProps extends VideoStatusProps {}
 
-export enum EEncodingVideoStatus {
+export enum EnumEncodingVideoStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
   SUCCESS = 'success',

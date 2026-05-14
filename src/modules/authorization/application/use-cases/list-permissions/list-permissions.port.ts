@@ -1,4 +1,4 @@
-import { EHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class ListPermissionsQuery {
@@ -15,7 +15,7 @@ export class PermissionListItem implements PermissionFullProps {
   name: string;
   description: string;
   path: string;
-  method: EHttpMethod;
+  method: EnumHttpMethod;
   module: string;
   createdAt: Date;
   updatedAt: Date;

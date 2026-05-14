@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
-import { IUpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.type';
+import { UpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.type';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { VideoStatusModel } from '@/modules/media/infrastructure/persistence/mongo/video-status.model';
 import { Db, MongoClient } from 'mongodb';
@@ -22,7 +22,7 @@ export class VideoStatusRepository
     super(mapper, logger);
   }
 
-  async updateVideoStatus(data: IUpdateVideoStatusInput): Promise<boolean> {
+  async updateVideoStatus(data: UpdateVideoStatusInput): Promise<boolean> {
     const result = await this.dbCollection.updateOne(
       { name: data.name },
       {

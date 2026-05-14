@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { LikeEntity } from '@/modules/post/domain/entities/like.entity';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import { ICreateLikeInput, IDeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.type';
+import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.type';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/mongo/like.mapper';
 import { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
 import { Db, MongoClient } from 'mongodb';
@@ -19,7 +19,7 @@ export class LikeRepository extends MongoRepositoryBase<LikeEntity, LikeModel> i
     super(mapper, logger);
   }
 
-  async createLike(data: ICreateLikeInput): Promise<LikeEntity | null> {
+  async createLike(data: CreateLikeInput): Promise<LikeEntity | null> {
     const entity = LikeEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.dbCollection.findOneAndUpdate(
@@ -30,7 +30,7 @@ export class LikeRepository extends MongoRepositoryBase<LikeEntity, LikeModel> i
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async deleteLike(data: IDeleteLikeInput): Promise<LikeEntity | null> {
+  async deleteLike(data: DeleteLikeInput): Promise<LikeEntity | null> {
     const record = await this.dbCollection.findOneAndDelete({ user_id: data.userId, post_id: data.postId });
     return record ? this.mapper.toDomain(record) : null;
   }

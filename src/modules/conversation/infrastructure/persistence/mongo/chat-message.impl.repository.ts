@@ -1,8 +1,8 @@
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
 import {
-  ICreateMessageInput,
-  IFindMessagesInput
+  CreateMessageInput,
+  FindMessagesInput
 } from '@/modules/conversation/domain/repositories/chat-message.repository.type';
 import { ChatMessageMapper } from '@/modules/conversation/infrastructure/persistence/mongo/chat-message.mapper';
 import { ChatMessageModel } from '@/modules/conversation/infrastructure/persistence/mongo/chat-message.model';
@@ -25,7 +25,7 @@ export class ChatMessageRepository
     super(mapper, logger);
   }
 
-  async createMessage(data: ICreateMessageInput): Promise<ChatMessageEntity> {
+  async createMessage(data: CreateMessageInput): Promise<ChatMessageEntity> {
     const entity = ChatMessageEntity.create({
       conversationId: data.conversationId,
       senderId: data.senderId,
@@ -42,7 +42,7 @@ export class ChatMessageRepository
     return result;
   }
 
-  async findMessages(id: string, data: IFindMessagesInput): Promise<ChatMessageEntity[]> {
+  async findMessages(id: string, data: FindMessagesInput): Promise<ChatMessageEntity[]> {
     const { limit, before } = data;
     const filter: Filter<ChatMessageModel> = { conversation_id: id };
     if (before) {

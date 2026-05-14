@@ -2,7 +2,7 @@ import {
   ConversationProps,
   CreateDirectConversationProps,
   CreateGroupConversationProps,
-  EConversationType
+  EnumConversationType
 } from '@/modules/conversation/domain/entities/conversation.type';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
@@ -22,10 +22,10 @@ export class ConversationEntity extends Entity<ConversationProps> {
     const { type, createdBy, name, userIdLow, userIdHigh } = this.getProps();
     invariant(createdBy.trim().length > 0, new ArgumentNotProvidedException('Creator ID is required'));
     invariant(
-      Object.values(EConversationType).includes(type),
+      Object.values(EnumConversationType).includes(type),
       new ArgumentInvalidException('Invalid conversation type')
     );
-    if (type === EConversationType.DIRECT) {
+    if (type === EnumConversationType.DIRECT) {
       invariant(
         userIdLow && userIdLow.trim().length > 0,
         new ArgumentNotProvidedException('userIdLow is required for a direct conversation')
@@ -39,7 +39,7 @@ export class ConversationEntity extends Entity<ConversationProps> {
         new ArgumentInvalidException('A direct conversation must be between two different users')
       );
     }
-    if (type === EConversationType.GROUP) {
+    if (type === EnumConversationType.GROUP) {
       invariant(name && name.trim().length > 0, new ArgumentNotProvidedException('Group name is required'));
     }
   }

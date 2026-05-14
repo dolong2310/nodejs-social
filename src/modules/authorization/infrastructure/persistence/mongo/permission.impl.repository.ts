@@ -1,10 +1,10 @@
 import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 import {
-  ICreatePermissionInput,
-  IFindPermissionByPathAndMethodInput,
-  IListPermissionsInput,
-  IUpdatePermissionInput
+  CreatePermissionInput,
+  FindPermissionByPathAndMethodInput,
+  ListPermissionsInput,
+  UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.type';
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/mongo/permission.model';
@@ -27,7 +27,7 @@ export class PermissionRepository
     super(mapper, logger);
   }
 
-  async findPermissions({ limit, skip = 0 }: IListPermissionsInput): Promise<PermissionEntity[]> {
+  async findPermissions({ limit, skip = 0 }: ListPermissionsInput): Promise<PermissionEntity[]> {
     const records = await this.dbCollection.find({}).sort({ path: 1, method: 1 }).skip(skip).limit(limit).toArray();
     return records.map((item) => this.mapper.toDomain(item));
   }
@@ -45,7 +45,7 @@ export class PermissionRepository
     path,
     method,
     excludeId
-  }: IFindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
+  }: FindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
     const filter: Record<string, unknown> = { path, method };
     if (excludeId !== undefined) {
       filter._id = { $ne: excludeId };
@@ -54,21 +54,21 @@ export class PermissionRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async createPermissions(data: ICreatePermissionInput[]): Promise<PermissionEntity[]> {
+  async createPermissions(data: CreatePermissionInput[]): Promise<PermissionEntity[]> {
     const entities = data.map((item) => PermissionEntity.create(item));
     const records = entities.map((item) => this.mapper.toPersistence(item));
     await this.dbCollection.insertMany(records);
     return records.map((item) => this.mapper.toDomain(item));
   }
 
-  async createPermission(data: ICreatePermissionInput): Promise<PermissionEntity | null> {
+  async createPermission(data: CreatePermissionInput): Promise<PermissionEntity | null> {
     const entity = PermissionEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async updatePermission(id: string, data: IUpdatePermissionInput): Promise<PermissionEntity | null> {
+  async updatePermission(id: string, data: UpdatePermissionInput): Promise<PermissionEntity | null> {
     const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: data }, { returnDocument: 'after' });
     return record ? this.mapper.toDomain(record) : null;
   }

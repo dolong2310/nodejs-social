@@ -8,7 +8,7 @@ import {
   GetGuestNewFeedsResult
 } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
   private readonly log: LoggerPort;
@@ -22,7 +22,7 @@ export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends IPostDetailWithAuthorOutput>({
+  async execute<T extends PostDetailWithAuthorOutput>({
     cursor,
     limit
   }: GetGuestNewFeedsQuery): Promise<GetGuestNewFeedsResult<T>> {
@@ -31,7 +31,7 @@ export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
     const hasMore = results.length > limit;
     const posts = results.slice(0, limit);
 
-    const updatedPosts = this.postService.updatePostsViews<IPostDetailWithAuthorOutput>({ posts });
+    const updatedPosts = this.postService.updatePostsViews<PostDetailWithAuthorOutput>({ posts });
 
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;

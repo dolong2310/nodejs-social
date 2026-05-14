@@ -1,4 +1,4 @@
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
@@ -90,7 +90,7 @@ export class ConversationsPipe implements IConversationPipe {
       {
         role: {
           isIn: {
-            options: [EConversationMemberRole.MANAGER, EConversationMemberRole.MEMBER],
+            options: [EnumConversationMemberRole.MANAGER, EnumConversationMemberRole.MEMBER],
             errorMessage: VALIDATION_ERROR_MESSAGE.CONVERSATION_ROLE_FORBIDDEN
           }
         }

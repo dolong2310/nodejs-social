@@ -3,13 +3,13 @@ import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistenc
 import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
 import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
 import {
-  ICountOutgoingRequestsCreatedOnUtcDayInput,
-  ICreatePendingRequestInput,
-  IDeleteAllRequestsBetweenUsersInput,
-  IDeletePendingRequestInput,
-  IFindPendingRequestByUserPairInput,
-  IListIncomingForUserInput,
-  IListOutgoingForUserInput
+  CountOutgoingRequestsCreatedOnUtcDayInput,
+  CreatePendingRequestInput,
+  DeleteAllRequestsBetweenUsersInput,
+  DeletePendingRequestInput,
+  FindPendingRequestByUserPairInput,
+  ListIncomingForUserInput,
+  ListOutgoingForUserInput
 } from '@/modules/relationship/domain/repositories/friend-request.repository.type';
 import { FriendRequestMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.mapper';
 import { FriendRequestModel } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.model';
@@ -34,7 +34,7 @@ export class FriendRequestRepository
   async findPendingRequestByUserPair({
     fromUserId,
     toUserId
-  }: IFindPendingRequestByUserPairInput): Promise<FriendRequestEntity | null> {
+  }: FindPendingRequestByUserPairInput): Promise<FriendRequestEntity | null> {
     const result = await this.query<FriendRequestModel>(
       `SELECT * FROM friend_requests WHERE from_user_id = $1 AND to_user_id = $2 LIMIT 1`,
       [fromUserId, toUserId]
@@ -43,7 +43,7 @@ export class FriendRequestRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async listIncomingForUser({ toUserId, limit, cursor }: IListIncomingForUserInput): Promise<FriendRequestEntity[]> {
+  async listIncomingForUser({ toUserId, limit, cursor }: ListIncomingForUserInput): Promise<FriendRequestEntity[]> {
     const params: unknown[] = [toUserId];
     let cursorClause = '';
     if (cursor) {
@@ -68,7 +68,7 @@ export class FriendRequestRepository
     return result.rows.map((record) => this.mapper.toDomain(record));
   }
 
-  async listOutgoingForUser({ fromUserId, limit, cursor }: IListOutgoingForUserInput): Promise<FriendRequestEntity[]> {
+  async listOutgoingForUser({ fromUserId, limit, cursor }: ListOutgoingForUserInput): Promise<FriendRequestEntity[]> {
     const params: unknown[] = [fromUserId];
     let cursorClause = '';
     if (cursor) {
@@ -93,7 +93,7 @@ export class FriendRequestRepository
     return result.rows.map((record) => this.mapper.toDomain(record));
   }
 
-  async createPendingRequest({ fromUserId, toUserId }: ICreatePendingRequestInput): Promise<FriendRequestEntity> {
+  async createPendingRequest({ fromUserId, toUserId }: CreatePendingRequestInput): Promise<FriendRequestEntity> {
     try {
       const entity = FriendRequestEntity.create({ fromUserId, toUserId });
       const record = this.mapper.toPersistence(entity);
@@ -114,7 +114,7 @@ export class FriendRequestRepository
     }
   }
 
-  async deletePendingRequest({ fromUserId, toUserId }: IDeletePendingRequestInput): Promise<number> {
+  async deletePendingRequest({ fromUserId, toUserId }: DeletePendingRequestInput): Promise<number> {
     const result = await this.query(`DELETE FROM friend_requests WHERE from_user_id = $1 AND to_user_id = $2`, [
       fromUserId,
       toUserId
@@ -122,7 +122,7 @@ export class FriendRequestRepository
     return result.rowCount ?? 0;
   }
 
-  async deleteAllRequestsBetweenUsers({ fromUserId, toUserId }: IDeleteAllRequestsBetweenUsersInput): Promise<void> {
+  async deleteAllRequestsBetweenUsers({ fromUserId, toUserId }: DeleteAllRequestsBetweenUsersInput): Promise<void> {
     await this.query(
       `
         DELETE FROM friend_requests
@@ -137,7 +137,7 @@ export class FriendRequestRepository
     fromUserId,
     dayStart,
     dayEndExclusive
-  }: ICountOutgoingRequestsCreatedOnUtcDayInput): Promise<number> {
+  }: CountOutgoingRequestsCreatedOnUtcDayInput): Promise<number> {
     const result = await this.query<{ count: string }>(
       `
         SELECT COUNT(*)::text AS count

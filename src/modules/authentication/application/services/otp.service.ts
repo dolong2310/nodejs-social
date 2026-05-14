@@ -4,17 +4,17 @@ import {
 } from '@/modules/authentication/application/exceptions/otp.exception';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 
 export interface OtpServicePort {
-  findAndValidateOtpCode(data: { email: string; code: string; type: EOtpType }): Promise<OtpEntity>;
+  findAndValidateOtpCode(data: { email: string; code: string; type: EnumOtpType }): Promise<OtpEntity>;
   validateTOTPCodeOrEmailOtpCode(data: {
     totpCode?: string;
     emailOtpCode?: string;
     totpSecret: string;
     email: string;
-    type: EOtpType;
+    type: EnumOtpType;
   }): Promise<void>;
 }
 
@@ -24,7 +24,7 @@ export class OtpService {
     private readonly twoFactorAuthenticationService: TwoFactorAuthPort
   ) {}
 
-  async findAndValidateOtpCode(data: { email: string; code: string; type: EOtpType }): Promise<OtpEntity> {
+  async findAndValidateOtpCode(data: { email: string; code: string; type: EnumOtpType }): Promise<OtpEntity> {
     const otpEntity = await this.otpRepository.findUniqueOtpCode({
       email: data.email,
       type: data.type
@@ -60,7 +60,7 @@ export class OtpService {
     emailOtpCode?: string;
     totpSecret: string;
     email: string;
-    type: EOtpType;
+    type: EnumOtpType;
   }): Promise<void> {
     // Check TOTP code is valid or email OTP code is valid
     // 1. Throw error if body does not have totpCode and emailOtpCode

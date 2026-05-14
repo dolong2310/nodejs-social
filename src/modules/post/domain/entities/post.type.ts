@@ -4,8 +4,8 @@ import { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface PostProps {
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
@@ -20,14 +20,14 @@ export interface PostFullProps extends Prettify<PostProps & Omit<BaseEntityProps
 
 export interface CreatePostProps extends MarkOptional<PostProps, 'guestViews' | 'userViews'> {}
 
-export enum EPostType {
+export enum EnumPostType {
   POST = 'post',
   REPOST = 'repost',
   COMMENT = 'comment',
   QUOTE = 'quote'
 }
 
-export enum EPostAudience {
+export enum EnumPostAudience {
   PUBLIC = 'public',
   FRIENDS_ONLY = 'friends-only',
   ONLY_ME = 'only-me'

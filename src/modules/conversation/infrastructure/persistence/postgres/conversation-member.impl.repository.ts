@@ -1,15 +1,15 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import {
-  ICreateMemberInput,
-  IDeleteMemberInput,
-  IFindMemberInput,
-  IFindMembersByUsersInput,
-  IFindMembersInput,
-  ITransferAdminRoleInput,
-  IUpdateReadStateInput,
-  IUpdateRoleInput
+  CreateMemberInput,
+  DeleteMemberInput,
+  FindMemberInput,
+  FindMembersByUsersInput,
+  FindMembersInput,
+  TransferAdminRoleInput,
+  UpdateReadStateInput,
+  UpdateRoleInput
 } from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
@@ -31,7 +31,7 @@ export class ConversationMemberRepository
     super(pool, mapper);
   }
 
-  async findMember({ conversationId, userId }: IFindMemberInput): Promise<ConversationMemberEntity | null> {
+  async findMember({ conversationId, userId }: FindMemberInput): Promise<ConversationMemberEntity | null> {
     const result = await this.query<ConversationMemberModel>(
       `SELECT * FROM conversation_members WHERE conversation_id = $1 AND user_id = $2 LIMIT 1`,
       [conversationId, userId]
@@ -40,7 +40,7 @@ export class ConversationMemberRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async findMembersByUsers({ conversationId, userIds }: IFindMembersByUsersInput): Promise<ConversationMemberEntity[]> {
+  async findMembersByUsers({ conversationId, userIds }: FindMembersByUsersInput): Promise<ConversationMemberEntity[]> {
     if (userIds.length === 0) return [];
     const result = await this.query<ConversationMemberModel>(
       `SELECT * FROM conversation_members WHERE conversation_id = $1 AND user_id = ANY($2::text[])`,
@@ -49,7 +49,7 @@ export class ConversationMemberRepository
     return result.rows.map((record) => this.mapper.toDomain(record));
   }
 
-  async findMembers({ conversationIds, userId }: IFindMembersInput): Promise<ConversationMemberEntity[]> {
+  async findMembers({ conversationIds, userId }: FindMembersInput): Promise<ConversationMemberEntity[]> {
     if (conversationIds.length === 0) return [];
     const result = await this.query<ConversationMemberModel>(
       `SELECT * FROM conversation_members WHERE conversation_id = ANY($1::text[]) AND user_id = $2`,
@@ -58,7 +58,7 @@ export class ConversationMemberRepository
     return result.rows.map((record) => this.mapper.toDomain(record));
   }
 
-  async createMember(data: ICreateMemberInput): Promise<ConversationMemberEntity> {
+  async createMember(data: CreateMemberInput): Promise<ConversationMemberEntity> {
     const entity = ConversationMemberEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.query<ConversationMemberModel>(
@@ -92,7 +92,7 @@ export class ConversationMemberRepository
     return this.mapper.toDomain(result.rows[0] ?? record);
   }
 
-  async deleteMember({ conversationId, userId }: IDeleteMemberInput): Promise<number> {
+  async deleteMember({ conversationId, userId }: DeleteMemberInput): Promise<number> {
     const result = await this.query(`DELETE FROM conversation_members WHERE conversation_id = $1 AND user_id = $2`, [
       conversationId,
       userId
@@ -108,7 +108,7 @@ export class ConversationMemberRepository
     return result.rows.map((record) => this.mapper.toDomain(record));
   }
 
-  async updateRole({ conversationId, userId, role }: IUpdateRoleInput): Promise<ConversationMemberEntity | null> {
+  async updateRole({ conversationId, userId, role }: UpdateRoleInput): Promise<ConversationMemberEntity | null> {
     const result = await this.query<ConversationMemberModel>(
       `
         UPDATE conversation_members
@@ -122,16 +122,16 @@ export class ConversationMemberRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async transferAdminRole(data: ITransferAdminRoleInput): Promise<void> {
+  async transferAdminRole(data: TransferAdminRoleInput): Promise<void> {
     const { conversationId, joinedAt, oldAdminUserId, newAdminUserId } = data;
     await this.transaction(async () => {
       await this.query(
         `UPDATE conversation_members SET role = $3, updated_at = NOW() WHERE conversation_id = $1 AND user_id = $2`,
-        [conversationId, oldAdminUserId, EConversationMemberRole.MANAGER]
+        [conversationId, oldAdminUserId, EnumConversationMemberRole.MANAGER]
       );
       await this.query(
         `UPDATE conversation_members SET role = $3, updated_at = NOW() WHERE conversation_id = $1 AND user_id = $2`,
-        [conversationId, newAdminUserId, EConversationMemberRole.ADMIN]
+        [conversationId, newAdminUserId, EnumConversationMemberRole.ADMIN]
       );
       await this.query(`UPDATE conversations SET updated_at = $2 WHERE id = $1`, [conversationId, joinedAt]);
     });
@@ -142,7 +142,7 @@ export class ConversationMemberRepository
     userId,
     lastReadAt,
     lastReadMessageId
-  }: IUpdateReadStateInput): Promise<ConversationMemberEntity | null> {
+  }: UpdateReadStateInput): Promise<ConversationMemberEntity | null> {
     const result = await this.query<ConversationMemberModel>(
       `
         UPDATE conversation_members
@@ -167,7 +167,7 @@ export class ConversationMemberRepository
   async countAdmins(conversationId: string): Promise<number> {
     const result = await this.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM conversation_members WHERE conversation_id = $1 AND role = $2`,
-      [conversationId, EConversationMemberRole.ADMIN]
+      [conversationId, EnumConversationMemberRole.ADMIN]
     );
     return Number(result.rows[0]?.count ?? 0);
   }

@@ -10,7 +10,7 @@ export class DeleteExpiredOtpsUseCase extends DeleteExpiredOtpsPort {
     super();
   }
 
-  async execute(command = new DeleteExpiredOtpsCommand()): Promise<DeleteExpiredOtpsResult> {
+  async execute(command: DeleteExpiredOtpsCommand): Promise<DeleteExpiredOtpsResult> {
     const deletedCount = await this.otpRepository.deleteExpiredOtps(command.now);
     return new DeleteExpiredOtpsResult({ deletedCount });
   }

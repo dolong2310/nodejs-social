@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { LikeEntity } from '@/modules/post/domain/entities/like.entity';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import { ICreateLikeInput, IDeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.type';
+import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.type';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/postgres/like.mapper';
 import { LikeModel } from '@/modules/post/infrastructure/persistence/postgres/like.model';
 import type { Pool } from 'pg';
@@ -18,7 +18,7 @@ export class LikeRepository extends PostgresRepositoryBase<LikeEntity, LikeModel
     super(pool, mapper);
   }
 
-  async createLike(data: ICreateLikeInput): Promise<LikeEntity | null> {
+  async createLike(data: CreateLikeInput): Promise<LikeEntity | null> {
     const entity = LikeEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.query(
@@ -38,7 +38,7 @@ export class LikeRepository extends PostgresRepositoryBase<LikeEntity, LikeModel
     return createdOrExisting ? this.mapper.toDomain(createdOrExisting) : null;
   }
 
-  async deleteLike(data: IDeleteLikeInput): Promise<LikeEntity | null> {
+  async deleteLike(data: DeleteLikeInput): Promise<LikeEntity | null> {
     const result = await this.query<LikeModel>(`DELETE FROM likes WHERE user_id = $1 AND post_id = $2 RETURNING *`, [
       data.userId,
       data.postId

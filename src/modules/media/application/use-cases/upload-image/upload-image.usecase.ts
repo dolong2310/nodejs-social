@@ -1,4 +1,4 @@
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
@@ -37,7 +37,7 @@ export class UploadImageUseCase extends UploadImagePort {
 
       return new UploadImageResult({
         url: result.url,
-        type: EMediaType.IMAGE
+        type: EnumMediaType.IMAGE
       });
     });
   }

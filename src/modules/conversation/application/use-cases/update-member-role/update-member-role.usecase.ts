@@ -9,8 +9,8 @@ import {
   UpdateMemberRolePort,
   UpdateMemberRoleResult
 } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
@@ -41,7 +41,7 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
     // kiểm tra conversation có phải là group không
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();
-    if (conv.type !== EConversationType.GROUP) {
+    if (conv.type !== EnumConversationType.GROUP) {
       throw new ConversationNotFoundException();
     }
 
@@ -57,26 +57,26 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
     if (!actor) {
       throw new ConversationNotMemberException();
     }
-    if (actor.role !== EConversationMemberRole.ADMIN) {
+    if (actor.role !== EnumConversationMemberRole.ADMIN) {
       throw new ConversationRoleForbiddenException();
     }
     // kiểm tra người bị đổi role có phải là member của conversation không và có phải là ADMIN không
     if (!target) {
       throw new UserNotFoundException();
     }
-    if (target.role === EConversationMemberRole.ADMIN) {
+    if (target.role === EnumConversationMemberRole.ADMIN) {
       throw new ConversationRoleForbiddenException();
     }
 
     // kiểm tra role mới có phải là MEMBER hoặc MANAGER không
     const nextRole = role;
-    if (nextRole === EConversationMemberRole.ADMIN) {
+    if (nextRole === EnumConversationMemberRole.ADMIN) {
       throw new ConversationRoleForbiddenException();
     }
-    if (target.role === EConversationMemberRole.MANAGER && nextRole !== EConversationMemberRole.MEMBER) {
+    if (target.role === EnumConversationMemberRole.MANAGER && nextRole !== EnumConversationMemberRole.MEMBER) {
       throw new ConversationRoleForbiddenException();
     }
-    if (target.role === EConversationMemberRole.MEMBER && nextRole !== EConversationMemberRole.MANAGER) {
+    if (target.role === EnumConversationMemberRole.MEMBER && nextRole !== EnumConversationMemberRole.MANAGER) {
       throw new ConversationRoleForbiddenException();
     }
 

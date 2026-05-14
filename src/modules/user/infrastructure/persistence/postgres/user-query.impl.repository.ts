@@ -1,9 +1,9 @@
 import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
-import { ESearchPeople } from '@/modules/common/domain/enums/search.enum';
+import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { IFindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/postgres/user.model';
 import type { Pool } from 'pg';
@@ -135,7 +135,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     limit,
     cursor,
     findFriendUserIds
-  }: IFindUsersForSearchInput): Promise<UserSafeProps[]> {
+  }: FindUsersForSearchInput): Promise<UserSafeProps[]> {
     const values: unknown[] = [];
     const conditions: string[] = [];
 
@@ -146,18 +146,18 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     }
 
     if (people && userId) {
-      if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
+      if ([EnumSearchPeople.FRIENDS, EnumSearchPeople.NOT_FRIENDS].includes(people)) {
         const friendIds = await findFriendUserIds(userId);
-        if (people === ESearchPeople.FRIENDS && friendIds.length === 0) return [];
+        if (people === EnumSearchPeople.FRIENDS && friendIds.length === 0) return [];
 
         if (friendIds.length > 0) {
           values.push(friendIds);
           const param = `$${values.length}`;
           conditions.push(
-            people === ESearchPeople.FRIENDS ? `"id" = ANY(${param}::text[])` : `"id" <> ALL(${param}::text[])`
+            people === EnumSearchPeople.FRIENDS ? `"id" = ANY(${param}::text[])` : `"id" <> ALL(${param}::text[])`
           );
         }
-      } else if (people === ESearchPeople.ONLY_ME) {
+      } else if (people === EnumSearchPeople.ONLY_ME) {
         values.push(userId);
         conditions.push(`"id" = $${values.length}`);
       }

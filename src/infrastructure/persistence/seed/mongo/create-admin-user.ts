@@ -18,11 +18,11 @@ import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 
@@ -65,7 +65,7 @@ async function createOrUpdateAdminUser(adminRoleId: string): Promise<void> {
       password: hashedPassword,
       birthday: ADMIN_BIRTHDAY,
       roleId: adminRoleId,
-      status: EUserStatus.ACTIVE,
+      status: EnumUserStatus.ACTIVE,
       username: ADMIN_USERNAME
     });
     const created = await userRepository.insert(admin);
@@ -78,7 +78,7 @@ async function createOrUpdateAdminUser(adminRoleId: string): Promise<void> {
     name: ADMIN_NAME,
     birthday: ADMIN_BIRTHDAY,
     roleId: adminRoleId,
-    status: EUserStatus.ACTIVE,
+    status: EnumUserStatus.ACTIVE,
     username: ADMIN_USERNAME
   } as Partial<UserEntity>);
   await userRepository.resetPassword(existingAdmin.id.toString(), { password: hashedPassword });
@@ -89,9 +89,11 @@ async function main(): Promise<void> {
   await mongo.connect();
   await Promise.all([mongo.initializeIndexes(), mongo.initializeConversationIndexes()]);
 
-  const adminRole = await roleRepository.findRoleByName(ERoleName.ADMIN);
+  const adminRole = await roleRepository.findRoleByName(EnumRoleName.ADMIN);
   if (!adminRole) {
-    throw new Error(`Role "${ERoleName.ADMIN}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`);
+    throw new Error(
+      `Role "${EnumRoleName.ADMIN}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`
+    );
   }
 
   await createOrUpdateAdminUser(adminRole.id.toString());

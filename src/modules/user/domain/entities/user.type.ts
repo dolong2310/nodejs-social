@@ -7,7 +7,7 @@ export interface UserProps {
   password: string;
   birthday: Date;
   roleId: string;
-  status: EUserStatus;
+  status: EnumUserStatus;
   totpSecret?: string;
   bio?: string;
   location?: string;
@@ -26,7 +26,7 @@ export interface UserRecordProps extends Pick<UserFullProps, 'id' | 'name' | 'us
 
 export interface CreateUserProps extends MarkOptional<UserProps, 'status'> {}
 
-export enum EUserStatus {
+export enum EnumUserStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   BANNED = 'BANNED',

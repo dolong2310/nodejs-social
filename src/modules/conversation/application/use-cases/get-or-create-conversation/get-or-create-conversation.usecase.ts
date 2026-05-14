@@ -10,7 +10,7 @@ import {
   GetOrCreateConversationPort,
   GetOrCreateConversationResult
 } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
@@ -71,12 +71,12 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
       this.conversationMemberRepository.createMember({
         conversationId,
         userId,
-        role: EConversationMemberRole.MEMBER
+        role: EnumConversationMemberRole.MEMBER
       }),
       this.conversationMemberRepository.createMember({
         conversationId,
         userId: peerUserId,
-        role: EConversationMemberRole.MEMBER
+        role: EnumConversationMemberRole.MEMBER
       })
     ]);
 

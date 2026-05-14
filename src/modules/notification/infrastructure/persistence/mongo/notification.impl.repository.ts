@@ -3,9 +3,9 @@ import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/r
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import {
-  IFindNotificationsInput,
-  IFindOldestNotificationIdsForTrimInput,
-  IUpdateReadByIdsInput
+  FindNotificationsInput,
+  FindOldestNotificationIdsForTrimInput,
+  UpdateReadByIdsInput
 } from '@/modules/notification/domain/repositories/notification.repository.type';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/mongo/notification.mapper';
 import { NotificationModel } from '@/modules/notification/infrastructure/persistence/mongo/notification.model';
@@ -32,7 +32,7 @@ export class NotificationRepository
     unreadOnly,
     limit,
     before
-  }: IFindNotificationsInput): Promise<NotificationEntity[]> {
+  }: FindNotificationsInput): Promise<NotificationEntity[]> {
     const filter: Filter<NotificationModel> = { recipient_id: recipientId };
     if (actorUserIdNin && actorUserIdNin.length > 0) {
       filter['actor.user_id'] = { $nin: actorUserIdNin };
@@ -55,7 +55,7 @@ export class NotificationRepository
   async findOldestNotificationIdsForTrim({
     recipientId,
     limit
-  }: IFindOldestNotificationIdsForTrimInput): Promise<string[]> {
+  }: FindOldestNotificationIdsForTrimInput): Promise<string[]> {
     if (limit <= 0) return [];
     const notifications = await this.dbCollection
       .find({ recipient_id: recipientId })
@@ -79,7 +79,7 @@ export class NotificationRepository
     await this.dbCollection.insertMany(records, { ordered: false });
   }
 
-  async updateReadByIds({ ids, recipientId }: IUpdateReadByIdsInput): Promise<number> {
+  async updateReadByIds({ ids, recipientId }: UpdateReadByIdsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const result = await this.dbCollection.updateMany(
       { recipient_id: recipientId, _id: { $in: ids }, read: false },

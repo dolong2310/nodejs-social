@@ -9,7 +9,7 @@ import {
 } from '@/modules/authorization/application/use-cases/update-permission/update-permission.port';
 import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { IUpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.type';
+import { UpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.type';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 
 export class UpdatePermissionUseCase extends UpdatePermissionPort {
@@ -40,7 +40,7 @@ export class UpdatePermissionUseCase extends UpdatePermissionPort {
       }
     }
 
-    const patch: IUpdatePermissionInput = {};
+    const patch: UpdatePermissionInput = {};
     if (command.name !== undefined) patch.name = command.name;
     if (command.description !== undefined) patch.description = command.description;
     if (command.path !== undefined) patch.path = command.path;

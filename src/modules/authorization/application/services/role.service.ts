@@ -1,5 +1,5 @@
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 
 export interface RoleServicePort {
@@ -15,14 +15,14 @@ export class RoleService {
 
   async getAdminRoleId(): Promise<string> {
     if (this.adminRoleId) return this.adminRoleId;
-    const id = await this._getRoleId(ERoleName.ADMIN);
+    const id = await this._getRoleId(EnumRoleName.ADMIN);
     this.adminRoleId = id;
     return id;
   }
 
   async getUserRoleId(): Promise<string> {
     if (this.userRoleId) return this.userRoleId;
-    const id = await this._getRoleId(ERoleName.USER);
+    const id = await this._getRoleId(EnumRoleName.USER);
     this.userRoleId = id;
     return id;
   }

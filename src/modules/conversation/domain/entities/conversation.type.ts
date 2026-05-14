@@ -2,7 +2,7 @@ import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
 import { Prettify } from 'ts-essentials';
 
 export interface ConversationProps {
-  type: EConversationType;
+  type: EnumConversationType;
   createdBy: string;
   name?: string;
   avatarMediaId?: string | null;
@@ -24,7 +24,7 @@ export interface CreateGroupConversationProps extends Pick<
   'type' | 'createdBy' | 'name' | 'avatarMediaId'
 > {}
 
-export enum EConversationType {
+export enum EnumConversationType {
   DIRECT = 'direct',
   GROUP = 'group'
 }

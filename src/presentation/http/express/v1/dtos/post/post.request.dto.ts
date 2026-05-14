@@ -1,10 +1,10 @@
-import { CreatePostProps, EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { CreatePostProps, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'guestViews' | 'userViews'> {
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
@@ -13,8 +13,8 @@ export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'g
   media: Media[];
 
   constructor(payload: {
-    type: EPostType;
-    audience: EPostAudience;
+    type: EnumPostType;
+    audience: EnumPostAudience;
     allowStrangerComments: boolean;
     content: string;
     parentId: string | null;
@@ -34,10 +34,10 @@ export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'g
 }
 
 export class PatchPostRequestDTO {
-  audience: EPostAudience;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
 
-  constructor(payload: { audience: EPostAudience; allowStrangerComments: boolean }) {
+  constructor(payload: { audience: EnumPostAudience; allowStrangerComments: boolean }) {
     this.audience = payload.audience;
     this.allowStrangerComments = payload.allowStrangerComments;
   }
@@ -49,7 +49,7 @@ export interface GetPostDetailParamsDTO extends ParamsDictionary {
 
 export interface GetPostsParamsDTO extends ParamsDictionary {
   postId: string;
-  type: EPostType;
+  type: EnumPostType;
 }
 
 export class CreateBookmarkRequestDTO {

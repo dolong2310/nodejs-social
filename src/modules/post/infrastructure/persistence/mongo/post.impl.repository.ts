@@ -3,8 +3,8 @@ import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/r
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import {
-  ICreatePostInput,
-  IUpdatePostAudienceAndStrangerCommentsInput
+  CreatePostInput,
+  UpdatePostAudienceAndStrangerCommentsInput
 } from '@/modules/post/domain/repositories/post.repository.type';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
@@ -27,7 +27,7 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async createPost(data: ICreatePostInput): Promise<PostEntity> {
+  async createPost(data: CreatePostInput): Promise<PostEntity> {
     const entity = PostEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
@@ -35,7 +35,7 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
   }
 
   async updatePostAudienceAndStrangerComments(
-    data: IUpdatePostAudienceAndStrangerCommentsInput
+    data: UpdatePostAudienceAndStrangerCommentsInput
   ): Promise<PostEntity | null> {
     const { postId, ownerUserId, audience, allowStrangerComments } = data;
     const result = await this.dbCollection.findOneAndUpdate(

@@ -10,9 +10,9 @@ import {
   UpdateRoleCommand,
   UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { IUpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
+import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 
 export class UpdateRoleUseCase extends UpdateRolePort {
@@ -41,11 +41,11 @@ export class UpdateRoleUseCase extends UpdateRolePort {
     }
 
     // Không được deactive role admin
-    if (currentName === ERoleName.ADMIN && !command.isActive) {
+    if (currentName === EnumRoleName.ADMIN && !command.isActive) {
       throw new CannotDeactivateAdminRoleException();
     }
 
-    const patch: IUpdateRoleInput = {};
+    const patch: UpdateRoleInput = {};
     if (command.name !== undefined) patch.name = command.name;
     if (command.description !== undefined) patch.description = command.description;
     if (command.isActive !== undefined) patch.isActive = command.isActive;

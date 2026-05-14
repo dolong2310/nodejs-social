@@ -1,6 +1,6 @@
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import {
@@ -36,14 +36,14 @@ export class PostsPipe implements IPostPipe {
         // type phải là 1 trong 4 giá trị: post, repost, comment, quote
         type: {
           isIn: {
-            options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
+            options: [[EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
           },
           trim: true
         },
         audience: {
           isIn: {
-            options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
+            options: [[EnumPostAudience.PUBLIC, EnumPostAudience.FRIENDS_ONLY, EnumPostAudience.ONLY_ME]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
           },
           trim: true
@@ -64,12 +64,12 @@ export class PostsPipe implements IPostPipe {
             options: (content: string, { req }) => {
               const { type, mentions, hashtags } = req.body as CreatePostRequestDTO;
 
-              if (type === EPostType.REPOST && content !== '') {
+              if (type === EnumPostType.REPOST && content !== '') {
                 throw PostContentMustBeEmptyStringException;
               }
 
               if (
-                [EPostType.POST, EPostType.COMMENT, EPostType.QUOTE].includes(type) &&
+                [EnumPostType.POST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type) &&
                 isEmpty(mentions) &&
                 isEmpty(hashtags) &&
                 content === ''
@@ -88,14 +88,14 @@ export class PostsPipe implements IPostPipe {
             options: (parentId: string | null, { req }) => {
               const { type } = req.body as CreatePostRequestDTO;
 
-              if ([EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE].includes(type)) {
+              if ([EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type)) {
                 // parentId không được null, phải là string hợp lệ (ObjectId)
                 if (parentId === null || typeof parentId !== 'string' || !isValidId(parentId)) {
                   throw ParentIdMustBeValidPostIdException;
                 }
               }
 
-              if (type === EPostType.POST && parentId !== null) {
+              if (type === EnumPostType.POST && parentId !== null) {
                 throw ParentIdMustBeNullException;
               }
 
@@ -144,7 +144,7 @@ export class PostsPipe implements IPostPipe {
           },
           custom: {
             options: (mediaItems: Media[]) => {
-              const validMediaTypes = Object.values(EMediaType); // ['image', 'video', 'video-stream']
+              const validMediaTypes = Object.values(EnumMediaType); // ['image', 'video', 'video-stream']
               if (
                 mediaItems.length > 0 &&
                 mediaItems.some(
@@ -168,7 +168,7 @@ export class PostsPipe implements IPostPipe {
       {
         audience: {
           isIn: {
-            options: [[EPostAudience.PUBLIC, EPostAudience.FRIENDS_ONLY, EPostAudience.ONLY_ME]],
+            options: [[EnumPostAudience.PUBLIC, EnumPostAudience.FRIENDS_ONLY, EnumPostAudience.ONLY_ME]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_AUDIENCE
           },
           trim: true
@@ -214,7 +214,7 @@ export class PostsPipe implements IPostPipe {
       {
         type: {
           isIn: {
-            options: [[EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE]],
+            options: [[EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
           },
           trim: true

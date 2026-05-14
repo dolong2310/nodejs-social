@@ -1,12 +1,12 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import {
-  ICreateGroupConversationInput,
-  ITouchUpdatedAtInput,
-  IUpdateConversationInput
+  CreateGroupConversationInput,
+  TouchUpdatedAtInput,
+  UpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.type';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
@@ -51,7 +51,7 @@ export class ConversationRepository
         WHERE type = $1 AND user_id_low = $2 AND user_id_high = $3
         LIMIT 1
       `,
-      [EConversationType.DIRECT, userIdLow, userIdHigh]
+      [EnumConversationType.DIRECT, userIdLow, userIdHigh]
     );
     const [record] = result.rows;
     return record ? this.mapper.toDomain(record) : null;
@@ -61,7 +61,7 @@ export class ConversationRepository
     try {
       const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
       const entity = ConversationEntity.create({
-        type: EConversationType.DIRECT,
+        type: EnumConversationType.DIRECT,
         createdBy,
         userIdLow,
         userIdHigh
@@ -104,10 +104,10 @@ export class ConversationRepository
     }
   }
 
-  async createGroupConversation(data: ICreateGroupConversationInput): Promise<ConversationEntity> {
+  async createGroupConversation(data: CreateGroupConversationInput): Promise<ConversationEntity> {
     const { name, createdBy, memberIds } = data;
     const group = ConversationEntity.create({
-      type: EConversationType.GROUP,
+      type: EnumConversationType.GROUP,
       createdBy,
       name
     });
@@ -116,7 +116,7 @@ export class ConversationRepository
       ConversationMemberEntity.create({
         conversationId: group.id.toString(),
         userId: createdBy,
-        role: EConversationMemberRole.ADMIN,
+        role: EnumConversationMemberRole.ADMIN,
         joinedAt,
         lastReadAt: joinedAt,
         lastReadMessageId: null
@@ -125,7 +125,7 @@ export class ConversationRepository
         ConversationMemberEntity.create({
           conversationId: group.id.toString(),
           userId: memberId,
-          role: EConversationMemberRole.MEMBER,
+          role: EnumConversationMemberRole.MEMBER,
           joinedAt,
           lastReadAt: joinedAt,
           lastReadMessageId: null
@@ -205,7 +205,7 @@ export class ConversationRepository
     return group;
   }
 
-  async updateConversation(id: string, data: IUpdateConversationInput): Promise<ConversationEntity | null> {
+  async updateConversation(id: string, data: UpdateConversationInput): Promise<ConversationEntity | null> {
     const updates: string[] = ['updated_at = NOW()'];
     const values: unknown[] = [id];
 
@@ -231,7 +231,7 @@ export class ConversationRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async touchUpdatedAt(id: string, data: ITouchUpdatedAtInput): Promise<void> {
+  async touchUpdatedAt(id: string, data: TouchUpdatedAtInput): Promise<void> {
     await this.query(`UPDATE conversations SET updated_at = $2 WHERE id = $1`, [id, data.updatedAt]);
   }
 }

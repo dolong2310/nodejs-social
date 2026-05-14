@@ -1,12 +1,12 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import {
-  ICreateGroupConversationInput,
-  ITouchUpdatedAtInput,
-  IUpdateConversationInput
+  CreateGroupConversationInput,
+  TouchUpdatedAtInput,
+  UpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.type';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
@@ -46,7 +46,7 @@ export class ConversationRepository
   async findDirectConversationByUserPair(userIdA: string, userIdB: string): Promise<ConversationEntity | null> {
     const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
     const result = await this.dbCollection.findOne({
-      type: EConversationType.DIRECT,
+      type: EnumConversationType.DIRECT,
       user_id_low: userIdLow,
       user_id_high: userIdHigh
     });
@@ -57,7 +57,7 @@ export class ConversationRepository
     try {
       const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
       const entity = ConversationEntity.create({
-        type: EConversationType.DIRECT,
+        type: EnumConversationType.DIRECT,
         createdBy,
         userIdLow,
         userIdHigh
@@ -74,10 +74,10 @@ export class ConversationRepository
     }
   }
 
-  async createGroupConversation(data: ICreateGroupConversationInput): Promise<ConversationEntity> {
+  async createGroupConversation(data: CreateGroupConversationInput): Promise<ConversationEntity> {
     const { name, createdBy, memberIds } = data;
     const group = ConversationEntity.create({
-      type: EConversationType.GROUP,
+      type: EnumConversationType.GROUP,
       createdBy,
       name
     });
@@ -86,7 +86,7 @@ export class ConversationRepository
     const admin = ConversationMemberEntity.create({
       conversationId: group.id.toString(),
       userId: createdBy,
-      role: EConversationMemberRole.ADMIN,
+      role: EnumConversationMemberRole.ADMIN,
       joinedAt: new Date(),
       lastReadAt: new Date(),
       lastReadMessageId: null
@@ -96,7 +96,7 @@ export class ConversationRepository
       ConversationMemberEntity.create({
         conversationId: group.id.toString(),
         userId: memberId,
-        role: EConversationMemberRole.MEMBER,
+        role: EnumConversationMemberRole.MEMBER,
         joinedAt: new Date(),
         lastReadAt: new Date(),
         lastReadMessageId: null
@@ -120,7 +120,7 @@ export class ConversationRepository
     return group;
   }
 
-  async updateConversation(id: string, data: IUpdateConversationInput): Promise<ConversationEntity | null> {
+  async updateConversation(id: string, data: UpdateConversationInput): Promise<ConversationEntity | null> {
     const $set: Record<string, unknown> = { updated_at: new Date() };
     if (data.name !== undefined) {
       $set.name = data.name;
@@ -132,7 +132,7 @@ export class ConversationRepository
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async touchUpdatedAt(id: string, data: ITouchUpdatedAtInput): Promise<void> {
+  async touchUpdatedAt(id: string, data: TouchUpdatedAtInput): Promise<void> {
     await this.dbCollection.updateOne({ _id: id }, { $set: { updated_at: data.updatedAt } });
   }
 }

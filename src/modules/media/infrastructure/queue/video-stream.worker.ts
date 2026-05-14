@@ -5,7 +5,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import { VideoStreamJobData, VideoStreamJobResult } from '@/modules/media/application/ports/video-stream-job.port';
-import { EEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
+import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { VIDEO_STREAM_QUEUE_NAME } from '@/modules/media/infrastructure/queue/video-stream.queue';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant'; // TODO: move to infrastructure layer
@@ -37,7 +37,7 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
       this.log.error({ jobId, idName, attemptsMade, err }, 'job failed');
       if (job && attemptsMade >= jobOptsAttempts) {
         await this.mediaRepository
-          .updateVideoStatus({ name: idName, status: EEncodingVideoStatus.FAILED, message: message })
+          .updateVideoStatus({ name: idName, status: EnumEncodingVideoStatus.FAILED, message: message })
           .catch((dbErr) => this.log.error({ err: dbErr, idName }, 'failed to mark video as FAILED in DB'));
       }
     });
@@ -48,7 +48,7 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
   ): Promise<VideoStreamJobResult> {
     const { filepath, idName } = job.data;
 
-    await this.mediaRepository.updateVideoStatus({ name: idName, status: EEncodingVideoStatus.PROCESSING });
+    await this.mediaRepository.updateVideoStatus({ name: idName, status: EnumEncodingVideoStatus.PROCESSING });
     await job.updateProgress(10);
 
     await encodeStreamWithMultipleVideoStreams(filepath);
@@ -73,7 +73,7 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
     await this.fileStorage.deleteDirectory(folderPath);
     await job.updateProgress(100);
 
-    await this.mediaRepository.updateVideoStatus({ name: idName, status: EEncodingVideoStatus.SUCCESS });
+    await this.mediaRepository.updateVideoStatus({ name: idName, status: EnumEncodingVideoStatus.SUCCESS });
 
     return { idName };
   }

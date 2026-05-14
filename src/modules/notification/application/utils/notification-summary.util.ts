@@ -1,20 +1,20 @@
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
-  ENewMessagePreviewKind,
-  ENotificationType,
+  EnumNewMessagePreviewKind,
+  EnumNotificationType,
   INewMessageNotificationPayload
 } from '@/modules/notification/domain/entities/notification.type';
 
 export function notificationSummary(entity: NotificationEntity): string {
   const notification = entity.toObject();
   switch (notification.type) {
-    case ENotificationType.FRIEND_REQUEST:
+    case EnumNotificationType.FRIEND_REQUEST:
       return `${notification.actor.displayName} đã gửi lời mời kết bạn`;
-    case ENotificationType.FRIEND_ACCEPTED:
+    case EnumNotificationType.FRIEND_ACCEPTED:
       return `${notification.actor.displayName} đã chấp nhận lời mời kết bạn`;
-    case ENotificationType.NEW_MESSAGE: {
+    case EnumNotificationType.NEW_MESSAGE: {
       const p = notification.payload as INewMessageNotificationPayload;
-      if (p.previewKind === ENewMessagePreviewKind.ATTACHMENT) {
+      if (p.previewKind === EnumNewMessagePreviewKind.ATTACHMENT) {
         return 'Đã gửi một ảnh';
       }
       if (p.previewText) {
@@ -22,7 +22,7 @@ export function notificationSummary(entity: NotificationEntity): string {
       }
       return 'Tin nhắn mới';
     }
-    case ENotificationType.ADDED_TO_GROUP:
+    case EnumNotificationType.ADDED_TO_GROUP:
       return `${notification.actor.displayName} đã thêm bạn vào nhóm chat`;
     default:
       return 'Thông báo';

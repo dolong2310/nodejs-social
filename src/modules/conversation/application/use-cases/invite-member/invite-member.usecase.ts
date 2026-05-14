@@ -9,8 +9,8 @@ import {
   InviteMemberPort,
   InviteMemberResult
 } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
@@ -44,7 +44,7 @@ export class InviteMemberUseCase extends InviteMemberPort {
     const conv = convEntity.toObject();
 
     // kiểm tra conversation có phải là group không
-    if (conv.type !== EConversationType.GROUP) {
+    if (conv.type !== EnumConversationType.GROUP) {
       throw new ConversationNotFoundException();
     }
 
@@ -71,7 +71,7 @@ export class InviteMemberUseCase extends InviteMemberPort {
     await this.conversationMemberRepository.createMember({
       conversationId,
       userId: inviteeUserId,
-      role: EConversationMemberRole.MEMBER
+      role: EnumConversationMemberRole.MEMBER
     });
 
     // Cập nhật updatedAt + gửi notification song song sau khi insert member.

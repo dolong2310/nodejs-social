@@ -12,11 +12,11 @@ import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
-import { ERoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
-import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
@@ -28,7 +28,7 @@ import {
 } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.impl.repository';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/postgres/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { faker } from '@faker-js/faker';
@@ -70,14 +70,14 @@ const createRandomUserBody = (): UserSeedBody => ({
 const createRandomPostData = (userId: string, mentionedUserIds: string[], parentPostIds: string[]) => {
   const typePool =
     parentPostIds.length === 0
-      ? [EPostType.POST]
-      : [EPostType.POST, EPostType.REPOST, EPostType.COMMENT, EPostType.QUOTE];
+      ? [EnumPostType.POST]
+      : [EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE];
 
   const randomType = faker.helpers.arrayElement(typePool);
   const randomAudience = faker.helpers.arrayElement([
-    EPostAudience.PUBLIC,
-    EPostAudience.FRIENDS_ONLY,
-    EPostAudience.ONLY_ME
+    EnumPostAudience.PUBLIC,
+    EnumPostAudience.FRIENDS_ONLY,
+    EnumPostAudience.ONLY_ME
   ]);
 
   const hashtagCount = faker.number.int({ min: 1, max: HASHTAG_PER_POST });
@@ -94,17 +94,17 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   const uniqueMentions = Array.from(new Set(rawMentions)).slice(0, mentionCount);
 
   const mediaCount = faker.number.int({ min: 1, max: MEDIA_PER_POST });
-  const mediaMap = new Map<string, { url: string; type: EMediaType }>();
+  const mediaMap = new Map<string, { url: string; type: EnumMediaType }>();
   while (mediaMap.size < mediaCount) {
     const url = faker.image.url();
     if (!mediaMap.has(url)) {
-      mediaMap.set(url, { url, type: faker.helpers.arrayElement([EMediaType.IMAGE, EMediaType.VIDEO]) });
+      mediaMap.set(url, { url, type: faker.helpers.arrayElement([EnumMediaType.IMAGE, EnumMediaType.VIDEO]) });
     }
   }
   const randomMedia = Array.from(mediaMap.values()).map((media) => new Media(media));
 
   const content = faker.lorem.paragraph({ min: 2, max: 5 });
-  const parentId = randomType === EPostType.POST ? null : faker.helpers.arrayElement(parentPostIds);
+  const parentId = randomType === EnumPostType.POST ? null : faker.helpers.arrayElement(parentPostIds);
 
   return {
     userId,
@@ -124,7 +124,11 @@ const insertMultipleUsers = async (userBodies: UserSeedBody[], roleId: string): 
   const userIds: string[] = [];
 
   for (const body of userBodies) {
-    const randomStatus = faker.helpers.arrayElement([EUserStatus.ACTIVE, EUserStatus.INACTIVE, EUserStatus.BANNED]);
+    const randomStatus = faker.helpers.arrayElement([
+      EnumUserStatus.ACTIVE,
+      EnumUserStatus.INACTIVE,
+      EnumUserStatus.BANNED
+    ]);
     const hashedPassword = await hashingService.hash(body.password);
 
     const entity = UserEntity.create({
@@ -197,7 +201,7 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
         media: data.media
       });
 
-      if (post.getProps().type === EPostType.POST) {
+      if (post.getProps().type === EnumPostType.POST) {
         parentPostIds.push(post.id.toString());
       }
 
@@ -213,10 +217,10 @@ const main = async (): Promise<void> => {
   await postgres.connect();
   await postgres.initializeSchema();
 
-  const userRole = await roleRepository.findRoleByName(ERoleName.USER);
+  const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {
     throw new Error(
-      `Role "${ERoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
+      `Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
     );
   }
 

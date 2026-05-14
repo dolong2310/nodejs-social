@@ -2,7 +2,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
-  ENotificationType,
+  EnumNotificationType,
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
   IFriendRequestNotificationPayload,
@@ -29,28 +29,28 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
     };
 
     switch (clone.type) {
-      case ENotificationType.FRIEND_REQUEST:
+      case EnumNotificationType.FRIEND_REQUEST:
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.FRIEND_REQUEST,
+          type: EnumNotificationType.FRIEND_REQUEST,
           payload: clone.payload as IFriendRequestNotificationPayload
         });
-      case ENotificationType.FRIEND_ACCEPTED:
+      case EnumNotificationType.FRIEND_ACCEPTED:
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.FRIEND_ACCEPTED,
+          type: EnumNotificationType.FRIEND_ACCEPTED,
           payload: clone.payload as IFriendAcceptedNotificationPayload
         });
-      case ENotificationType.NEW_MESSAGE:
+      case EnumNotificationType.NEW_MESSAGE:
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.NEW_MESSAGE,
+          type: EnumNotificationType.NEW_MESSAGE,
           payload: clone.payload as INewMessageNotificationPayload
         });
-      case ENotificationType.ADDED_TO_GROUP:
+      case EnumNotificationType.ADDED_TO_GROUP:
         return parse(notificationSchema, {
           ...commonRecord,
-          type: ENotificationType.ADDED_TO_GROUP,
+          type: EnumNotificationType.ADDED_TO_GROUP,
           payload: clone.payload as IAddedToGroupNotificationPayload
         });
       default:

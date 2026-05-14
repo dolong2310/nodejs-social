@@ -1,4 +1,4 @@
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 
 export class RegisterRequestDTO {
   name: string;
@@ -60,9 +60,9 @@ export class ForgotPasswordRequestDTO {
 
 export class SendOtpRequestDTO {
   email: string;
-  type: EOtpType;
+  type: EnumOtpType;
 
-  constructor(body: { email: string; type: EOtpType }) {
+  constructor(body: { email: string; type: EnumOtpType }) {
     this.email = body.email.toLowerCase().trim();
     this.type = body.type;
   }

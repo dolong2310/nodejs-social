@@ -1,19 +1,19 @@
-import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
 export class SearchUsersQuery {
   userId?: string;
   query?: string;
-  type?: ESearchType;
-  people?: ESearchPeople;
+  type?: EnumSearchType;
+  people?: EnumSearchPeople;
   limit: number;
   cursor?: string;
   constructor(payload: {
     userId?: string;
     query?: string;
-    type?: ESearchType;
-    people?: ESearchPeople;
+    type?: EnumSearchType;
+    people?: EnumSearchPeople;
     limit: string;
     cursor?: string;
   }) {

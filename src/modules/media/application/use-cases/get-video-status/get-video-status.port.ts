@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EEncodingVideoStatus, VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.type';
+import { EnumEncodingVideoStatus, VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.type';
 
 export class GetVideoStatusQuery {
   name: string;
@@ -11,14 +11,14 @@ export class GetVideoStatusQuery {
 export class GetVideoStatusResult implements VideoStatusFullProps {
   id: string;
   name: string;
-  status: EEncodingVideoStatus;
+  status: EnumEncodingVideoStatus;
   message?: string;
   createdAt: Date;
   updatedAt: Date;
   constructor(payload: {
     id: string;
     name: string;
-    status: EEncodingVideoStatus;
+    status: EnumEncodingVideoStatus;
     message?: string;
     createdAt: Date;
     updatedAt: Date;

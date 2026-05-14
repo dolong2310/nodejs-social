@@ -4,7 +4,7 @@ import {
   ForgotPasswordCommand,
   ForgotPasswordPort
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
@@ -37,7 +37,7 @@ export class ForgotPasswordUseCase extends ForgotPasswordPort {
     const otpEntity = await this.otpService.findAndValidateOtpCode({
       email,
       code,
-      type: EOtpType.FORGOT_PASSWORD
+      type: EnumOtpType.FORGOT_PASSWORD
     });
 
     // 2. Check email exists in database

@@ -5,7 +5,7 @@ import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
   CreateVideoStatusProps,
-  EEncodingVideoStatus,
+  EnumEncodingVideoStatus,
   VideoStatusProps
 } from '@/modules/media/domain/entities/video-status.type';
 
@@ -21,7 +21,7 @@ export class VideoStatusEntity extends Entity<VideoStatusProps> {
     const { name, status } = this.getProps();
     invariant(name.trim().length > 0, new ArgumentNotProvidedException('Video name is required'));
     invariant(
-      Object.values(EEncodingVideoStatus).includes(status),
+      Object.values(EnumEncodingVideoStatus).includes(status),
       new ArgumentInvalidException('Invalid video encoding status')
     );
   }

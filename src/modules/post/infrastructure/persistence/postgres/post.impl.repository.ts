@@ -3,8 +3,8 @@ import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistenc
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import {
-  ICreatePostInput,
-  IUpdatePostAudienceAndStrangerCommentsInput
+  CreatePostInput,
+  UpdatePostAudienceAndStrangerCommentsInput
 } from '@/modules/post/domain/repositories/post.repository.type';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/postgres/post.model';
@@ -25,7 +25,7 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
     return this.findById(id);
   }
 
-  async createPost(data: ICreatePostInput): Promise<PostEntity> {
+  async createPost(data: CreatePostInput): Promise<PostEntity> {
     const entity = PostEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.query<PostModel>(
@@ -70,7 +70,7 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
   }
 
   async updatePostAudienceAndStrangerComments(
-    data: IUpdatePostAudienceAndStrangerCommentsInput
+    data: UpdatePostAudienceAndStrangerCommentsInput
   ): Promise<PostEntity | null> {
     const { postId, ownerUserId, audience, allowStrangerComments } = data;
     const result = await this.query<PostModel>(

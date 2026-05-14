@@ -1,8 +1,8 @@
 import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.type';
 import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
-import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { IPostDetailOutput, IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
 import { Prettify } from 'ts-essentials';
@@ -10,8 +10,8 @@ import { Prettify } from 'ts-essentials';
 export class PostResponseDTO implements PostFullProps {
   id: string;
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
@@ -40,11 +40,11 @@ export class PostResponseDTO implements PostFullProps {
   }
 }
 
-export class PostDetailResponseDTO implements IPostDetailOutput {
+export class PostDetailResponseDTO implements PostDetailOutput {
   id: string;
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
@@ -60,7 +60,7 @@ export class PostDetailResponseDTO implements IPostDetailOutput {
   repostCount: number;
   commentCount: number;
   quoteCount: number;
-  constructor(payload: IPostDetailOutput) {
+  constructor(payload: PostDetailOutput) {
     this.id = payload.id;
     this.userId = payload.userId;
     this.type = payload.type;
@@ -89,11 +89,11 @@ export class PostDetailResponseDTO implements IPostDetailOutput {
   }
 }
 
-export class PostDetailWithAuthorResponseDTO implements IPostDetailWithAuthorOutput {
+export class PostDetailWithAuthorResponseDTO implements PostDetailWithAuthorOutput {
   id: string;
   userId: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allowStrangerComments: boolean;
   content: string;
   parentId: string | null;
@@ -110,7 +110,7 @@ export class PostDetailWithAuthorResponseDTO implements IPostDetailWithAuthorOut
   commentCount: number;
   quoteCount: number;
   author: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'avatar'>>;
-  constructor(payload: IPostDetailWithAuthorOutput) {
+  constructor(payload: PostDetailWithAuthorOutput) {
     this.id = payload.id;
     this.userId = payload.userId;
     this.type = payload.type;

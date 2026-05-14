@@ -5,7 +5,7 @@ export interface PermissionProps {
   name: string;
   description: string;
   path: string;
-  method: EHttpMethod;
+  method: EnumHttpMethod;
   module: string;
 }
 
@@ -13,7 +13,7 @@ export interface PermissionFullProps extends Prettify<PermissionProps & Omit<Bas
 
 export interface CreatePermissionProps extends PermissionProps {}
 
-export enum EHttpMethod {
+export enum EnumHttpMethod {
   GET = 'GET',
   POST = 'POST',
   PUT = 'PUT',

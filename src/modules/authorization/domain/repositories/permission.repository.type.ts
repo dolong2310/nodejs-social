@@ -1,18 +1,18 @@
-import { CreatePermissionProps, EHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import type { Prettify } from 'ts-essentials';
 
-export interface IListPermissionsInput {
+export interface ListPermissionsInput {
   limit: number;
   skip?: number;
 }
 
 /** Trùng cặp `path` + `method` = một permission. `excludeId` khi cập nhật (bỏ qua bản ghi hiện tại). */
-export interface IFindPermissionByPathAndMethodInput {
+export interface FindPermissionByPathAndMethodInput {
   path: string;
-  method: EHttpMethod;
+  method: EnumHttpMethod;
   excludeId?: string;
 }
 
-export interface ICreatePermissionInput extends CreatePermissionProps {}
+export interface CreatePermissionInput extends CreatePermissionProps {}
 
-export type IUpdatePermissionInput = Prettify<Partial<ICreatePermissionInput>>;
+export type UpdatePermissionInput = Prettify<Partial<CreatePermissionInput>>;

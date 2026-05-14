@@ -8,7 +8,7 @@ import { CacheStrategy } from '@/infrastructure/cache/cache.strategy';
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.out-port';
+import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { AuthService, AuthServicePort } from '@/modules/authentication/application/services/auth.service';

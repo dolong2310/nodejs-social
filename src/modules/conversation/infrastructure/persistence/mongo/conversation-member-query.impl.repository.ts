@@ -1,7 +1,7 @@
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
 import {
-  IListConversationsForUserInput,
-  IListConversationsForUserOutput
+  ListConversationsForUserInput,
+  ListConversationsForUserOutput
 } from '@/modules/conversation/domain/repositories/conversation-member.query.type';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
@@ -20,7 +20,7 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
     userId,
     limit,
     cursor
-  }: IListConversationsForUserInput): Promise<IListConversationsForUserOutput[]> {
+  }: ListConversationsForUserInput): Promise<ListConversationsForUserOutput[]> {
     const matchCursor: Document[] = [];
     if (cursor) {
       const { id, createdAt: updatedAt } = cursor.raw();
@@ -57,6 +57,6 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
       }
     ];
 
-    return this.dbCollection.aggregate<IListConversationsForUserOutput>(pipeline).toArray();
+    return this.dbCollection.aggregate<ListConversationsForUserOutput>(pipeline).toArray();
   }
 }

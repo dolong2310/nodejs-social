@@ -18,7 +18,7 @@ The issue may sit in `ready-for-agent` for days or weeks. The codebase will chan
 
 Describe **what** the system should do, not **how** to implement it. The agent will explore the codebase fresh and make its own implementation decisions.
 
-- **Good:** "The `SkillConfig` type should accept an optional `schedule` field of type `CronExpression`"
+- **Good:** "The `SkillConfig` type should accept an optional `schedule` field of type `EnumCronExpression`"
 - **Bad:** "Open src/types/skill.ts and add a schedule field on line 42"
 - **Good:** "When a user runs `/triage` with no arguments, they should see a summary of issues needing attention"
 - **Bad:** "Add a switch statement in the main handler function"

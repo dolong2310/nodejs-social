@@ -1,16 +1,16 @@
-export interface IIncreasePostViewsInput {
+export interface IncreasePostViewsInput {
   postId: string;
   userId?: string;
 }
 
-export interface IIncreasePostsViewsInput {
+export interface IncreasePostsViewsInput {
   ids: string[];
   isAuthenticatedViewer: boolean;
 }
 
 // Output
 
-export interface IIncreasePostViewsOutput {
+export interface IncreasePostViewsOutput {
   userViews: number;
   guestViews: number;
   updatedAt: Date;

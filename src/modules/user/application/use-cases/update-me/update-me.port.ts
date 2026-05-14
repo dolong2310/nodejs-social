@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 
 export class UpdateMeCommand {
@@ -41,7 +41,7 @@ export class UpdateMeResult implements UserSafeProps {
   email: string;
   birthday: Date;
   roleId: string;
-  status: EUserStatus;
+  status: EnumUserStatus;
   bio?: string;
   location?: string;
   website?: string;

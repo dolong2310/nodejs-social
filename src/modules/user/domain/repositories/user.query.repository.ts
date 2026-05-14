@@ -1,5 +1,5 @@
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
-import { IFindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
 
 export interface UserQueryRepositoryPort {
   findSafeUserById(id: string): Promise<UserSafeProps | null>;
@@ -8,6 +8,6 @@ export interface UserQueryRepositoryPort {
 
   findUserByIdIncludeRole(id: string): Promise<UserWithRole | null>;
   findUserByEmailIncludeRole(email: string): Promise<UserWithRole | null>;
-  findUsersForSearch(data: IFindUsersForSearchInput): Promise<UserSafeProps[]>;
+  findUsersForSearch(data: FindUsersForSearchInput): Promise<UserSafeProps[]>;
   findManyUsersByIdsIncludeNameUsernameAvatar(ids: string[]): Promise<UserRecordProps[]>;
 }

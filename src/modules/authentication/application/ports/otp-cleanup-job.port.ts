@@ -1,5 +1,5 @@
-export interface IOtpCleanupJobData {}
+export interface OtpCleanupJobData {}
 
-export interface IOtpCleanupJobResult {
+export interface OtpCleanupJobResult {
   deletedCount: number;
 }

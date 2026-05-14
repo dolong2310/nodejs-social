@@ -1,4 +1,4 @@
-import { ESearchType } from '@/modules/common/domain/enums/search.enum';
+import { EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { SearchPostsPort } from '@/modules/post/application/use-cases/search-posts/search-posts.port';
 import { SearchUsersPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
@@ -34,7 +34,7 @@ export class SearchController extends BaseController implements ISearchControlle
     let items: PostDetailWithAuthorResponseDTO[] | UserResponseDTO[];
     let nextCursor: string | null;
 
-    if (type === ESearchType.USER) {
+    if (type === EnumSearchType.USER) {
       const result = await this.searchUsersUC.execute({
         userId,
         query,

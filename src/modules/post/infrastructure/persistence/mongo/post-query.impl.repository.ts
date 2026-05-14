@@ -1,17 +1,17 @@
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
-import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
-import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
-  IFindGuestPostsInput,
-  IFindPostIdsWhereViewerInteractedWithAuthorsInput,
-  IFindPostsForSearchInput,
-  IFindPostsInput,
-  IFindPostsTypeInput,
-  IIsViewerInteractedWithPostInput,
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput
+  FindGuestPostsInput,
+  FindPostIdsWhereViewerInteractedWithAuthorsInput,
+  FindPostsForSearchInput,
+  FindPostsInput,
+  FindPostsTypeInput,
+  IsViewerInteractedWithPostInput,
+  PostDetailOutput,
+  PostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.type';
 import { BookmarkModel } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
 import { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
@@ -38,7 +38,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return this.db.collection<BookmarkModel>('bookmarks');
   }
 
-  async isViewerInteractedWithPost({ postId, viewerId: userId }: IIsViewerInteractedWithPostInput): Promise<boolean> {
+  async isViewerInteractedWithPost({ postId, viewerId: userId }: IsViewerInteractedWithPostInput): Promise<boolean> {
     // const v = new ObjectId(data.viewerId);
     // const p = new ObjectId(data.postId);
     const [like, bookmark, comment] = await Promise.all([
@@ -48,7 +48,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       this.bookmarksCollection.findOne({ user_id: userId, post_id: postId }, { projection: { _id: 1 } }),
       // Tìm comment mà viewer comment vào post đó (posts.findOne với parentId = postId và type = COMMENT)
       this.dbCollection.findOne(
-        { user_id: userId, parent_id: postId, type: EPostType.COMMENT },
+        { user_id: userId, parent_id: postId, type: EnumPostType.COMMENT },
         { projection: { _id: 1 } }
       )
     ]);
@@ -56,7 +56,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return like !== null || bookmark !== null || comment !== null;
   }
 
-  async findPostDetailById(id: string): Promise<IPostDetailOutput> {
+  async findPostDetailById(id: string): Promise<PostDetailOutput> {
     const pipelineGetDetailPost = [
       {
         $match: {
@@ -153,7 +153,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               $filter: {
                 input: '$childPostsWithTypeOnly',
                 as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EPostType.REPOST] }
+                cond: { $eq: ['$$childPost.type', EnumPostType.REPOST] }
               }
             }
           },
@@ -162,7 +162,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               $filter: {
                 input: '$childPostsWithTypeOnly',
                 as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EPostType.COMMENT] }
+                cond: { $eq: ['$$childPost.type', EnumPostType.COMMENT] }
               }
             }
           },
@@ -171,7 +171,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
               $filter: {
                 input: '$childPostsWithTypeOnly',
                 as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EPostType.QUOTE] }
+                cond: { $eq: ['$$childPost.type', EnumPostType.QUOTE] }
               }
             }
           }
@@ -198,13 +198,13 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         }
       }
     ];
-    const [post] = await this.dbCollection.aggregate<IPostDetailOutput>(pipelineGetDetailPost).toArray();
+    const [post] = await this.dbCollection.aggregate<PostDetailOutput>(pipelineGetDetailPost).toArray();
 
     return post;
   }
 
   async findPostIdsWhereViewerInteractedWithAuthors(
-    data: IFindPostIdsWhereViewerInteractedWithAuthorsInput
+    data: FindPostIdsWhereViewerInteractedWithAuthorsInput
   ): Promise<string[]> {
     const { viewerId, authorIds } = data;
     if (authorIds.length === 0) return [];
@@ -247,7 +247,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           {
             $match: {
               user_id: viewerId,
-              type: EPostType.COMMENT,
+              type: EnumPostType.COMMENT,
               parent_id: { $ne: null }
             }
           },
@@ -273,7 +273,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return Array.from(ids);
   }
 
-  async findPosts(data: IFindPostsInput): Promise<IPostDetailWithAuthorOutput[]> {
+  async findPosts(data: FindPostsInput): Promise<PostDetailWithAuthorOutput[]> {
     const { userId, friendUserIds, blockedAuthorIds, extraVisiblePostIds, cursor, limit } = data;
     const blocked = blockedAuthorIds.filter((id) => id !== userId);
     const friendIds = friendUserIds.filter((id) => id !== userId);
@@ -292,13 +292,13 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       includeAuthor: true
     });
 
-    return this.dbCollection.aggregate<IPostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
+    return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
   }
 
-  async findGuestPosts(data: IFindGuestPostsInput): Promise<IPostDetailWithAuthorOutput[]> {
+  async findGuestPosts(data: FindGuestPostsInput): Promise<PostDetailWithAuthorOutput[]> {
     const { cursor, limit } = data;
     const match: Record<string, unknown> = {
-      audience: EPostAudience.PUBLIC
+      audience: EnumPostAudience.PUBLIC
     };
     if (cursor) {
       match.$or = [
@@ -313,10 +313,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       includeAuthor: true
     });
 
-    return this.dbCollection.aggregate<IPostDetailWithAuthorOutput>(pipelineGetGuestNewFeeds).toArray();
+    return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetGuestNewFeeds).toArray();
   }
 
-  async findPostsType(data: IFindPostsTypeInput): Promise<IPostDetailOutput[]> {
+  async findPostsType(data: FindPostsTypeInput): Promise<PostDetailOutput[]> {
     const { cursor, limit, postId, type } = data;
     const match: Record<string, unknown> = {
       parent_id: postId,
@@ -335,7 +335,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       includeAuthor: false
     });
 
-    const posts = await this.dbCollection.aggregate<IPostDetailOutput>(pipelineGetPostsType).toArray();
+    const posts = await this.dbCollection.aggregate<PostDetailOutput>(pipelineGetPostsType).toArray();
     return posts;
   }
 
@@ -349,7 +349,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     limit,
     cursor,
     findFriendUserIds
-  }: IFindPostsForSearchInput): Promise<IPostDetailWithAuthorOutput[]> {
+  }: FindPostsForSearchInput): Promise<PostDetailWithAuthorOutput[]> {
     // const baseMatch = await this._getPostMatch(payload);
     // const match = this._mergeCreatedAtIdCursor(baseMatch, cursor);
     const match: Record<string, unknown> = {};
@@ -366,9 +366,9 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
 
     if (type) {
       // tìm kiếm theo type của post
-      if ([ESearchType.VIDEO, ESearchType.VIDEO_STREAM].includes(type)) {
-        $and.push({ 'media.type': { $in: [EMediaType.VIDEO, EMediaType.VIDEO_STREAM] } });
-      } else if (type === ESearchType.IMAGE) {
+      if ([EnumSearchType.VIDEO, EnumSearchType.VIDEO_STREAM].includes(type)) {
+        $and.push({ 'media.type': { $in: [EnumMediaType.VIDEO, EnumMediaType.VIDEO_STREAM] } });
+      } else if (type === EnumSearchType.IMAGE) {
         $and.push({ 'media.type': type });
       }
     }
@@ -383,12 +383,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       // Chỉ hiển thị post PUBLIC và post FRIENDS_ONLY (bạn bè) (không bị block)
       const orVisibility: Record<string, unknown>[] = [
         {
-          audience: EPostAudience.PUBLIC,
+          audience: EnumPostAudience.PUBLIC,
           user_id: { $nin: blocked }
         },
         { user_id: userId },
         {
-          audience: EPostAudience.FRIENDS_ONLY,
+          audience: EnumPostAudience.FRIENDS_ONLY,
           user_id: { $in: friendIdsFriendsOnly, $nin: blocked }
         }
       ];
@@ -400,17 +400,17 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
 
       if (people) {
         // tìm kiếm theo bạn bè và không phải bạn bè
-        if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
+        if ([EnumSearchPeople.FRIENDS, EnumSearchPeople.NOT_FRIENDS].includes(people)) {
           $and.push({
-            user_id: people === ESearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds }
+            user_id: people === EnumSearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds }
           });
-        } else if (people === ESearchPeople.ONLY_ME) {
+        } else if (people === EnumSearchPeople.ONLY_ME) {
           // tìm kiếm theo chính mình
           $and.push({ user_id: { $eq: userId } });
         }
       }
     } else {
-      $and.push({ audience: EPostAudience.PUBLIC });
+      $and.push({ audience: EnumPostAudience.PUBLIC });
     }
 
     if ($and.length === 1) {
@@ -436,7 +436,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       limit: limit + 1,
       includeAuthor: true
     });
-    return this.dbCollection.aggregate<IPostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
+    return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
   }
 
   private buildFeedMatch({
@@ -454,12 +454,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
   }): Record<string, unknown> {
     const orBranches: Record<string, unknown>[] = [
       {
-        audience: EPostAudience.PUBLIC,
+        audience: EnumPostAudience.PUBLIC,
         user_id: { $nin: blocked }
       },
       { user_id: viewerId },
       {
-        audience: EPostAudience.FRIENDS_ONLY,
+        audience: EnumPostAudience.FRIENDS_ONLY,
         user_id: { $in: friendIds, $nin: blocked }
       }
     ];
@@ -640,7 +640,7 @@ function buildBasePostPipeline({
             $filter: {
               input: '$childPostsWithTypeOnly',
               as: 'childPost',
-              cond: { $eq: ['$$childPost.type', EPostType.REPOST] }
+              cond: { $eq: ['$$childPost.type', EnumPostType.REPOST] }
             }
           }
         },
@@ -649,7 +649,7 @@ function buildBasePostPipeline({
             $filter: {
               input: '$childPostsWithTypeOnly',
               as: 'childPost',
-              cond: { $eq: ['$$childPost.type', EPostType.COMMENT] }
+              cond: { $eq: ['$$childPost.type', EnumPostType.COMMENT] }
             }
           }
         },
@@ -658,7 +658,7 @@ function buildBasePostPipeline({
             $filter: {
               input: '$childPostsWithTypeOnly',
               as: 'childPost',
-              cond: { $eq: ['$$childPost.type', EPostType.QUOTE] }
+              cond: { $eq: ['$$childPost.type', EnumPostType.QUOTE] }
             }
           }
         }

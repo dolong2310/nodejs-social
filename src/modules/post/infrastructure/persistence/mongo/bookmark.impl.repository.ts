@@ -2,10 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { BookmarkEntity } from '@/modules/post/domain/entities/bookmark.entity';
 import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
-import {
-  ICreateBookmarkInput,
-  IDeleteBookmarkInput
-} from '@/modules/post/domain/repositories/bookmark.repository.type';
+import { CreateBookmarkInput, DeleteBookmarkInput } from '@/modules/post/domain/repositories/bookmark.repository.type';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/mongo/bookmark.mapper';
 import { BookmarkModel } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
 import { Db, MongoClient } from 'mongodb';
@@ -25,7 +22,7 @@ export class BookmarkRepository
     super(mapper, logger);
   }
 
-  async createBookmark({ userId, postId }: ICreateBookmarkInput): Promise<BookmarkEntity | null> {
+  async createBookmark({ userId, postId }: CreateBookmarkInput): Promise<BookmarkEntity | null> {
     const now = new Date();
     const result = await this.dbCollection.findOneAndUpdate(
       { user_id: userId, post_id: postId },
@@ -35,7 +32,7 @@ export class BookmarkRepository
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async deleteBookmark({ userId, postId }: IDeleteBookmarkInput): Promise<BookmarkEntity | null> {
+  async deleteBookmark({ userId, postId }: DeleteBookmarkInput): Promise<BookmarkEntity | null> {
     const result = await this.dbCollection.findOneAndDelete({ user_id: userId, post_id: postId });
     return result ? this.mapper.toDomain(result) : null;
   }

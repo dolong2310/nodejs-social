@@ -1,4 +1,4 @@
-export enum CronExpression {
+export enum EnumCronExpression {
   EVERY_SECOND = '* * * * * *',
   EVERY_5_SECONDS = '*/5 * * * * *',
   EVERY_10_SECONDS = '*/10 * * * * *',

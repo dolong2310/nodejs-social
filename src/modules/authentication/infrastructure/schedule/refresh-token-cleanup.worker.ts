@@ -1,7 +1,7 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import {
-  IRefreshTokenCleanupJobData,
-  IRefreshTokenCleanupJobResult
+  RefreshTokenCleanupJobData,
+  RefreshTokenCleanupJobResult
 } from '@/modules/authentication/application/ports/refresh-token-cleanup-job.port';
 import {
   DeleteExpiredRefreshTokensCommand,
@@ -11,7 +11,7 @@ import { REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME } from '@/modules/authenticat
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { type ConnectionOptions, type Job } from 'bullmq';
 
-export class RefreshTokenCleanupWorker extends BaseWorker<IRefreshTokenCleanupJobData, IRefreshTokenCleanupJobResult> {
+export class RefreshTokenCleanupWorker extends BaseWorker<RefreshTokenCleanupJobData, RefreshTokenCleanupJobResult> {
   private readonly log: LoggerPort;
 
   constructor(
@@ -25,8 +25,8 @@ export class RefreshTokenCleanupWorker extends BaseWorker<IRefreshTokenCleanupJo
   }
 
   protected override async process(
-    job: Job<IRefreshTokenCleanupJobData, IRefreshTokenCleanupJobResult>
-  ): Promise<IRefreshTokenCleanupJobResult> {
+    job: Job<RefreshTokenCleanupJobData, RefreshTokenCleanupJobResult>
+  ): Promise<RefreshTokenCleanupJobResult> {
     const result = await this.deleteExpiredRefreshTokensUC.execute(new DeleteExpiredRefreshTokensCommand());
     this.log.info({ jobId: job.id, deletedCount: result.deletedCount }, 'expired refresh tokens deleted');
     return { deletedCount: result.deletedCount };

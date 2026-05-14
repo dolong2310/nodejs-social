@@ -11,7 +11,7 @@ import {
   CreatePostResult
 } from '@/modules/post/application/use-cases/create-post/create-post.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { EPostAudience, EPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
@@ -43,7 +43,7 @@ export class CreatePostUseCase extends CreatePostPort {
     mentions
   }: CreatePostCommand): Promise<CreatePostResult> {
     // xử lý quyền tương tác vào bài cha trước khi cho tạo comment/repost/quote
-    if (type !== EPostType.POST) {
+    if (type !== EnumPostType.POST) {
       if (!parentId) {
         throw new PostNotFoundException();
       }
@@ -67,7 +67,7 @@ export class CreatePostUseCase extends CreatePostPort {
       const isOwner = userId === ownerId; // chính chủ bài cha
       const isMention = parent.mentions.some((mentionId) => mentionId === userId); // được tag trong bài cha
       // Chỉ xử lý rule "stranger comments" khi bài cha là PUBLIC và viewer là stranger.
-      const isPublic = parent.audience === EPostAudience.PUBLIC;
+      const isPublic = parent.audience === EnumPostAudience.PUBLIC;
 
       // Nếu flag này là false và post type tạo mới nằm trong COMMENT | REPOST | QUOTE thì chặn bằng StrangerCommentsNotAllowedException.
       // Với bài FRIENDS_ONLY, assertViewerCanSeeParentForInteraction đã đảm bảo chỉ bạn bè/được tag mới qua được.
@@ -123,9 +123,9 @@ export class CreatePostUseCase extends CreatePostPort {
     }
     // Kiểm tra quyền truy cập bài cha
     const audienceStr = parent.audience as string;
-    const isPublic = audienceStr === EPostAudience.PUBLIC;
-    const isFriendsOnly = audienceStr === EPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
-    const isOnlyMe = audienceStr === EPostAudience.ONLY_ME || audienceStr === 'only_me';
+    const isPublic = audienceStr === EnumPostAudience.PUBLIC;
+    const isFriendsOnly = audienceStr === EnumPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
+    const isOnlyMe = audienceStr === EnumPostAudience.ONLY_ME || audienceStr === 'only_me';
     const isMention = parent.mentions.some((mentionId) => mentionId === viewerId);
     // Nếu bài cha là ONLY_ME thì không cho phép truy cập.
     if (isOnlyMe) {

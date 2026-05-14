@@ -1,14 +1,14 @@
 import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
 import { Prettify } from 'ts-essentials';
 
-export enum ENotificationType {
+export enum EnumNotificationType {
   FRIEND_REQUEST = 'FRIEND_REQUEST',
   FRIEND_ACCEPTED = 'FRIEND_ACCEPTED',
   NEW_MESSAGE = 'NEW_MESSAGE',
   ADDED_TO_GROUP = 'ADDED_TO_GROUP'
 }
 
-export enum ENewMessagePreviewKind {
+export enum EnumNewMessagePreviewKind {
   TEXT = 'TEXT',
   ATTACHMENT = 'ATTACHMENT',
   MIXED = 'MIXED'
@@ -32,7 +32,7 @@ export interface INewMessageNotificationPayload {
   conversationId: string;
   messageId: string;
   previewText?: string;
-  previewKind: ENewMessagePreviewKind;
+  previewKind: EnumNewMessagePreviewKind;
 }
 
 export interface IAddedToGroupNotificationPayload {
@@ -50,7 +50,7 @@ export interface NotificationProps {
   recipientId: string;
   read: boolean;
   readAt?: Date;
-  type: ENotificationType;
+  type: EnumNotificationType;
   actor: INotificationActor;
   payload: INotificationPayload;
 }

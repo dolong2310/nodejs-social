@@ -22,7 +22,7 @@
       "role": {
         "bsonType": "string",
         "enum": ["admin", "manager", "member"],
-        "description": "EConversationMemberRole"
+        "description": "EnumConversationMemberRole"
       },
       "joinedAt": { "bsonType": "date" },
       "lastReadMessageId": {

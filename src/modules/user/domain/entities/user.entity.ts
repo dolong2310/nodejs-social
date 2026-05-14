@@ -8,14 +8,14 @@ import {
 } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { type CreateUserProps, type UserProps, EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { type CreateUserProps, type UserProps, EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 
 export class UserEntity extends Entity<UserProps> {
   static create(createProps: CreateUserProps) {
     const id = new UniqueEntityID(generatePrefixId('user'));
     const props: UserProps = {
-      status: EUserStatus.ACTIVE,
+      status: EnumUserStatus.ACTIVE,
       ...createProps,
       email: normalizeUserEmail(createProps.email),
       username: normalizeUsername(createProps.username)
@@ -36,6 +36,6 @@ export class UserEntity extends Entity<UserProps> {
     invariant(birthday && birthday instanceof Date, new ArgumentInvalidException('Birthday must be a valid Date'));
     invariant(birthday && birthday < new Date(), new ArgumentOutOfRangeException('Birthday must be in the past'));
     invariant(roleId.trim().length > 0, new ArgumentNotProvidedException('Role ID is required'));
-    invariant(Object.values(EUserStatus).includes(status), new ArgumentInvalidException('Invalid user status'));
+    invariant(Object.values(EnumUserStatus).includes(status), new ArgumentInvalidException('Invalid user status'));
   }
 }

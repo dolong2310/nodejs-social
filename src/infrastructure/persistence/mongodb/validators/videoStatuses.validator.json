@@ -13,7 +13,7 @@
       "status": {
         "bsonType": "string",
         "enum": ["pending", "processing", "success", "failed"],
-        "description": "EEncodingVideoStatus"
+        "description": "EnumEncodingVideoStatus"
       },
       "message": { "bsonType": "string" },
       "createdAt": { "bsonType": "date" },

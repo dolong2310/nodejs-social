@@ -4,9 +4,9 @@ import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import {
-  IChangePasswordInput,
-  IResetPasswordInput,
-  IUpdateMeInput
+  ChangePasswordInput,
+  ResetPasswordInput,
+  UpdateMeInput
 } from '@/modules/user/domain/repositories/user.repository.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/postgres/user.model';
@@ -46,11 +46,11 @@ export class UserRepository extends PostgresRepositoryBase<UserEntity, UserModel
     return this.findAllByIds(ids);
   }
 
-  async updateMe(id: string, data: IUpdateMeInput): Promise<UserEntity | null> {
+  async updateMe(id: string, data: UpdateMeInput): Promise<UserEntity | null> {
     return this.update(id, { ...data, username: normalizeUsername(data.username) } as Partial<UserEntity>);
   }
 
-  async resetPassword(id: string, data: IResetPasswordInput): Promise<boolean> {
+  async resetPassword(id: string, data: ResetPasswordInput): Promise<boolean> {
     const result = await this.query(`UPDATE "users" SET "password" = $2, "updated_at" = NOW() WHERE "id" = $1`, [
       id,
       data.password
@@ -58,7 +58,7 @@ export class UserRepository extends PostgresRepositoryBase<UserEntity, UserModel
     return (result.rowCount ?? 0) > 0;
   }
 
-  async changePassword(id: string, data: IChangePasswordInput): Promise<UserEntity | null> {
+  async changePassword(id: string, data: ChangePasswordInput): Promise<UserEntity | null> {
     const result = await this.query<UserModel>(
       `UPDATE "users" SET "password" = $2, "updated_at" = NOW() WHERE "id" = $1 RETURNING *`,
       [id, data.password]

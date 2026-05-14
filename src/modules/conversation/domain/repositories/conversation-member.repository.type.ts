@@ -3,28 +3,28 @@ import {
   CreateConversationMemberProps
 } from '@/modules/conversation/domain/entities/conversation-member.type';
 
-export interface IFindMemberInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId'> {}
+export interface FindMemberInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId'> {}
 
-export interface IFindMembersByUsersInput extends Pick<ConversationMemberProps, 'conversationId'> {
+export interface FindMembersByUsersInput extends Pick<ConversationMemberProps, 'conversationId'> {
   userIds: string[];
 }
 
-export interface IFindMembersInput extends Pick<ConversationMemberProps, 'userId'> {
+export interface FindMembersInput extends Pick<ConversationMemberProps, 'userId'> {
   conversationIds: string[];
 }
 
-export interface ICreateMemberInput extends CreateConversationMemberProps {}
+export interface CreateMemberInput extends CreateConversationMemberProps {}
 
-export interface IDeleteMemberInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId'> {}
+export interface DeleteMemberInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId'> {}
 
-export interface IUpdateRoleInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId' | 'role'> {}
+export interface UpdateRoleInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId' | 'role'> {}
 
-export interface ITransferAdminRoleInput extends Pick<ConversationMemberProps, 'conversationId' | 'joinedAt'> {
+export interface TransferAdminRoleInput extends Pick<ConversationMemberProps, 'conversationId' | 'joinedAt'> {
   oldAdminUserId: string;
   newAdminUserId: string;
 }
 
-export interface IUpdateReadStateInput extends Pick<
+export interface UpdateReadStateInput extends Pick<
   ConversationMemberProps,
   'conversationId' | 'userId' | 'lastReadMessageId' | 'lastReadAt'
 > {}

@@ -8,8 +8,8 @@ import {
   KickMemberCommand,
   KickMemberPort
 } from '@/modules/conversation/application/use-cases/kick-member/kick-member.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
@@ -34,7 +34,7 @@ export class KickMemberUseCase extends KickMemberPort {
   async execute({ userId, conversationId, targetUserId }: KickMemberCommand): Promise<void> {
     // kiểm tra conversation có phải là group không
     const convEntity = await this.conversationService.loadConversation(conversationId);
-    if (convEntity.getProps().type === EConversationType.DIRECT) {
+    if (convEntity.getProps().type === EnumConversationType.DIRECT) {
       throw new ConversationDirectNoKickException();
     }
 
@@ -62,17 +62,17 @@ export class KickMemberUseCase extends KickMemberPort {
     }
 
     // kiểm tra quyền của người thực hiện
-    if (actor.role === EConversationMemberRole.MEMBER) {
+    if (actor.role === EnumConversationMemberRole.MEMBER) {
       throw new ConversationCannotKickMemberException();
     }
     // không cho kick ADMIN
-    if (target.role === EConversationMemberRole.ADMIN) {
+    if (target.role === EnumConversationMemberRole.ADMIN) {
       throw new ConversationCannotKickMemberException();
     }
     // ADMIN thì kick được MEMBER và MANAGER (không kick được ADMIN).
     // MANAGER chỉ được kick MEMBER (không kick được MANAGER/ADMIN).
-    if (actor.role === EConversationMemberRole.MANAGER) {
-      if (target.role !== EConversationMemberRole.MEMBER) {
+    if (actor.role === EnumConversationMemberRole.MANAGER) {
+      if (target.role !== EnumConversationMemberRole.MEMBER) {
         throw new ConversationCannotKickMemberException();
       }
     }

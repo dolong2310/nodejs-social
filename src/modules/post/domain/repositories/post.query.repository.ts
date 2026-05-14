@@ -1,22 +1,22 @@
 import {
-  IFindGuestPostsInput,
-  IFindPostIdsWhereViewerInteractedWithAuthorsInput,
-  IFindPostsForSearchInput,
-  IFindPostsInput,
-  IFindPostsTypeInput,
-  IIsViewerInteractedWithPostInput,
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput
+  FindGuestPostsInput,
+  FindPostIdsWhereViewerInteractedWithAuthorsInput,
+  FindPostsForSearchInput,
+  FindPostsInput,
+  FindPostsTypeInput,
+  IsViewerInteractedWithPostInput,
+  PostDetailOutput,
+  PostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.type';
 
 export interface PostQueryRepositoryPort {
-  isViewerInteractedWithPost(data: IIsViewerInteractedWithPostInput): Promise<boolean>;
-  findPostDetailById(id: string): Promise<IPostDetailOutput>;
+  isViewerInteractedWithPost(data: IsViewerInteractedWithPostInput): Promise<boolean>;
+  findPostDetailById(id: string): Promise<PostDetailOutput>;
   findPostIdsWhereViewerInteractedWithAuthors(
-    data: IFindPostIdsWhereViewerInteractedWithAuthorsInput
+    data: FindPostIdsWhereViewerInteractedWithAuthorsInput
   ): Promise<string[]>;
-  findPosts(data: IFindPostsInput): Promise<IPostDetailWithAuthorOutput[]>;
-  findGuestPosts(data: IFindGuestPostsInput): Promise<IPostDetailWithAuthorOutput[]>;
-  findPostsType(data: IFindPostsTypeInput): Promise<IPostDetailOutput[]>;
-  findPostsForSearch(data: IFindPostsForSearchInput): Promise<IPostDetailWithAuthorOutput[]>;
+  findPosts(data: FindPostsInput): Promise<PostDetailWithAuthorOutput[]>;
+  findGuestPosts(data: FindGuestPostsInput): Promise<PostDetailWithAuthorOutput[]>;
+  findPostsType(data: FindPostsTypeInput): Promise<PostDetailOutput[]>;
+  findPostsForSearch(data: FindPostsForSearchInput): Promise<PostDetailWithAuthorOutput[]>;
 }

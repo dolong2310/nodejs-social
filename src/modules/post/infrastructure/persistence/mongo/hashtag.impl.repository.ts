@@ -3,9 +3,9 @@ import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/r
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import {
-  ICreateHashtagInput,
-  IListHashtagsInput,
-  IUpdateHashtagInput
+  CreateHashtagInput,
+  ListHashtagsInput,
+  UpdateHashtagInput
 } from '@/modules/post/domain/repositories/hashtag.repository.type';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper';
 import { HashtagModel } from '@/modules/post/infrastructure/persistence/mongo/hashtag.model';
@@ -26,7 +26,7 @@ export class HashtagRepository
     super(mapper, logger);
   }
 
-  async createHashtag(data: ICreateHashtagInput): Promise<HashtagEntity> {
+  async createHashtag(data: CreateHashtagInput): Promise<HashtagEntity> {
     const entity = HashtagEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
@@ -71,7 +71,7 @@ export class HashtagRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async findHashtags({ limit, skip = 0 }: IListHashtagsInput): Promise<HashtagEntity[]> {
+  async findHashtags({ limit, skip = 0 }: ListHashtagsInput): Promise<HashtagEntity[]> {
     const records = await this.dbCollection.find({}).sort({ name: 1 }).skip(skip).limit(limit).toArray();
     return records.map((item) => this.mapper.toDomain(item));
   }
@@ -80,7 +80,7 @@ export class HashtagRepository
     return this.dbCollection.countDocuments({});
   }
 
-  async updateHashtag(id: string, data: IUpdateHashtagInput): Promise<HashtagEntity | null> {
+  async updateHashtag(id: string, data: UpdateHashtagInput): Promise<HashtagEntity | null> {
     const patch: Record<string, unknown> = { ...data, updated_at: new Date() };
     const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: patch }, { returnDocument: 'after' });
     return record ? this.mapper.toDomain(record) : null;

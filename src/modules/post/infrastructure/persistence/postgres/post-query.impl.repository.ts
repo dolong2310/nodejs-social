@@ -1,17 +1,17 @@
-import { EMediaType } from '@/modules/common/domain/enums/media.enum';
-import { ESearchPeople, ESearchType } from '@/modules/common/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/common/domain/value-objects/date-id-cursor.value-object';
-import { EPostAudience, EPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
+import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
+import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
-  IFindGuestPostsInput,
-  IFindPostIdsWhereViewerInteractedWithAuthorsInput,
-  IFindPostsForSearchInput,
-  IFindPostsInput,
-  IFindPostsTypeInput,
-  IIsViewerInteractedWithPostInput,
-  IPostDetailOutput,
-  IPostDetailWithAuthorOutput
+  FindGuestPostsInput,
+  FindPostIdsWhereViewerInteractedWithAuthorsInput,
+  FindPostsForSearchInput,
+  FindPostsInput,
+  FindPostsTypeInput,
+  IsViewerInteractedWithPostInput,
+  PostDetailOutput,
+  PostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.type';
 import type { Pool } from 'pg';
 
@@ -20,8 +20,8 @@ type JsonRecord = Record<string, unknown>;
 type DetailedPostRow = {
   id: string;
   user_id: string;
-  type: EPostType;
-  audience: EPostAudience;
+  type: EnumPostType;
+  audience: EnumPostAudience;
   allow_stranger_comments: boolean;
   content: string;
   parent_id: string | null;
@@ -43,7 +43,7 @@ type DetailedPostRow = {
 export class PostQueryRepository implements PostQueryRepositoryPort {
   constructor(protected readonly pool: Pool) {}
 
-  async isViewerInteractedWithPost({ postId, viewerId }: IIsViewerInteractedWithPostInput): Promise<boolean> {
+  async isViewerInteractedWithPost({ postId, viewerId }: IsViewerInteractedWithPostInput): Promise<boolean> {
     const result = await this.pool.query<{ exists: boolean }>(
       `
         SELECT EXISTS (
@@ -54,25 +54,25 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           SELECT 1 FROM posts WHERE user_id = $1 AND parent_id = $2 AND type = $3
         ) AS exists
       `,
-      [viewerId, postId, EPostType.COMMENT]
+      [viewerId, postId, EnumPostType.COMMENT]
     );
     return result.rows[0]?.exists ?? false;
   }
 
-  async findPostDetailById(id: string): Promise<IPostDetailOutput> {
+  async findPostDetailById(id: string): Promise<PostDetailOutput> {
     const rows = await this.findDetailedPosts({
       whereSql: `p.id = $1`,
       params: [id],
       includeAuthor: false,
       limit: 1
     });
-    return rows[0] as IPostDetailOutput;
+    return rows[0] as PostDetailOutput;
   }
 
   async findPostIdsWhereViewerInteractedWithAuthors({
     viewerId,
     authorIds
-  }: IFindPostIdsWhereViewerInteractedWithAuthorsInput): Promise<string[]> {
+  }: FindPostIdsWhereViewerInteractedWithAuthorsInput): Promise<string[]> {
     if (authorIds.length === 0) return [];
 
     const result = await this.pool.query<{ post_id: string }>(
@@ -102,23 +102,23 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             AND parent.user_id = ANY($2::text[])
         ) interacted
       `,
-      [viewerId, authorIds, EPostType.COMMENT]
+      [viewerId, authorIds, EnumPostType.COMMENT]
     );
     return result.rows.map((row) => row.post_id);
   }
 
-  async findPosts(data: IFindPostsInput): Promise<IPostDetailWithAuthorOutput[]> {
+  async findPosts(data: FindPostsInput): Promise<PostDetailWithAuthorOutput[]> {
     const { userId, cursor, limit, extraVisiblePostIds } = data;
     const blocked = data.blockedAuthorIds.filter((id) => id !== userId);
     const friendIds = data.friendUserIds.filter((id) => id !== userId);
     const params: unknown[] = [];
     const branches = [
-      `(p.audience = ${this.addParam(params, EPostAudience.PUBLIC)} AND NOT (p.user_id = ANY(${this.addParam(
+      `(p.audience = ${this.addParam(params, EnumPostAudience.PUBLIC)} AND NOT (p.user_id = ANY(${this.addParam(
         params,
         blocked
       )}::text[])))`,
       `p.user_id = ${this.addParam(params, userId)}`,
-      `(p.audience = ${this.addParam(params, EPostAudience.FRIENDS_ONLY)} AND p.user_id = ANY(${this.addParam(
+      `(p.audience = ${this.addParam(params, EnumPostAudience.FRIENDS_ONLY)} AND p.user_id = ANY(${this.addParam(
         params,
         friendIds
       )}::text[]) AND NOT (p.user_id = ANY(${this.addParam(params, blocked)}::text[])))`
@@ -136,11 +136,11 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       params,
       includeAuthor: true,
       limit: limit + 1
-    }) as Promise<IPostDetailWithAuthorOutput[]>;
+    }) as Promise<PostDetailWithAuthorOutput[]>;
   }
 
-  async findGuestPosts({ cursor, limit }: IFindGuestPostsInput): Promise<IPostDetailWithAuthorOutput[]> {
-    const params: unknown[] = [EPostAudience.PUBLIC];
+  async findGuestPosts({ cursor, limit }: FindGuestPostsInput): Promise<PostDetailWithAuthorOutput[]> {
+    const params: unknown[] = [EnumPostAudience.PUBLIC];
     const whereParts = [`p.audience = $1`];
     this.addCursorFilter(whereParts, params, cursor);
     return this.findDetailedPosts({
@@ -148,10 +148,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       params,
       includeAuthor: true,
       limit: limit + 1
-    }) as Promise<IPostDetailWithAuthorOutput[]>;
+    }) as Promise<PostDetailWithAuthorOutput[]>;
   }
 
-  async findPostsType({ cursor, limit, postId, type }: IFindPostsTypeInput): Promise<IPostDetailOutput[]> {
+  async findPostsType({ cursor, limit, postId, type }: FindPostsTypeInput): Promise<PostDetailOutput[]> {
     const params: unknown[] = [postId, type];
     const whereParts = [`p.parent_id = $1`, `p.type = $2`];
     this.addCursorFilter(whereParts, params, cursor);
@@ -160,7 +160,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       params,
       includeAuthor: false,
       limit: limit + 1
-    }) as Promise<IPostDetailOutput[]>;
+    }) as Promise<PostDetailOutput[]>;
   }
 
   async findPostsForSearch({
@@ -173,7 +173,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     limit,
     cursor,
     findFriendUserIds
-  }: IFindPostsForSearchInput): Promise<IPostDetailWithAuthorOutput[]> {
+  }: FindPostsForSearchInput): Promise<PostDetailWithAuthorOutput[]> {
     const params: unknown[] = [];
     const whereParts: string[] = [];
 
@@ -182,15 +182,15 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     }
 
     if (type) {
-      if ([ESearchType.VIDEO, ESearchType.VIDEO_STREAM].includes(type)) {
+      if ([EnumSearchType.VIDEO, EnumSearchType.VIDEO_STREAM].includes(type)) {
         whereParts.push(
-          `(p.media @> ${this.addParam(params, JSON.stringify([{ type: EMediaType.VIDEO }]))}::jsonb OR p.media @> ${this.addParam(
+          `(p.media @> ${this.addParam(params, JSON.stringify([{ type: EnumMediaType.VIDEO }]))}::jsonb OR p.media @> ${this.addParam(
             params,
-            JSON.stringify([{ type: EMediaType.VIDEO_STREAM }])
+            JSON.stringify([{ type: EnumMediaType.VIDEO_STREAM }])
           )}::jsonb)`
         );
-      } else if (type === ESearchType.IMAGE) {
-        whereParts.push(`p.media @> ${this.addParam(params, JSON.stringify([{ type: EMediaType.IMAGE }]))}::jsonb`);
+      } else if (type === EnumSearchType.IMAGE) {
+        whereParts.push(`p.media @> ${this.addParam(params, JSON.stringify([{ type: EnumMediaType.IMAGE }]))}::jsonb`);
       }
     }
 
@@ -198,12 +198,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       const blocked = (blockedAuthorIds ?? []).filter((id) => id !== userId);
       const friendIds = (await findFriendUserIds(userId)).filter((id) => id !== userId);
       const visibility = [
-        `(p.audience = ${this.addParam(params, EPostAudience.PUBLIC)} AND NOT (p.user_id = ANY(${this.addParam(
+        `(p.audience = ${this.addParam(params, EnumPostAudience.PUBLIC)} AND NOT (p.user_id = ANY(${this.addParam(
           params,
           blocked
         )}::text[])))`,
         `p.user_id = ${this.addParam(params, userId)}`,
-        `(p.audience = ${this.addParam(params, EPostAudience.FRIENDS_ONLY)} AND p.user_id = ANY(${this.addParam(
+        `(p.audience = ${this.addParam(params, EnumPostAudience.FRIENDS_ONLY)} AND p.user_id = ANY(${this.addParam(
           params,
           friendIds
         )}::text[]) AND NOT (p.user_id = ANY(${this.addParam(params, blocked)}::text[])))`
@@ -214,15 +214,15 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       }
       whereParts.push(`(${visibility.join(' OR ')})`);
 
-      if (people === ESearchPeople.FRIENDS) {
+      if (people === EnumSearchPeople.FRIENDS) {
         whereParts.push(`p.user_id = ANY(${this.addParam(params, friendIds)}::text[])`);
-      } else if (people === ESearchPeople.NOT_FRIENDS) {
+      } else if (people === EnumSearchPeople.NOT_FRIENDS) {
         whereParts.push(`NOT (p.user_id = ANY(${this.addParam(params, friendIds)}::text[]))`);
-      } else if (people === ESearchPeople.ONLY_ME) {
+      } else if (people === EnumSearchPeople.ONLY_ME) {
         whereParts.push(`p.user_id = ${this.addParam(params, userId)}`);
       }
     } else {
-      whereParts.push(`p.audience = ${this.addParam(params, EPostAudience.PUBLIC)}`);
+      whereParts.push(`p.audience = ${this.addParam(params, EnumPostAudience.PUBLIC)}`);
     }
 
     this.addCursorFilter(whereParts, params, cursor);
@@ -232,7 +232,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       params,
       includeAuthor: true,
       limit: limit + 1
-    }) as Promise<IPostDetailWithAuthorOutput[]>;
+    }) as Promise<PostDetailWithAuthorOutput[]>;
   }
 
   private async findDetailedPosts({
@@ -245,7 +245,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     params: unknown[];
     includeAuthor: boolean;
     limit: number;
-  }): Promise<IPostDetailOutput[] | IPostDetailWithAuthorOutput[]> {
+  }): Promise<PostDetailOutput[] | PostDetailWithAuthorOutput[]> {
     const values = [...params, limit];
     const limitPlaceholder = `$${values.length}`;
     const result = await this.pool.query<DetailedPostRow>(
@@ -334,9 +334,9 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         ) bookmarks ON TRUE
         LEFT JOIN LATERAL (
           SELECT
-            COUNT(*) FILTER (WHERE child.type = '${EPostType.REPOST}')::int AS repost_count,
-            COUNT(*) FILTER (WHERE child.type = '${EPostType.COMMENT}')::int AS comment_count,
-            COUNT(*) FILTER (WHERE child.type = '${EPostType.QUOTE}')::int AS quote_count
+            COUNT(*) FILTER (WHERE child.type = '${EnumPostType.REPOST}')::int AS repost_count,
+            COUNT(*) FILTER (WHERE child.type = '${EnumPostType.COMMENT}')::int AS comment_count,
+            COUNT(*) FILTER (WHERE child.type = '${EnumPostType.QUOTE}')::int AS quote_count
           FROM posts child
           WHERE child.parent_id = bp.id
         ) children ON TRUE
@@ -347,8 +347,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return result.rows.map((row) => this.toPostDetail(row, includeAuthor));
   }
 
-  private toPostDetail(row: DetailedPostRow, includeAuthor: boolean): IPostDetailOutput | IPostDetailWithAuthorOutput {
-    const post: IPostDetailOutput = {
+  private toPostDetail(row: DetailedPostRow, includeAuthor: boolean): PostDetailOutput | PostDetailWithAuthorOutput {
+    const post: PostDetailOutput = {
       id: row.id,
       userId: row.user_id,
       type: row.type,
@@ -367,8 +367,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         name: String(mention.name),
         username: mention.username === null || mention.username === undefined ? undefined : String(mention.username),
         status: String(mention.status)
-      })) as IPostDetailOutput['mentions'],
-      media: row.media as unknown as IPostDetailOutput['media'],
+      })) as PostDetailOutput['mentions'],
+      media: row.media as unknown as PostDetailOutput['media'],
       guestViews: row.guest_views,
       userViews: row.user_views,
       createdAt: row.created_at,
@@ -396,7 +396,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             avatar:
               row.author.avatar === null || row.author.avatar === undefined ? undefined : String(row.author.avatar)
           }
-        : (undefined as unknown as IPostDetailWithAuthorOutput['author'])
+        : (undefined as unknown as PostDetailWithAuthorOutput['author'])
     };
   }
 

@@ -8,10 +8,10 @@ import {
   UpdatePostsViewsPayload
 } from '@/modules/post/application/services/post.service.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { IPostDetailOutput, IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export interface PostServicePort {
-  updatePostsViews<T extends IPostDetailOutput | IPostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];
+  updatePostsViews<T extends PostDetailOutput | PostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];
   isViewerInteractedWithPost(payload: IsViewerInteractedWithPostPayload): Promise<boolean>;
   getBlockedPostIds(payload: GetBlockedPostIdsPayload): Promise<string[]>;
 }
@@ -28,7 +28,7 @@ export class PostService implements PostServicePort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  updatePostsViews<T extends IPostDetailOutput | IPostDetailWithAuthorOutput>({
+  updatePostsViews<T extends PostDetailOutput | PostDetailWithAuthorOutput>({
     posts,
     userId
   }: UpdatePostsViewsPayload<T>): T[] {

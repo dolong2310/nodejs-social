@@ -1,11 +1,11 @@
 import { ConversationProps } from '@/modules/conversation/domain/entities/conversation.type';
 
-export interface ICreateGroupConversationInput extends Pick<ConversationProps, 'name' | 'createdBy'> {
+export interface CreateGroupConversationInput extends Pick<ConversationProps, 'name' | 'createdBy'> {
   memberIds: string[];
 }
 
-export interface IUpdateConversationInput extends Pick<ConversationProps, 'name' | 'avatarMediaId'> {}
+export interface UpdateConversationInput extends Pick<ConversationProps, 'name' | 'avatarMediaId'> {}
 
-export interface ITouchUpdatedAtInput {
+export interface TouchUpdatedAtInput {
   updatedAt: Date;
 }

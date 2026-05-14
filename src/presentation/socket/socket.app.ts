@@ -2,7 +2,7 @@ import { IContainer } from '@/bootstrap/container';
 import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
 import { userRoom } from '@/modules/common/constants/socket.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { ExtendedError, Server, Socket } from 'socket.io';
 
 export const createSocketApp = (io: Server, container: IContainer): Server => {
@@ -79,10 +79,10 @@ async function socketAuthMiddleware(
     if (!user) {
       throw new Error('User not found');
     }
-    if (user.status === EUserStatus.INACTIVE) {
+    if (user.status === EnumUserStatus.INACTIVE) {
       throw new Error('User is inactive');
     }
-    if (user.status === EUserStatus.BANNED) {
+    if (user.status === EnumUserStatus.BANNED) {
       throw new Error('User is banned');
     }
 

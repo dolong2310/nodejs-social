@@ -3,7 +3,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { CreatePostProps, EPostAudience, EPostType, PostProps } from '@/modules/post/domain/entities/post.type';
+import { CreatePostProps, EnumPostAudience, EnumPostType, PostProps } from '@/modules/post/domain/entities/post.type';
 
 export class PostEntity extends Entity<PostProps> {
   static create(createProps: CreatePostProps) {
@@ -18,11 +18,14 @@ export class PostEntity extends Entity<PostProps> {
   validate(): void {
     const { userId, type, audience, content, parentId } = this.getProps();
     invariant(userId.trim().length > 0, new ArgumentNotProvidedException('User ID is required'));
-    invariant(Object.values(EPostType).includes(type), new ArgumentInvalidException('Invalid post type'));
-    invariant(Object.values(EPostAudience).includes(audience), new ArgumentInvalidException('Invalid post audience'));
-    const isRepost = type === EPostType.REPOST;
+    invariant(Object.values(EnumPostType).includes(type), new ArgumentInvalidException('Invalid post type'));
+    invariant(
+      Object.values(EnumPostAudience).includes(audience),
+      new ArgumentInvalidException('Invalid post audience')
+    );
+    const isRepost = type === EnumPostType.REPOST;
     invariant(isRepost || content.trim().length > 0, new ArgumentNotProvidedException('Post content is required'));
-    const requiresParent = type === EPostType.REPOST || type === EPostType.COMMENT || type === EPostType.QUOTE;
+    const requiresParent = type === EnumPostType.REPOST || type === EnumPostType.COMMENT || type === EnumPostType.QUOTE;
     invariant(
       !requiresParent || (parentId != null && parentId.trim().length > 0),
       new ArgumentNotProvidedException(`Parent post ID is required for a ${type}`)

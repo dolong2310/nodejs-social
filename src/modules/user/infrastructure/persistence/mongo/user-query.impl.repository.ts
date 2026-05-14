@@ -1,9 +1,9 @@
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper'; // TODO: user module should not depend on role module
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model'; // TODO: user module should not depend on role module
-import { ESearchPeople } from '@/modules/common/domain/enums/search.enum';
+import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { IFindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
@@ -96,7 +96,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     limit,
     cursor,
     findFriendUserIds
-  }: IFindUsersForSearchInput): Promise<UserSafeProps[]> {
+  }: FindUsersForSearchInput): Promise<UserSafeProps[]> {
     const match: Record<string, unknown> = {};
 
     if (query) {
@@ -108,10 +108,10 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
     if (people && userId) {
       // tìm kiếm theo bạn bè và không phải bạn bè
-      if ([ESearchPeople.FRIENDS, ESearchPeople.NOT_FRIENDS].includes(people)) {
+      if ([EnumSearchPeople.FRIENDS, EnumSearchPeople.NOT_FRIENDS].includes(people)) {
         const friendIds = await findFriendUserIds(userId);
-        match['_id'] = people === ESearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds };
-      } else if (people === ESearchPeople.ONLY_ME) {
+        match['_id'] = people === EnumSearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds };
+      } else if (people === EnumSearchPeople.ONLY_ME) {
         // tìm kiếm theo chính mình
         match['_id'] = { $eq: userId };
       }

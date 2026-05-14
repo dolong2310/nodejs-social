@@ -10,7 +10,7 @@ import {
 } from '@/modules/conversation/application/services/conversation.service.type';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
@@ -36,7 +36,7 @@ export class ConversationService implements ConversationServicePort {
    */
   getDirectPeerId({ conv, userId }: GetDirectPeerIdPayload): string {
     const { type, userIdLow, userIdHigh } = conv.getProps();
-    if (type !== EConversationType.DIRECT || !userIdLow || !userIdHigh) {
+    if (type !== EnumConversationType.DIRECT || !userIdLow || !userIdHigh) {
       throw new ConversationNotFoundException();
     }
     return userIdLow === userId ? userIdHigh : userIdLow;
@@ -73,7 +73,7 @@ export class ConversationService implements ConversationServicePort {
       members: memberEntities.map((memberEntity) => memberEntity.toObject())
     };
 
-    if (conv.type === EConversationType.DIRECT) {
+    if (conv.type === EnumConversationType.DIRECT) {
       payload.peerUserId = this.getDirectPeerId({ conv: convEntity, userId });
     }
 

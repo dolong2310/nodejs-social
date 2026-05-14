@@ -7,7 +7,7 @@ import {
   GetConversationsQuery,
   GetConversationsResult
 } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
@@ -77,7 +77,7 @@ export class GetConversationsUseCase extends GetConversationsPort {
         createdAt: conv.createdAt
       };
 
-      if (conv.type === EConversationType.DIRECT) {
+      if (conv.type === EnumConversationType.DIRECT) {
         // getDirectPeerId: cần biết đối phương là ai (so sánh userIdLow / userIdHigh với userId đang xem).
         conversations.push({
           ...payload,

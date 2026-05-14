@@ -3,9 +3,9 @@ import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistenc
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import {
-  ICreateHashtagInput,
-  IListHashtagsInput,
-  IUpdateHashtagInput
+  CreateHashtagInput,
+  ListHashtagsInput,
+  UpdateHashtagInput
 } from '@/modules/post/domain/repositories/hashtag.repository.type';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
 import { HashtagModel } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
@@ -25,7 +25,7 @@ export class HashtagRepository
     super(pool, mapper);
   }
 
-  async createHashtag(data: ICreateHashtagInput): Promise<HashtagEntity> {
+  async createHashtag(data: CreateHashtagInput): Promise<HashtagEntity> {
     const entity = HashtagEntity.create(data);
     return this.insert(entity);
   }
@@ -67,7 +67,7 @@ export class HashtagRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async findHashtags({ limit, skip = 0 }: IListHashtagsInput): Promise<HashtagEntity[]> {
+  async findHashtags({ limit, skip = 0 }: ListHashtagsInput): Promise<HashtagEntity[]> {
     const result = await this.query<HashtagModel>(`SELECT * FROM hashtags ORDER BY name ASC OFFSET $1 LIMIT $2`, [
       skip,
       limit
@@ -79,7 +79,7 @@ export class HashtagRepository
     return this.count();
   }
 
-  async updateHashtag(id: string, data: IUpdateHashtagInput): Promise<HashtagEntity | null> {
+  async updateHashtag(id: string, data: UpdateHashtagInput): Promise<HashtagEntity | null> {
     if (data.name === undefined) return this.findHashtagById(id);
 
     const result = await this.query<HashtagModel>(

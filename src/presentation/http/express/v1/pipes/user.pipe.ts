@@ -2,7 +2,7 @@ import requestContextLogger from '@/infrastructure/logger/request-context-logger
 import { USERNAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { EUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
@@ -173,10 +173,10 @@ export class UsersPipe implements IUserPipe {
     if (!user) {
       throw UserNotFoundException;
     }
-    if (user.status === EUserStatus.INACTIVE) {
+    if (user.status === EnumUserStatus.INACTIVE) {
       throw UserIsInactiveException;
     }
-    if (user.status === EUserStatus.BANNED) {
+    if (user.status === EnumUserStatus.BANNED) {
       throw UserIsBannedException;
     }
     req.user = user;

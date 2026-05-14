@@ -1,7 +1,7 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { ContainerRepositories } from '@/bootstrap/di/repositories';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.out-port';
+import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';

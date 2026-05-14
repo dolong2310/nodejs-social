@@ -1,15 +1,15 @@
 import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import {
-  IIncreasePostsViewsInput,
-  IIncreasePostViewsInput,
-  IIncreasePostViewsOutput
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput
 } from '@/modules/post/domain/repositories/post.command.type';
 import type { Pool } from 'pg';
 
 export class PostCommandRepository implements PostCommandRepositoryPort {
   constructor(protected readonly pool: Pool) {}
 
-  async increasePostViews({ postId, userId }: IIncreasePostViewsInput): Promise<IIncreasePostViewsOutput | null> {
+  async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
     const column = userId ? 'user_views' : 'guest_views';
     const result = await this.pool.query<{
       user_views: number;
@@ -34,7 +34,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
       : null;
   }
 
-  async increasePostsViews({ ids, isAuthenticatedViewer }: IIncreasePostsViewsInput): Promise<number> {
+  async increasePostsViews({ ids, isAuthenticatedViewer }: IncreasePostsViewsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const column = isAuthenticatedViewer ? 'user_views' : 'guest_views';
     const result = await this.pool.query(

@@ -9,7 +9,7 @@ import {
 } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
 import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { IPostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
@@ -33,7 +33,7 @@ export class GetNewFeedsUseCase extends GetNewFeedsPort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends IPostDetailWithAuthorOutput>({
+  async execute<T extends PostDetailWithAuthorOutput>({
     userId,
     cursor,
     limit
@@ -80,7 +80,7 @@ export class GetNewFeedsUseCase extends GetNewFeedsPort {
     }
 
     // tăng guestViews/userViews tương ứng và cập nhật updatedAt
-    const updatedPosts = this.postService.updatePostsViews<IPostDetailWithAuthorOutput>({ posts, userId });
+    const updatedPosts = this.postService.updatePostsViews<PostDetailWithAuthorOutput>({ posts, userId });
 
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;

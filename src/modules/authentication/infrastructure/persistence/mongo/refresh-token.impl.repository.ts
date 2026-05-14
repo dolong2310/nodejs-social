@@ -1,8 +1,8 @@
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import {
-  ICreateRefreshTokenInput,
-  IRotateRefreshTokenInput
+  CreateRefreshTokenInput,
+  RotateRefreshTokenInput
 } from '@/modules/authentication/domain/repositories/refresh-token.repository.type';
 import { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/mongo/refresh-token.mapper';
 import { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/mongo/refresh-token.model';
@@ -30,7 +30,7 @@ export class RefreshTokenRepository
     return result ? this.mapper.toDomain(result) : null;
   }
 
-  async createRefreshToken(data: ICreateRefreshTokenInput): Promise<RefreshTokenEntity> {
+  async createRefreshToken(data: CreateRefreshTokenInput): Promise<RefreshTokenEntity> {
     const entity = RefreshTokenEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     await this.dbCollection.insertOne(record);
@@ -47,7 +47,7 @@ export class RefreshTokenRepository
     return result.deletedCount;
   }
 
-  async rotateRefreshToken({ userId, oldToken, newToken, expiresAt }: IRotateRefreshTokenInput): Promise<boolean> {
+  async rotateRefreshToken({ userId, oldToken, newToken, expiresAt }: RotateRefreshTokenInput): Promise<boolean> {
     const result = await this.dbCollection.updateOne(
       {
         user_id: userId,

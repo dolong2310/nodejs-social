@@ -14,8 +14,8 @@ import {
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
-  ENewMessagePreviewKind,
-  ENotificationType,
+  EnumNewMessagePreviewKind,
+  EnumNotificationType,
   IAddedToGroupNotificationPayload,
   IFriendAcceptedNotificationPayload,
   IFriendRequestNotificationPayload,
@@ -97,18 +97,18 @@ export class NotificationService implements NotificationServicePort {
     const text = message.text?.trim();
     const hasText = Boolean(text && text.length > 0);
     const hasAtt = Boolean(message.attachments && message.attachments.length > 0);
-    let previewKind: ENewMessagePreviewKind;
+    let previewKind: EnumNewMessagePreviewKind;
     let previewText: string | undefined;
     if (hasText && !hasAtt) {
-      previewKind = ENewMessagePreviewKind.TEXT;
+      previewKind = EnumNewMessagePreviewKind.TEXT;
       previewText = text!.length > 200 ? `${text!.slice(0, 200)}…` : text;
     } else if (!hasText && hasAtt) {
-      previewKind = ENewMessagePreviewKind.ATTACHMENT;
+      previewKind = EnumNewMessagePreviewKind.ATTACHMENT;
     } else if (hasText && hasAtt) {
-      previewKind = ENewMessagePreviewKind.MIXED;
+      previewKind = EnumNewMessagePreviewKind.MIXED;
       previewText = text!.length > 200 ? `${text!.slice(0, 200)}…` : text;
     } else {
-      previewKind = ENewMessagePreviewKind.TEXT;
+      previewKind = EnumNewMessagePreviewKind.TEXT;
       previewText = undefined;
     }
     return {
@@ -144,7 +144,7 @@ export class NotificationService implements NotificationServicePort {
     const payload: IFriendRequestNotificationPayload = { fromUserId };
     const entity = NotificationEntity.create({
       recipientId: recipientUserId,
-      type: ENotificationType.FRIEND_REQUEST,
+      type: EnumNotificationType.FRIEND_REQUEST,
       actor,
       payload,
       read: false
@@ -161,7 +161,7 @@ export class NotificationService implements NotificationServicePort {
     const payload: IFriendAcceptedNotificationPayload = { friendUserId: accepterUserId };
     const entity = NotificationEntity.create({
       recipientId: originalRequesterUserId,
-      type: ENotificationType.FRIEND_ACCEPTED,
+      type: EnumNotificationType.FRIEND_ACCEPTED,
       actor,
       payload,
       read: false
@@ -184,7 +184,7 @@ export class NotificationService implements NotificationServicePort {
     const entities: NotificationEntity[] = recipientIds.map((recipientId) =>
       NotificationEntity.create({
         recipientId,
-        type: ENotificationType.NEW_MESSAGE,
+        type: EnumNotificationType.NEW_MESSAGE,
         actor,
         payload,
         read: false
@@ -223,7 +223,7 @@ export class NotificationService implements NotificationServicePort {
     };
     const entity = NotificationEntity.create({
       recipientId: inviteeUserId,
-      type: ENotificationType.ADDED_TO_GROUP,
+      type: EnumNotificationType.ADDED_TO_GROUP,
       actor,
       payload,
       read: false

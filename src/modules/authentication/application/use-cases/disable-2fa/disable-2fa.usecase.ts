@@ -4,7 +4,7 @@ import {
   Disable2FACommand,
   Disable2FAPort
 } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
-import { EOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
@@ -40,7 +40,7 @@ export class Disable2FAUseCase extends Disable2FAPort {
       emailOtpCode,
       totpSecret: user.totpSecret,
       email: user.email,
-      type: EOtpType.DISABLE_2FA
+      type: EnumOtpType.DISABLE_2FA
     });
 
     // 3. Delete secret key of user from database

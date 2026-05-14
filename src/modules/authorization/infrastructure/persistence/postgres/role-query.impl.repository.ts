@@ -1,4 +1,4 @@
-import { EHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
 import type { Pool } from 'pg';
@@ -14,7 +14,7 @@ type RolePermissionJoinModel = {
   permission_name: string | null;
   permission_description: string | null;
   permission_path: string | null;
-  permission_method: EHttpMethod | null;
+  permission_method: EnumHttpMethod | null;
   permission_module: string | null;
   permission_created_at: Date | null;
   permission_updated_at: Date | null;
@@ -67,7 +67,7 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
           name: row.permission_name as string,
           description: row.permission_description as string,
           path: row.permission_path as string,
-          method: row.permission_method as EHttpMethod,
+          method: row.permission_method as EnumHttpMethod,
           module: row.permission_module as string,
           createdAt: row.permission_created_at as Date,
           updatedAt: row.permission_updated_at as Date

@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
 export class GetMeQuery {
   userId: string;
@@ -14,7 +14,7 @@ export class GetMeResult implements UserSafeProps {
   email: string;
   birthday: Date;
   roleId: string;
-  status: EUserStatus;
+  status: EnumUserStatus;
   bio?: string;
   location?: string;
   website?: string;

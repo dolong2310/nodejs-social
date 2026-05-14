@@ -1,5 +1,5 @@
 import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { EHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UpdatePermissionCommand {
@@ -7,14 +7,14 @@ export class UpdatePermissionCommand {
   name?: string;
   description?: string;
   path?: string;
-  method?: EHttpMethod;
+  method?: EnumHttpMethod;
   module?: string;
   constructor(payload: {
     id: string;
     name?: string;
     description?: string;
     path?: string;
-    method?: EHttpMethod;
+    method?: EnumHttpMethod;
     module?: string;
   }) {
     this.id = payload.id;

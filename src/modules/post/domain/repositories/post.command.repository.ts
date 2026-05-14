@@ -1,10 +1,10 @@
 import {
-  IIncreasePostsViewsInput,
-  IIncreasePostViewsInput,
-  IIncreasePostViewsOutput
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput
 } from '@/modules/post/domain/repositories/post.command.type';
 
 export interface PostCommandRepositoryPort {
-  increasePostViews(data: IIncreasePostViewsInput): Promise<IIncreasePostViewsOutput | null>;
-  increasePostsViews(data: IIncreasePostsViewsInput): Promise<number>;
+  increasePostViews(data: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null>;
+  increasePostsViews(data: IncreasePostsViewsInput): Promise<number>;
 }

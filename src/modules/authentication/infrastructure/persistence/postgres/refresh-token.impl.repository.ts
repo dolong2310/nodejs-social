@@ -1,8 +1,8 @@
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import {
-  ICreateRefreshTokenInput,
-  IRotateRefreshTokenInput
+  CreateRefreshTokenInput,
+  RotateRefreshTokenInput
 } from '@/modules/authentication/domain/repositories/refresh-token.repository.type';
 import { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.mapper';
 import { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.model';
@@ -32,7 +32,7 @@ export class RefreshTokenRepository
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async createRefreshToken(data: ICreateRefreshTokenInput): Promise<RefreshTokenEntity> {
+  async createRefreshToken(data: CreateRefreshTokenInput): Promise<RefreshTokenEntity> {
     const entity = RefreshTokenEntity.create(data);
     return this.insert(entity);
   }
@@ -47,7 +47,7 @@ export class RefreshTokenRepository
     return result.rowCount ?? 0;
   }
 
-  async rotateRefreshToken({ userId, oldToken, newToken, expiresAt }: IRotateRefreshTokenInput): Promise<boolean> {
+  async rotateRefreshToken({ userId, oldToken, newToken, expiresAt }: RotateRefreshTokenInput): Promise<boolean> {
     const result = await this.query(
       `
         UPDATE refresh_tokens

@@ -5,7 +5,7 @@ import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
   CreateNotificationProps,
-  ENotificationType,
+  EnumNotificationType,
   NotificationProps
 } from '@/modules/notification/domain/entities/notification.type';
 
@@ -21,7 +21,7 @@ export class NotificationEntity extends Entity<NotificationProps> {
     const { recipientId, type, actor, payload } = this.getProps();
     invariant(recipientId.trim().length > 0, new ArgumentNotProvidedException('Recipient ID is required'));
     invariant(
-      Object.values(ENotificationType).includes(type),
+      Object.values(EnumNotificationType).includes(type),
       new ArgumentInvalidException('Invalid notification type')
     );
     invariant(actor != null, new ArgumentNotProvidedException('Notification actor is required'));

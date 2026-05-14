@@ -9,8 +9,8 @@ import {
   TransferAdminPort,
   TransferAdminResult
 } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
-import { EConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
@@ -33,7 +33,7 @@ export class TransferAdminUseCase extends TransferAdminPort {
     // kiểm tra conversation có phải là group không
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();
-    if (conv.type !== EConversationType.GROUP) {
+    if (conv.type !== EnumConversationType.GROUP) {
       throw new ConversationNotFoundException();
     }
 
@@ -55,7 +55,7 @@ export class TransferAdminUseCase extends TransferAdminPort {
     if (!actor) {
       throw new ConversationNotMemberException();
     }
-    if (actor.role !== EConversationMemberRole.ADMIN) {
+    if (actor.role !== EnumConversationMemberRole.ADMIN) {
       throw new ConversationRoleForbiddenException();
     }
 

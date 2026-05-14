@@ -4,7 +4,7 @@ import { MarkOptional, Prettify } from 'ts-essentials';
 export interface ConversationMemberProps {
   conversationId: string;
   userId: string;
-  role: EConversationMemberRole;
+  role: EnumConversationMemberRole;
   joinedAt: Date;
   lastReadAt?: Date | null;
   lastReadMessageId?: string | null;
@@ -19,7 +19,7 @@ export interface CreateConversationMemberProps extends MarkOptional<
   'joinedAt' | 'lastReadAt' | 'lastReadMessageId'
 > {}
 
-export enum EConversationMemberRole {
+export enum EnumConversationMemberRole {
   ADMIN = 'admin',
   MANAGER = 'manager',
   MEMBER = 'member'
