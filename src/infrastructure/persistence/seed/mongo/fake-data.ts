@@ -16,6 +16,7 @@ import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type.
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository.js';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper.js';
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum.js';
+import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type.js';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object.js';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository.js';
@@ -164,7 +165,7 @@ const insertMultipleUsers = async (userBodies: UserSeedBody[], roleId: string): 
       birthday: new Date(body.birthday),
       roleId,
       status: randomStatus,
-      username: `user-${faker.string.nanoid(10)}`
+      username: `user_${generateUniqueString()}`
     });
 
     const inserted = await userRepository.insert(entity);

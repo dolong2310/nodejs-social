@@ -30,12 +30,13 @@ export class LikeMapper implements Mapper<LikeEntity, LikeModel, LikeFullProps> 
     return entity;
   }
   toResponse(record: LikeModel): LikeFullProps {
-    return {
+    const response = {
       id: record._id,
       userId: record.user_id,
       postId: record.post_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

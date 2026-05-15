@@ -33,12 +33,13 @@ export class FriendRequestMapper implements Mapper<FriendRequestEntity, FriendRe
     return entity;
   }
   toResponse(record: FriendRequestModel): FriendRequestFullProps {
-    return {
+    const response = {
       id: record._id,
       fromUserId: record.from_user_id,
       toUserId: record.to_user_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

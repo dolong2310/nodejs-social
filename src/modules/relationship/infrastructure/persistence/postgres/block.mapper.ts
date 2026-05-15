@@ -18,7 +18,7 @@ export class BlockMapper implements Mapper<BlockEntity, BlockModel, BlockFullPro
     return parse(blockSchema, record);
   }
   toDomain(record: BlockModel): BlockEntity {
-    return new BlockEntity({
+    const entity = new BlockEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -27,14 +27,16 @@ export class BlockMapper implements Mapper<BlockEntity, BlockModel, BlockFullPro
         blockedId: record.blocked_id
       }
     });
+    return entity;
   }
   toResponse(record: BlockModel): BlockFullProps {
-    return {
+    const response = {
       id: record.id,
       blockerId: record.blocker_id,
       blockedId: record.blocked_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

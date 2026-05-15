@@ -58,7 +58,7 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
     }
   }
   toDomain(record: NotificationModel): NotificationEntity {
-    return new NotificationEntity({
+    const entity = new NotificationEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -70,9 +70,10 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
         payload: record.payload
       }
     });
+    return entity;
   }
   toResponse(record: NotificationModel): NotificationFullProps {
-    return {
+    const response = {
       id: record.id,
       recipientId: record.recipient_id,
       read: record.read,
@@ -83,5 +84,6 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

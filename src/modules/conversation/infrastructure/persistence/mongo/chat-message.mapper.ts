@@ -37,7 +37,7 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
     return entity;
   }
   toResponse(record: ChatMessageModel): ChatMessageFullProps {
-    return {
+    const response = {
       id: record._id,
       conversationId: record.conversation_id,
       senderId: record.sender_id,
@@ -46,5 +46,6 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

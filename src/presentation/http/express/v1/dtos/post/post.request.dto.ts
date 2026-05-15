@@ -1,6 +1,10 @@
 import { CreatePostProps, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { ParamsDictionary } from 'express-serve-static-core';
+
+function toMedia(item: Media | IMedia): Media {
+  return item instanceof Media ? item : new Media(item);
+}
 
 export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'guestViews' | 'userViews'> {
   type: EnumPostType;
@@ -20,7 +24,7 @@ export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'g
     parentId: string | null;
     hashtags: string[];
     mentions: string[];
-    media: Media[];
+    media: Array<Media | IMedia>;
   }) {
     this.type = payload.type;
     this.audience = payload.audience;
@@ -29,7 +33,7 @@ export class CreatePostRequestDTO implements Omit<CreatePostProps, 'userId' | 'g
     this.parentId = payload.parentId;
     this.hashtags = payload.hashtags;
     this.mentions = payload.mentions;
-    this.media = payload.media;
+    this.media = payload.media.map(toMedia);
   }
 }
 
@@ -47,14 +51,14 @@ export class PatchPostRequestDTO {
     content?: string;
     hashtags?: string[];
     mentions?: string[];
-    media?: Media[];
+    media?: Array<Media | IMedia>;
   }) {
     this.audience = payload.audience;
     this.allowStrangerComments = payload.allowStrangerComments;
     this.content = payload.content;
     this.hashtags = payload.hashtags;
     this.mentions = payload.mentions;
-    this.media = payload.media;
+    this.media = payload.media?.map(toMedia);
   }
 }
 

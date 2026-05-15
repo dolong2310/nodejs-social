@@ -22,7 +22,7 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
     return parse(videoStatusSchema, record);
   }
   toDomain(record: VideoStatusModel): VideoStatusEntity {
-    return new VideoStatusEntity({
+    const entity = new VideoStatusEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -32,9 +32,10 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
         message: record.message ?? undefined
       }
     });
+    return entity;
   }
   toResponse(record: VideoStatusModel): VideoStatusFullProps {
-    return {
+    const response = {
       id: record.id,
       name: record.name,
       status: record.status,
@@ -42,5 +43,6 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

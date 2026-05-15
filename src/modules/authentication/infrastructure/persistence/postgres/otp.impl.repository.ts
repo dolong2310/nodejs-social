@@ -4,6 +4,7 @@ import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/
 import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.type';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/postgres/otp.mapper';
 import { OtpModel } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
@@ -21,7 +22,7 @@ export class OtpRepository extends PostgresRepositoryBase<OtpEntity, OtpModel> i
 
   async findUniqueOtpCode(data: { email: string; type: EnumOtpType }): Promise<OtpEntity | null> {
     const result = await this.query<OtpModel>(`SELECT * FROM otps WHERE email = $1 AND type = $2 LIMIT 1`, [
-      data.email,
+      EmailAddress.create(data.email).value,
       data.type
     ]);
     const [record] = result.rows;

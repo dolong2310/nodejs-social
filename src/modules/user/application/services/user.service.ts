@@ -1,7 +1,8 @@
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
-import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
@@ -52,7 +53,7 @@ export class UserService implements UserServicePort {
     username: string,
     options?: { querySafe?: boolean }
   ): Promise<UserSafeProps | UserFullProps | null> {
-    const normalizedUsername = normalizeUsername(username);
+    const normalizedUsername = Username.normalize(username);
     if (!normalizedUsername) return null;
 
     const user = await this.cache.get(
@@ -73,7 +74,7 @@ export class UserService implements UserServicePort {
     email: string,
     options?: { querySafe?: boolean }
   ): Promise<UserSafeProps | UserFullProps | null> {
-    const normalizedEmail = normalizeUserEmail(email);
+    const normalizedEmail = EmailAddress.normalize(email);
     const user = options?.querySafe
       ? await this.userQueryRepository.findSafeUserByEmail(normalizedEmail)
       : await this.userRepository.findUserByEmail(normalizedEmail).then((user) => user?.toObject() ?? null);

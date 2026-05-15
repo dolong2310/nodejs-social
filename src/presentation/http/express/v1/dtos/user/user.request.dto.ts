@@ -1,5 +1,5 @@
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 
 export interface UpdateMeRequestBody {
   name?: string;
@@ -28,7 +28,7 @@ export class UpdateMeRequestDTO {
     if (body.bio !== undefined) this.bio = body.bio.trim();
     if (body.location !== undefined) this.location = body.location.trim();
     if (body.website !== undefined) this.website = body.website.trim();
-    if (body.username !== undefined) this.username = normalizeUsername(body.username);
+    if (body.username !== undefined) this.username = Username.normalize(body.username);
     if (body.avatar !== undefined) this.avatar = body.avatar;
     if (body.coverPhoto !== undefined) this.coverPhoto = body.coverPhoto;
   }

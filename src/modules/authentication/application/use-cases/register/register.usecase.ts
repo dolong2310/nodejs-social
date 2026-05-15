@@ -7,8 +7,8 @@ import {
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { generateId } from '@/modules/core/domain/helpers/ids';
 import { UserAlreadyExistsException } from '@/modules/user/application/exceptions/user.exception';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -55,7 +55,7 @@ export class RegisterUseCase extends RegisterPort {
       email,
       password: hashedPassword,
       birthday: new Date(birthday),
-      username: `user-${generateId()}`,
+      username: `user_${generateUniqueString()}`,
       roleId: userRoleId
     });
     const user = await this.userRepository.insert(userEntity, {

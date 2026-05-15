@@ -5,6 +5,7 @@ import {
   ListRolesInput,
   UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.type';
+import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
 import { convertObjectToSnakeCase } from '@/modules/common/utils/object-case.util';
@@ -30,7 +31,7 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
   }
 
   async findRoleByName(name: string): Promise<RoleEntity | null> {
-    const record = await this.dbCollection.findOne({ name });
+    const record = await this.dbCollection.findOne({ name: RoleName.create(name).value });
     return record ? this.mapper.toDomain(record) : null;
   }
 
@@ -66,9 +67,13 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
   }
 
   async updateRole(id: string, data: UpdateRoleInput): Promise<RoleEntity | null> {
+    const patch: UpdateRoleInput = {
+      ...data
+    };
+    if (data.name !== undefined) patch.name = RoleName.create(data.name).value;
     const record = await this.dbCollection.findOneAndUpdate(
       { _id: id },
-      { $set: convertObjectToSnakeCase(data, ['id', '_id'], '_id') },
+      { $set: convertObjectToSnakeCase(patch, ['id', '_id'], '_id') },
       { returnDocument: 'after' }
     );
     return record ? this.mapper.toDomain(record) : null;

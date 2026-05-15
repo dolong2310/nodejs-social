@@ -1,7 +1,8 @@
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { UpdateMeCommand } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
-import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { describe, expect, it } from 'vitest';
 
 describe('user identity normalization', () => {
@@ -16,8 +17,10 @@ describe('user identity normalization', () => {
       username: '  Jane_DOE  '
     });
 
-    expect(user.getProps().email).toBe('foo@example.com');
-    expect(user.getProps().username).toBe('jane_doe');
+    expect(user.getProps().email.value).toBe('foo@example.com');
+    expect(user.getProps().username?.value).toBe('jane_doe');
+    expect(user.toObject().email).toBe('foo@example.com');
+    expect(user.toObject().username).toBe('jane_doe');
   });
 
   it('normalizes lookup/update identity inputs consistently', () => {
@@ -26,8 +29,8 @@ describe('user identity normalization', () => {
       username: '  Mixed_CASE  '
     });
 
-    expect(normalizeUserEmail('  Foo@Example.COM  ')).toBe('foo@example.com');
-    expect(normalizeUsername('  Mixed_CASE  ')).toBe('mixed_case');
+    expect(EmailAddress.normalize('  Foo@Example.COM  ')).toBe('foo@example.com');
+    expect(Username.normalize('  Mixed_CASE  ')).toBe('mixed_case');
     expect(command.username).toBe('mixed_case');
   });
 });

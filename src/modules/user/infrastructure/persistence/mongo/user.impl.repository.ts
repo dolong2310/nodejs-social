@@ -1,5 +1,7 @@
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import {
@@ -29,17 +31,19 @@ export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> i
   }
 
   async findUserByUsername(username: string): Promise<UserEntity | null> {
-    const result = await this.findOne({ username } as Partial<UserEntity>);
+    const normalizedUsername = Username.normalize(username);
+    if (!normalizedUsername) return null;
+    const result = await this.findOne({ username: normalizedUsername } as Partial<UserEntity>);
     return result;
   }
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
-    const result = await this.findOne({ email } as Partial<UserEntity>);
+    const result = await this.findOne({ email: EmailAddress.create(email).value } as Partial<UserEntity>);
     return result;
   }
 
   async findUserByEmailIncludeNameEmail(email: string): Promise<UserEntity | null> {
-    const result = await this.findOne({ email } as Partial<UserEntity>, {
+    const result = await this.findOne({ email: EmailAddress.create(email).value } as Partial<UserEntity>, {
       projection: { name: 1, email: 1 }
     });
     return result;
@@ -55,7 +59,11 @@ export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> i
   }
 
   async updateMe(id: string, data: UpdateMeInput): Promise<UserEntity | null> {
-    const result = await this.update(id, data as Partial<UserEntity>, {
+    const patch = {
+      ...data,
+      username: Username.normalize(data.username)
+    };
+    const result = await this.update(id, patch as Partial<UserEntity>, {
       projection: { password: 0, totpSecret: 0 }
     });
     return result;

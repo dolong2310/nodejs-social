@@ -18,7 +18,7 @@ export class LikeMapper implements Mapper<LikeEntity, LikeModel, LikeFullProps> 
     return parse(likeSchema, record);
   }
   toDomain(record: LikeModel): LikeEntity {
-    return new LikeEntity({
+    const entity = new LikeEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -27,14 +27,16 @@ export class LikeMapper implements Mapper<LikeEntity, LikeModel, LikeFullProps> 
         postId: record.post_id
       }
     });
+    return entity;
   }
   toResponse(record: LikeModel): LikeFullProps {
-    return {
+    const response = {
       id: record.id,
       userId: record.user_id,
       postId: record.post_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

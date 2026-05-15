@@ -21,7 +21,7 @@ export class FriendRequestMapper implements Mapper<FriendRequestEntity, FriendRe
     return parse(friendRequestSchema, record);
   }
   toDomain(record: FriendRequestModel): FriendRequestEntity {
-    return new FriendRequestEntity({
+    const entity = new FriendRequestEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -30,14 +30,16 @@ export class FriendRequestMapper implements Mapper<FriendRequestEntity, FriendRe
         toUserId: record.to_user_id
       }
     });
+    return entity;
   }
   toResponse(record: FriendRequestModel): FriendRequestFullProps {
-    return {
+    const response = {
       id: record.id,
       fromUserId: record.from_user_id,
       toUserId: record.to_user_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

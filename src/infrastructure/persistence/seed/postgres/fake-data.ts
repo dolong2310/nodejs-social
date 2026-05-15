@@ -16,6 +16,7 @@ import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type'
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
+import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
@@ -138,7 +139,7 @@ const insertMultipleUsers = async (userBodies: UserSeedBody[], roleId: string): 
       birthday: new Date(body.birthday),
       roleId,
       status: randomStatus,
-      username: `user-${faker.string.nanoid(10)}`
+      username: `user_${generateUniqueString()}`
     });
 
     const inserted = await userRepository.insert(entity);

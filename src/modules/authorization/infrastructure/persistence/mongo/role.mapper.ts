@@ -1,5 +1,6 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
 import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
+import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { RoleModel, roleSchema } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
@@ -10,7 +11,7 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
     const clone = entity.getProps();
     const record: RoleModel = {
       _id: clone.id.toString(),
-      name: clone.name,
+      name: clone.name.value,
       description: clone.description,
       is_active: clone.isActive,
       permission_ids: clone.permissionIds,
@@ -25,7 +26,7 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
       createdAt: record.created_at,
       updatedAt: record.updated_at,
       props: {
-        name: record.name,
+        name: RoleName.create(record.name),
         description: record.description,
         isActive: record.is_active,
         permissionIds: record.permission_ids
@@ -34,7 +35,7 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
     return entity;
   }
   toResponse(record: RoleModel): RoleFullProps {
-    return {
+    const response = {
       id: record._id,
       name: record.name,
       description: record.description,
@@ -43,5 +44,6 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

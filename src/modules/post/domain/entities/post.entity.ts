@@ -3,9 +3,16 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { CreatePostProps, EnumPostAudience, EnumPostType, PostProps } from '@/modules/post/domain/entities/post.type';
+import {
+  CreatePostProps,
+  EnumPostAudience,
+  EnumPostType,
+  PostFullProps,
+  PostProps
+} from '@/modules/post/domain/entities/post.type';
+import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 
-export class PostEntity extends Entity<PostProps> {
+export class PostEntity extends Entity<PostProps, PostFullProps> {
   static create(createProps: CreatePostProps) {
     const id = new UniqueEntityID(generatePrefixId('post'));
     const props: PostProps = {
@@ -22,6 +29,10 @@ export class PostEntity extends Entity<PostProps> {
     invariant(
       Object.values(EnumPostAudience).includes(audience),
       new ArgumentInvalidException('Invalid post audience')
+    );
+    invariant(
+      media.every((item) => item instanceof Media),
+      new ArgumentInvalidException('Post media must contain Media value objects')
     );
 
     const hasContent = content.trim().length > 0;

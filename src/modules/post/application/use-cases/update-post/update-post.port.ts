@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class UpdatePostCommand {
   userId: string;
@@ -42,7 +42,7 @@ export class UpdatePostResult implements PostFullProps {
   parentId: string | null;
   hashtags: string[];
   mentions: string[];
-  media: Media[];
+  media: IMedia[];
   guestViews: number;
   userViews: number;
   createdAt: Date;

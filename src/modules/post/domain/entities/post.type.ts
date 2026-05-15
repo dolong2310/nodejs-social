@@ -1,5 +1,5 @@
 import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface PostProps {
@@ -16,7 +16,11 @@ export interface PostProps {
   userViews?: number;
 }
 
-export interface PostFullProps extends Prettify<PostProps & Omit<BaseEntityProps, 'id'> & { id: string }> {}
+export interface PostPrimitiveProps extends Omit<PostProps, 'media'> {
+  media: IMedia[];
+}
+
+export interface PostFullProps extends Prettify<PostPrimitiveProps & Omit<BaseEntityProps, 'id'> & { id: string }> {}
 
 export interface CreatePostProps extends MarkOptional<PostProps, 'guestViews' | 'userViews'> {}
 

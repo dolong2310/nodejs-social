@@ -22,6 +22,19 @@ function convertToPlainObject<T>(item: T): T {
   if (isEntity(item)) {
     return item.toObject() as T;
   }
+  if (item instanceof Date) {
+    return new Date(item) as T;
+  }
+  if (Array.isArray(item)) {
+    return item.map((child) => convertToPlainObject(child)) as T;
+  }
+  if (item !== null && typeof item === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const prop in item) {
+      result[prop] = convertToPlainObject(item[prop]);
+    }
+    return result as T;
+  }
   return item;
 }
 
@@ -31,16 +44,17 @@ function convertToPlainObject<T>(item: T): T {
  * @param props
  */
 export function convertPropsToObject(props: any): any {
-  const propsCopy = structuredClone(props);
+  return convertToPlainObject(props);
+  // const propsCopy = structuredClone(props);
 
-  for (const prop in propsCopy) {
-    if (Array.isArray(propsCopy[prop])) {
-      propsCopy[prop] = (propsCopy[prop] as Array<unknown>).map((item) => {
-        return convertToPlainObject(item);
-      });
-    }
-    propsCopy[prop] = convertToPlainObject(propsCopy[prop]);
-  }
+  // for (const prop in propsCopy) {
+  //   if (Array.isArray(propsCopy[prop])) {
+  //     propsCopy[prop] = (propsCopy[prop] as Array<unknown>).map((item) => {
+  //       return convertToPlainObject(item);
+  //     });
+  //   }
+  //   propsCopy[prop] = convertToPlainObject(propsCopy[prop]);
+  // }
 
-  return propsCopy;
+  // return propsCopy;
 }

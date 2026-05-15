@@ -1,7 +1,8 @@
 import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
-import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
@@ -50,7 +51,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
   }
 
   async findSafeUserByUsername(username: string): Promise<UserSafeProps | null> {
-    const normalizedUsername = normalizeUsername(username);
+    const normalizedUsername = Username.normalize(username);
     if (!normalizedUsername) return null;
 
     const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "username" = $1 LIMIT 1`, [
@@ -62,7 +63,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
   async findSafeUserByEmail(email: string): Promise<UserSafeProps | null> {
     const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "email" = $1 LIMIT 1`, [
-      normalizeUserEmail(email)
+      EmailAddress.normalize(email)
     ]);
     const [record] = result.rows;
     return record ? this.toSafeUser(record) : null;
@@ -108,7 +109,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
         WHERE u.email = $1
         LIMIT 1
       `,
-      [normalizeUserEmail(email)]
+      [EmailAddress.normalize(email)]
     );
     const [record] = result.rows;
     return record ? this.toUserWithRole(record) : null;

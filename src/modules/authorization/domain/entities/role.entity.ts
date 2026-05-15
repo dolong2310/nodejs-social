@@ -1,16 +1,22 @@
-import { CreateRoleProps, EnumRoleName, RoleProps } from '@/modules/authorization/domain/entities/role.type';
-import { ROLE_NAME_REGEX } from '@/modules/common/constants/regex.constants';
+import {
+  CreateRoleProps,
+  EnumRoleName,
+  RoleFullProps,
+  RoleProps
+} from '@/modules/authorization/domain/entities/role.type';
+import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
+import { ArgumentInvalidException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 
-export class RoleEntity extends Entity<RoleProps> {
+export class RoleEntity extends Entity<RoleProps, RoleFullProps> {
   static create(createProps: CreateRoleProps) {
     const id = new UniqueEntityID(generatePrefixId('role'));
     const props: RoleProps = {
       ...createProps,
+      name: RoleName.create(createProps.name),
       description: createProps.description ?? '',
       permissionIds: createProps.permissionIds ?? []
     };
@@ -21,15 +27,18 @@ export class RoleEntity extends Entity<RoleProps> {
   /** `ADMIN` / `USER` do seed tạo — không đổi tên / xóa qua API thường. */
   isSystemRole(): boolean {
     const { name } = this.getProps();
-    return name === EnumRoleName.ADMIN || name === EnumRoleName.USER;
+    return name.value === EnumRoleName.ADMIN || name.value === EnumRoleName.USER;
   }
 
   validate(): void {
-    const { name } = this.getProps();
-    invariant(name.trim().length > 0, new ArgumentNotProvidedException('Role name is required'));
+    const { name, description, isActive, permissionIds } = this.getProps();
+    invariant(name instanceof RoleName, new ArgumentInvalidException('Role name must be a RoleName'));
+    invariant(typeof description === 'string', new ArgumentInvalidException('Role description must be a string'));
+    invariant(typeof isActive === 'boolean', new ArgumentInvalidException('Role active status must be a boolean'));
+    invariant(Array.isArray(permissionIds), new ArgumentInvalidException('Role permission IDs must be an array'));
     invariant(
-      ROLE_NAME_REGEX.test(name),
-      new ArgumentInvalidException('Role name must only contain uppercase letters, digits, or underscores')
+      permissionIds.every((permissionId) => typeof permissionId === 'string' && permissionId.trim().length > 0),
+      new ArgumentInvalidException('Role permission IDs must be non-empty strings')
     );
   }
 }

@@ -1,4 +1,5 @@
-import { EMAIL_REGEX } from '@/modules/common/constants/regex.constants';
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import {
@@ -8,27 +9,34 @@ import {
 } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { type CreateUserProps, type UserProps, EnumUserStatus } from '@/modules/user/domain/entities/user.type';
-import { normalizeUserEmail, normalizeUsername } from '@/modules/user/domain/helpers/user-normalization.helper';
+import {
+  type CreateUserProps,
+  EnumUserStatus,
+  type UserFullProps,
+  type UserProps
+} from '@/modules/user/domain/entities/user.type';
 
-export class UserEntity extends Entity<UserProps> {
+export class UserEntity extends Entity<UserProps, UserFullProps> {
   static create(createProps: CreateUserProps) {
     const id = new UniqueEntityID(generatePrefixId('user'));
     const props: UserProps = {
       status: EnumUserStatus.ACTIVE,
       ...createProps,
-      email: normalizeUserEmail(createProps.email),
-      username: normalizeUsername(createProps.username)
+      email: EmailAddress.create(createProps.email),
+      username: Username.createOptional(createProps.username)
     };
     const user = new UserEntity({ id, props });
     return user;
   }
 
   validate(): void {
-    const { name, email, password, birthday, roleId, status } = this.getProps();
+    const { name, email, password, birthday, roleId, status, username } = this.getProps();
     invariant(name.trim().length > 0, new ArgumentNotProvidedException('Name is required'));
-    invariant(email.trim().length > 0, new ArgumentNotProvidedException('Email is required'));
-    invariant(EMAIL_REGEX.test(email), new ArgumentInvalidException('Invalid email format'));
+    invariant(email instanceof EmailAddress, new ArgumentInvalidException('User email must be an EmailAddress'));
+    invariant(
+      username === undefined || username instanceof Username,
+      new ArgumentInvalidException('Username is invalid')
+    );
     invariant(
       password === undefined || password.trim().length > 0,
       new ArgumentNotProvidedException('Password is required')

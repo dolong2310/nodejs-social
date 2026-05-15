@@ -41,7 +41,7 @@ export class ConversationMapper implements Mapper<ConversationEntity, Conversati
     return entity;
   }
   toResponse(record: ConversationModel): ConversationFullProps {
-    return {
+    const response = {
       id: record._id,
       type: record.type,
       createdBy: record.created_by,
@@ -52,5 +52,6 @@ export class ConversationMapper implements Mapper<ConversationEntity, Conversati
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

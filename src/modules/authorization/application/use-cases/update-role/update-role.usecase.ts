@@ -13,6 +13,7 @@ import {
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
+import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 
 export class UpdateRoleUseCase extends UpdateRolePort {
@@ -28,9 +29,9 @@ export class UpdateRoleUseCase extends UpdateRolePort {
     if (!currentRole) {
       throw new RoleNotFoundException();
     }
-    const currentName = currentRole.getProps().name;
+    const currentName = currentRole.getProps().name.value;
 
-    if (command.name !== undefined && command.name !== currentName) {
+    if (command.name && RoleName.create(command.name).value !== currentName) {
       if (currentRole.isSystemRole()) {
         throw new CannotRenameSystemRoleException();
       }

@@ -19,7 +19,10 @@ export interface CreateEntityProps<T> extends MarkOptional<BaseEntityProps, 'cre
   props: T;
 }
 
-export abstract class Entity<Props> {
+export abstract class Entity<
+  Props,
+  ObjectProps extends object = Prettify<Props & Omit<BaseEntityProps, 'id'> & { id: string }>
+> {
   private _id: UniqueEntityID;
   private readonly _createdAt: Date;
   private readonly _props: Props;
@@ -71,7 +74,7 @@ export abstract class Entity<Props> {
    * contains to a plain object with primitive types. Can be
    * useful when logging an entity during testing/debugging
    */
-  toObject<T extends Prettify<Props & Omit<BaseEntityProps, 'id'> & { id: string }>>(): Readonly<T> {
+  toObject<T extends ObjectProps = ObjectProps>(): Readonly<T> {
     const clone = convertPropsToObject(this.getProps());
     const result: Record<string, unknown> = {
       ...clone,

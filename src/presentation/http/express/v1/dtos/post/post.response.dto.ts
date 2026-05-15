@@ -3,7 +3,7 @@ import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
 import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { IMedia } from '@/modules/post/domain/value-objects/media.value-object';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
 import { Prettify } from 'ts-essentials';
 
@@ -17,7 +17,7 @@ export class PostResponseDTO implements PostFullProps {
   parentId: string | null;
   hashtags: string[];
   mentions: string[];
-  media: Media[];
+  media: IMedia[];
   guestViews: number;
   userViews: number;
   createdAt: Date;
@@ -50,7 +50,7 @@ export class PostDetailResponseDTO implements PostDetailOutput {
   parentId: string | null;
   hashtags: HashtagFullProps[];
   mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
-  media: Media[];
+  media: IMedia[];
   guestViews: number;
   userViews: number;
   createdAt: Date;
@@ -99,7 +99,7 @@ export class PostDetailWithAuthorResponseDTO implements PostDetailWithAuthorOutp
   parentId: string | null;
   hashtags: HashtagFullProps[];
   mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
-  media: Media[];
+  media: IMedia[];
   guestViews: number;
   userViews: number;
   createdAt: Date;

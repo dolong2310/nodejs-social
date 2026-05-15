@@ -25,7 +25,7 @@ export class ConversationMapper implements Mapper<ConversationEntity, Conversati
     return parse(conversationSchema, record);
   }
   toDomain(record: ConversationModel): ConversationEntity {
-    return new ConversationEntity({
+    const entity = new ConversationEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -38,9 +38,10 @@ export class ConversationMapper implements Mapper<ConversationEntity, Conversati
         userIdHigh: record.user_id_high ?? undefined
       }
     });
+    return entity;
   }
   toResponse(record: ConversationModel): ConversationFullProps {
-    return {
+    const response = {
       id: record.id,
       type: record.type,
       createdBy: record.created_by,
@@ -51,5 +52,6 @@ export class ConversationMapper implements Mapper<ConversationEntity, Conversati
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

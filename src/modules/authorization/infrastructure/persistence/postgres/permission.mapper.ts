@@ -1,5 +1,6 @@
 import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
 import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import {
   PermissionModel,
   permissionSchema
@@ -15,7 +16,7 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
       id: clone.id.toString(),
       name: clone.name,
       description: clone.description,
-      path: clone.path,
+      path: clone.path.value,
       method: clone.method,
       module: clone.module,
       created_at: clone.createdAt,
@@ -31,7 +32,7 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
       props: {
         name: record.name,
         description: record.description,
-        path: record.path,
+        path: PermissionPath.create(record.path),
         method: record.method,
         module: record.module
       }
@@ -39,7 +40,7 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
     return entity;
   }
   toResponse(record: PermissionModel): PermissionFullProps {
-    return {
+    const response = {
       id: record.id,
       name: record.name,
       description: record.description,
@@ -49,5 +50,6 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

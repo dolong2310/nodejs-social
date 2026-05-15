@@ -6,6 +6,7 @@ import {
   ListPermissionsInput,
   UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.type';
+import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/mongo/permission.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -46,8 +47,8 @@ export class PermissionRepository
     method,
     excludeId
   }: FindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
-    const filter: Record<string, unknown> = { path, method };
-    if (excludeId !== undefined) {
+    const filter: Record<string, unknown> = { path: PermissionPath.create(path).value, method };
+    if (excludeId) {
       filter._id = { $ne: excludeId };
     }
     const record = await this.dbCollection.findOne(filter);
@@ -69,7 +70,9 @@ export class PermissionRepository
   }
 
   async updatePermission(id: string, data: UpdatePermissionInput): Promise<PermissionEntity | null> {
-    const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: data }, { returnDocument: 'after' });
+    const patch: UpdatePermissionInput = { ...data };
+    if (data.path) patch.path = PermissionPath.create(data.path).value;
+    const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: patch }, { returnDocument: 'after' });
     return record ? this.mapper.toDomain(record) : null;
   }
 

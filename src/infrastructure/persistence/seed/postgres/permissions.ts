@@ -192,7 +192,7 @@ async function syncPermissions(availableRoutes: AvailableRoute[]): Promise<void>
   );
 
   const permissionsToDelete = permissionsInDatabase.filter(
-    (permission) => !availableRoutesMap[`${permission.getProps().method}-${permission.getProps().path}`]
+    (permission) => !availableRoutesMap[`${permission.getProps().method}-${permission.getProps().path.value}`]
   );
 
   if (permissionsToDelete.length > 0) {
@@ -240,7 +240,7 @@ async function syncPermissionsToRole(roleName: EnumRoleName, permissionIds: stri
 
   const currentRoleState = role.getProps();
   const updated = await roleRepository.updateRole(role.id.toString(), {
-    name: currentRoleState.name,
+    name: currentRoleState.name.value,
     description: currentRoleState.description,
     isActive: currentRoleState.isActive,
     permissionIds

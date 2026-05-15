@@ -146,7 +146,7 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
         break;
     }
 
-    return {
+    const response = {
       id: record._id,
       recipientId: record.recipient_id,
       read: record.read,
@@ -161,5 +161,6 @@ export class NotificationMapper implements Mapper<NotificationEntity, Notificati
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

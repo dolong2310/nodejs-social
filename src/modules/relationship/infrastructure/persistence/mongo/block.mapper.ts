@@ -30,12 +30,13 @@ export class BlockMapper implements Mapper<BlockEntity, BlockModel, BlockFullPro
     return entity;
   }
   toResponse(record: BlockModel): BlockFullProps {
-    return {
+    const response = {
       id: record._id,
       blockerId: record.blocker_id,
       blockedId: record.blocked_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

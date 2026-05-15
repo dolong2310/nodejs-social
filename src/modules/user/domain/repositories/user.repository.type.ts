@@ -1,10 +1,10 @@
-import { UserProps } from '@/modules/user/domain/entities/user.type';
+import { UserPrimitiveProps } from '@/modules/user/domain/entities/user.type';
 
 export interface UpdateMeInput extends Pick<
-  UserProps,
+  UserPrimitiveProps,
   'name' | 'birthday' | 'bio' | 'location' | 'website' | 'username' | 'avatar' | 'coverPhoto'
 > {}
 
-export interface ResetPasswordInput extends Pick<UserProps, 'password'> {}
+export interface ResetPasswordInput extends Pick<UserPrimitiveProps, 'password'> {}
 
-export interface ChangePasswordInput extends Pick<UserProps, 'password'> {}
+export interface ChangePasswordInput extends Pick<UserPrimitiveProps, 'password'> {}

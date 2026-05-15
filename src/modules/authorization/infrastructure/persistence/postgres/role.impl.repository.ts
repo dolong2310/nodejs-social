@@ -5,6 +5,7 @@ import {
   ListRolesInput,
   UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.type';
+import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -76,7 +77,9 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
   }
 
   async findRoleByName(name: string): Promise<RoleEntity | null> {
-    const result = await this.query<RoleModel>(`${roleSelect} WHERE r.name = $1 ${roleGroupBy} LIMIT 1`, [name]);
+    const result = await this.query<RoleModel>(`${roleSelect} WHERE r.name = $1 ${roleGroupBy} LIMIT 1`, [
+      RoleName.create(name).value
+    ]);
     const [record] = result.rows;
     return record ? this.mapper.toDomain(record) : null;
   }
@@ -133,7 +136,7 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
 
     await this.transaction(async () => {
       const scalarPatch: Record<string, unknown> = {};
-      if (data.name !== undefined) scalarPatch.name = data.name;
+      if (data.name !== undefined) scalarPatch.name = RoleName.create(data.name).value;
       if (data.description !== undefined) scalarPatch.description = data.description;
       if (data.isActive !== undefined) scalarPatch.is_active = data.isActive;
 

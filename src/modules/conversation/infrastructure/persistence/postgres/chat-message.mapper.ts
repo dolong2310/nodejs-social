@@ -23,7 +23,7 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
     return parse(chatMessageSchema, record);
   }
   toDomain(record: ChatMessageModel): ChatMessageEntity {
-    return new ChatMessageEntity({
+    const entity = new ChatMessageEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -34,9 +34,10 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
         attachments: record.attachments ?? undefined
       }
     });
+    return entity;
   }
   toResponse(record: ChatMessageModel): ChatMessageFullProps {
-    return {
+    const response = {
       id: record.id,
       conversationId: record.conversation_id,
       senderId: record.sender_id,
@@ -45,5 +46,6 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

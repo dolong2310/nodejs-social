@@ -35,7 +35,7 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
     return entity;
   }
   toResponse(record: VideoStatusModel): VideoStatusFullProps {
-    return {
+    const response = {
       id: record._id,
       name: record.name,
       status: record.status,
@@ -43,5 +43,6 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

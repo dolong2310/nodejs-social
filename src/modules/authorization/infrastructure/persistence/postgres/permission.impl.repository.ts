@@ -6,6 +6,7 @@ import {
   ListPermissionsInput,
   UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.type';
+import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/postgres/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/postgres/permission.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -47,9 +48,9 @@ export class PermissionRepository
     method,
     excludeId
   }: FindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
-    const values: unknown[] = [path, method];
+    const values: unknown[] = [PermissionPath.create(path).value, method];
     const excludeClause = excludeId === undefined ? '' : ' AND "id" <> $3';
-    if (excludeId !== undefined) values.push(excludeId);
+    if (excludeId) values.push(excludeId);
 
     const result = await this.query<PermissionModel>(
       `SELECT * FROM "permissions" WHERE "path" = $1 AND "method" = $2${excludeClause} LIMIT 1`,
@@ -70,7 +71,9 @@ export class PermissionRepository
   }
 
   async updatePermission(id: string, data: UpdatePermissionInput): Promise<PermissionEntity | null> {
-    return this.update(id, data as Partial<PermissionEntity>);
+    const patch: UpdatePermissionInput = { ...data };
+    if (data.path) patch.path = PermissionPath.create(data.path).value;
+    return this.update(id, patch as Partial<PermissionEntity>);
   }
 
   async deletePermission(id: string): Promise<PermissionEntity | null> {

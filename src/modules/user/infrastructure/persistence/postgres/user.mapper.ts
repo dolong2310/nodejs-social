@@ -1,3 +1,5 @@
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
@@ -11,7 +13,7 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
     const record: UserModel = {
       id: clone.id.toString(),
       name: clone.name,
-      email: clone.email,
+      email: clone.email.value,
       password: clone.password,
       birthday: clone.birthday,
       role_id: clone.roleId,
@@ -20,7 +22,7 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
       bio: clone.bio,
       location: clone.location,
       website: clone.website,
-      username: clone.username,
+      username: clone.username?.value,
       avatar: clone.avatar,
       cover_photo: clone.coverPhoto,
       created_at: clone.createdAt,
@@ -35,7 +37,7 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
       updatedAt: record.updated_at,
       props: {
         name: record.name,
-        email: record.email,
+        email: EmailAddress.create(record.email),
         password: record.password,
         birthday: new Date(record.birthday),
         roleId: record.role_id,
@@ -44,7 +46,7 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
         bio: record.bio ?? undefined,
         location: record.location ?? undefined,
         website: record.website ?? undefined,
-        username: record.username ?? undefined,
+        username: Username.createOptional(record.username),
         avatar: record.avatar ?? undefined,
         coverPhoto: record.cover_photo ?? undefined
       }
@@ -52,7 +54,7 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
     return entity;
   }
   toResponse(record: UserModel): UserFullProps {
-    return {
+    const response = {
       id: record.id,
       name: record.name,
       email: record.email,
@@ -70,5 +72,6 @@ export class UserMapper implements Mapper<UserEntity, UserModel, UserFullProps> 
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

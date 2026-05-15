@@ -6,6 +6,7 @@ import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2f
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import { OtpCode } from '@/modules/authentication/domain/value-objects/otp-code.value-object';
 
 export interface OtpServicePort {
   findAndValidateOtpCode(data: { email: string; code: string; type: EnumOtpType }): Promise<OtpEntity>;
@@ -36,7 +37,7 @@ export class OtpService {
 
     const otp = otpEntity.toObject();
 
-    if (otp.code !== data.code) {
+    if (otp.code !== OtpCode.create(data.code).value) {
       throw new InvalidOtpCodeException();
     }
 

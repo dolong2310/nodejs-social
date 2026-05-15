@@ -1,7 +1,7 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import {
   HashtagsCountMustBeBetween0To20Exception,
@@ -33,12 +33,17 @@ export interface IPostPipe {
 const MAX_HASHTAGS_PER_POST = 20;
 
 export class PostsPipe implements IPostPipe {
-  private static isValidMediaItem(item: Media): boolean {
-    const raw = item.raw();
-    return (
-      typeof raw.url === 'string' &&
-      [EnumMediaType.IMAGE, EnumMediaType.VIDEO, EnumMediaType.VIDEO_STREAM].includes(raw.type as EnumMediaType)
-    );
+  private static isValidMediaItem(item: unknown): boolean {
+    try {
+      const media = item instanceof Media ? item : new Media(item as IMedia);
+      const raw = media.raw();
+      return (
+        typeof raw.url === 'string' &&
+        [EnumMediaType.IMAGE, EnumMediaType.VIDEO, EnumMediaType.VIDEO_STREAM].includes(raw.type as EnumMediaType)
+      );
+    } catch {
+      return false;
+    }
   }
 
   createPostPipe = validate(
@@ -162,7 +167,7 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY
           },
           custom: {
-            options: (mediaItems: Media[], { req }) => {
+            options: (mediaItems: unknown[], { req }) => {
               const { type } = req.body as CreatePostRequestDTO;
               if (
                 [EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type) &&
@@ -248,7 +253,7 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY
           },
           custom: {
-            options: (mediaItems: Media[]) => {
+            options: (mediaItems: unknown[]) => {
               if (mediaItems.length > 0 && mediaItems.some((item) => !PostsPipe.isValidMediaItem(item))) {
                 throw MediaMustBeArrayOfValidItemsException;
               }

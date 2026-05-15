@@ -19,7 +19,7 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
       parent_id: clone.parentId,
       hashtags: clone.hashtags,
       mentions: clone.mentions,
-      media: clone.media.map((media) => ({ url: media.raw().url, type: media.raw().type })),
+      media: clone.media.map((media) => media.value),
       guest_views: clone.guestViews ?? 0,
       user_views: clone.userViews ?? 0,
       created_at: clone.createdAt,
@@ -28,7 +28,7 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
     return parse(postSchema, record);
   }
   toDomain(record: PostModel): PostEntity {
-    return new PostEntity({
+    const entity = new PostEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -41,14 +41,15 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
         parentId: record.parent_id,
         hashtags: record.hashtags,
         mentions: record.mentions,
-        media: record.media.map((media) => new Media({ url: media.url, type: media.type })),
+        media: record.media.map((media) => Media.create({ url: media.url, type: media.type })),
         guestViews: record.guest_views,
         userViews: record.user_views
       }
     });
+    return entity;
   }
   toResponse(record: PostModel): PostFullProps {
-    return {
+    const response = {
       id: record.id,
       userId: record.user_id,
       type: record.type,
@@ -58,11 +59,12 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
       parentId: record.parent_id,
       hashtags: record.hashtags,
       mentions: record.mentions,
-      media: record.media.map((media) => new Media({ url: media.url, type: media.type })),
+      media: record.media.map((media) => ({ url: media.url, type: media.type })),
       guestViews: record.guest_views,
       userViews: record.user_views,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

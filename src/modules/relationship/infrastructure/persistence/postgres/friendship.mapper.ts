@@ -21,7 +21,7 @@ export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipMode
     return parse(friendshipSchema, record);
   }
   toDomain(record: FriendshipModel): FriendshipEntity {
-    return new FriendshipEntity({
+    const entity = new FriendshipEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -30,14 +30,16 @@ export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipMode
         userIdHigh: record.user_id_high
       }
     });
+    return entity;
   }
   toResponse(record: FriendshipModel): FriendshipFullProps {
-    return {
+    const response = {
       id: record.id,
       userIdLow: record.user_id_low,
       userIdHigh: record.user_id_high,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

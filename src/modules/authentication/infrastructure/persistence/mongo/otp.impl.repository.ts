@@ -4,6 +4,7 @@ import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/
 import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.type';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/mongo/otp.mapper';
 import { OtpModel } from '@/modules/authentication/infrastructure/persistence/mongo/otp.model';
+import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { Db, MongoClient } from 'mongodb';
@@ -22,7 +23,7 @@ export class OtpRepository extends MongoRepositoryBase<OtpEntity, OtpModel> impl
 
   async findUniqueOtpCode(data: { email: string; type: EnumOtpType }): Promise<OtpEntity | null> {
     const record = await this.dbCollection.findOne({
-      email: data.email,
+      email: EmailAddress.create(data.email).value,
       type: data.type
     });
     return record ? this.mapper.toDomain(record) : null;

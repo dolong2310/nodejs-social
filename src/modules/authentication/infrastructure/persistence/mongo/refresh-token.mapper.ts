@@ -35,7 +35,7 @@ export class RefreshTokenMapper implements Mapper<RefreshTokenEntity, RefreshTok
     return entity;
   }
   toResponse(record: RefreshTokenModel): RefreshTokenFullProps {
-    return {
+    const response = {
       id: record._id,
       userId: record.user_id,
       token: record.token,
@@ -43,5 +43,6 @@ export class RefreshTokenMapper implements Mapper<RefreshTokenEntity, RefreshTok
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

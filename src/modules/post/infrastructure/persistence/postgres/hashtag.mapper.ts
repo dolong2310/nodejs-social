@@ -17,7 +17,7 @@ export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel, Hashta
     return parse(hashtagSchema, record);
   }
   toDomain(record: HashtagModel): HashtagEntity {
-    return new HashtagEntity({
+    const entity = new HashtagEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
       updatedAt: record.updated_at,
@@ -25,13 +25,15 @@ export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel, Hashta
         name: record.name
       }
     });
+    return entity;
   }
   toResponse(record: HashtagModel): HashtagFullProps {
-    return {
+    const response = {
       id: record.id,
       name: record.name,
       createdAt: record.created_at,
       updatedAt: record.updated_at
     };
+    return response;
   }
 }

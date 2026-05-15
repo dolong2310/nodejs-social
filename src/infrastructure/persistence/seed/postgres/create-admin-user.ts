@@ -47,7 +47,7 @@ const roleRepository = new RoleRepository(postgres.pool, new RoleMapper(), logge
 
 async function ensureAdminUsernameAvailable(): Promise<void> {
   const userWithUsername = await userRepository.findUserByUsername(ADMIN_USERNAME);
-  if (userWithUsername && userWithUsername.getProps().email !== ADMIN_EMAIL) {
+  if (userWithUsername && userWithUsername.getProps().email.value !== ADMIN_EMAIL) {
     throw new Error(`Username "${ADMIN_USERNAME}" is already used by another user.`);
   }
 }
