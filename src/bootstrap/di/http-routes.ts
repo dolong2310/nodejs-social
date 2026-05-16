@@ -65,6 +65,7 @@ import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookma
 import { CreateHashtagUseCase } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.usecase';
 import { CreatePostUseCase } from '@/modules/post/application/use-cases/create-post/create-post.usecase';
 import { DeleteHashtagUseCase } from '@/modules/post/application/use-cases/delete-hashtag/delete-hashtag.usecase';
+import { DeletePostUseCase } from '@/modules/post/application/use-cases/delete-post/delete-post.usecase';
 import { GetGuestNewFeedsUseCase } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.usecase';
 import { GetHashtagUseCase } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.usecase';
 import { GetNewFeedsUseCase } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.usecase';
@@ -332,6 +333,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   );
   const createPostUC = new CreatePostUseCase(postRepository, hashtagRepository, blockService, friendService, logger);
   const updatePostUC = new UpdatePostUseCase(postRepository, hashtagRepository, logger);
+  const deletePostUC = new DeletePostUseCase(postRepository, roleService);
 
   const searchPostsUC = new SearchPostsUseCase(postQueryRepository, friendService, postService, blockService);
   const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, cacheStrategy);
@@ -432,6 +434,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     getPostsTypeUC,
     createPostUC,
     updatePostUC,
+    deletePostUC,
     createBookmarkUC,
     unbookmarkPostUC,
     createLikeUC,

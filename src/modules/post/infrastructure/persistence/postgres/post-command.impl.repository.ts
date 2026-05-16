@@ -19,7 +19,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
       `
         UPDATE posts
         SET ${column} = ${column} + 1, updated_at = NOW()
-        WHERE id = $1
+        WHERE id = $1 AND deleted_at IS NULL
         RETURNING user_views, guest_views, updated_at
       `,
       [postId]
@@ -41,7 +41,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
       `
         UPDATE posts
         SET ${column} = ${column} + 1, updated_at = NOW()
-        WHERE id = ANY($1::text[])
+        WHERE id = ANY($1::text[]) AND deleted_at IS NULL
       `,
       [[...new Set(ids)]]
     );

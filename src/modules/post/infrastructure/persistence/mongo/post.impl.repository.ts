@@ -2,7 +2,11 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import { CreatePostInput, UpdatePostInput } from '@/modules/post/domain/repositories/post.repository.type';
+import {
+  CreatePostInput,
+  DeletePostTreeInput,
+  UpdatePostInput
+} from '@/modules/post/domain/repositories/post.repository.type';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
 import { Db, MongoClient } from 'mongodb';
@@ -58,5 +62,74 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
       { returnDocument: 'after' }
     );
     return result ? this.mapper.toDomain(result) : null;
+  }
+
+  async deletePostTree({ postId, actorId }: DeletePostTreeInput): Promise<number> {
+    return this.transaction(async () => {
+      const ids = await this.collectActivePostTreeIds(postId);
+      if (ids.length === 0) {
+        return 0;
+      }
+
+      const deletedAt = new Date();
+      const audit = {
+        deleted_at: deletedAt,
+        deleted_by_id: actorId,
+        updated_at: deletedAt,
+        updated_by_id: actorId
+      };
+
+      const postsResult = await this.dbCollection.updateMany(
+        { _id: { $in: ids }, deleted_at: null },
+        { $set: audit },
+        { session: this.session }
+      );
+      await Promise.all([
+        this.db
+          .collection('likes')
+          .updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit }, { session: this.session }),
+        this.db
+          .collection('bookmarks')
+          .updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit }, { session: this.session })
+      ]);
+
+      return postsResult.modifiedCount;
+    });
+  }
+
+  private async collectActivePostTreeIds(postId: string): Promise<string[]> {
+    const root = await this.dbCollection.findOne(
+      { _id: postId, deleted_at: null },
+      { projection: { _id: 1 }, session: this.session }
+    );
+    if (!root) {
+      return [];
+    }
+
+    const ids: string[] = [postId];
+    const seen = new Set(ids);
+    let frontier = [postId];
+
+    while (frontier.length > 0) {
+      const children = await this.dbCollection
+        .find(
+          {
+            parent_id: { $in: frontier }
+          },
+          { projection: { _id: 1 }, session: this.session }
+        )
+        .toArray();
+
+      frontier = [];
+      for (const child of children) {
+        const id = child._id;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        ids.push(id);
+        frontier.push(id);
+      }
+    }
+
+    return ids;
   }
 }

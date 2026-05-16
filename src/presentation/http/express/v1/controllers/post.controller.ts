@@ -1,5 +1,6 @@
 import { BookmarkPostPort } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.port';
 import { CreatePostPort } from '@/modules/post/application/use-cases/create-post/create-post.port';
+import { DeletePostPort } from '@/modules/post/application/use-cases/delete-post/delete-post.port';
 import { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
 import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
 import {
@@ -64,6 +65,7 @@ export interface IPostController {
     res: ExpressResponse,
     next: NextFunction
   ): Promise<unknown>;
+  deletePost(req: ExpressRequest<GetPostDetailParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
   createBookmark(
     req: ExpressRequest<ParamsDictionary, object, CreateBookmarkRequestDTO>,
     res: ExpressResponse,
@@ -91,6 +93,7 @@ export class PostController extends BaseController implements IPostController {
     private readonly getPostsTypeUC: GetPostsTypePort,
     private readonly createPostUC: CreatePostPort,
     private readonly updatePostUC: UpdatePostPort,
+    private readonly deletePostUC: DeletePostPort,
     private readonly createBookmarkUC: BookmarkPostPort,
     private readonly unbookmarkPostUC: UnbookmarkPostPort,
     private readonly createLikeUC: CreateLikePort,
@@ -218,6 +221,23 @@ export class PostController extends BaseController implements IPostController {
     return this.response<PostResponseDTO>({
       data: new PostResponseDTO(post),
       message: 'Post updated successfully'
+    });
+  }
+
+  @AutoBind()
+  async deletePost(req: ExpressRequest<GetPostDetailParamsDTO>) {
+    const userId = this.getUserId(req);
+    const roleId = req.tokenPayload?.roleId ?? '';
+    const { postId } = req.params;
+
+    await this.deletePostUC.execute({
+      postId,
+      userId,
+      roleId
+    });
+
+    return this.response({
+      message: 'Post deleted successfully'
     });
   }
 

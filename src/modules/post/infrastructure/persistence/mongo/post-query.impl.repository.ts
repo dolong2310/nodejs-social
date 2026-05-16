@@ -43,9 +43,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     // const p = new ObjectId(data.postId);
     const [like, bookmark, comment] = await Promise.all([
       // Tìm like của viewer với post (likes.findOne)
-      this.likesCollection.findOne({ user_id: userId, post_id: postId }, { projection: { _id: 1 } }),
+      this.likesCollection.findOne({ user_id: userId, post_id: postId, deleted_at: null }, { projection: { _id: 1 } }),
       // Tìm bookmark của viewer với post (bookmarks.findOne)
-      this.bookmarksCollection.findOne({ user_id: userId, post_id: postId }, { projection: { _id: 1 } }),
+      this.bookmarksCollection.findOne(
+        { user_id: userId, post_id: postId, deleted_at: null },
+        { projection: { _id: 1 } }
+      ),
       // Tìm comment mà viewer comment vào post đó (posts.findOne với parentId = postId và type = COMMENT)
       this.dbCollection.findOne(
         { user_id: userId, parent_id: postId, type: EnumPostType.COMMENT, deleted_at: null },
@@ -121,7 +124,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         $lookup: {
           from: 'likes',
           let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalLikes' }],
+          pipeline: [
+            { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+            { $count: 'totalLikes' }
+          ],
           as: 'likeCountLookupResults'
         }
       },
@@ -129,7 +135,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         $lookup: {
           from: 'bookmarks',
           let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
+          pipeline: [
+            { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+            { $count: 'totalBookmarks' }
+          ],
           as: 'bookmarkCountLookupResults'
         }
       },
@@ -216,7 +225,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const [fromLikes, fromBookmarks, fromComments] = await Promise.all([
       this.likesCollection
         .aggregate<{ _id: string }>([
-          { $match: { user_id: viewerId } },
+          { $match: { user_id: viewerId, deleted_at: null } },
           {
             $lookup: {
               from: 'posts',
@@ -232,7 +241,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         .toArray(),
       this.bookmarksCollection
         .aggregate<{ _id: string }>([
-          { $match: { user_id: viewerId } },
+          { $match: { user_id: viewerId, deleted_at: null } },
           {
             $lookup: {
               from: 'posts',
@@ -603,7 +612,10 @@ function buildBasePostPipeline({
       $lookup: {
         from: 'likes',
         let: { rootPostId: '$_id' },
-        pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalLikes' }],
+        pipeline: [
+          { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $count: 'totalLikes' }
+        ],
         as: 'likeCountLookupResults'
       }
     },
@@ -611,7 +623,10 @@ function buildBasePostPipeline({
       $lookup: {
         from: 'bookmarks',
         let: { rootPostId: '$_id' },
-        pipeline: [{ $match: { $expr: { $eq: ['$post_id', '$$rootPostId'] } } }, { $count: 'totalBookmarks' }],
+        pipeline: [
+          { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $count: 'totalBookmarks' }
+        ],
         as: 'bookmarkCountLookupResults'
       }
     },

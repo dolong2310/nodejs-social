@@ -66,6 +66,21 @@ export class PostRoute extends BaseRoute {
         controller: this.postController.patchPost
       })
     );
+    this.router.delete(
+      '/:postId',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard],
+        interceptors: [
+          this.loggingInterceptor,
+          this.transformResponseInterceptor,
+          this.idempotencyInterceptor,
+          this.timeoutInterceptor
+        ],
+        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        controller: this.postController.deletePost
+      })
+    );
     this.router.get(
       '/:postId',
       this.createRouteHandler({

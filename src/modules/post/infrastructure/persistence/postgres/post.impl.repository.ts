@@ -2,7 +2,11 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import { CreatePostInput, UpdatePostInput } from '@/modules/post/domain/repositories/post.repository.type';
+import {
+  CreatePostInput,
+  DeletePostTreeInput,
+  UpdatePostInput
+} from '@/modules/post/domain/repositories/post.repository.type';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/postgres/post.model';
 import type { Pool } from 'pg';
@@ -106,5 +110,61 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
     );
     const [record] = result.rows;
     return record ? this.mapper.toDomain(record) : null;
+  }
+
+  async deletePostTree({ postId, actorId }: DeletePostTreeInput): Promise<number> {
+    return this.transaction(async () => {
+      const result = await this.query<{ deleted_count: number }>(
+        `
+          WITH RECURSIVE post_tree AS (
+            SELECT id
+            FROM posts
+            WHERE id = $1 AND deleted_at IS NULL
+
+            UNION
+
+            SELECT child.id
+            FROM posts child
+            INNER JOIN post_tree parent ON child.parent_id = parent.id
+          ),
+          deleted_posts AS (
+            UPDATE posts
+            SET deleted_at = NOW(),
+                deleted_by_id = $2,
+                updated_at = NOW(),
+                updated_by_id = $2
+            WHERE id IN (SELECT id FROM post_tree)
+              AND deleted_at IS NULL
+            RETURNING id
+          ),
+          deleted_likes AS (
+            UPDATE likes
+            SET deleted_at = NOW(),
+                deleted_by_id = $2,
+                updated_at = NOW(),
+                updated_by_id = $2
+            WHERE post_id IN (SELECT id FROM post_tree)
+              AND deleted_at IS NULL
+            RETURNING id
+          ),
+          deleted_bookmarks AS (
+            UPDATE bookmarks
+            SET deleted_at = NOW(),
+                deleted_by_id = $2,
+                updated_at = NOW(),
+                updated_by_id = $2
+            WHERE post_id IN (SELECT id FROM post_tree)
+              AND deleted_at IS NULL
+            RETURNING id
+          )
+          SELECT
+            (SELECT COUNT(*)::int FROM deleted_posts) AS deleted_count,
+            (SELECT COUNT(*)::int FROM deleted_likes) AS deleted_likes_count,
+            (SELECT COUNT(*)::int FROM deleted_bookmarks) AS deleted_bookmarks_count
+        `,
+        [postId, actorId]
+      );
+      return result.rows[0]?.deleted_count ?? 0;
+    });
   }
 }

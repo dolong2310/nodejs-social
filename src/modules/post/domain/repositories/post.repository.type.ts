@@ -13,3 +13,8 @@ export interface UpdatePostInput {
   mentions?: string[];
   media?: Media[];
 }
+
+export interface DeletePostTreeInput {
+  postId: string;
+  actorId: string;
+}

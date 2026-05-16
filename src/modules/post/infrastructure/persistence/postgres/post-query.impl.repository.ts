@@ -48,8 +48,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       `
         SELECT EXISTS (
           SELECT 1 FROM likes WHERE user_id = $1 AND post_id = $2
+            AND deleted_at IS NULL
           UNION
           SELECT 1 FROM bookmarks WHERE user_id = $1 AND post_id = $2
+            AND deleted_at IS NULL
           UNION
           SELECT 1 FROM posts WHERE user_id = $1 AND parent_id = $2 AND type = $3 AND deleted_at IS NULL
         ) AS exists
@@ -82,14 +84,20 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           SELECT l.post_id
           FROM likes l
           JOIN posts p ON p.id = l.post_id
-          WHERE l.user_id = $1 AND p.user_id = ANY($2::text[]) AND p.deleted_at IS NULL
+          WHERE l.user_id = $1
+            AND p.user_id = ANY($2::text[])
+            AND l.deleted_at IS NULL
+            AND p.deleted_at IS NULL
 
           UNION
 
           SELECT b.post_id
           FROM bookmarks b
           JOIN posts p ON p.id = b.post_id
-          WHERE b.user_id = $1 AND p.user_id = ANY($2::text[]) AND p.deleted_at IS NULL
+          WHERE b.user_id = $1
+            AND p.user_id = ANY($2::text[])
+            AND b.deleted_at IS NULL
+            AND p.deleted_at IS NULL
 
           UNION
 
@@ -327,12 +335,12 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         LEFT JOIN LATERAL (
           SELECT COUNT(*)::int AS total
           FROM likes l
-          WHERE l.post_id = bp.id
+          WHERE l.post_id = bp.id AND l.deleted_at IS NULL
         ) likes ON TRUE
         LEFT JOIN LATERAL (
           SELECT COUNT(*)::int AS total
           FROM bookmarks b
-          WHERE b.post_id = bp.id
+          WHERE b.post_id = bp.id AND b.deleted_at IS NULL
         ) bookmarks ON TRUE
         LEFT JOIN LATERAL (
           SELECT
