@@ -24,7 +24,11 @@ export class ConversationMemberMapper implements Mapper<
       last_read_at: clone.lastReadAt,
       last_read_message_id: clone.lastReadMessageId,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(conversationMemberSchema, record);
   }
@@ -32,7 +36,11 @@ export class ConversationMemberMapper implements Mapper<
     const entity = new ConversationMemberEntity({
       id: new UniqueEntityID(record._id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         conversationId: record.conversation_id,
         userId: record.user_id,
@@ -54,7 +62,11 @@ export class ConversationMemberMapper implements Mapper<
       lastReadAt: record.last_read_at,
       lastReadMessageId: record.last_read_message_id,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

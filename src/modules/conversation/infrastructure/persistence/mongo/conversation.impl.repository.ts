@@ -48,7 +48,8 @@ export class ConversationRepository
     const result = await this.dbCollection.findOne({
       type: EnumConversationType.DIRECT,
       user_id_low: userIdLow,
-      user_id_high: userIdHigh
+      user_id_high: userIdHigh,
+      deleted_at: null
     });
     return result ? this.mapper.toDomain(result) : null;
   }
@@ -128,11 +129,15 @@ export class ConversationRepository
     if (data.avatarMediaId !== undefined) {
       $set.avatar_media_id = data.avatarMediaId === null ? null : data.avatarMediaId;
     }
-    const result = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set }, { returnDocument: 'after' });
+    const result = await this.dbCollection.findOneAndUpdate(
+      { _id: id, deleted_at: null },
+      { $set },
+      { returnDocument: 'after' }
+    );
     return result ? this.mapper.toDomain(result) : null;
   }
 
   async touchUpdatedAt(id: string, data: TouchUpdatedAtInput): Promise<void> {
-    await this.dbCollection.updateOne({ _id: id }, { $set: { updated_at: data.updatedAt } });
+    await this.dbCollection.updateOne({ _id: id, deleted_at: null }, { $set: { updated_at: data.updatedAt } });
   }
 }

@@ -4,7 +4,7 @@ import {
   ListRolesInput,
   UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.type';
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface RoleRepositoryPort extends RepositoryPort<RoleEntity> {
   findRoleById(id: string): Promise<RoleEntity | null>;
@@ -14,6 +14,6 @@ export interface RoleRepositoryPort extends RepositoryPort<RoleEntity> {
   createRole(data: CreateRoleInput): Promise<RoleEntity | null>;
   insertRole(data: CreateRoleInput): Promise<RoleEntity>;
   updateRole(id: string, data: UpdateRoleInput): Promise<RoleEntity | null>;
-  deleteRole(id: string): Promise<RoleEntity | null>;
+  deleteRole(id: string, options?: Options): Promise<RoleEntity | null>;
   countRolesWithPermissionId(permissionId: string): Promise<number>;
 }

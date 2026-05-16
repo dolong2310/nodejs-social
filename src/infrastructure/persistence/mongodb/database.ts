@@ -47,6 +47,12 @@ export class MongoDatabase implements MongoDatabasePort {
   private get otps(): Collection<Document> {
     return this.db.collection('otps');
   }
+  private get roles(): Collection<Document> {
+    return this.db.collection('roles');
+  }
+  private get permissions(): Collection<Document> {
+    return this.db.collection('permissions');
+  }
   private get videoStatuses(): Collection<Document> {
     return this.db.collection('video_status');
   }
@@ -110,8 +116,8 @@ export class MongoDatabase implements MongoDatabasePort {
     if (isIndexExists) return;
     await Promise.all([
       this.users.createIndex({ email: 1, password: 1 }),
-      this.users.createIndex({ username: 1 }, { unique: true }),
-      this.users.createIndex({ email: 1 }, { unique: true })
+      this.users.createIndex({ username: 1 }, { unique: true, partialFilterExpression: { deleted_at: null } }),
+      this.users.createIndex({ email: 1 }, { unique: true, partialFilterExpression: { deleted_at: null } })
     ]);
   }
 
@@ -140,6 +146,16 @@ export class MongoDatabase implements MongoDatabasePort {
     const isIndexExists = await this.indexExistsSafe(this.videoStatuses, ['name_1']);
     if (isIndexExists) return;
     await this.videoStatuses.createIndex({ name: 1 });
+  }
+
+  private async createAuthorizationIndexes() {
+    await Promise.all([
+      this.roles.createIndex({ name: 1 }, { unique: true, partialFilterExpression: { deleted_at: null } }),
+      this.permissions.createIndex(
+        { path: 1, method: 1 },
+        { unique: true, partialFilterExpression: { deleted_at: null } }
+      )
+    ]);
   }
 
   private async createFriendshipIndexes() {
@@ -183,15 +199,21 @@ export class MongoDatabase implements MongoDatabasePort {
     await Promise.all([
       // For findPostsType / countPostsType queries: { parentId, type }
       // Also used by the $lookup self-join in aggregation pipelines that counts child posts (comments/reposts/quotes)
-      this.posts.createIndex({ parent_id: 1, type: 1 }, { sparse: true }),
+      this.posts.createIndex({ parent_id: 1, type: 1 }, { partialFilterExpression: { deleted_at: null } }),
       // For cursor-based findPostsType query: match { parentId, type } + sort/filter by createdAt, _id
-      this.posts.createIndex({ parent_id: 1, type: 1, created_at: -1, _id: -1 }, { sparse: true }),
+      this.posts.createIndex(
+        { parent_id: 1, type: 1, created_at: -1, _id: -1 },
+        { partialFilterExpression: { deleted_at: null } }
+      ),
       // For new-feed queries: { user_id: { $in: [...] }, $or: [audience conditions] }
-      this.posts.createIndex({ user_id: 1, audience: 1 }),
+      this.posts.createIndex({ user_id: 1, audience: 1 }, { partialFilterExpression: { deleted_at: null } }),
       // For guest feed & audience-only filters: { audience }
-      this.posts.createIndex({ audience: 1 }),
+      this.posts.createIndex({ audience: 1 }, { partialFilterExpression: { deleted_at: null } }),
       // For guest cursor feeds: match audience + sort/filter by createdAt, _id
-      this.posts.createIndex({ audience: 1, created_at: -1, _id: -1 })
+      this.posts.createIndex(
+        { audience: 1, created_at: -1, _id: -1 },
+        { partialFilterExpression: { deleted_at: null } }
+      )
     ]);
   }
 
@@ -213,14 +235,17 @@ export class MongoDatabase implements MongoDatabasePort {
 
   private async createHashtagsIndex() {
     // For findAndUpsertHashtags upsert filter and find-by-name queries
-    await this.hashtags.createIndex({ name: 1 }, { unique: true });
+    await this.hashtags.createIndex({ name: 1 }, { unique: true, partialFilterExpression: { deleted_at: null } });
   }
 
   /** Search posts: filters on audience + media.type (video / image) combine often in $match. */
   private async createSearchPostsAudienceMediaIndex() {
     const name = 'audience_1_media.type_1';
     if (await this.indexExistsSafe(this.posts, [name])) return;
-    await this.posts.createIndex({ audience: 1, 'media.type': 1 }, { name });
+    await this.posts.createIndex(
+      { audience: 1, 'media.type': 1 },
+      { name, partialFilterExpression: { deleted_at: null } }
+    );
   }
 
   private async createUsersSearchIndex() {
@@ -233,7 +258,10 @@ export class MongoDatabase implements MongoDatabasePort {
     const col = this.notifications;
     const listIdx = 'recipient_id_1_created_at_-1__id_-1';
     if (!(await this.indexExistsSafe(col, [listIdx]))) {
-      await col.createIndex({ recipient_id: 1, created_at: -1, _id: -1 }, { name: listIdx });
+      await col.createIndex(
+        { recipient_id: 1, created_at: -1, _id: -1 },
+        { name: listIdx, partialFilterExpression: { deleted_at: null } }
+      );
     }
   }
 
@@ -243,6 +271,7 @@ export class MongoDatabase implements MongoDatabasePort {
       this.createUsersSearchIndex(),
       this.createRefreshTokensIndex(),
       this.createOtpsIndex(),
+      this.createAuthorizationIndexes(),
       this.createVideoStatusesIndex(),
       this.createFriendshipIndexes(),
       this.createFriendRequestIndexes(),
@@ -271,7 +300,7 @@ export class MongoDatabase implements MongoDatabasePort {
     if (!(await this.indexExistsSafe(col, [directPair]))) {
       await col.createIndex(
         { user_id_low: 1, user_id_high: 1 },
-        { unique: true, partialFilterExpression: { type: 'direct' } }
+        { unique: true, partialFilterExpression: { type: 'direct', deleted_at: null } }
       );
     }
     const updated = 'updated_at_-1';

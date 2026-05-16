@@ -36,7 +36,11 @@ export const postSchema = object({
   guest_views: number(),
   user_views: number(),
   created_at: date(),
-  updated_at: date()
+  created_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
+  updated_at: date(),
+  updated_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
+  deleted_at: nullable(date(), null),
+  deleted_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)
 });
 
 export type PostModel = InferOutput<typeof postSchema>;

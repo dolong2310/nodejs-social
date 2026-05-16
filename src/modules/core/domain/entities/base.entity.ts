@@ -12,10 +12,17 @@ import type { MarkOptional, Prettify } from 'ts-essentials';
 export interface BaseEntityProps {
   id: UniqueEntityID;
   createdAt: Date;
+  createdById?: string | null;
   updatedAt: Date;
+  updatedById?: string | null;
+  deletedAt?: Date | null;
+  deletedById?: string | null;
 }
 
-export interface CreateEntityProps<T> extends MarkOptional<BaseEntityProps, 'createdAt' | 'updatedAt'> {
+export interface CreateEntityProps<T> extends MarkOptional<
+  BaseEntityProps,
+  'createdAt' | 'createdById' | 'updatedAt' | 'updatedById' | 'deletedAt' | 'deletedById'
+> {
   props: T;
 }
 
@@ -25,15 +32,32 @@ export abstract class Entity<
 > {
   private _id: UniqueEntityID;
   private readonly _createdAt: Date;
-  private readonly _props: Props;
+  private readonly _createdById: string | null;
   private _updatedAt: Date;
+  private _updatedById: string | null;
+  private _deletedAt: Date | null;
+  private _deletedById: string | null;
+  private readonly _props: Props;
 
-  constructor({ id, props, createdAt, updatedAt }: CreateEntityProps<Props>) {
+  constructor({
+    id,
+    props,
+    createdAt,
+    createdById = null,
+    updatedAt,
+    updatedById = null,
+    deletedAt = null,
+    deletedById = null
+  }: CreateEntityProps<Props>) {
     this._id = id;
     this._validateProps(props);
     const now = new Date();
     this._createdAt = createdAt || now;
+    this._createdById = createdById;
     this._updatedAt = updatedAt || now;
+    this._updatedById = updatedById;
+    this._deletedAt = deletedAt;
+    this._deletedById = deletedById;
     this._props = props;
     this.validate();
   }
@@ -50,20 +74,55 @@ export abstract class Entity<
     return this._createdAt;
   }
 
+  get createdById(): string | null {
+    return this._createdById;
+  }
+
   get updatedAt(): Date {
     return this._updatedAt;
   }
 
   set updatedAt(value: Date) {
-    invariant(value > this._createdAt, new ArgumentOutOfRangeException('Updated at must be greater than created at'));
+    invariant(
+      value >= this._createdAt,
+      new ArgumentOutOfRangeException('Updated at must be greater than or equal to created at')
+    );
     this._updatedAt = value;
+  }
+
+  get updatedById(): string | null {
+    return this._updatedById;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
+  get deletedById(): string | null {
+    return this._deletedById;
+  }
+
+  get isDeleted(): boolean {
+    return this._deletedAt !== null;
+  }
+
+  markDeleted(actorId: string | null = null, deletedAt = new Date()): void {
+    invariant(deletedAt >= this._createdAt, new ArgumentOutOfRangeException('Deleted at must be after created at'));
+    this._deletedAt = deletedAt;
+    this._deletedById = actorId;
+    this._updatedAt = deletedAt;
+    this._updatedById = actorId;
   }
 
   getProps(): Readonly<Props & BaseEntityProps> {
     const clone = {
       id: this.id,
       createdAt: this._createdAt,
+      createdById: this._createdById,
       updatedAt: this._updatedAt,
+      updatedById: this._updatedById,
+      deletedAt: this._deletedAt,
+      deletedById: this._deletedById,
       ...this._props
     };
     return Object.freeze(clone);
@@ -80,7 +139,11 @@ export abstract class Entity<
       ...clone,
       id: this.id.toString(),
       createdAt: this._createdAt,
-      updatedAt: this._updatedAt
+      createdById: this._createdById,
+      updatedAt: this._updatedAt,
+      updatedById: this._updatedById,
+      deletedAt: this._deletedAt,
+      deletedById: this._deletedById
     };
     return Object.freeze(result) as Readonly<T>;
   }

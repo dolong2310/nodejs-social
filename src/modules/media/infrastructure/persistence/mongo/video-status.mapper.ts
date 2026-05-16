@@ -17,7 +17,11 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
       status: clone.status,
       message: clone.message,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(videoStatusSchema, record);
   }
@@ -25,7 +29,11 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
     const entity = new VideoStatusEntity({
       id: new UniqueEntityID(record._id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         name: record.name,
         status: record.status,
@@ -41,7 +49,11 @@ export class VideoStatusMapper implements Mapper<VideoStatusEntity, VideoStatusM
       status: record.status,
       message: record.message,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

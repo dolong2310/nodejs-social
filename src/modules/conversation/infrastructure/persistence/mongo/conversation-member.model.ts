@@ -11,7 +11,11 @@ export const conversationMemberSchema = object({
   last_read_at: optional(nullable(date(), null)),
   last_read_message_id: optional(nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)),
   created_at: optional(date(), new Date()),
-  updated_at: optional(date(), new Date())
+  created_by_id: optional(nullable(string(), null), null),
+  updated_at: optional(date(), new Date()),
+  updated_by_id: optional(nullable(string(), null), null),
+  deleted_at: optional(nullable(date(), null), null),
+  deleted_by_id: optional(nullable(string(), null), null)
 });
 
 export type ConversationMemberModel = InferOutput<typeof conversationMemberSchema>;

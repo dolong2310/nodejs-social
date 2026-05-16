@@ -101,7 +101,7 @@ export class HashtagController extends BaseController implements IHashtagControl
   @AutoBind()
   async remove(req: ExpressRequest<HashtagIdParamsDTO>): Promise<unknown> {
     const { hashtagId } = req.params;
-    await this.deleteHashtagUC.execute(new DeleteHashtagCommand(hashtagId));
+    await this.deleteHashtagUC.execute(new DeleteHashtagCommand({ id: hashtagId, actorId: this.getUserId(req) }));
     return this.response({ message: 'Hashtag deleted successfully' });
   }
 }

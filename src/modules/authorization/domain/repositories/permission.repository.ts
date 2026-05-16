@@ -5,7 +5,7 @@ import {
   ListPermissionsInput,
   UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.type';
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface PermissionRepositoryPort extends RepositoryPort<PermissionEntity> {
   findPermissions(data: ListPermissionsInput): Promise<PermissionEntity[]>;
@@ -15,6 +15,6 @@ export interface PermissionRepositoryPort extends RepositoryPort<PermissionEntit
   createPermissions(data: CreatePermissionInput[]): Promise<PermissionEntity[]>;
   createPermission(data: CreatePermissionInput): Promise<PermissionEntity | null>;
   updatePermission(id: string, data: UpdatePermissionInput): Promise<PermissionEntity | null>;
-  deletePermission(id: string): Promise<PermissionEntity | null>;
+  deletePermission(id: string, options?: Options): Promise<PermissionEntity | null>;
   deletePermissions(ids: string[]): Promise<number>;
 }

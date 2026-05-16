@@ -26,7 +26,7 @@ export class DeletePermissionUseCase extends DeletePermissionPort {
     if (inUse > 0) {
       throw new PermissionInUseByRolesException();
     }
-    const removed = await this.permissionRepository.deletePermission(command.id);
+    const removed = await this.permissionRepository.deletePermission(command.id, { actorId: command.actorId });
     if (!removed) {
       throw new PermissionNotFoundException();
     }

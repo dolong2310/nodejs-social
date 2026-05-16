@@ -18,7 +18,11 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
       text: clone.text ?? null,
       attachments: clone.attachments ?? null,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(chatMessageSchema, record);
   }
@@ -26,7 +30,11 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
     const entity = new ChatMessageEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         conversationId: record.conversation_id,
         senderId: record.sender_id,
@@ -44,7 +52,11 @@ export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageM
       text: record.text ?? undefined,
       attachments: record.attachments ?? undefined,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

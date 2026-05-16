@@ -16,7 +16,11 @@ export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipMode
       user_id_low: clone.userIdLow,
       user_id_high: clone.userIdHigh,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(friendshipSchema, record);
   }
@@ -24,7 +28,11 @@ export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipMode
     const entity = new FriendshipEntity({
       id: new UniqueEntityID(record._id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         userIdLow: record.user_id_low,
         userIdHigh: record.user_id_high
@@ -38,7 +46,11 @@ export class FriendshipMapper implements Mapper<FriendshipEntity, FriendshipMode
       userIdLow: record.user_id_low,
       userIdHigh: record.user_id_high,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

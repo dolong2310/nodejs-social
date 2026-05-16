@@ -23,6 +23,10 @@ export type PaginatedQueryParams = {
 
 export type Options = {
   projection?: Record<string, unknown>;
+  includeDeleted?: boolean;
+  onlyDeleted?: boolean;
+  actorId?: string | null;
+  hardDelete?: boolean;
 };
 
 export interface RepositoryPort<Entity> {

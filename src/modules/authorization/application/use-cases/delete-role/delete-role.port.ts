@@ -2,8 +2,10 @@ import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class DeleteRoleCommand {
   id: string;
-  constructor(id: string) {
-    this.id = id;
+  actorId: string | null;
+  constructor(payload: { id: string; actorId?: string | null }) {
+    this.id = payload.id;
+    this.actorId = payload.actorId ?? null;
   }
 }
 

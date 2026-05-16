@@ -32,7 +32,7 @@ export class NotificationRepository
     limit,
     before
   }: FindNotificationsInput): Promise<NotificationEntity[]> {
-    const conditions = ['recipient_id = $1'];
+    const conditions = ['recipient_id = $1', 'deleted_at IS NULL'];
     const values: unknown[] = [recipientId];
 
     if (actorUserIdNin && actorUserIdNin.length > 0) {
@@ -76,7 +76,7 @@ export class NotificationRepository
       `
         SELECT id
         FROM notifications
-        WHERE recipient_id = $1
+        WHERE recipient_id = $1 AND deleted_at IS NULL
         ORDER BY read DESC, created_at ASC, id ASC
         LIMIT $2
       `,
@@ -163,7 +163,7 @@ export class NotificationRepository
       `
         UPDATE notifications
         SET read = TRUE, read_at = NOW(), updated_at = NOW()
-        WHERE recipient_id = $1 AND id = ANY($2::text[]) AND read = FALSE
+        WHERE recipient_id = $1 AND id = ANY($2::text[]) AND read = FALSE AND deleted_at IS NULL
       `,
       [recipientId, ids]
     );
@@ -175,7 +175,7 @@ export class NotificationRepository
       `
         UPDATE notifications
         SET read = TRUE, read_at = NOW(), updated_at = NOW()
-        WHERE recipient_id = $1 AND read = FALSE
+        WHERE recipient_id = $1 AND read = FALSE AND deleted_at IS NULL
       `,
       [recipientId]
     );
@@ -190,7 +190,7 @@ export class NotificationRepository
 
   async countForRecipient(recipientId: string): Promise<number> {
     const result = await this.query<{ count: string }>(
-      `SELECT COUNT(*)::text AS count FROM notifications WHERE recipient_id = $1`,
+      `SELECT COUNT(*)::text AS count FROM notifications WHERE recipient_id = $1 AND deleted_at IS NULL`,
       [recipientId]
     );
     return Number(result.rows[0]?.count ?? 0);

@@ -22,7 +22,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
   async findSafeUserById(id: string): Promise<UserSafeProps | null> {
     const result = await this.dbCollection.findOne(
-      { _id: id },
+      { _id: id, deleted_at: null },
       {
         projection: { password: 0, totp_secret: 0 }
       }
@@ -32,7 +32,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
   async findSafeUserByUsername(username: string): Promise<UserSafeProps | null> {
     const result = await this.dbCollection.findOne(
-      { username },
+      { username, deleted_at: null },
       {
         projection: { password: 0, totp_secret: 0 }
       }
@@ -42,7 +42,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
   async findSafeUserByEmail(email: string): Promise<UserSafeProps | null> {
     const result = await this.dbCollection.findOne(
-      { email },
+      { email, deleted_at: null },
       {
         projection: { password: 0, totp_secret: 0 }
       }
@@ -52,9 +52,19 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
   async findUserByIdIncludeRole(id: string): Promise<UserWithRole | null> {
     const [record] = await this.dbCollection
-      .aggregate<
-        UserModel & { role?: RoleModel | null }
-      >([{ $match: { _id: id } }, { $lookup: { from: 'roles', localField: 'role_id', foreignField: '_id', as: '_r' } }, { $addFields: { role: { $arrayElemAt: ['$_r', 0] } } }, { $project: { _r: 0 } }])
+      .aggregate<UserModel & { role?: RoleModel | null }>([
+        { $match: { _id: id, deleted_at: null } },
+        {
+          $lookup: {
+            from: 'roles',
+            let: { roleId: '$role_id' },
+            pipeline: [{ $match: { deleted_at: null, $expr: { $eq: ['$_id', '$$roleId'] } } }],
+            as: '_r'
+          }
+        },
+        { $addFields: { role: { $arrayElemAt: ['$_r', 0] } } },
+        { $project: { _r: 0 } }
+      ])
       .toArray();
     if (!record) return null;
     const { role, ...user } = record;
@@ -65,9 +75,19 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
   async findUserByEmailIncludeRole(email: string): Promise<UserWithRole | null> {
     const [record] = await this.dbCollection
-      .aggregate<
-        UserModel & { role?: RoleModel | null }
-      >([{ $match: { email } }, { $lookup: { from: 'roles', localField: 'role_id', foreignField: '_id', as: '_r' } }, { $addFields: { role: { $arrayElemAt: ['$_r', 0] } } }, { $project: { _r: 0 } }])
+      .aggregate<UserModel & { role?: RoleModel | null }>([
+        { $match: { email, deleted_at: null } },
+        {
+          $lookup: {
+            from: 'roles',
+            let: { roleId: '$role_id' },
+            pipeline: [{ $match: { deleted_at: null, $expr: { $eq: ['$_id', '$$roleId'] } } }],
+            as: '_r'
+          }
+        },
+        { $addFields: { role: { $arrayElemAt: ['$_r', 0] } } },
+        { $project: { _r: 0 } }
+      ])
       .toArray();
     if (!record) return null;
     const { role, ...user } = record;
@@ -81,7 +101,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     const uniqueIds = [...new Set(ids)];
     const users = await this.dbCollection
       .aggregate<UserRecordProps>([
-        { $match: { _id: { $in: uniqueIds } } },
+        { $match: { _id: { $in: uniqueIds }, deleted_at: null } },
         { $addFields: { id: '$_id' } },
         { $project: { _id: 0, id: 1, name: 1, username: 1, avatar: 1 } }
       ])
@@ -97,7 +117,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     cursor,
     findFriendUserIds
   }: FindUsersForSearchInput): Promise<UserSafeProps[]> {
-    const match: Record<string, unknown> = {};
+    const match: Record<string, unknown> = { deleted_at: null };
 
     if (query) {
       // tìm kiếm theo text trong các trường của user

@@ -43,8 +43,8 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
           p.updated_at AS permission_updated_at
         FROM roles r
         LEFT JOIN role_permissions rp ON rp.role_id = r.id
-        LEFT JOIN permissions p ON p.id = rp.permission_id
-        WHERE r.id = $1
+        LEFT JOIN permissions p ON p.id = rp.permission_id AND p.deleted_at IS NULL
+        WHERE r.id = $1 AND r.deleted_at IS NULL
         ORDER BY rp.position ASC
       `,
       [id]

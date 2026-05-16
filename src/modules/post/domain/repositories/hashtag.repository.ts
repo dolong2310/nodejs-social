@@ -1,4 +1,4 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
 import {
   CreateHashtagInput,
@@ -14,5 +14,5 @@ export interface HashtagRepositoryPort extends RepositoryPort<HashtagEntity> {
   findHashtags(data: ListHashtagsInput): Promise<HashtagEntity[]>;
   countHashtags(): Promise<number>;
   updateHashtag(id: string, data: UpdateHashtagInput): Promise<HashtagEntity | null>;
-  deleteHashtag(id: string): Promise<HashtagEntity | null>;
+  deleteHashtag(id: string, options?: Options): Promise<HashtagEntity | null>;
 }

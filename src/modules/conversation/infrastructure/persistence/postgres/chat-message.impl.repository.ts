@@ -65,7 +65,7 @@ export class ChatMessageRepository
 
   async findMessages(id: string, data: FindMessagesInput): Promise<ChatMessageEntity[]> {
     const { limit, before } = data;
-    const conditions = ['conversation_id = $1'];
+    const conditions = ['conversation_id = $1', 'deleted_at IS NULL'];
     const values: unknown[] = [id];
 
     if (before) {

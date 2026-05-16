@@ -13,7 +13,7 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
     limit,
     cursor
   }: ListConversationsForUserInput): Promise<ListConversationsForUserOutput[]> {
-    const conditions = ['cm.user_id = $1'];
+    const conditions = ['cm.user_id = $1', 'cm.deleted_at IS NULL', 'c.deleted_at IS NULL'];
     const values: unknown[] = [userId];
 
     if (cursor) {

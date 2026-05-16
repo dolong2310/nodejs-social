@@ -48,7 +48,7 @@ export class ConversationRepository
       `
         SELECT *
         FROM conversations
-        WHERE type = $1 AND user_id_low = $2 AND user_id_high = $3
+        WHERE type = $1 AND user_id_low = $2 AND user_id_high = $3 AND deleted_at IS NULL
         LIMIT 1
       `,
       [EnumConversationType.DIRECT, userIdLow, userIdHigh]
@@ -222,7 +222,7 @@ export class ConversationRepository
       `
         UPDATE conversations
         SET ${updates.join(', ')}
-        WHERE id = $1
+        WHERE id = $1 AND deleted_at IS NULL
         RETURNING *
       `,
       values
@@ -232,6 +232,9 @@ export class ConversationRepository
   }
 
   async touchUpdatedAt(id: string, data: TouchUpdatedAtInput): Promise<void> {
-    await this.query(`UPDATE conversations SET updated_at = $2 WHERE id = $1`, [id, data.updatedAt]);
+    await this.query(`UPDATE conversations SET updated_at = $2 WHERE id = $1 AND deleted_at IS NULL`, [
+      id,
+      data.updatedAt
+    ]);
   }
 }

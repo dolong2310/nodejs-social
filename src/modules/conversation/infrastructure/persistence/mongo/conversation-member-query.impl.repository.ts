@@ -35,12 +35,12 @@ export class ConversationMemberQueryRepository implements ConversationMemberQuer
     }
 
     const pipeline: Document[] = [
-      { $match: { user_id: userId } },
+      { $match: { user_id: userId, deleted_at: null } },
       {
         $lookup: {
           from: 'conversations',
-          localField: 'conversation_id',
-          foreignField: '_id',
+          let: { conversationId: '$conversation_id' },
+          pipeline: [{ $match: { deleted_at: null, $expr: { $eq: ['$_id', '$$conversationId'] } } }],
           as: 'conv'
         }
       },

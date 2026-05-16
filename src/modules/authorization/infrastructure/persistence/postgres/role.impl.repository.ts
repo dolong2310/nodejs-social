@@ -9,6 +9,7 @@ import { RoleName } from '@/modules/authorization/domain/value-objects/role-name
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { Options } from '@/modules/core/domain/repositories/port.repository';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 
@@ -23,7 +24,7 @@ const roleSelect = `
   LEFT JOIN role_permissions rp ON rp.role_id = r.id
 `;
 
-const roleGroupBy = `GROUP BY r.id, r.name, r.description, r.is_active, r.created_at, r.updated_at`;
+const roleGroupBy = `GROUP BY r.id`;
 
 export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel> implements RoleRepositoryPort {
   protected tableName = 'roles';
@@ -41,7 +42,9 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
   }
 
   async findAll(): Promise<RoleEntity[]> {
-    const result = await this.query<RoleModel>(`${roleSelect} ${roleGroupBy} ORDER BY r.name ASC`);
+    const result = await this.query<RoleModel>(
+      `${roleSelect} WHERE r.deleted_at IS NULL ${roleGroupBy} ORDER BY r.name ASC`
+    );
     return result.rows.map((item) => this.mapper.toDomain(item));
   }
 
@@ -49,7 +52,7 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
     if (ids.length === 0) return [];
     const uniqueIds = [...new Set(ids)];
     const result = await this.query<RoleModel>(
-      `${roleSelect} WHERE r.id = ANY($1::text[]) ${roleGroupBy} ORDER BY r.name ASC`,
+      `${roleSelect} WHERE r.id = ANY($1::text[]) AND r.deleted_at IS NULL ${roleGroupBy} ORDER BY r.name ASC`,
       [uniqueIds]
     );
     return result.rows.map((item) => this.mapper.toDomain(item));
@@ -71,24 +74,28 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
   }
 
   async findRoleById(id: string): Promise<RoleEntity | null> {
-    const result = await this.query<RoleModel>(`${roleSelect} WHERE r.id = $1 ${roleGroupBy} LIMIT 1`, [id]);
+    const result = await this.query<RoleModel>(
+      `${roleSelect} WHERE r.id = $1 AND r.deleted_at IS NULL ${roleGroupBy} LIMIT 1`,
+      [id]
+    );
     const [record] = result.rows;
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async findRoleByName(name: string): Promise<RoleEntity | null> {
-    const result = await this.query<RoleModel>(`${roleSelect} WHERE r.name = $1 ${roleGroupBy} LIMIT 1`, [
-      RoleName.create(name).value
-    ]);
+    const result = await this.query<RoleModel>(
+      `${roleSelect} WHERE r.name = $1 AND r.deleted_at IS NULL ${roleGroupBy} LIMIT 1`,
+      [RoleName.create(name).value]
+    );
     const [record] = result.rows;
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async findRoles({ limit, skip = 0 }: ListRolesInput): Promise<RoleEntity[]> {
-    const result = await this.query<RoleModel>(`${roleSelect} ${roleGroupBy} ORDER BY r.name ASC OFFSET $1 LIMIT $2`, [
-      skip,
-      limit
-    ]);
+    const result = await this.query<RoleModel>(
+      `${roleSelect} WHERE r.deleted_at IS NULL ${roleGroupBy} ORDER BY r.name ASC OFFSET $1 LIMIT $2`,
+      [skip, limit]
+    );
     return result.rows.map((item) => this.mapper.toDomain(item));
   }
 
@@ -144,12 +151,12 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
       if (entries.length > 0) {
         const setters = entries.map(([key], index) => `"${key}" = $${index + 2}`);
         setters.push('"updated_at" = NOW()');
-        await this.query(`UPDATE roles SET ${setters.join(', ')} WHERE id = $1`, [
+        await this.query(`UPDATE roles SET ${setters.join(', ')} WHERE id = $1 AND deleted_at IS NULL`, [
           id,
           ...entries.map(([, value]) => value)
         ]);
       } else if (data.permissionIds !== undefined) {
-        await this.query(`UPDATE roles SET "updated_at" = NOW() WHERE id = $1`, [id]);
+        await this.query(`UPDATE roles SET "updated_at" = NOW() WHERE id = $1 AND deleted_at IS NULL`, [id]);
       }
 
       if (data.permissionIds !== undefined) {
@@ -160,17 +167,22 @@ export class RoleRepository extends PostgresRepositoryBase<RoleEntity, RoleModel
     return this.findRoleById(id);
   }
 
-  async deleteRole(id: string): Promise<RoleEntity | null> {
+  async deleteRole(id: string, options?: Options): Promise<RoleEntity | null> {
     const current = await this.findRoleById(id);
     if (!current) return null;
 
-    const result = await this.query(`DELETE FROM roles WHERE id = $1`, [id]);
-    return (result.rowCount ?? 0) > 0 ? current : null;
+    const deleted = await this.deleteById(id, options);
+    return deleted ? current : null;
   }
 
   async countRolesWithPermissionId(permissionId: string): Promise<number> {
     const result = await this.query<{ count: string }>(
-      `SELECT COUNT(DISTINCT role_id)::text AS count FROM role_permissions WHERE permission_id = $1`,
+      `
+        SELECT COUNT(DISTINCT rp.role_id)::text AS count
+        FROM role_permissions rp
+        JOIN roles r ON r.id = rp.role_id AND r.deleted_at IS NULL
+        WHERE rp.permission_id = $1
+      `,
       [permissionId]
     );
     return Number(result.rows[0]?.count ?? 0);

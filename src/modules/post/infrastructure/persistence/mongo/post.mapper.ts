@@ -23,7 +23,11 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
       guest_views: clone.guestViews ?? 0,
       user_views: clone.userViews ?? 0,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(postSchema, record);
   }
@@ -31,7 +35,11 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
     const entity = new PostEntity({
       id: new UniqueEntityID(record._id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         userId: record.user_id,
         type: record.type,
@@ -63,7 +71,11 @@ export class PostMapper implements Mapper<PostEntity, PostModel, PostFullProps> 
       guestViews: record.guest_views,
       userViews: record.user_views,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

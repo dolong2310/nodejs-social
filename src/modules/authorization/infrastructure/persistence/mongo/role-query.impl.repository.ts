@@ -17,12 +17,12 @@ export class RoleQueryRepository implements RoleQueryRepositoryPort {
 
   async findRoleWithPermissionsById(id: string): Promise<RoleWithPermissions | null> {
     const pipeline: Document[] = [
-      { $match: { _id: id } },
+      { $match: { _id: id, deleted_at: null } },
       {
         $lookup: {
           from: 'permissions',
           let: { ids: { $ifNull: ['$permission_ids', []] } },
-          pipeline: [{ $match: { $expr: { $in: ['$_id', '$$ids'] } } }],
+          pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$ids'] } } }],
           as: '_permissionDocs'
         }
       },

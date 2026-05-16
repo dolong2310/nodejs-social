@@ -51,7 +51,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           UNION
           SELECT 1 FROM bookmarks WHERE user_id = $1 AND post_id = $2
           UNION
-          SELECT 1 FROM posts WHERE user_id = $1 AND parent_id = $2 AND type = $3
+          SELECT 1 FROM posts WHERE user_id = $1 AND parent_id = $2 AND type = $3 AND deleted_at IS NULL
         ) AS exists
       `,
       [viewerId, postId, EnumPostType.COMMENT]
@@ -82,14 +82,14 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           SELECT l.post_id
           FROM likes l
           JOIN posts p ON p.id = l.post_id
-          WHERE l.user_id = $1 AND p.user_id = ANY($2::text[])
+          WHERE l.user_id = $1 AND p.user_id = ANY($2::text[]) AND p.deleted_at IS NULL
 
           UNION
 
           SELECT b.post_id
           FROM bookmarks b
           JOIN posts p ON p.id = b.post_id
-          WHERE b.user_id = $1 AND p.user_id = ANY($2::text[])
+          WHERE b.user_id = $1 AND p.user_id = ANY($2::text[]) AND p.deleted_at IS NULL
 
           UNION
 
@@ -100,6 +100,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             AND c.type = $3
             AND c.parent_id IS NOT NULL
             AND parent.user_id = ANY($2::text[])
+            AND c.deleted_at IS NULL
+            AND parent.deleted_at IS NULL
         ) interacted
       `,
       [viewerId, authorIds, EnumPostType.COMMENT]
@@ -253,7 +255,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         WITH base_posts AS (
           SELECT p.*
           FROM posts p
-          WHERE ${whereSql}
+          WHERE (${whereSql}) AND p.deleted_at IS NULL
           ORDER BY p.created_at DESC, p.id DESC
           LIMIT ${limitPlaceholder}
         )
@@ -293,7 +295,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         ${
           includeAuthor
             ? `
-        LEFT JOIN users author ON author.id = bp.user_id`
+        LEFT JOIN users author ON author.id = bp.user_id AND author.deleted_at IS NULL`
             : ''
         }
         LEFT JOIN LATERAL (
@@ -307,7 +309,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             ORDER BY input.ord
           ) AS items
           FROM unnest(bp.hashtags) WITH ORDINALITY input(id, ord)
-          JOIN hashtags h ON h.id = input.id
+          JOIN hashtags h ON h.id = input.id AND h.deleted_at IS NULL
         ) hashtags ON TRUE
         LEFT JOIN LATERAL (
           SELECT json_agg(
@@ -320,7 +322,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             ORDER BY input.ord
           ) AS items
           FROM unnest(bp.mentions) WITH ORDINALITY input(id, ord)
-          JOIN users u ON u.id = input.id
+          JOIN users u ON u.id = input.id AND u.deleted_at IS NULL
         ) mentions ON TRUE
         LEFT JOIN LATERAL (
           SELECT COUNT(*)::int AS total
@@ -338,7 +340,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             COUNT(*) FILTER (WHERE child.type = '${EnumPostType.COMMENT}')::int AS comment_count,
             COUNT(*) FILTER (WHERE child.type = '${EnumPostType.QUOTE}')::int AS quote_count
           FROM posts child
-          WHERE child.parent_id = bp.id
+          WHERE child.parent_id = bp.id AND child.deleted_at IS NULL
         ) children ON TRUE
         ORDER BY bp.created_at DESC, bp.id DESC
       `,

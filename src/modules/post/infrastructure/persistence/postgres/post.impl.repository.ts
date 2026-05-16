@@ -86,10 +86,10 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
     if (media !== undefined) addSet('media', JSON.stringify(media.map((item) => item.raw())), '::jsonb');
 
     if (setParts.length === 0) {
-      const result = await this.query<PostModel>('SELECT * FROM posts WHERE id = $1 AND user_id = $2 LIMIT 1', [
-        postId,
-        ownerUserId
-      ]);
+      const result = await this.query<PostModel>(
+        'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL LIMIT 1',
+        [postId, ownerUserId]
+      );
       const [record] = result.rows;
       return record ? this.mapper.toDomain(record) : null;
     }
@@ -99,7 +99,7 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
       `
         UPDATE posts
         SET ${setParts.join(', ')}
-        WHERE id = $1 AND user_id = $2
+        WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
         RETURNING *
       `,
       values

@@ -50,22 +50,30 @@ export class PostgresDatabase implements PostgresDatabasePort {
         module TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        CONSTRAINT permissions_path_method_unique UNIQUE (path, method)
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
+        CONSTRAINT permissions_path_method_not_empty CHECK (length(path) > 0 AND length(method) > 0)
       );
 
       CREATE TABLE IF NOT EXISTS roles (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
         description TEXT NOT NULL DEFAULT '',
         is_active BOOLEAN NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ
       );
 
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
         password TEXT NOT NULL,
         birthday TIMESTAMPTZ NOT NULL,
         role_id TEXT NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
@@ -74,11 +82,15 @@ export class PostgresDatabase implements PostgresDatabasePort {
         bio TEXT,
         location TEXT,
         website TEXT,
-        username TEXT UNIQUE,
+        username TEXT,
         avatar TEXT,
         cover_photo TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ
       );
 
       CREATE TABLE IF NOT EXISTS otps (
@@ -89,6 +101,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         expires_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT otps_email_type_unique UNIQUE (email, type)
       );
 
@@ -98,7 +114,11 @@ export class PostgresDatabase implements PostgresDatabasePort {
         token TEXT NOT NULL UNIQUE,
         expires_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ
       );
 
       CREATE TABLE IF NOT EXISTS blocks (
@@ -107,6 +127,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         blocked_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT blocks_blocker_blocked_unique UNIQUE (blocker_id, blocked_id),
         CONSTRAINT blocks_no_self_block CHECK (blocker_id <> blocked_id)
       );
@@ -117,6 +141,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         user_id_high TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT friendships_user_pair_unique UNIQUE (user_id_low, user_id_high),
         CONSTRAINT friendships_canonical_pair CHECK (user_id_low < user_id_high)
       );
@@ -127,15 +155,23 @@ export class PostgresDatabase implements PostgresDatabasePort {
         to_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT friend_requests_from_to_unique UNIQUE (from_user_id, to_user_id),
         CONSTRAINT friend_requests_no_self_request CHECK (from_user_id <> to_user_id)
       );
 
       CREATE TABLE IF NOT EXISTS hashtags (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT hashtags_name_not_empty CHECK (length(name) > 0),
         CONSTRAINT hashtags_name_max_length CHECK (length(name) <= 100)
       );
@@ -154,7 +190,11 @@ export class PostgresDatabase implements PostgresDatabasePort {
         guest_views INTEGER NOT NULL DEFAULT 0 CHECK (guest_views >= 0),
         user_views INTEGER NOT NULL DEFAULT 0 CHECK (user_views >= 0),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ
       );
 
       COMMENT ON COLUMN posts.hashtags IS
@@ -170,6 +210,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         post_id TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT likes_user_post_unique UNIQUE (user_id, post_id)
       );
 
@@ -179,6 +223,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         post_id TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT bookmarks_user_post_unique UNIQUE (user_id, post_id)
       );
 
@@ -192,6 +240,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         user_id_high TEXT REFERENCES users(id) ON DELETE RESTRICT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT conversations_direct_shape CHECK (
           (type = 'direct' AND user_id_low IS NOT NULL AND user_id_high IS NOT NULL AND user_id_low <> user_id_high AND name IS NULL AND avatar_media_id IS NULL)
           OR (type = 'group' AND name IS NOT NULL AND length(name) > 0 AND user_id_low IS NULL AND user_id_high IS NULL)
@@ -211,6 +263,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         last_read_message_id TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT conversation_members_conversation_user_unique UNIQUE (conversation_id, user_id)
       );
 
@@ -222,6 +278,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         attachments JSONB,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT chat_messages_attachments_array CHECK (
           attachments IS NULL OR jsonb_typeof(attachments) = 'array'
         ),
@@ -241,6 +301,10 @@ export class PostgresDatabase implements PostgresDatabasePort {
         message TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ,
         CONSTRAINT video_status_name_unique UNIQUE (name),
         CONSTRAINT video_status_name_not_empty CHECK (length(btrim(name)) > 0)
       );
@@ -254,7 +318,11 @@ export class PostgresDatabase implements PostgresDatabasePort {
         actor JSONB NOT NULL,
         payload JSONB NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by_id TEXT,
+        updated_by_id TEXT,
+        deleted_by_id TEXT,
+        deleted_at TIMESTAMPTZ
       );
 
       COMMENT ON COLUMN notifications.actor IS
@@ -325,6 +393,108 @@ export class PostgresDatabase implements PostgresDatabasePort {
         END IF;
       END $$;
 
+      ALTER TABLE permissions
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE roles
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE otps
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE refresh_tokens
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE blocks
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE friendships
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE friend_requests
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE hashtags
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE posts
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE likes
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE bookmarks
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE conversations
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE conversation_members
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE chat_messages
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE video_status
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+      ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS created_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS updated_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_by_id TEXT,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
       UPDATE users
       SET
         email = lower(btrim(email)),
@@ -340,12 +510,25 @@ export class PostgresDatabase implements PostgresDatabasePort {
         PRIMARY KEY (role_id, permission_id)
       );
 
+      ALTER TABLE permissions DROP CONSTRAINT IF EXISTS permissions_path_method_unique;
+      ALTER TABLE roles DROP CONSTRAINT IF EXISTS roles_name_key;
+      ALTER TABLE users DROP CONSTRAINT IF EXISTS users_email_key;
+      ALTER TABLE users DROP CONSTRAINT IF EXISTS users_username_key;
+      ALTER TABLE hashtags DROP CONSTRAINT IF EXISTS hashtags_name_key;
+
+      DROP INDEX IF EXISTS users_email_lower_unique;
+      DROP INDEX IF EXISTS users_username_lower_unique;
+      DROP INDEX IF EXISTS conversations_direct_pair_unique;
+
+      CREATE UNIQUE INDEX IF NOT EXISTS permissions_path_method_active_unique ON permissions(path, method) WHERE deleted_at IS NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS roles_name_active_unique ON roles(name) WHERE deleted_at IS NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS hashtags_name_active_unique ON hashtags(name) WHERE deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS role_permissions_permission_id_idx ON role_permissions(permission_id);
       CREATE INDEX IF NOT EXISTS role_permissions_role_id_position_idx ON role_permissions(role_id, position);
-      CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_unique ON users (lower(email));
-      CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_unique ON users (lower(username)) WHERE username IS NOT NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_active_unique ON users (lower(email)) WHERE deleted_at IS NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_active_unique ON users (lower(username)) WHERE username IS NOT NULL AND deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS users_role_id_idx ON users(role_id);
-      CREATE INDEX IF NOT EXISTS users_created_at_id_idx ON users(created_at DESC, id DESC);
+      CREATE INDEX IF NOT EXISTS users_created_at_id_idx ON users(created_at DESC, id DESC) WHERE deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS otps_expires_at_idx ON otps(expires_at);
       CREATE INDEX IF NOT EXISTS refresh_tokens_user_id_idx ON refresh_tokens(user_id);
       CREATE INDEX IF NOT EXISTS refresh_tokens_expires_at_idx ON refresh_tokens(expires_at);
@@ -353,27 +536,27 @@ export class PostgresDatabase implements PostgresDatabasePort {
       CREATE INDEX IF NOT EXISTS friendships_user_id_high_low_idx ON friendships(user_id_high, user_id_low);
       CREATE INDEX IF NOT EXISTS friend_requests_to_created_id_idx ON friend_requests(to_user_id, created_at DESC, id DESC);
       CREATE INDEX IF NOT EXISTS friend_requests_from_created_id_idx ON friend_requests(from_user_id, created_at DESC, id DESC);
-      CREATE INDEX IF NOT EXISTS posts_parent_type_created_id_idx ON posts(parent_id, type, created_at DESC, id DESC);
-      CREATE INDEX IF NOT EXISTS posts_user_audience_idx ON posts(user_id, audience);
-      CREATE INDEX IF NOT EXISTS posts_audience_created_id_idx ON posts(audience, created_at DESC, id DESC);
-      CREATE INDEX IF NOT EXISTS posts_created_id_idx ON posts(created_at DESC, id DESC);
+      CREATE INDEX IF NOT EXISTS posts_parent_type_created_id_active_idx ON posts(parent_id, type, created_at DESC, id DESC) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS posts_user_audience_active_idx ON posts(user_id, audience) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS posts_audience_created_id_active_idx ON posts(audience, created_at DESC, id DESC) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS posts_created_id_active_idx ON posts(created_at DESC, id DESC) WHERE deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS posts_media_gin_idx ON posts USING GIN (media jsonb_path_ops);
       CREATE INDEX IF NOT EXISTS posts_content_fts_idx ON posts USING GIN (to_tsvector('simple', content));
       CREATE INDEX IF NOT EXISTS likes_post_id_idx ON likes(post_id);
       CREATE INDEX IF NOT EXISTS bookmarks_post_id_idx ON bookmarks(post_id);
-      CREATE UNIQUE INDEX IF NOT EXISTS conversations_direct_pair_unique
+      CREATE UNIQUE INDEX IF NOT EXISTS conversations_direct_pair_active_unique
         ON conversations(user_id_low, user_id_high)
-        WHERE type = 'direct';
-      CREATE INDEX IF NOT EXISTS conversations_updated_id_idx ON conversations(updated_at DESC, id DESC);
+        WHERE type = 'direct' AND deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS conversations_updated_id_active_idx ON conversations(updated_at DESC, id DESC) WHERE deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS conversations_created_by_idx ON conversations(created_by);
       CREATE INDEX IF NOT EXISTS conversation_members_user_conversation_idx ON conversation_members(user_id, conversation_id);
       CREATE INDEX IF NOT EXISTS conversation_members_conversation_joined_idx ON conversation_members(conversation_id, joined_at ASC, id ASC);
       CREATE INDEX IF NOT EXISTS conversation_members_conversation_role_idx ON conversation_members(conversation_id, role);
-      CREATE INDEX IF NOT EXISTS chat_messages_conversation_created_id_idx ON chat_messages(conversation_id, created_at DESC, id DESC);
+      CREATE INDEX IF NOT EXISTS chat_messages_conversation_created_id_active_idx ON chat_messages(conversation_id, created_at DESC, id DESC) WHERE deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS chat_messages_sender_id_idx ON chat_messages(sender_id);
-      CREATE INDEX IF NOT EXISTS notifications_recipient_created_id_idx ON notifications(recipient_id, created_at DESC, id DESC);
-      CREATE INDEX IF NOT EXISTS notifications_recipient_unread_idx ON notifications(recipient_id) WHERE read = FALSE;
-      CREATE INDEX IF NOT EXISTS notifications_recipient_trim_idx ON notifications(recipient_id, read DESC, created_at ASC, id ASC);
+      CREATE INDEX IF NOT EXISTS notifications_recipient_created_id_active_idx ON notifications(recipient_id, created_at DESC, id DESC) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS notifications_recipient_unread_active_idx ON notifications(recipient_id) WHERE read = FALSE AND deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS notifications_recipient_trim_active_idx ON notifications(recipient_id, read DESC, created_at ASC, id ASC) WHERE deleted_at IS NULL;
       CREATE INDEX IF NOT EXISTS notifications_actor_user_id_idx ON notifications((actor->>'userId'));
     `);
   }

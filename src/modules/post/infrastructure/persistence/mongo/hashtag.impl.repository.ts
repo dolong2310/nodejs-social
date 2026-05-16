@@ -7,6 +7,7 @@ import {
   ListHashtagsInput,
   UpdateHashtagInput
 } from '@/modules/post/domain/repositories/hashtag.repository.type';
+import { Options } from '@/modules/core/domain/repositories/port.repository';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper';
 import { HashtagModel } from '@/modules/post/infrastructure/persistence/mongo/hashtag.model';
 import { AnyBulkWriteOperation, Db, MongoClient } from 'mongodb';
@@ -41,7 +42,7 @@ export class HashtagRepository
       const record = this.mapper.toPersistence(entity);
       return {
         updateOne: {
-          filter: { name },
+          filter: { name, deleted_at: null },
           update: { $setOnInsert: record },
           upsert: true
         }
@@ -55,39 +56,49 @@ export class HashtagRepository
     await this.dbCollection.bulkWrite(ops, { ordered: false });
 
     const result = await this.dbCollection
-      .find({ name: { $in: hashtags } }, { projection: { _id: 1, name: 1 } })
+      .find({ name: { $in: hashtags }, deleted_at: null }, { projection: { _id: 1, name: 1 } })
       .toArray();
 
     return result.map((item) => this.mapper.toDomain(item));
   }
 
   async findHashtagById(id: string): Promise<HashtagEntity | null> {
-    const record = await this.dbCollection.findOne({ _id: id });
-    return record ? this.mapper.toDomain(record) : null;
+    return this.findById(id);
   }
 
   async findHashtagByName(name: string): Promise<HashtagEntity | null> {
-    const record = await this.dbCollection.findOne({ name });
+    const record = await this.dbCollection.findOne({ name, deleted_at: null });
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async findHashtags({ limit, skip = 0 }: ListHashtagsInput): Promise<HashtagEntity[]> {
-    const records = await this.dbCollection.find({}).sort({ name: 1 }).skip(skip).limit(limit).toArray();
+    const records = await this.dbCollection
+      .find({ deleted_at: null })
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
     return records.map((item) => this.mapper.toDomain(item));
   }
 
   async countHashtags(): Promise<number> {
-    return this.dbCollection.countDocuments({});
+    return this.count();
   }
 
   async updateHashtag(id: string, data: UpdateHashtagInput): Promise<HashtagEntity | null> {
     const patch: Record<string, unknown> = { ...data, updated_at: new Date() };
-    const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: patch }, { returnDocument: 'after' });
+    const record = await this.dbCollection.findOneAndUpdate(
+      { _id: id, deleted_at: null },
+      { $set: patch },
+      { returnDocument: 'after' }
+    );
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async deleteHashtag(id: string): Promise<HashtagEntity | null> {
-    const record = await this.dbCollection.findOneAndDelete({ _id: id });
-    return record ? this.mapper.toDomain(record) : null;
+  async deleteHashtag(id: string, options?: Options): Promise<HashtagEntity | null> {
+    const current = await this.findHashtagById(id);
+    if (!current) return null;
+    const deleted = await this.deleteById(id, options);
+    return deleted ? current : null;
   }
 }

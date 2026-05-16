@@ -34,7 +34,8 @@ const roleJoin = `
       ) AS permission_ids
     FROM roles r
     LEFT JOIN role_permissions rp ON rp.role_id = r.id
-    GROUP BY r.id, r.name, r.description, r.is_active, r.created_at, r.updated_at
+    WHERE r.deleted_at IS NULL
+    GROUP BY r.id
   ) role ON role.id = u.role_id
 `;
 
@@ -45,7 +46,10 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
   ) {}
 
   async findSafeUserById(id: string): Promise<UserSafeProps | null> {
-    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "id" = $1 LIMIT 1`, [id]);
+    const result = await this.pool.query<UserModel>(
+      `SELECT * FROM "users" WHERE "id" = $1 AND "deleted_at" IS NULL LIMIT 1`,
+      [id]
+    );
     const [record] = result.rows;
     return record ? this.toSafeUser(record) : null;
   }
@@ -54,17 +58,19 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     const normalizedUsername = Username.normalize(username);
     if (!normalizedUsername) return null;
 
-    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "username" = $1 LIMIT 1`, [
-      normalizedUsername
-    ]);
+    const result = await this.pool.query<UserModel>(
+      `SELECT * FROM "users" WHERE "username" = $1 AND "deleted_at" IS NULL LIMIT 1`,
+      [normalizedUsername]
+    );
     const [record] = result.rows;
     return record ? this.toSafeUser(record) : null;
   }
 
   async findSafeUserByEmail(email: string): Promise<UserSafeProps | null> {
-    const result = await this.pool.query<UserModel>(`SELECT * FROM "users" WHERE "email" = $1 LIMIT 1`, [
-      EmailAddress.normalize(email)
-    ]);
+    const result = await this.pool.query<UserModel>(
+      `SELECT * FROM "users" WHERE "email" = $1 AND "deleted_at" IS NULL LIMIT 1`,
+      [EmailAddress.normalize(email)]
+    );
     const [record] = result.rows;
     return record ? this.toSafeUser(record) : null;
   }
@@ -83,7 +89,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
           role.updated_at AS role_updated_at
         FROM users u
         ${roleJoin}
-        WHERE u.id = $1
+        WHERE u.id = $1 AND u.deleted_at IS NULL
         LIMIT 1
       `,
       [id]
@@ -106,7 +112,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
           role.updated_at AS role_updated_at
         FROM users u
         ${roleJoin}
-        WHERE u.email = $1
+        WHERE u.email = $1 AND u.deleted_at IS NULL
         LIMIT 1
       `,
       [EmailAddress.normalize(email)]
@@ -122,7 +128,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
       `
         SELECT "id", "name", "username", "avatar"
         FROM "users"
-        WHERE "id" = ANY($1::text[])
+        WHERE "id" = ANY($1::text[]) AND "deleted_at" IS NULL
       `,
       [uniqueIds]
     );
@@ -138,7 +144,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     findFriendUserIds
   }: FindUsersForSearchInput): Promise<UserSafeProps[]> {
     const values: unknown[] = [];
-    const conditions: string[] = [];
+    const conditions: string[] = ['"deleted_at" IS NULL'];
 
     if (query) {
       values.push(`%${query}%`);

@@ -33,7 +33,7 @@ export class NotificationRepository
     limit,
     before
   }: FindNotificationsInput): Promise<NotificationEntity[]> {
-    const filter: Filter<NotificationModel> = { recipient_id: recipientId };
+    const filter: Filter<NotificationModel> = { recipient_id: recipientId, deleted_at: null };
     if (actorUserIdNin && actorUserIdNin.length > 0) {
       filter['actor.user_id'] = { $nin: actorUserIdNin };
     }
@@ -58,7 +58,7 @@ export class NotificationRepository
   }: FindOldestNotificationIdsForTrimInput): Promise<string[]> {
     if (limit <= 0) return [];
     const notifications = await this.dbCollection
-      .find({ recipient_id: recipientId })
+      .find({ recipient_id: recipientId, deleted_at: null })
       .sort({ read: -1, created_at: 1, _id: 1 })
       .limit(limit)
       .project({ _id: 1 })
@@ -82,7 +82,7 @@ export class NotificationRepository
   async updateReadByIds({ ids, recipientId }: UpdateReadByIdsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const result = await this.dbCollection.updateMany(
-      { recipient_id: recipientId, _id: { $in: ids }, read: false },
+      { recipient_id: recipientId, _id: { $in: ids }, read: false, deleted_at: null },
       { $set: { read: true, read_at: new Date() } }
     );
     return result.modifiedCount;
@@ -90,7 +90,7 @@ export class NotificationRepository
 
   async updateAllRead(recipientId: string): Promise<number> {
     const result = await this.dbCollection.updateMany(
-      { recipient_id: recipientId, read: false },
+      { recipient_id: recipientId, read: false, deleted_at: null },
       { $set: { read: true, read_at: new Date() } }
     );
     return result.modifiedCount;

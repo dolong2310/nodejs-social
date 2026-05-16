@@ -15,7 +15,7 @@ export class DeleteHashtagUseCase extends DeleteHashtagPort {
     if (!current) {
       throw new HashtagNotFoundException();
     }
-    const removed = await this.hashtagRepository.deleteHashtag(command.id);
+    const removed = await this.hashtagRepository.deleteHashtag(command.id, { actorId: command.actorId });
     if (!removed) {
       throw new HashtagNotFoundException();
     }

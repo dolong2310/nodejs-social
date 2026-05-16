@@ -20,7 +20,11 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
       method: clone.method,
       module: clone.module,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(permissionSchema, record);
   }
@@ -28,7 +32,11 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
     const entity = new PermissionEntity({
       id: new UniqueEntityID(record._id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         name: record.name,
         description: record.description,
@@ -48,7 +56,11 @@ export class PermissionMapper implements Mapper<PermissionEntity, PermissionMode
       method: record.method,
       module: record.module,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

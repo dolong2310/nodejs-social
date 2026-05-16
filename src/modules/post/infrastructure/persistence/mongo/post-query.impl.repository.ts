@@ -48,7 +48,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       this.bookmarksCollection.findOne({ user_id: userId, post_id: postId }, { projection: { _id: 1 } }),
       // Tìm comment mà viewer comment vào post đó (posts.findOne với parentId = postId và type = COMMENT)
       this.dbCollection.findOne(
-        { user_id: userId, parent_id: postId, type: EnumPostType.COMMENT },
+        { user_id: userId, parent_id: postId, type: EnumPostType.COMMENT, deleted_at: null },
         { projection: { _id: 1 } }
       )
     ]);
@@ -60,7 +60,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const pipelineGetDetailPost = [
       {
         $match: {
-          _id: id
+          _id: id,
+          deleted_at: null
         }
       },
       {
@@ -71,8 +72,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       {
         $lookup: {
           from: 'hashtags',
-          localField: 'hashtags',
-          foreignField: '_id',
+          let: { hashtagIds: '$hashtags' },
+          pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$hashtagIds'] } } }],
           as: 'hashtags'
         }
       },
@@ -95,8 +96,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       {
         $lookup: {
           from: 'users',
-          localField: 'mentions',
-          foreignField: '_id',
+          let: { mentionIds: '$mentions' },
+          pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$mentionIds'] } } }],
           as: 'mentions'
         }
       },
@@ -136,7 +137,10 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         $lookup: {
           from: 'posts',
           let: { rootPostId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
+          pipeline: [
+            { $match: { deleted_at: null, $expr: { $eq: ['$parent_id', '$$rootPostId'] } } },
+            { $project: { _id: 0, type: 1 } }
+          ],
           as: 'childPostsWithTypeOnly'
         }
       },
@@ -222,7 +226,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             }
           },
           { $unwind: '$post' },
-          { $match: { 'post.user_id': { $in: authorIds } } },
+          { $match: { 'post.user_id': { $in: authorIds }, 'post.deleted_at': null } },
           { $group: { _id: '$post_id' } }
         ])
         .toArray(),
@@ -238,7 +242,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             }
           },
           { $unwind: '$post' },
-          { $match: { 'post.user_id': { $in: authorIds } } },
+          { $match: { 'post.user_id': { $in: authorIds }, 'post.deleted_at': null } },
           { $group: { _id: '$post_id' } }
         ])
         .toArray(),
@@ -248,7 +252,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             $match: {
               user_id: viewerId,
               type: EnumPostType.COMMENT,
-              parent_id: { $ne: null }
+              parent_id: { $ne: null },
+              deleted_at: null
             }
           },
           {
@@ -260,7 +265,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             }
           },
           { $unwind: '$parent' },
-          { $match: { 'parent.user_id': { $in: authorIds } } },
+          { $match: { 'parent.user_id': { $in: authorIds }, 'parent.deleted_at': null } },
           { $group: { _id: '$parent_id' } }
         ])
         .toArray()
@@ -298,7 +303,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
   async findGuestPosts(data: FindGuestPostsInput): Promise<PostDetailWithAuthorOutput[]> {
     const { cursor, limit } = data;
     const match: Record<string, unknown> = {
-      audience: EnumPostAudience.PUBLIC
+      audience: EnumPostAudience.PUBLIC,
+      deleted_at: null
     };
     if (cursor) {
       match.$or = [
@@ -320,7 +326,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const { cursor, limit, postId, type } = data;
     const match: Record<string, unknown> = {
       parent_id: postId,
-      type
+      type,
+      deleted_at: null
     };
     if (cursor) {
       match.$or = [
@@ -350,10 +357,8 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     cursor,
     findFriendUserIds
   }: FindPostsForSearchInput): Promise<PostDetailWithAuthorOutput[]> {
-    // const baseMatch = await this._getPostMatch(payload);
-    // const match = this._mergeCreatedAtIdCursor(baseMatch, cursor);
     const match: Record<string, unknown> = {};
-    const $and: Record<string, unknown>[] = [];
+    const $and: Record<string, unknown>[] = [{ deleted_at: null }];
 
     if (query) {
       // tìm kiếm theo text trong các trường của post
@@ -413,11 +418,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       $and.push({ audience: EnumPostAudience.PUBLIC });
     }
 
-    if ($and.length === 1) {
-      match['$and'] = $and[0];
-    } else {
-      match['$and'] = $and;
-    }
+    match['$and'] = $and;
 
     // build cursor filter
     if (cursor) {
@@ -428,7 +429,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
         ]
       };
-      match['$and'] = [match, cursorFilter];
+      match['$and'] = [...$and, cursorFilter];
     }
 
     const pipelineGetNewFeeds = buildBasePostPipeline({
@@ -467,7 +468,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       orBranches.push({ _id: { $in: extraVisiblePostIds } });
     }
 
-    const base: Record<string, unknown> = { $or: orBranches };
+    const base: Record<string, unknown> = { deleted_at: null, $or: orBranches };
     if (!cursor) {
       return base;
     }
@@ -501,7 +502,7 @@ function buildBasePostPipeline({
   const pipeline: Document[] = [];
 
   if (match) {
-    pipeline.push({ $match: match });
+    pipeline.push({ $match: { deleted_at: null, ...match } });
     pipeline.push({ $sort: { created_at: -1, _id: -1 } });
   }
 
@@ -522,14 +523,9 @@ function buildBasePostPipeline({
           foreignField: '_id',
           pipeline: [
             {
-              // $project: {
-              //   _id: 0,
-              //   id: '$_id',
-              //   name: 1,
-              //   email: 1,
-              //   username: 1,
-              //   avatar: 1
-              // }
+              $match: { deleted_at: null }
+            },
+            {
               $replaceRoot: {
                 newRoot: {
                   id: '$_id',
@@ -557,8 +553,8 @@ function buildBasePostPipeline({
     {
       $lookup: {
         from: 'hashtags',
-        localField: 'hashtags',
-        foreignField: '_id',
+        let: { hashtagIds: '$hashtags' },
+        pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$hashtagIds'] } } }],
         as: 'hashtags'
       }
     },
@@ -581,8 +577,8 @@ function buildBasePostPipeline({
     {
       $lookup: {
         from: 'users',
-        localField: 'mentions',
-        foreignField: '_id',
+        let: { mentionIds: '$mentions' },
+        pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$mentionIds'] } } }],
         as: 'mentions'
       }
     },
@@ -623,7 +619,10 @@ function buildBasePostPipeline({
       $lookup: {
         from: 'posts',
         let: { rootPostId: '$_id' },
-        pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$rootPostId'] } } }, { $project: { _id: 0, type: 1 } }],
+        pipeline: [
+          { $match: { deleted_at: null, $expr: { $eq: ['$parent_id', '$$rootPostId'] } } },
+          { $project: { _id: 0, type: 1 } }
+        ],
         as: 'childPostsWithTypeOnly'
       }
     },

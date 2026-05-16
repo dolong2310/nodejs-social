@@ -10,6 +10,7 @@ import { PermissionPath } from '@/modules/authorization/domain/value-objects/per
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/mongo/permission.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { Options } from '@/modules/core/domain/repositories/port.repository';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { Db, MongoClient } from 'mongodb';
 
@@ -29,17 +30,21 @@ export class PermissionRepository
   }
 
   async findPermissions({ limit, skip = 0 }: ListPermissionsInput): Promise<PermissionEntity[]> {
-    const records = await this.dbCollection.find({}).sort({ path: 1, method: 1 }).skip(skip).limit(limit).toArray();
+    const records = await this.dbCollection
+      .find({ deleted_at: null })
+      .sort({ path: 1, method: 1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
     return records.map((item) => this.mapper.toDomain(item));
   }
 
   async countPermissions(): Promise<number> {
-    return this.dbCollection.countDocuments({});
+    return this.count();
   }
 
   async findPermissionById(id: string): Promise<PermissionEntity | null> {
-    const record = await this.dbCollection.findOne({ _id: id });
-    return record ? this.mapper.toDomain(record) : null;
+    return this.findById(id);
   }
 
   async findPermissionByPathAndMethod({
@@ -47,7 +52,7 @@ export class PermissionRepository
     method,
     excludeId
   }: FindPermissionByPathAndMethodInput): Promise<PermissionEntity | null> {
-    const filter: Record<string, unknown> = { path: PermissionPath.create(path).value, method };
+    const filter: Record<string, unknown> = { path: PermissionPath.create(path).value, method, deleted_at: null };
     if (excludeId) {
       filter._id = { $ne: excludeId };
     }
@@ -72,13 +77,19 @@ export class PermissionRepository
   async updatePermission(id: string, data: UpdatePermissionInput): Promise<PermissionEntity | null> {
     const patch: UpdatePermissionInput = { ...data };
     if (data.path) patch.path = PermissionPath.create(data.path).value;
-    const record = await this.dbCollection.findOneAndUpdate({ _id: id }, { $set: patch }, { returnDocument: 'after' });
+    const record = await this.dbCollection.findOneAndUpdate(
+      { _id: id, deleted_at: null },
+      { $set: { ...patch, updated_at: new Date() } },
+      { returnDocument: 'after' }
+    );
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async deletePermission(id: string): Promise<PermissionEntity | null> {
-    const record = await this.dbCollection.findOneAndDelete({ _id: id });
-    return record ? this.mapper.toDomain(record) : null;
+  async deletePermission(id: string, options?: Options): Promise<PermissionEntity | null> {
+    const current = await this.findPermissionById(id);
+    if (!current) return null;
+    const deleted = await this.deleteById(id, options);
+    return deleted ? current : null;
   }
 
   async deletePermissions(ids: string[]): Promise<number> {

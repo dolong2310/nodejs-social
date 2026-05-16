@@ -44,7 +44,7 @@ export class ChatMessageRepository
 
   async findMessages(id: string, data: FindMessagesInput): Promise<ChatMessageEntity[]> {
     const { limit, before } = data;
-    const filter: Filter<ChatMessageModel> = { conversation_id: id };
+    const filter: Filter<ChatMessageModel> = { conversation_id: id, deleted_at: null };
     if (before) {
       // Chỉ lấy tin “đứng trước” điểm đó: createdAt < before.createdAt hoặc cùng createdAt nhưng _id < before._id.
       filter.$or = [

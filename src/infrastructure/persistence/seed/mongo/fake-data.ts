@@ -36,7 +36,7 @@ import { faker } from '@faker-js/faker';
 
 // ID của user viewer/admin đã tồn tại trong DB (format: "entity_<uuidv7>").
 // Tìm trong MongoDB collection `users` field `id`.
-const MYID = 'user_019e02a3-f8b8-753a-b950-253dbfd67e1f';
+const MYID = 'user_019e310c-504e-77b2-b685-e213e0a19f9d';
 const PASSWORD = '@Bc123';
 const USER_COUNT = 10;
 const POST_PER_USER = 10;
@@ -114,8 +114,11 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   });
   const uniqueMentions = Array.from(new Set(rawMentions)).slice(0, mentionCount);
 
-  // 5. random media (unique theo url, số lượng 1..MEDIA_PER_POST)
-  const mediaCount = faker.number.int({ min: 1, max: MEDIA_PER_POST });
+  const canHaveMedia = randomType === EnumPostType.POST;
+  const canHaveSocialMetadata = randomType !== EnumPostType.REPOST;
+
+  // 5. random media (unique theo url, chỉ POST được phép có media)
+  const mediaCount = canHaveMedia ? faker.number.int({ min: 1, max: MEDIA_PER_POST }) : 0;
   const mediaMap = new Map<string, { url: string; type: EnumMediaType }>();
   while (mediaMap.size < mediaCount) {
     const url = faker.image.url();
@@ -125,8 +128,8 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   }
   const randomMedia = Array.from(mediaMap.values()).map((m) => new Media(m));
 
-  // 6. random content — PostEntity requires non-empty content for all types
-  const content = faker.lorem.paragraph({ min: 2, max: 5 });
+  // 6. content theo đúng rule của PostEntity
+  const content = randomType === EnumPostType.REPOST ? '' : faker.lorem.paragraph({ min: 2, max: 5 });
 
   // 7. parentId theo đúng rule
   // REPOST / COMMENT / QUOTE => phải có parentId là postId của bài viết cha (post gốc)
@@ -139,8 +142,8 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
     allowStrangerComments: faker.datatype.boolean({ probability: 0.7 }),
     content,
     parentId,
-    hashtagNames: uniqueHashtagNames,
-    mentions: uniqueMentions,
+    hashtagNames: canHaveSocialMetadata ? uniqueHashtagNames : [],
+    mentions: canHaveSocialMetadata ? uniqueMentions : [],
     media: randomMedia
   };
 };

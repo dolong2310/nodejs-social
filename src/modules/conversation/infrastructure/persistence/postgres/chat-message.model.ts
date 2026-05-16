@@ -18,7 +18,11 @@ export const chatMessageSchema = object({
     null
   ),
   created_at: date(),
-  updated_at: date()
+  created_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
+  updated_at: date(),
+  updated_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
+  deleted_at: nullable(date(), null),
+  deleted_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)
 });
 
 export type ChatMessageModel = InferOutput<typeof chatMessageSchema>;

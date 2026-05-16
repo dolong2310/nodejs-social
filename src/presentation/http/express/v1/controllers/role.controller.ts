@@ -111,7 +111,7 @@ export class RoleController extends BaseController implements IRoleController {
   @AutoBind()
   async remove(req: ExpressRequest<RoleIdParamsDTO>): Promise<unknown> {
     const { roleId } = req.params;
-    await this.deleteRoleUC.execute(new DeleteRoleCommand(roleId));
+    await this.deleteRoleUC.execute(new DeleteRoleCommand({ id: roleId, actorId: this.getUserId(req) }));
     return this.response({ message: 'Role deleted successfully' });
   }
 }

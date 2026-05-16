@@ -31,7 +31,7 @@ export abstract class MongoRepositoryBase<
   // QUERY
 
   async findById(id: string, options?: Options): Promise<Entity | null> {
-    const record = await this.dbCollection.findOne<DbModel>(this._buildIdFilter(id), {
+    const record = await this.dbCollection.findOne<DbModel>(this._withDeletedFilter(this._buildIdFilter(id), options), {
       session: this.session,
       projection: this._toDbProjection(options?.projection)
     });
@@ -39,16 +39,19 @@ export abstract class MongoRepositoryBase<
   }
 
   async findOne(entity: Partial<Entity>, options?: Options): Promise<Entity | null> {
-    const record = await this.dbCollection.findOne<DbModel>(this._toDbFilter(entity), {
-      session: this.session,
-      projection: this._toDbProjection(options?.projection)
-    });
+    const record = await this.dbCollection.findOne<DbModel>(
+      this._withDeletedFilter(this._toDbFilter(entity), options),
+      {
+        session: this.session,
+        projection: this._toDbProjection(options?.projection)
+      }
+    );
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async find(entity: Partial<Entity>, options?: Options): Promise<Entity[]> {
     const records = await this.dbCollection
-      .find<DbModel>(this._toDbFilter(entity), {
+      .find<DbModel>(this._withDeletedFilter(this._toDbFilter(entity), options), {
         session: this.session,
         projection: this._toDbProjection(options?.projection)
       })
@@ -58,7 +61,10 @@ export abstract class MongoRepositoryBase<
 
   async findAll(options?: Options): Promise<Entity[]> {
     const records = await this.dbCollection
-      .find<DbModel>({}, { session: this.session, projection: this._toDbProjection(options?.projection) })
+      .find<DbModel>(this._withDeletedFilter({} as Filter<DbModel>, options), {
+        session: this.session,
+        projection: this._toDbProjection(options?.projection)
+      })
       .toArray();
     return records.map((record) => this.mapper.toDomain(record));
   }
@@ -68,7 +74,7 @@ export abstract class MongoRepositoryBase<
     const uniqueIds = [...new Set(ids)];
     if (uniqueIds.length === 0) return [];
     const records = await this.dbCollection
-      .find<DbModel>({ _id: { $in: uniqueIds } } as Filter<DbModel>, {
+      .find<DbModel>(this._withDeletedFilter({ _id: { $in: uniqueIds } } as Filter<DbModel>, options), {
         session: this.session,
         projection: this._toDbProjection(options?.projection)
       })
@@ -79,14 +85,15 @@ export abstract class MongoRepositoryBase<
   async findAllPaginated(params: PaginatedQueryParams, options?: Options): Promise<Paginated<Entity>> {
     const sortField = params.orderBy.field === true ? '_id' : this._toMongoFieldName(String(params.orderBy.field));
     const sortDirection = params.orderBy.param === 'asc' ? 1 : -1;
+    const filter = this._withDeletedFilter({} as Filter<DbModel>, options);
     const [records, count] = await Promise.all([
       this.dbCollection
-        .find<DbModel>({}, { session: this.session, projection: this._toDbProjection(options?.projection) })
+        .find<DbModel>(filter, { session: this.session, projection: this._toDbProjection(options?.projection) })
         .sort({ [sortField]: sortDirection } as Record<string, 1 | -1>)
         .skip(params.offset)
         .limit(params.limit)
         .toArray(),
-      this.dbCollection.countDocuments({}, { session: this.session })
+      this.dbCollection.countDocuments(filter, { session: this.session })
     ]);
     return new Paginated<Entity>({
       count,
@@ -96,31 +103,33 @@ export abstract class MongoRepositoryBase<
     });
   }
 
-  async existsById(id: string): Promise<boolean> {
-    const count = await this.dbCollection.countDocuments(this._buildIdFilter(id), {
+  async existsById(id: string, options?: Options): Promise<boolean> {
+    const count = await this.dbCollection.countDocuments(this._withDeletedFilter(this._buildIdFilter(id), options), {
       limit: 1,
       session: this.session
     });
     return count > 0;
   }
 
-  async count(entity?: Partial<Entity>): Promise<number> {
-    return this.dbCollection.countDocuments(this._toDbFilter(entity ?? {}), { session: this.session });
+  async count(entity?: Partial<Entity>, options?: Options): Promise<number> {
+    return this.dbCollection.countDocuments(this._withDeletedFilter(this._toDbFilter(entity ?? {}), options), {
+      session: this.session
+    });
   }
 
   // INSERT
 
-  async insert(entity: Entity): Promise<Entity> {
-    const record = this.mapper.toPersistence(entity);
+  async insert(entity: Entity, options?: Options): Promise<Entity> {
+    const record = this._withAuditOnInsert(this.mapper.toPersistence(entity), options);
     await this.dbCollection.insertOne(record as OptionalUnlessRequiredId<DbModel>, {
       session: this.session
     });
     return this.mapper.toDomain(record);
   }
 
-  async insertMany(entities: Entity[]): Promise<Entity[]> {
+  async insertMany(entities: Entity[], options?: Options): Promise<Entity[]> {
     if (entities.length === 0) return [];
-    const records = entities.map((e) => this.mapper.toPersistence(e));
+    const records = entities.map((e) => this._withAuditOnInsert(this.mapper.toPersistence(e), options));
     await this.dbCollection.insertMany(records as OptionalUnlessRequiredId<DbModel>[], {
       session: this.session
     });
@@ -131,12 +140,14 @@ export abstract class MongoRepositoryBase<
 
   async update(id: string, entity: Partial<Entity>, options?: Options): Promise<Entity | null> {
     const updateData = this._toDbUpdate(entity);
+    const updatedAt = new Date();
     const record = await this.dbCollection.findOneAndUpdate(
-      this._buildIdFilter(id),
+      this._withDeletedFilter(this._buildIdFilter(id), options),
       {
         $set: {
           ...updateData,
-          updated_at: new Date()
+          updated_at: updatedAt,
+          updated_by_id: options?.actorId ?? null
         }
       },
       {
@@ -148,29 +159,33 @@ export abstract class MongoRepositoryBase<
     return record ? this.mapper.toDomain(record as DbModel) : null;
   }
 
-  async updateOne(id: string, entity: Partial<Entity>): Promise<void> {
+  async updateOne(id: string, entity: Partial<Entity>, options?: Options): Promise<void> {
     const updateData = this._toDbUpdate(entity);
+    const updatedAt = new Date();
     await this.dbCollection.updateOne(
-      this._buildIdFilter(id),
+      this._withDeletedFilter(this._buildIdFilter(id), options),
       {
         $set: {
           ...updateData,
-          updated_at: new Date()
+          updated_at: updatedAt,
+          updated_by_id: options?.actorId ?? null
         }
       },
       { session: this.session }
     );
   }
 
-  async updateMany(entity: Partial<Entity>, data: Partial<Entity>): Promise<number> {
-    const dbFilter = this._toDbFilter(entity);
+  async updateMany(entity: Partial<Entity>, data: Partial<Entity>, options?: Options): Promise<number> {
+    const dbFilter = this._withDeletedFilter(this._toDbFilter(entity), options);
     const updateData = this._toDbUpdate(data);
+    const updatedAt = new Date();
     const result = await this.dbCollection.updateMany(
       dbFilter,
       {
         $set: {
           ...updateData,
-          updated_at: new Date()
+          updated_at: updatedAt,
+          updated_by_id: options?.actorId ?? null
         }
       },
       { session: this.session }
@@ -180,21 +195,56 @@ export abstract class MongoRepositoryBase<
 
   // DELETE
 
-  async deleteById(id: string): Promise<boolean> {
-    const result = await this.dbCollection.deleteOne(this._buildIdFilter(id), {
-      session: this.session
-    });
-    return result.deletedCount > 0;
+  async deleteById(id: string, options?: Options): Promise<boolean> {
+    if (options?.hardDelete) {
+      const result = await this.dbCollection.deleteOne(this._buildIdFilter(id), {
+        session: this.session
+      });
+      return result.deletedCount > 0;
+    }
+
+    const deletedAt = new Date();
+    const result = await this.dbCollection.updateOne(
+      this._withDeletedFilter(this._buildIdFilter(id), options),
+      {
+        $set: {
+          deleted_at: deletedAt,
+          deleted_by_id: options?.actorId ?? null,
+          updated_at: deletedAt,
+          updated_by_id: options?.actorId ?? null
+        } as unknown as Partial<DbModel>
+      },
+      { session: this.session }
+    );
+    return result.modifiedCount > 0;
   }
 
-  async deleteAllByIds(ids: string[]): Promise<boolean> {
+  async deleteAllByIds(ids: string[], options?: Options): Promise<boolean> {
     if (ids.length === 0) return false;
     const uniqueIds = [...new Set(ids)];
     if (uniqueIds.length === 0) return false;
-    const result = await this.dbCollection.deleteMany({ _id: { $in: uniqueIds } } as Filter<DbModel>, {
-      session: this.session
-    });
-    return result.deletedCount > 0;
+    const idFilter = { _id: { $in: uniqueIds } } as Filter<DbModel>;
+    if (options?.hardDelete) {
+      const result = await this.dbCollection.deleteMany(idFilter, {
+        session: this.session
+      });
+      return result.deletedCount > 0;
+    }
+
+    const deletedAt = new Date();
+    const result = await this.dbCollection.updateMany(
+      this._withDeletedFilter(idFilter, options),
+      {
+        $set: {
+          deleted_at: deletedAt,
+          deleted_by_id: options?.actorId ?? null,
+          updated_at: deletedAt,
+          updated_by_id: options?.actorId ?? null
+        } as unknown as Partial<DbModel>
+      },
+      { session: this.session }
+    );
+    return result.modifiedCount > 0;
   }
 
   // TRANSACTION
@@ -253,6 +303,23 @@ export abstract class MongoRepositoryBase<
   protected _toDbProjection(projection?: Record<string, unknown>): Record<string, unknown> | undefined {
     if (!projection) return undefined;
     return convertObjectToSnakeCase(projection, ['id', '_id'], '_id');
+  }
+
+  protected _withDeletedFilter(filter: Filter<DbModel>, options?: Options): Filter<DbModel> {
+    if (options?.includeDeleted) return filter;
+    const deletedFilter = options?.onlyDeleted ? { deleted_at: { $ne: null } } : { deleted_at: null };
+    return { ...filter, ...deletedFilter } as Filter<DbModel>;
+  }
+
+  protected _withAuditOnInsert(record: DbModel, options?: Options): DbModel {
+    const actorId = options?.actorId ?? null;
+    return {
+      ...record,
+      created_by_id: (record.created_by_id as string | null | undefined) ?? actorId,
+      updated_by_id: (record.updated_by_id as string | null | undefined) ?? actorId,
+      deleted_by_id: (record.deleted_by_id as string | null | undefined) ?? null,
+      deleted_at: (record.deleted_at as Date | null | undefined) ?? null
+    };
   }
 
   protected _toMongoFieldName(field: string): string {

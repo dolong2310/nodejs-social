@@ -14,9 +14,13 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
       name: clone.name.value,
       description: clone.description,
       is_active: clone.isActive,
+      permission_ids: clone.permissionIds,
       created_at: clone.createdAt,
+      created_by_id: clone.createdById ?? null,
       updated_at: clone.updatedAt,
-      permission_ids: clone.permissionIds
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(roleSchema, record);
   }
@@ -24,7 +28,11 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
     const entity = new RoleEntity({
       id: new UniqueEntityID(record.id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         name: RoleName.create(record.name),
         description: record.description,
@@ -42,7 +50,11 @@ export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> 
       isActive: record.is_active,
       permissionIds: record.permission_ids ?? [],
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

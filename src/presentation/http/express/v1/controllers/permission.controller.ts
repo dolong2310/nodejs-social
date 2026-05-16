@@ -116,7 +116,9 @@ export class PermissionController extends BaseController implements IPermissionC
   @AutoBind()
   async remove(req: ExpressRequest<PermissionIdParamsDTO>): Promise<unknown> {
     const { permissionId } = req.params;
-    await this.deletePermissionUC.execute(new DeletePermissionCommand(permissionId));
+    await this.deletePermissionUC.execute(
+      new DeletePermissionCommand({ id: permissionId, actorId: this.getUserId(req) })
+    );
     return this.response({ message: 'Permission deleted successfully' });
   }
 }

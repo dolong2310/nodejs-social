@@ -10,6 +10,7 @@ import { PermissionPath } from '@/modules/authorization/domain/value-objects/per
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/postgres/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/postgres/permission.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { Options } from '@/modules/core/domain/repositories/port.repository';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 
@@ -29,7 +30,7 @@ export class PermissionRepository
 
   async findPermissions({ limit, skip = 0 }: ListPermissionsInput): Promise<PermissionEntity[]> {
     const result = await this.query<PermissionModel>(
-      `SELECT * FROM "permissions" ORDER BY "path" ASC, "method" ASC OFFSET $1 LIMIT $2`,
+      `SELECT * FROM "permissions" WHERE "deleted_at" IS NULL ORDER BY "path" ASC, "method" ASC OFFSET $1 LIMIT $2`,
       [skip, limit]
     );
     return result.rows.map((item) => this.mapper.toDomain(item));
@@ -53,7 +54,7 @@ export class PermissionRepository
     if (excludeId) values.push(excludeId);
 
     const result = await this.query<PermissionModel>(
-      `SELECT * FROM "permissions" WHERE "path" = $1 AND "method" = $2${excludeClause} LIMIT 1`,
+      `SELECT * FROM "permissions" WHERE "path" = $1 AND "method" = $2 AND "deleted_at" IS NULL${excludeClause} LIMIT 1`,
       values
     );
     const [record] = result.rows;
@@ -76,10 +77,11 @@ export class PermissionRepository
     return this.update(id, patch as Partial<PermissionEntity>);
   }
 
-  async deletePermission(id: string): Promise<PermissionEntity | null> {
-    const result = await this.query<PermissionModel>(`DELETE FROM "permissions" WHERE "id" = $1 RETURNING *`, [id]);
-    const [record] = result.rows;
-    return record ? this.mapper.toDomain(record) : null;
+  async deletePermission(id: string, options?: Options): Promise<PermissionEntity | null> {
+    const current = await this.findPermissionById(id);
+    if (!current) return null;
+    const deleted = await this.deleteById(id, options);
+    return deleted ? current : null;
   }
 
   async deletePermissions(ids: string[]): Promise<number> {

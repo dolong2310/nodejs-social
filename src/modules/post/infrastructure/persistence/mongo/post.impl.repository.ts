@@ -20,7 +20,7 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
   }
 
   async findPostById(id: string): Promise<PostEntity | null> {
-    const result = await this.dbCollection.findOne({ _id: id });
+    const result = await this.dbCollection.findOne({ _id: id, deleted_at: null });
     return result ? this.mapper.toDomain(result) : null;
   }
 
@@ -43,12 +43,12 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
     if (media !== undefined) $set.media = media.map((item) => item.raw());
 
     if (Object.keys($set).length === 0) {
-      const result = await this.dbCollection.findOne({ _id: postId, user_id: ownerUserId });
+      const result = await this.dbCollection.findOne({ _id: postId, user_id: ownerUserId, deleted_at: null });
       return result ? this.mapper.toDomain(result) : null;
     }
 
     const result = await this.dbCollection.findOneAndUpdate(
-      { _id: postId, user_id: ownerUserId },
+      { _id: postId, user_id: ownerUserId, deleted_at: null },
       {
         $set: {
           ...$set,

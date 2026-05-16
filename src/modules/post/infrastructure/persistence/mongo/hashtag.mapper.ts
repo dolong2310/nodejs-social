@@ -12,7 +12,11 @@ export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel, Hashta
       _id: clone.id.toString(),
       name: clone.name,
       created_at: clone.createdAt,
-      updated_at: clone.updatedAt
+      created_by_id: clone.createdById ?? null,
+      updated_at: clone.updatedAt,
+      updated_by_id: clone.updatedById ?? null,
+      deleted_at: clone.deletedAt ?? null,
+      deleted_by_id: clone.deletedById ?? null
     };
     return parse(hashtagSchema, record);
   }
@@ -20,7 +24,11 @@ export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel, Hashta
     const entity = new HashtagEntity({
       id: new UniqueEntityID(record._id),
       createdAt: record.created_at,
+      createdById: record.created_by_id ?? null,
       updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null,
       props: {
         name: record.name
       }
@@ -32,7 +40,11 @@ export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel, Hashta
       id: record._id,
       name: record.name,
       createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdById: record.created_by_id ?? null,
+      updatedAt: record.updated_at,
+      updatedById: record.updated_by_id ?? null,
+      deletedAt: record.deleted_at ?? null,
+      deletedById: record.deleted_by_id ?? null
     };
     return response;
   }

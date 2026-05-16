@@ -27,7 +27,7 @@ export class DeleteRoleUseCase extends DeleteRolePort {
       throw new SystemRoleCannotBeDeletedException();
     }
     await this.cache.delete(CACHE_KEYS.role(command.id), async () => {
-      const removed = await this.roleRepository.deleteRole(command.id);
+      const removed = await this.roleRepository.deleteRole(command.id, { actorId: command.actorId });
       if (!removed) {
         throw new RoleNotFoundException();
       }

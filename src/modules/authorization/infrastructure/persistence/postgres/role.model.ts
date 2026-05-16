@@ -5,6 +5,7 @@ import {
   array,
   boolean,
   date,
+  nullable,
   maxLength,
   minLength,
   object,
@@ -19,9 +20,13 @@ export const roleSchema = object({
   name: pipe(string(), minLength(1), maxLength(64), regex(ROLE_NAME_REGEX)),
   description: string(),
   is_active: boolean(),
+  permission_ids: optional(array(pipe(string(), minLength(ENTITY_ID_LENGTH))), []),
   created_at: date(),
+  created_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
   updated_at: date(),
-  permission_ids: optional(array(pipe(string(), minLength(ENTITY_ID_LENGTH))), [])
+  updated_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null),
+  deleted_at: nullable(date(), null),
+  deleted_by_id: nullable(pipe(string(), minLength(ENTITY_ID_LENGTH)), null)
 });
 
 export type RoleModel = InferOutput<typeof roleSchema>;

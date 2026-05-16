@@ -10,6 +10,7 @@ import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/m
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
 import { convertObjectToSnakeCase } from '@/modules/common/utils/object-case.util';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { Options } from '@/modules/core/domain/repositories/port.repository';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { Db, MongoClient } from 'mongodb';
 
@@ -26,29 +27,33 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
   }
 
   async findRoleById(id: string): Promise<RoleEntity | null> {
-    const record = await this.dbCollection.findOne({ _id: id });
-    return record ? this.mapper.toDomain(record) : null;
+    return this.findById(id);
   }
 
   async findRoleByName(name: string): Promise<RoleEntity | null> {
-    const record = await this.dbCollection.findOne({ name: RoleName.create(name).value });
+    const record = await this.dbCollection.findOne({ name: RoleName.create(name).value, deleted_at: null });
     return record ? this.mapper.toDomain(record) : null;
   }
 
   async findRoles({ limit, skip = 0 }: ListRolesInput): Promise<RoleEntity[]> {
-    const records = await this.dbCollection.find({}).sort({ name: 1 }).skip(skip).limit(limit).toArray();
+    const records = await this.dbCollection
+      .find({ deleted_at: null })
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
     return records.map((item) => this.mapper.toDomain(item));
   }
 
   async countRoles(): Promise<number> {
-    return this.dbCollection.countDocuments({});
+    return this.count();
   }
 
   async createRole(data: CreateRoleInput): Promise<RoleEntity | null> {
     const entity = RoleEntity.create(data);
     const record = this.mapper.toPersistence(entity);
     const result = await this.dbCollection.findOneAndUpdate(
-      { name: record.name, description: record.description, is_active: record.is_active },
+      { name: record.name, description: record.description, is_active: record.is_active, deleted_at: null },
       { $setOnInsert: record },
       { upsert: true, returnDocument: 'after' }
     );
@@ -72,21 +77,21 @@ export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> i
     };
     if (data.name !== undefined) patch.name = RoleName.create(data.name).value;
     const record = await this.dbCollection.findOneAndUpdate(
-      { _id: id },
-      { $set: convertObjectToSnakeCase(patch, ['id', '_id'], '_id') },
+      { _id: id, deleted_at: null },
+      { $set: { ...convertObjectToSnakeCase(patch, ['id', '_id'], '_id'), updated_at: new Date() } },
       { returnDocument: 'after' }
     );
     return record ? this.mapper.toDomain(record) : null;
   }
 
-  async deleteRole(id: string): Promise<RoleEntity | null> {
-    const record = await this.dbCollection.findOneAndDelete({
-      _id: id
-    });
-    return record ? this.mapper.toDomain(record) : null;
+  async deleteRole(id: string, options?: Options): Promise<RoleEntity | null> {
+    const current = await this.findRoleById(id);
+    if (!current) return null;
+    const deleted = await this.deleteById(id, options);
+    return deleted ? current : null;
   }
 
   async countRolesWithPermissionId(permissionId: string): Promise<number> {
-    return this.dbCollection.countDocuments({ permission_ids: permissionId });
+    return this.dbCollection.countDocuments({ permission_ids: permissionId, deleted_at: null });
   }
 }

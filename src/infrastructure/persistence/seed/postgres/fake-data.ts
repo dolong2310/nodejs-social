@@ -34,7 +34,7 @@ import { UserRepository } from '@/modules/user/infrastructure/persistence/postgr
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { faker } from '@faker-js/faker';
 
-const MYID = 'user_019e01ec-9b31-72f0-b97a-391a40d02dc0';
+const MYID = 'user_019e310d-2f19-7419-a196-08da900bd855';
 const PASSWORD = '@Bc123';
 const USER_COUNT = 10;
 const POST_PER_USER = 10;
@@ -94,7 +94,10 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   });
   const uniqueMentions = Array.from(new Set(rawMentions)).slice(0, mentionCount);
 
-  const mediaCount = faker.number.int({ min: 1, max: MEDIA_PER_POST });
+  const canHaveMedia = randomType === EnumPostType.POST;
+  const canHaveSocialMetadata = randomType !== EnumPostType.REPOST;
+
+  const mediaCount = canHaveMedia ? faker.number.int({ min: 1, max: MEDIA_PER_POST }) : 0;
   const mediaMap = new Map<string, { url: string; type: EnumMediaType }>();
   while (mediaMap.size < mediaCount) {
     const url = faker.image.url();
@@ -104,7 +107,7 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   }
   const randomMedia = Array.from(mediaMap.values()).map((media) => new Media(media));
 
-  const content = faker.lorem.paragraph({ min: 2, max: 5 });
+  const content = randomType === EnumPostType.REPOST ? '' : faker.lorem.paragraph({ min: 2, max: 5 });
   const parentId = randomType === EnumPostType.POST ? null : faker.helpers.arrayElement(parentPostIds);
 
   return {
@@ -114,8 +117,8 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
     allowStrangerComments: faker.datatype.boolean({ probability: 0.7 }),
     content,
     parentId,
-    hashtagNames: uniqueHashtagNames,
-    mentions: uniqueMentions,
+    hashtagNames: canHaveSocialMetadata ? uniqueHashtagNames : [],
+    mentions: canHaveSocialMetadata ? uniqueMentions : [],
     media: randomMedia
   };
 };
