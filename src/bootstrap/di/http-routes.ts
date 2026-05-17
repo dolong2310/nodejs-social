@@ -96,6 +96,11 @@ import { SendFriendRequestUseCase } from '@/modules/relationship/application/use
 import { UnblockUserUseCase } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.usecase';
 import { UnfriendUseCase } from '@/modules/relationship/application/use-cases/unfriend/unfriend.usecase';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
+import { AdminCreateUserUseCase } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.usecase';
+import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
+import { AdminGetUserUseCase } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.usecase';
+import { AdminListUsersUseCase } from '@/modules/user/application/use-cases/admin-list-users/admin-list-users.usecase';
+import { AdminUpdateUserUseCase } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.usecase';
 import { ChangePasswordUseCase } from '@/modules/user/application/use-cases/change-password/change-password.usecase';
 import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me.usecase';
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
@@ -111,6 +116,10 @@ import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import {
+  AdminUserController,
+  IAdminUserController
+} from '@/presentation/http/express/v1/controllers/admin-user.controller';
 import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
@@ -141,6 +150,7 @@ import { IPostController, PostController } from '@/presentation/http/express/v1/
 import { IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import { ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
 import { IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
+import { AdminUsersPipe, IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
 import { AuthPipe, IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
 import { BlocksPipe, IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
 import { ChatMessagesPipe, IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
@@ -154,6 +164,7 @@ import { IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.
 import { IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
 import { ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
 import { IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
@@ -300,6 +311,24 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheStrategy);
   const getUserProfileUC = new GetUserProfileUseCase(userService, blockService);
   const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheStrategy);
+  const adminListUsersUC = new AdminListUsersUseCase(userRepository);
+  const adminGetUserUC = new AdminGetUserUseCase(userRepository);
+  const adminCreateUserUC = new AdminCreateUserUseCase(
+    userRepository,
+    userService,
+    roleRepository,
+    roleService,
+    hashingService
+  );
+  const adminUpdateUserUC = new AdminUpdateUserUseCase(
+    userRepository,
+    userService,
+    roleRepository,
+    roleService,
+    hashingService,
+    cacheStrategy
+  );
+  const adminDeleteUserUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheStrategy);
 
   const blockUserUC = new BlockUserUseCase(
     blockRepository,
@@ -431,6 +460,13 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     disable2faUC
   );
   const userController: IUserController = new UserController(getMeUC, updateMeUC, getUserProfileUC, changePasswordUC);
+  const adminUserController: IAdminUserController = new AdminUserController(
+    adminListUsersUC,
+    adminGetUserUC,
+    adminCreateUserUC,
+    adminUpdateUserUC,
+    adminDeleteUserUC
+  );
   const operationsController: IOperationsController = new OperationsController(clearCacheUC, syncRolePermissionsUC);
   const mediaController: IMediaController = new MediaController(
     getVideoStatusUC,
@@ -535,6 +571,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
 
   const authPipe: IAuthPipe = new AuthPipe();
   const userPipe: IUserPipe = new UsersPipe(userService);
+  const adminUsersPipe: IAdminUsersPipe = new AdminUsersPipe();
   const postPipe: IPostPipe = new PostsPipe();
   const searchPipe: ISearchPipe = new SearchPipe();
   const friendPipe: IFriendPipe = new FriendsPipe(userPipe);
@@ -564,6 +601,18 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       loggingInterceptor,
       transformResponseInterceptor,
       timeoutInterceptor
+    ),
+    new AdminUserRoute(
+      adminUserController,
+      adminUsersPipe,
+      paginationPipe,
+      authGuard,
+      apiKeyGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor,
+      idempotencyInterceptor
     ),
     new UserRoute(
       userController,

@@ -8,9 +8,11 @@ import type { IdempotencyInterceptor } from '@/presentation/http/express/interce
 import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IAdminUserController } from '@/presentation/http/express/v1/controllers/admin-user.controller';
 import type { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
+import type { IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
 import type { IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
 import type { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
 import type { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
@@ -25,6 +27,7 @@ import type { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
 import type { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
 import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
 import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
 import { ConversationRoute } from '@/presentation/http/express/v1/routes/conversation.route';
@@ -56,6 +59,7 @@ function createNoopPipeProxyForRouteRegistration<T extends object>(): T {
     get(_target, propertyKey: string | symbol) {
       if (
         propertyKey === 'userIdPipe' ||
+        propertyKey === 'userIdParam' ||
         propertyKey === 'postIdPipe' ||
         propertyKey === 'roleIdParam' ||
         propertyKey === 'createBodyPipe' ||
@@ -102,6 +106,7 @@ const noopInterceptor = new Proxy(
 export function buildStubHttpRouters(): BaseRoute[] {
   const authPipe: IAuthPipe = createNoopPipeProxyForRouteRegistration();
   const userPipe: IUserPipe = createNoopPipeProxyForRouteRegistration();
+  const adminUsersPipe: IAdminUsersPipe = createNoopPipeProxyForRouteRegistration();
   const postPipe: IPostPipe = createNoopPipeProxyForRouteRegistration();
   const paginationPipe: IPaginationPipe = createNoopPipeProxyForRouteRegistration();
   const searchPipe: ISearchPipe = createNoopPipeProxyForRouteRegistration();
@@ -128,6 +133,18 @@ export function buildStubHttpRouters(): BaseRoute[] {
       authPipe,
       noopAuthGuard,
       noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new AdminUserRoute(
+      createNoopControllerProxyForRouteRegistration<IAdminUserController>(),
+      adminUsersPipe,
+      paginationPipe,
+      noopAuthGuard,
+      noopApiKeyGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
       noopInterceptor,
       noopInterceptor,
       noopInterceptor

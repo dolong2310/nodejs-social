@@ -34,3 +34,13 @@ export class UserIsBannedException extends ExceptionBase {
   readonly code = 'USER.BANNED';
   readonly statusCode = 403;
 }
+
+export class CannotAssignAdminRoleException extends ExceptionBase {
+  readonly code = 'USER.CANNOT_ASSIGN_ADMIN_ROLE';
+  readonly statusCode = 403;
+}
+
+export class CannotMutateAdminUserException extends ExceptionBase {
+  readonly code = 'USER.CANNOT_MUTATE_ADMIN';
+  readonly statusCode = 403;
+}
