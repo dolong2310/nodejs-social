@@ -59,6 +59,9 @@ import { NotificationServicePort } from '@/modules/notification/application/serv
 import { ListNotificationsUseCase } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.usecase';
 import { MarkNotificationReadUseCase } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.usecase';
 import { MarkNotificationsReadUseCase } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.usecase';
+import { ClearCacheUseCase } from '@/modules/operations/application/use-cases/clear-cache/clear-cache.usecase';
+import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
+import { HttpRoutePermissionCatalog } from '@/modules/operations/infrastructure/http-route-permission-catalog';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
@@ -125,6 +128,10 @@ import {
   INotificationController,
   NotificationsController
 } from '@/presentation/http/express/v1/controllers/notifications.controller';
+import {
+  IOperationsController,
+  OperationsController
+} from '@/presentation/http/express/v1/controllers/operations.controller';
 import { IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 import {
   IPermissionController,
@@ -155,6 +162,7 @@ import { HashtagRoute } from '@/presentation/http/express/v1/routes/hashtag.rout
 import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
+import { OperationsRoute } from '@/presentation/http/express/v1/routes/operations.route';
 import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
 import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
 import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
@@ -249,6 +257,13 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     prefix: 'http-cache:lookup'
   });
   const idempotencyInterceptor = new IdempotencyInterceptor(cacheManager);
+
+  const clearCacheUC = new ClearCacheUseCase(cacheManager);
+  const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
+    permissionRepository,
+    roleRepository,
+    new HttpRoutePermissionCatalog()
+  );
 
   const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
   const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
@@ -416,6 +431,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     disable2faUC
   );
   const userController: IUserController = new UserController(getMeUC, updateMeUC, getUserProfileUC, changePasswordUC);
+  const operationsController: IOperationsController = new OperationsController(clearCacheUC, syncRolePermissionsUC);
   const mediaController: IMediaController = new MediaController(
     getVideoStatusUC,
     getStaticVideoStreamUC,
@@ -532,6 +548,14 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const paginationPipe: IPaginationPipe = new PaginationPipe();
 
   const routers: BaseRoute[] = [
+    new OperationsRoute(
+      operationsController,
+      apiKeyGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      timeoutInterceptor
+    ),
     new AuthRoute(
       authController,
       authPipe,

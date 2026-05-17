@@ -87,6 +87,7 @@ export class PermissionRepository
   async deletePermissions(ids: string[]): Promise<number> {
     if (ids.length === 0) return 0;
     const uniqueIds = [...new Set(ids)];
+    await this.query(`DELETE FROM role_permissions WHERE permission_id = ANY($1::text[])`, [uniqueIds]);
     const result = await this.query(`DELETE FROM "permissions" WHERE "id" = ANY($1::text[])`, [uniqueIds]);
     return result.rowCount ?? 0;
   }

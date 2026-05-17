@@ -18,6 +18,7 @@ import type { IConversationPipe } from '@/presentation/http/express/v1/pipes/con
 import type { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
 import type { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
 import type { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
+import type { IOperationsController } from '@/presentation/http/express/v1/controllers/operations.controller';
 import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import type { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
 import type { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
@@ -32,6 +33,7 @@ import { HashtagRoute } from '@/presentation/http/express/v1/routes/hashtag.rout
 import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
+import { OperationsRoute } from '@/presentation/http/express/v1/routes/operations.route';
 import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
 import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
 import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
@@ -113,6 +115,14 @@ export function buildStubHttpRouters(): BaseRoute[] {
   const hashtagsPipe: IHashtagsPipe = createNoopPipeProxyForRouteRegistration();
 
   return [
+    new OperationsRoute(
+      createNoopControllerProxyForRouteRegistration<IOperationsController>(),
+      noopApiKeyGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
     new AuthRoute(
       createNoopControllerProxyForRouteRegistration(),
       authPipe,
