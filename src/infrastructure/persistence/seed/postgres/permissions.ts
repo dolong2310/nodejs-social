@@ -16,6 +16,7 @@ import { HttpRoutePermissionCatalog } from '@/modules/operations/infrastructure/
 
 const databaseService = new PostgresDatabase({
   uri: dbConfig.postgres.uri,
+  readUris: dbConfig.postgres.readUris,
   ssl: dbConfig.postgres.ssl
 });
 const permissionRepository = new PermissionRepository(databaseService.pool, new PermissionMapper(), logger);

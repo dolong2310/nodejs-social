@@ -38,10 +38,12 @@ if (Number.isNaN(ADMIN_BIRTHDAY.getTime())) {
 
 const mongo = new MongoDatabase({
   uri: dbConfig.mongodb.uri,
+  readUri: dbConfig.mongodb.readUri,
   databaseName: dbConfig.mongodb.name
 });
 
-const { db, dbClient } = mongo;
+const db = mongo.db;
+const dbClient = mongo.dbClient;
 const hashingService = new HashingService();
 const userRepository = new UserRepository(db, dbClient, new UserMapper(), logger);
 const roleRepository = new RoleRepository(db, dbClient, new RoleMapper(), logger);

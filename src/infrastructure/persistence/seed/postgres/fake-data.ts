@@ -44,6 +44,7 @@ const MEDIA_PER_POST = 5;
 
 const postgres = new PostgresDatabase({
   uri: dbConfig.postgres.uri,
+  readUris: dbConfig.postgres.readUris,
   ssl: dbConfig.postgres.ssl
 });
 

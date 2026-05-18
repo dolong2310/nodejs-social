@@ -38,6 +38,7 @@ if (Number.isNaN(ADMIN_BIRTHDAY.getTime())) {
 
 const postgres = new PostgresDatabase({
   uri: dbConfig.postgres.uri,
+  readUris: dbConfig.postgres.readUris,
   ssl: dbConfig.postgres.ssl
 });
 

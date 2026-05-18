@@ -30,8 +30,10 @@ const ENV_KEYS = [
   // Database
   'PERSISTENCE_DRIVER',
   'MONGO_URI',
+  'MONGO_SECONDARY_URI',
   'MONGO_DB_NAME',
   'POSTGRES_URI',
+  'POSTGRES_REPLICA_URIS',
   'POSTGRES_SSL',
 
   // Redis

@@ -45,6 +45,9 @@ export function createPostgresContainerRepositories(
   database: PostgresDatabasePort,
   logger: LoggerPort
 ): ContainerRepositories {
+  const pool = database.pool;
+  const readPool = database.readPool;
+
   const userMapper = new UserMapper();
   const refreshTokenMapper = new RefreshTokenMapper();
   const otpMapper = new OtpMapper();
@@ -64,39 +67,34 @@ export function createPostgresContainerRepositories(
   const videoStatusMapper = new VideoStatusMapper();
 
   const repositories = {
-    userRepository: new UserRepository(database.pool, userMapper, logger),
-    refreshTokenRepository: new RefreshTokenRepository(database.pool, refreshTokenMapper, logger),
-    otpRepository: new OtpRepository(database.pool, otpMapper, logger),
-    permissionRepository: new PermissionRepository(database.pool, permissionMapper, logger),
-    roleRepository: new RoleRepository(database.pool, roleMapper, logger),
-    blockRepository: new BlockRepository(database.pool, blockMapper, logger),
-    friendshipRepository: new FriendshipRepository(database.pool, friendshipMapper, logger),
-    friendRequestRepository: new FriendRequestRepository(database.pool, friendRequestMapper, logger),
-    hashtagRepository: new HashtagRepository(database.pool, hashtagMapper, logger),
-    likeRepository: new LikeRepository(database.pool, likeMapper, logger),
-    bookmarkRepository: new BookmarkRepository(database.pool, bookmarkMapper, logger),
-    postRepository: new PostRepository(database.pool, postMapper, logger),
-    notificationRepository: new NotificationRepository(database.pool, notificationMapper, logger),
-    conversationRepository: new ConversationRepository(
-      database.pool,
-      conversationMapper,
-      conversationMemberMapper,
-      logger
-    ),
-    conversationMemberRepository: new ConversationMemberRepository(database.pool, conversationMemberMapper, logger),
-    chatMessageRepository: new ChatMessageRepository(database.pool, chatMessageMapper, logger),
-    videoStatusRepository: new VideoStatusRepository(database.pool, videoStatusMapper, logger)
+    userRepository: new UserRepository(pool, userMapper, logger),
+    refreshTokenRepository: new RefreshTokenRepository(pool, refreshTokenMapper, logger),
+    otpRepository: new OtpRepository(pool, otpMapper, logger),
+    permissionRepository: new PermissionRepository(pool, permissionMapper, logger),
+    roleRepository: new RoleRepository(pool, roleMapper, logger),
+    blockRepository: new BlockRepository(pool, blockMapper, logger),
+    friendshipRepository: new FriendshipRepository(pool, friendshipMapper, logger),
+    friendRequestRepository: new FriendRequestRepository(pool, friendRequestMapper, logger),
+    hashtagRepository: new HashtagRepository(pool, hashtagMapper, logger),
+    likeRepository: new LikeRepository(pool, likeMapper, logger),
+    bookmarkRepository: new BookmarkRepository(pool, bookmarkMapper, logger),
+    postRepository: new PostRepository(pool, postMapper, logger),
+    notificationRepository: new NotificationRepository(pool, notificationMapper, logger),
+    conversationRepository: new ConversationRepository(pool, conversationMapper, conversationMemberMapper, logger),
+    conversationMemberRepository: new ConversationMemberRepository(pool, conversationMemberMapper, logger),
+    chatMessageRepository: new ChatMessageRepository(pool, chatMessageMapper, logger),
+    videoStatusRepository: new VideoStatusRepository(pool, videoStatusMapper, logger)
   };
 
   const queryRepositories = {
-    userQueryRepository: new UserQueryRepository(database.pool, userMapper),
-    postQueryRepository: new PostQueryRepository(database.pool),
-    conversationMemberQueryRepository: new ConversationMemberQueryRepository(database.pool),
-    roleQueryRepository: new RoleQueryRepository(database.pool)
+    userQueryRepository: new UserQueryRepository(readPool, userMapper),
+    postQueryRepository: new PostQueryRepository(readPool),
+    conversationMemberQueryRepository: new ConversationMemberQueryRepository(readPool),
+    roleQueryRepository: new RoleQueryRepository(readPool)
   };
 
   const commandRepositories = {
-    postCommandRepository: new PostCommandRepository(database.pool)
+    postCommandRepository: new PostCommandRepository(pool)
   };
 
   return {

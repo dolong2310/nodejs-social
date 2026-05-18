@@ -8,6 +8,7 @@ export async function setupDatabase(): Promise<DatabasePort> {
     case EnumDatabaseDriver.POSTGRES: {
       const database = new PostgresDatabase({
         uri: dbConfig.postgres.uri,
+        readUris: dbConfig.postgres.readUris,
         ssl: dbConfig.postgres.ssl
       });
 
@@ -19,6 +20,7 @@ export async function setupDatabase(): Promise<DatabasePort> {
     case EnumDatabaseDriver.MONGO: {
       const database = new MongoDatabase({
         uri: dbConfig.mongodb.uri,
+        readUri: dbConfig.mongodb.readUri,
         databaseName: dbConfig.mongodb.name
       });
 

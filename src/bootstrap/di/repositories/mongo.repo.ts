@@ -45,7 +45,11 @@ export function createMongoContainerRepositories(
   database: MongoDatabasePort,
   logger: LoggerPort
 ): ContainerRepositories {
-  const { db, dbClient } = database;
+  const db = database.db;
+  const dbClient = database.dbClient;
+  const readDb = database.readDb;
+  const readDbClient = database.readDbClient;
+
   const userMapper = new UserMapper();
   const refreshTokenMapper = new RefreshTokenMapper();
   const bookmarkMapper = new BookmarkMapper();
@@ -91,10 +95,10 @@ export function createMongoContainerRepositories(
   };
 
   const queryRepositories = {
-    postQueryRepository: new PostQueryRepository(db, dbClient, postMapper),
-    userQueryRepository: new UserQueryRepository(db, dbClient, userMapper, roleMapper),
-    conversationMemberQueryRepository: new ConversationMemberQueryRepository(db, dbClient),
-    roleQueryRepository: new RoleQueryRepository(db, dbClient, roleMapper)
+    postQueryRepository: new PostQueryRepository(readDb, readDbClient, postMapper),
+    userQueryRepository: new UserQueryRepository(readDb, readDbClient, userMapper, roleMapper),
+    conversationMemberQueryRepository: new ConversationMemberQueryRepository(readDb, readDbClient),
+    roleQueryRepository: new RoleQueryRepository(readDb, readDbClient, roleMapper)
   };
 
   const commandRepositories = {

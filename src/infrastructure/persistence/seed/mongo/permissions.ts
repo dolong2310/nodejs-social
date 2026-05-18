@@ -12,7 +12,11 @@ import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/m
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
 import { HttpRoutePermissionCatalog } from '@/modules/operations/infrastructure/http-route-permission-catalog';
 
-const databaseService = new MongoDatabase({ uri: dbConfig.mongodb.uri, databaseName: dbConfig.mongodb.name });
+const databaseService = new MongoDatabase({
+  uri: dbConfig.mongodb.uri,
+  readUri: dbConfig.mongodb.readUri,
+  databaseName: dbConfig.mongodb.name
+});
 const permissionRepository = new PermissionRepository(
   databaseService.db,
   databaseService.dbClient,
