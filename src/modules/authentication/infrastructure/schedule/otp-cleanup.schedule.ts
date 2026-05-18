@@ -48,9 +48,11 @@ export class OtpCleanupSchedule extends BaseSchedule<OtpCleanupJobData, OtpClean
 
       this.logger
         .child({ module: OTP_CLEANUP_SCHEDULE_QUEUE_NAME })
-        .info({ cron: EnumCronExpression.EVERY_6_HOURS, timezone: 'Asia/Ho_Chi_Minh' }, 'OTP cleanup scheduled');
+        .info({ cron: EnumCronExpression.EVERY_6_HOURS, timezone: 'Asia/Ho_Chi_Minh' }, 'schedule:::otp-cleanup');
     } catch (error) {
-      this.logger.child({ module: OTP_CLEANUP_SCHEDULE_QUEUE_NAME }).error({ error }, 'failed to schedule OTP cleanup');
+      this.logger
+        .child({ module: OTP_CLEANUP_SCHEDULE_QUEUE_NAME })
+        .error({ error }, 'schedule:::failed-to-schedule-otp-cleanup');
       throw error;
     }
   }

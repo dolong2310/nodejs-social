@@ -53,12 +53,12 @@ export class RefreshTokenCleanupSchedule extends BaseSchedule<
         .child({ module: REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME })
         .info(
           { cron: EnumCronExpression.EVERY_DAY_AT_MIDNIGHT, timezone: 'Asia/Ho_Chi_Minh' },
-          'refresh token cleanup scheduled'
+          'schedule:::refresh-token-cleanup'
         );
     } catch (error) {
       this.logger
         .child({ module: REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME })
-        .error({ error }, 'failed to schedule refresh token cleanup');
+        .error({ error }, 'schedule:::failed-to-schedule-refresh-token-cleanup');
       throw error;
     }
   }

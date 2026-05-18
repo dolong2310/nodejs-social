@@ -19,15 +19,15 @@ export class Redis implements CacheManagerPort {
     });
 
     this.client.on('error', (err: Error) => {
-      log.error({ err }, 'redis client error');
+      log.error({ err }, 'redis:::client-error');
     });
 
     this.client.on('connect', () => {
-      log.info('connected to redis');
+      log.info('redis:::connected');
     });
 
     this.client.on('reconnecting', () => {
-      log.warn('redis reconnecting');
+      log.warn('redis:::reconnecting');
     });
   }
 
@@ -36,7 +36,7 @@ export class Redis implements CacheManagerPort {
       await this.client.connect();
       await this.client.ping();
     } catch (error) {
-      log.error({ err: error }, 'error connecting to redis');
+      log.error({ err: error }, 'redis:::error-connecting');
       this.client.disconnect();
       throw error;
     }
@@ -52,7 +52,7 @@ export class Redis implements CacheManagerPort {
 
   async sendRawCommand(...args: string[]): Promise<unknown> {
     if (args.length === 0) {
-      throw new Error('Redis command missing');
+      throw new Error('redis:::command-missing');
     }
     const [command, ...rest] = args;
     return this.client.call(command, ...rest);

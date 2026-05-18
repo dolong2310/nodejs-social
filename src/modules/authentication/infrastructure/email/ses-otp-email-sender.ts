@@ -85,7 +85,7 @@ export class SesOtpEmailSender {
     try {
       return await this.sesClient.send(sendEmailCommand);
     } catch (error) {
-      this.log.error({ err: error, toAddress }, 'failed to send OTP email');
+      this.log.error({ err: error, toAddress }, 'email:::failed-to-send-otp-email');
       throw error;
     }
   }

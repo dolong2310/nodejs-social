@@ -32,7 +32,7 @@ export class NotificationTrimWorker extends BaseWorker<NotificationTrimJobData, 
     if (recipientUserIds.length >= 50) {
       this.log.info(
         { jobId: job.id, recipients: recipientUserIds.length, batchSize: BATCH_SIZE },
-        'processing notification trim job'
+        'worker:::processing-notification-trim-job'
       );
     }
 

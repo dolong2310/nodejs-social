@@ -8,7 +8,7 @@ async function bootstrap() {
   const { httpServer, io } = await createSocketServer();
   const { server, port, appUrl } = await createHttpServer(httpServer, io);
   server.listen(port, () => {
-    logger.info({ port, appUrl }, 'server running');
+    logger.info({ port, appUrl }, 'server:::running');
   });
 }
 

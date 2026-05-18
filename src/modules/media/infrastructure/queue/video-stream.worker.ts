@@ -34,11 +34,11 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
       const attemptsMade = get(job, 'attemptsMade', 0);
       const jobOptsAttempts = get(job, 'opts.attempts', 1);
       const message = get(err, 'message', '');
-      this.log.error({ jobId, idName, attemptsMade, err }, 'job failed');
+      this.log.error({ jobId, idName, attemptsMade, err }, 'worker:::failed');
       if (job && attemptsMade >= jobOptsAttempts) {
         await this.mediaRepository
           .updateVideoStatus({ name: idName, status: EnumEncodingVideoStatus.FAILED, message: message })
-          .catch((dbErr) => this.log.error({ err: dbErr, idName }, 'failed to mark video as FAILED in DB'));
+          .catch((dbErr) => this.log.error({ err: dbErr, idName }, 'worker:::failed-to-mark-video-as-failed-in-db'));
       }
     });
   }

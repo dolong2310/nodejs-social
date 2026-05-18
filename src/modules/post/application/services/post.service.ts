@@ -39,7 +39,7 @@ export class PostService implements PostServicePort {
         isAuthenticatedViewer: Boolean(userId)
       })
       .catch((err: unknown) => {
-        this.log.warn({ err }, 'enqueue post views job failed');
+        this.log.warn({ err }, 'post-service:::enqueue-post-views-job-failed');
       });
 
     // update post with new views

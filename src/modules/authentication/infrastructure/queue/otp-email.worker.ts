@@ -21,7 +21,7 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
     this.log = this.logger.child({ module: 'otp-email-worker' });
 
     this.worker.on('failed', async (job, err) => {
-      this.log.error({ err, jobId: job?.id, attemptsMade: job?.attemptsMade }, 'job failed');
+      this.log.error({ err, jobId: job?.id, attemptsMade: job?.attemptsMade }, 'worker:::failed');
       await this.cleanupOtpIfEmailFailedPermanently(job, err);
     });
   }
@@ -55,9 +55,9 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
     }
     try {
       await this.otpRepository.deleteOtp(otpId);
-      this.log.info({ otpId, bullJobId: job.id }, 'deleted OTP after email job permanently failed');
+      this.log.info({ otpId, bullJobId: job.id }, 'worker:::deleted-otp-after-email-job-permanently-failed');
     } catch (cleanupErr) {
-      this.log.error({ err: cleanupErr, otpId }, 'failed to delete OTP after email job failure');
+      this.log.error({ err: cleanupErr, otpId }, 'worker:::failed-to-delete-otp-after-email-job-failure');
     }
   }
 }

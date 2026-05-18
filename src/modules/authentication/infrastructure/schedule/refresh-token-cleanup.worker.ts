@@ -28,7 +28,7 @@ export class RefreshTokenCleanupWorker extends BaseWorker<RefreshTokenCleanupJob
     job: Job<RefreshTokenCleanupJobData, RefreshTokenCleanupJobResult>
   ): Promise<RefreshTokenCleanupJobResult> {
     const result = await this.deleteExpiredRefreshTokensUC.execute(new DeleteExpiredRefreshTokensCommand());
-    this.log.info({ jobId: job.id, deletedCount: result.deletedCount }, 'expired refresh tokens deleted');
+    this.log.info({ jobId: job.id, deletedCount: result.deletedCount }, 'worker:::expired-refresh-tokens-deleted');
     return { deletedCount: result.deletedCount };
   }
 }

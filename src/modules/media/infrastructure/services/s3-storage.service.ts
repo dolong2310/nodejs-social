@@ -70,7 +70,7 @@ export class S3Service implements ObjectStoragePort {
 
       return { url: result.Location ?? '' };
     } catch (error) {
-      this.log.error({ err: error, filename }, 'upload to s3 failed');
+      this.log.error({ err: error, filename }, 's3-service:::upload-to-s3-failed');
       throw error;
     }
   }
