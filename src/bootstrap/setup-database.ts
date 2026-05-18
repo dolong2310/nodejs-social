@@ -13,8 +13,6 @@ export async function setupDatabase(): Promise<DatabasePort> {
       });
 
       await database.connect();
-      await database.initializeSchema();
-
       return database;
     }
     case EnumDatabaseDriver.MONGO: {
@@ -25,8 +23,6 @@ export async function setupDatabase(): Promise<DatabasePort> {
       });
 
       await database.connect();
-      await Promise.all([database.initializeIndexes(), database.initializeConversationIndexes()]);
-
       return database;
     }
     default:

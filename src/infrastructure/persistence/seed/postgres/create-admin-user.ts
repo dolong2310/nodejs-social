@@ -4,8 +4,9 @@
  * Run:
  * `pnpm run seed:create-admin-user:postgres -- --env=development`
  *
- * Prerequisite:
- * Run `pnpm run seed:permissions:postgres -- --env=development` first so the ADMIN role exists.
+ * Prerequisites:
+ * 1. Run `pnpm run db:migrate:postgres --env=development` first.
+ * 2. Run `pnpm run seed:permissions:postgres -- --env=development` so the ADMIN role exists.
  *
  * Optional environment overrides:
  * - SEED_ADMIN_EMAIL
@@ -87,7 +88,6 @@ async function createOrUpdateAdminUser(adminRoleId: string): Promise<void> {
 
 async function main(): Promise<void> {
   await postgres.connect();
-  await postgres.initializeSchema();
 
   const adminRole = await roleRepository.findRoleByName(EnumRoleName.ADMIN);
   if (!adminRole) {

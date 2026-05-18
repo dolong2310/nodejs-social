@@ -3,6 +3,9 @@
  *
  * Run:
  * `pnpm run seed:permissions:postgres -- --env=development`
+ *
+ * Prerequisite:
+ * Run `pnpm run db:migrate:postgres --env=development` first.
  */
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
@@ -24,7 +27,6 @@ const roleRepository = new RoleRepository(databaseService.pool, new RoleMapper()
 
 async function main(): Promise<void> {
   await databaseService.connect();
-  await databaseService.initializeSchema();
 
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,

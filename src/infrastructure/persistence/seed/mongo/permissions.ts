@@ -1,6 +1,9 @@
 /**
  * Đồng bộ permission từ các route HTTP (Express) + gán cho role ADMIN/USER.
  * Chạy: `pnpm run seed:permissions:mongo -- --env=development`.
+ *
+ * Prerequisite:
+ * Run `pnpm run db:migrate:mongo --env=development` first.
  */
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';

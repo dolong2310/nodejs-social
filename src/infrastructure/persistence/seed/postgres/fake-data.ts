@@ -5,8 +5,9 @@
  * `pnpm run seed:fake-data:postgres -- --env=development`
  *
  * Prerequisites:
- *  1. Run `pnpm run seed:permissions:postgres -- --env=development` first to ensure roles exist.
- *  2. Set MYID to the entity ID of the existing viewer/admin user in Postgres.
+ *  1. Run `pnpm run db:migrate:postgres --env=development` first.
+ *  2. Run `pnpm run seed:permissions:postgres -- --env=development` first to ensure roles exist.
+ *  3. Set MYID to the entity ID of the existing viewer/admin user in Postgres.
  */
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
@@ -220,7 +221,6 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
 
 const main = async (): Promise<void> => {
   await postgres.connect();
-  await postgres.initializeSchema();
 
   const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {

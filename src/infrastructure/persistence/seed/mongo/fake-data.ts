@@ -3,8 +3,9 @@
  * Run: pnpm run seed:fake-data -- --env=development
  *
  * Prerequisites:
- *  1. Run `pnpm run seed:permissions -- --env=development` first to ensure roles exist.
- *  2. Set MYID to the entity ID of the existing admin/viewer user (format: "entity_<uuidv7>").
+ *  1. Run `pnpm run db:migrate:mongo --env=development` first.
+ *  2. Run `pnpm run seed:permissions:mongo -- --env=development` first to ensure roles exist.
+ *  3. Set MYID to the entity ID of the existing admin/viewer user (format: "entity_<uuidv7>").
  *     You can find it in MongoDB under the `users` collection's `id` field.
  */
 

@@ -4,8 +4,9 @@
  * Run:
  * `pnpm run seed:create-admin-user -- --env=development`
  *
- * Prerequisite:
- * Run `pnpm run seed:permissions -- --env=development` first so the ADMIN role exists.
+ * Prerequisites:
+ * 1. Run `pnpm run db:migrate:mongo --env=development` first.
+ * 2. Run `pnpm run seed:permissions:mongo -- --env=development` so the ADMIN role exists.
  *
  * Optional environment overrides:
  * - SEED_ADMIN_EMAIL
@@ -89,7 +90,6 @@ async function createOrUpdateAdminUser(adminRoleId: string): Promise<void> {
 
 async function main(): Promise<void> {
   await mongo.connect();
-  await Promise.all([mongo.initializeIndexes(), mongo.initializeConversationIndexes()]);
 
   const adminRole = await roleRepository.findRoleByName(EnumRoleName.ADMIN);
   if (!adminRole) {
