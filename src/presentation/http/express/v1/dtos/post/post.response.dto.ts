@@ -2,10 +2,13 @@ import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.type'
 import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
 import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import {
+  PostAuthorPreview,
+  PostDetailOutput,
+  PostDetailWithAuthorOutput,
+  PostMentionPreview
+} from '@/modules/post/domain/repositories/post.query.type';
 import { IMedia } from '@/modules/post/domain/value-objects/media.value-object';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
-import { Prettify } from 'ts-essentials';
 
 export class PostResponseDTO implements PostFullProps {
   id: string;
@@ -49,7 +52,7 @@ export class PostDetailResponseDTO implements PostDetailOutput {
   content: string;
   parentId: string | null;
   hashtags: HashtagFullProps[];
-  mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
+  mentions: PostMentionPreview[];
   media: IMedia[];
   guestViews: number;
   userViews: number;
@@ -98,7 +101,7 @@ export class PostDetailWithAuthorResponseDTO implements PostDetailWithAuthorOutp
   content: string;
   parentId: string | null;
   hashtags: HashtagFullProps[];
-  mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
+  mentions: PostMentionPreview[];
   media: IMedia[];
   guestViews: number;
   userViews: number;
@@ -109,7 +112,7 @@ export class PostDetailWithAuthorResponseDTO implements PostDetailWithAuthorOutp
   repostCount: number;
   commentCount: number;
   quoteCount: number;
-  author: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'avatar'>>;
+  author: PostAuthorPreview;
   constructor(payload: PostDetailWithAuthorOutput) {
     this.id = payload.id;
     this.userId = payload.userId;

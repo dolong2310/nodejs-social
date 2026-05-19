@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "keywords": [],
-  "author": "",
+  "author": "Long Do",
   "license": "ISC",
   "type": "module",
   "scripts": {
@@ -20,7 +20,8 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "test": "node --import ./tests/setup/register-argv.mjs ./node_modules/vitest/vitest.mjs run",
+    "test": "vitest run",
+    "test:architecture": "vitest run test/architecture",
     "db:migrate:mongo": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/mongodb/migrate.ts up",
     "db:migrate:postgres": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/postgres/migrate.ts up",
     "db:rollback:mongo": "tsx --tsconfig tsconfig.json src/infrastructure/persistence/mongodb/migrate.ts down",
@@ -118,6 +119,7 @@
     "rimraf": "^6.1.3",
     "socket.io-client": "^4.8.3",
     "supertest": "^7.2.2",
+    "tsarch": "^5.4.1",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
@@ -127,5 +129,6 @@
   "optionalDependencies": {
     "bufferutil": "^4.1.0",
     "utf-8-validate": "^6.0.6"
-  }
+  },
+  "packageManager": "pnpm@11.0.0"
 }

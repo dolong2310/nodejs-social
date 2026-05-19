@@ -17,6 +17,7 @@ import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type'
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
+import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
@@ -24,10 +25,7 @@ import { HashtagRepository } from '@/modules/post/infrastructure/persistence/pos
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
 import { PostRepository } from '@/modules/post/infrastructure/persistence/postgres/post.impl.repository';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
-import {
-  FriendshipRepository,
-  normalizeFriendshipPair
-} from '@/modules/relationship/infrastructure/persistence/postgres/friendship.impl.repository';
+import { FriendshipRepository } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.impl.repository';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';

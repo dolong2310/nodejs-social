@@ -1,3 +1,4 @@
+import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
@@ -14,7 +15,6 @@ import { ConversationMapper } from '@/modules/conversation/infrastructure/persis
 import { ConversationModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
-import { normalizeFriendshipPair } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.impl.repository';
 import type { Pool } from 'pg';
 
 const UNIQUE_VIOLATION = '23505';

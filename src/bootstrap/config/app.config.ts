@@ -74,5 +74,22 @@ export const appConfig: IAppConfig = {
     standardHeaders: 'draft-8' as const, // Trả về header chuẩn rate limit (bản draft-8 của IETF) cho client.
     legacyHeaders: false, // Tắt header kiểu cũ X-RateLimit-*.
     ipv6Subnet: 56 // Gom IPv6 theo subnet /64-style để tránh một máy tạo quá nhiều “client” khác nhau (theo doc express-rate-limit).
+  },
+
+  email: {
+    fromAddress: envConfig.SES_FROM_ADDRESS
+  },
+
+  google: {
+    clientId: envConfig.GOOGLE_CLIENT_ID,
+    clientSecret: envConfig.GOOGLE_CLIENT_SECRET,
+    redirectUri: envConfig.GOOGLE_REDIRECT_URI
+  },
+
+  s3: {
+    region: envConfig.AWS_REGION,
+    accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
+    secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
+    bucketName: envConfig.AWS_S3_BUCKET_NAME
   }
 };

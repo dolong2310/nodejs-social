@@ -1,17 +1,18 @@
-import { envConfig } from '@/bootstrap/config/env.config';
 import { GoogleOAuthServicePort, IGoogleUserInfo } from '@/modules/authentication/application/ports/google-oauth.port';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
+type GoogleOAuthConfig = {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+};
+
 export class GoogleOAuthService implements GoogleOAuthServicePort {
   private readonly client: OAuth2Client;
 
-  constructor() {
-    this.client = new google.auth.OAuth2(
-      envConfig.GOOGLE_CLIENT_ID,
-      envConfig.GOOGLE_CLIENT_SECRET,
-      envConfig.GOOGLE_REDIRECT_URI
-    );
+  constructor(readonly config: GoogleOAuthConfig) {
+    this.client = new google.auth.OAuth2(config.clientId, config.clientSecret, config.redirectUri);
   }
 
   generateAuthUrl(payload: { state: string; scope: string[] }): string {

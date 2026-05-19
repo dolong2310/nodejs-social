@@ -8,7 +8,6 @@ import { VideoStreamJobData, VideoStreamJobResult } from '@/modules/media/applic
 import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { VIDEO_STREAM_QUEUE_NAME } from '@/modules/media/infrastructure/queue/video-stream.queue';
-import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant'; // TODO: move to infrastructure layer
 import { type ConnectionOptions, type Job } from 'bullmq';
 import { get } from 'lodash-es';
 import path from 'path';
@@ -56,13 +55,14 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
 
     await this.fileStorage.delete(filepath);
 
-    const folderPath = path.resolve(UPLOAD_DIR_VIDEO, idName);
+    const uploadDir = path.resolve('uploads', 'videos'); // reference from UPLOAD_DIR_VIDEO
+    const folderPath = path.resolve(uploadDir, idName);
     const filepaths = await getFiles({ fileStorage: this.fileStorage, dir: folderPath });
     const concurrency = 2;
 
     // Upload các segment sang S3 với giới hạn concurrency để tránh bão hòa network/CPU.
     await mapWithConcurrency(filepaths, concurrency, async (_filepath) => {
-      const filename = 'videos-stream' + _filepath.replace(path.resolve(UPLOAD_DIR_VIDEO), '');
+      const filename = 'videos-stream' + _filepath.replace(path.resolve(uploadDir), '');
       await this.s3Service.uploadFile({
         filename,
         filepath: _filepath,

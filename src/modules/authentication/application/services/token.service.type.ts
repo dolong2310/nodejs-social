@@ -1,3 +1,6 @@
+import { type Algorithm, type Secret } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
+
 // Access Token
 export interface AccessTokenPayloadCreate {
   userId: string;
@@ -26,3 +29,11 @@ export interface TokenServicePort {
   verifyAccessToken(token: string): Promise<AccessTokenPayload>;
   verifyRefreshToken(token: string): Promise<RefreshTokenPayload>;
 }
+
+export type TokenServiceConfig = {
+  algorithm: Algorithm;
+  accessTokenSecret: Secret;
+  refreshTokenSecret: Secret;
+  accessTokenExpiresIn: StringValue;
+  refreshTokenExpiresIn: StringValue;
+};

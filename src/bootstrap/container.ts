@@ -189,10 +189,30 @@ export class Container implements IContainer {
     this.userQueryRepository = repos.userQueryRepository;
     this.conversationMemberQueryRepository = repos.conversationMemberQueryRepository;
 
-    this.tokenService = new TokenService(this.jwtService, appConfig);
-    this.googleOAuthService = new GoogleOAuthService();
-    this.s3Service = new S3Service(this.logger, this.fileStorage);
-    this.otpEmailSender = new SesOtpEmailSender(this.logger);
+    this.tokenService = new TokenService(this.jwtService, {
+      algorithm: appConfig.jwt.algorithm,
+      accessTokenSecret: appConfig.jwt.accessTokenSecret,
+      refreshTokenSecret: appConfig.jwt.refreshTokenSecret,
+      accessTokenExpiresIn: appConfig.jwt.accessTokenExpiresIn,
+      refreshTokenExpiresIn: appConfig.jwt.refreshTokenExpiresIn
+    });
+    this.googleOAuthService = new GoogleOAuthService({
+      clientId: appConfig.google.clientId,
+      clientSecret: appConfig.google.clientSecret,
+      redirectUri: appConfig.google.redirectUri
+    });
+    this.s3Service = new S3Service(this.logger, this.fileStorage, {
+      region: appConfig.s3.region,
+      accessKeyId: appConfig.s3.accessKeyId,
+      secretAccessKey: appConfig.s3.secretAccessKey,
+      bucketName: appConfig.s3.bucketName
+    });
+    this.otpEmailSender = new SesOtpEmailSender(this.logger, {
+      region: appConfig.s3.region,
+      accessKeyId: appConfig.s3.accessKeyId,
+      secretAccessKey: appConfig.s3.secretAccessKey,
+      fromAddress: appConfig.email.fromAddress
+    });
 
     this.authService = new AuthService(this.refreshTokenRepository, this.tokenService);
     this.userService = new UserService(this.userRepository, this.userQueryRepository, this.cacheStrategy);

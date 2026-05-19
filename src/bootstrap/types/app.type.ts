@@ -26,4 +26,18 @@ export interface IAppConfig {
   };
   cors: CorsOptions;
   rateLimit: Partial<RateLimitOptions> & { enabled: boolean };
+  email: {
+    fromAddress: string;
+  };
+  google: {
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+  };
+  s3: {
+    region: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    bucketName: string;
+  };
 }

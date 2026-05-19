@@ -1,19 +1,34 @@
-import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper'; // TODO: user module should not depend on role module
-import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model'; // TODO: user module should not depend on role module
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import {
+  FindUsersForSearchInput,
+  RoleFullProps,
+  UserWithRole
+} from '@/modules/user/domain/repositories/user.query.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
+
+type RoleModel = {
+  _id: string;
+  name: string;
+  description: string;
+  is_active: boolean;
+  permission_ids: string[];
+  created_at: Date;
+  created_by_id: string | null;
+  updated_at: Date;
+  updated_by_id: string | null;
+  deleted_at: Date | null;
+  deleted_by_id: string | null;
+};
 
 export class UserQueryRepository implements UserQueryRepositoryPort {
   constructor(
     protected readonly db: Db,
     protected readonly dbClient: MongoClient,
-    protected readonly mapper: UserMapper,
-    protected readonly roleMapper: RoleMapper
+    protected readonly mapper: UserMapper
   ) {}
 
   get dbCollection(): Collection<UserModel> {
@@ -69,7 +84,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     if (!record) return null;
     const { role, ...user } = record;
     const userResponse = this.mapper.toResponse(user);
-    const roleResponse = role ? this.roleMapper.toResponse(role) : null;
+    const roleResponse = role ? toRoleResponse(role) : null;
     return { ...userResponse, role: roleResponse };
   }
 
@@ -92,7 +107,7 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     if (!record) return null;
     const { role, ...user } = record;
     const userResponse = this.mapper.toResponse(user);
-    const roleResponse = role ? this.roleMapper.toResponse(role) : null;
+    const roleResponse = role ? toRoleResponse(role) : null;
     return { ...userResponse, role: roleResponse };
   }
 
@@ -161,45 +176,19 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
   }
 }
 
-/**
- * Util function pipeline to map _id to id
- */
-export function pipelineMapId(...nested: string[]): Document[] {
-  // TODO: Move to utils
-  const out: Document[] = [];
-
-  for (const field of nested) {
-    out.push({
-      $addFields: {
-        [field]: {
-          $let: {
-            vars: { r: `$${field}` },
-            in: {
-              $cond: [
-                { $eq: ['$$r', null] },
-                null,
-                {
-                  $mergeObjects: [
-                    {
-                      $arrayToObject: {
-                        $filter: {
-                          input: { $objectToArray: '$$r' },
-                          as: 'f',
-                          cond: { $ne: ['$$f.k', '_id'] }
-                        }
-                      }
-                    },
-                    { id: '$$r._id' }
-                  ]
-                }
-              ]
-            }
-          }
-        }
-      }
-    });
-  }
-
-  out.push({ $addFields: { id: '$_id' } }, { $project: { _id: 0 } });
-  return out;
+function toRoleResponse(record: RoleModel): RoleFullProps {
+  const response = {
+    id: record._id,
+    name: record.name,
+    description: record.description,
+    isActive: record.is_active,
+    permissionIds: record.permission_ids,
+    createdAt: record.created_at,
+    createdById: record.created_by_id ?? null,
+    updatedAt: record.updated_at,
+    updatedById: record.updated_by_id ?? null,
+    deletedAt: record.deleted_at ?? null,
+    deletedById: record.deleted_by_id ?? null
+  };
+  return response;
 }

@@ -61,7 +61,7 @@ import { MarkNotificationReadUseCase } from '@/modules/notification/application/
 import { MarkNotificationsReadUseCase } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.usecase';
 import { ClearCacheUseCase } from '@/modules/operations/application/use-cases/clear-cache/clear-cache.usecase';
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
-import { HttpRoutePermissionCatalog } from '@/modules/operations/infrastructure/http-route-permission-catalog';
+import { HttpRoutePermissionCatalog } from '@/modules/operations/presentation/http-route-permission-catalog';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
@@ -137,11 +137,11 @@ import {
   INotificationController,
   NotificationsController
 } from '@/presentation/http/express/v1/controllers/notifications.controller';
+import { IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 import {
   IOperationsController,
   OperationsController
 } from '@/presentation/http/express/v1/controllers/operations.controller';
-import { IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 import {
   IPermissionController,
   PermissionController
@@ -273,7 +273,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog()
+    new HttpRoutePermissionCatalog({ apiPrefix: appConfig.api.prefix })
   );
 
   const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
@@ -362,7 +362,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const getStaticVideoStreamUC = new GetStaticVideoStreamUseCase(fileStorage);
   const uploadImageUC = new UploadImageUseCase(s3Service, imageProcessor, fileStorage);
   const uploadVideoUC = new UploadVideoUseCase(s3Service, fileStorage);
-  const uploadVideoStreamUC = new UploadVideoStreamUseCase(videoStatusRepository, videoStreamQueue, appConfig);
+  const uploadVideoStreamUC = new UploadVideoStreamUseCase(videoStatusRepository, videoStreamQueue, {
+    clientUrl: appConfig.client.url
+  });
 
   const getNewFeedsUC = new GetNewFeedsUseCase(postQueryRepository, postService, blockService, friendService, logger);
   const getGuestNewFeedsUC = new GetGuestNewFeedsUseCase(postQueryRepository, postService, logger);

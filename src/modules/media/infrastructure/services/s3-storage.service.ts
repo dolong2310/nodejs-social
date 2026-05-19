@@ -1,4 +1,3 @@
-import { envConfig } from '@/bootstrap/config/env.config';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import { ObjectStoragePort, ObjectStorageUploadResult } from '@/modules/media/application/ports/object-storage.port';
@@ -7,20 +6,28 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { Writable } from 'node:stream';
 
+type S3Config = {
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucketName: string;
+};
+
 export class S3Service implements ObjectStoragePort {
   private readonly s3: S3;
   private readonly log: LoggerPort;
 
   constructor(
     private readonly logger: LoggerPort,
-    private readonly fileStorage: FileStoragePort
+    private readonly fileStorage: FileStoragePort,
+    private readonly config: S3Config
   ) {
     this.log = this.logger.child({ module: 's3' });
     this.s3 = new S3({
-      region: envConfig.AWS_REGION,
+      region: config.region,
       credentials: {
-        accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
-        secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey
       }
     });
 
@@ -45,7 +52,7 @@ export class S3Service implements ObjectStoragePort {
         client: this.s3,
 
         params: {
-          Bucket: envConfig.AWS_S3_BUCKET_NAME,
+          Bucket: this.config.bucketName,
           Key: filename,
           // Body: readFileSync(filepath),
           Body: this.fileStorage.createReadStream(filepath), // dùng createReadStream thay vì readFileSync để tránh block event-loop và giảm RAM khi upload file lớn.
@@ -78,7 +85,7 @@ export class S3Service implements ObjectStoragePort {
   async createPresignedUrl(filename: string): Promise<string> {
     const contentType = this.fileStorage.getContentType(filename, 'application/octet-stream');
     const command = new PutObjectCommand({
-      Bucket: envConfig.AWS_S3_BUCKET_NAME,
+      Bucket: this.config.bucketName,
       Key: filename,
       ContentType: contentType
     });
@@ -88,7 +95,7 @@ export class S3Service implements ObjectStoragePort {
   async streamFile(res: Writable, filepath: string): Promise<void> {
     try {
       const s3Object = await this.s3.getObject({
-        Bucket: envConfig.AWS_S3_BUCKET_NAME,
+        Bucket: this.config.bucketName,
         Key: filepath
       });
 

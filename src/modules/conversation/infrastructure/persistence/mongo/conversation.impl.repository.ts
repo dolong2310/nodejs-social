@@ -1,3 +1,4 @@
+import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
@@ -14,7 +15,6 @@ import { ConversationMapper } from '@/modules/conversation/infrastructure/persis
 import { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { normalizeFriendshipPair } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.impl.repository';
 import { Db, MongoClient, MongoServerError } from 'mongodb';
 
 export class ConversationRepository

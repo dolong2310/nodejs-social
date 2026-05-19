@@ -1,8 +1,7 @@
-import { appConfig } from '@/bootstrap/config/app.config';
 import {
   buildStubHttpRouters,
   permissionModuleTagFromBaseRoutePath
-} from '@/infrastructure/persistence/seed/stub-http-routers.seed';
+} from '@/modules/operations/presentation/stub-http-routers';
 import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import {
   AvailableRoute,
@@ -15,7 +14,15 @@ const VALID_HTTP_METHODS = new Set<string>(Object.values(EnumHttpMethod));
 
 type ExpressRouteLayer = { route?: { path: string | string[] | RegExp; methods?: Record<string, boolean> } };
 
+type HttpRoutePermissionCatalogConfig = {
+  apiPrefix: string;
+};
+
 export class HttpRoutePermissionCatalog extends RoutePermissionCatalogPort {
+  constructor(private readonly config: HttpRoutePermissionCatalogConfig) {
+    super();
+  }
+
   getAvailableRoutes(): AvailableRoute[] {
     return this.discoverApiRoutesFromBaseRouteList(buildStubHttpRouters());
   }
@@ -24,7 +31,7 @@ export class HttpRoutePermissionCatalog extends RoutePermissionCatalogPort {
     const allDiscoveredRoutes: AvailableRoute[] = [];
     for (const baseRoute of baseRouteList) {
       const fullMountPath = this.joinExpressPathSegments(
-        appConfig.api.prefix,
+        this.config.apiPrefix,
         baseRoute.getVersion(),
         baseRoute.getPath()
       );

@@ -1,10 +1,10 @@
-import { IAppConfig } from '@/bootstrap/types/app.type';
 import { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
 import {
   AccessTokenPayload,
   AccessTokenPayloadCreate,
   RefreshTokenPayload,
   RefreshTokenPayloadCreate,
+  TokenServiceConfig,
   TokenServicePort
 } from '@/modules/authentication/application/services/token.service.type';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class TokenService implements TokenServicePort {
   constructor(
     private readonly jwtService: JwtPort,
-    private readonly appConfig: IAppConfig
+    private readonly tokenConfig: TokenServiceConfig
   ) {}
 
   signAccessToken(payload: AccessTokenPayloadCreate): Promise<string> {
@@ -21,9 +21,9 @@ export class TokenService implements TokenServicePort {
     return this.jwtService.signAsync(
       { ...payload, uuid: uuidv4() },
       {
-        secret: this.appConfig.jwt.accessTokenSecret,
-        expiresIn: this.appConfig.jwt.accessTokenExpiresIn,
-        algorithm: 'HS256'
+        secret: this.tokenConfig.accessTokenSecret,
+        expiresIn: this.tokenConfig.accessTokenExpiresIn,
+        algorithm: this.tokenConfig.algorithm
       }
     );
   }
@@ -34,22 +34,22 @@ export class TokenService implements TokenServicePort {
     return this.jwtService.signAsync(
       { ...payload, uuid: uuidv4() },
       {
-        secret: this.appConfig.jwt.refreshTokenSecret,
-        expiresIn: this.appConfig.jwt.refreshTokenExpiresIn,
-        algorithm: 'HS256'
+        secret: this.tokenConfig.refreshTokenSecret,
+        expiresIn: this.tokenConfig.refreshTokenExpiresIn,
+        algorithm: this.tokenConfig.algorithm
       }
     );
   }
 
   verifyAccessToken(token: string): Promise<AccessTokenPayload> {
     return this.jwtService.verifyAsync<AccessTokenPayload>(token, {
-      secret: this.appConfig.jwt.accessTokenSecret
+      secret: this.tokenConfig.accessTokenSecret
     });
   }
 
   verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
     return this.jwtService.verifyAsync<RefreshTokenPayload>(token, {
-      secret: this.appConfig.jwt.refreshTokenSecret
+      secret: this.tokenConfig.refreshTokenSecret
     });
   }
 }

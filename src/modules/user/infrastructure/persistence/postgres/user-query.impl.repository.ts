@@ -1,22 +1,29 @@
-import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import {
+  FindUsersForSearchInput,
+  RoleFullProps,
+  UserWithRole
+} from '@/modules/user/domain/repositories/user.query.type';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/postgres/user.model';
 import type { Pool } from 'pg';
 
 type UserWithRoleModel = UserModel & {
   joined_role_id: string | null;
-  role_name: string | null;
-  role_description: string | null;
-  role_is_active: boolean | null;
-  role_permission_ids: string[] | null;
-  role_created_at: Date | null;
-  role_updated_at: Date | null;
+  role_name: string;
+  role_description: string;
+  role_is_active: boolean;
+  role_permission_ids: string[];
+  role_created_at: Date;
+  role_created_by_id: string;
+  role_updated_at: Date;
+  role_updated_by_id: string;
+  role_deleted_at: Date;
+  role_deleted_by_id: string;
 };
 
 const roleJoin = `
@@ -27,7 +34,11 @@ const roleJoin = `
       r.description,
       r.is_active,
       r.created_at,
+      r.created_by_id,
       r.updated_at,
+      r.updated_by_id,
+      r.deleted_at,
+      r.deleted_by_id,
       COALESCE(
         array_agg(rp.permission_id ORDER BY rp.position) FILTER (WHERE rp.permission_id IS NOT NULL),
         ARRAY[]::text[]
@@ -86,7 +97,11 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
           role.is_active AS role_is_active,
           role.permission_ids AS role_permission_ids,
           role.created_at AS role_created_at,
-          role.updated_at AS role_updated_at
+          role.created_by_id AS role_created_by_id,
+          role.updated_at AS role_updated_at,
+          role.updated_by_id AS role_updated_by_id,
+          role.deleted_at AS role_deleted_at,
+          role.deleted_by_id AS role_deleted_by_id
         FROM users u
         ${roleJoin}
         WHERE u.id = $1 AND u.deleted_at IS NULL
@@ -109,7 +124,11 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
           role.is_active AS role_is_active,
           role.permission_ids AS role_permission_ids,
           role.created_at AS role_created_at,
-          role.updated_at AS role_updated_at
+          role.created_by_id AS role_created_by_id,
+          role.updated_at AS role_updated_at,
+          role.updated_by_id AS role_updated_by_id,
+          role.deleted_at AS role_deleted_at,
+          role.deleted_by_id AS role_deleted_by_id
         FROM users u
         ${roleJoin}
         WHERE u.email = $1 AND u.deleted_at IS NULL
@@ -213,12 +232,16 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
 
     return {
       id: record.joined_role_id,
-      name: record.role_name as string,
-      description: record.role_description as string,
-      isActive: record.role_is_active as boolean,
+      name: record.role_name,
+      description: record.role_description,
+      isActive: record.role_is_active,
       permissionIds: record.role_permission_ids ?? [],
-      createdAt: record.role_created_at as Date,
-      updatedAt: record.role_updated_at as Date
+      createdAt: record.role_created_at,
+      createdById: record.role_created_by_id ?? null,
+      updatedAt: record.role_updated_at,
+      updatedById: record.role_updated_by_id ?? null,
+      deletedAt: record.role_deleted_at ?? null,
+      deletedById: record.role_deleted_by_id ?? null
     };
   }
 }

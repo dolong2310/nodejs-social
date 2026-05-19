@@ -96,7 +96,7 @@ export function createMongoContainerRepositories(
 
   const queryRepositories = {
     postQueryRepository: new PostQueryRepository(readDb, readDbClient, postMapper),
-    userQueryRepository: new UserQueryRepository(readDb, readDbClient, userMapper, roleMapper),
+    userQueryRepository: new UserQueryRepository(readDb, readDbClient, userMapper),
     conversationMemberQueryRepository: new ConversationMemberQueryRepository(readDb, readDbClient),
     roleQueryRepository: new RoleQueryRepository(readDb, readDbClient, roleMapper)
   };

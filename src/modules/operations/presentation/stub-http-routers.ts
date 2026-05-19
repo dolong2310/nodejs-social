@@ -10,6 +10,7 @@ import type { TimeoutInterceptor } from '@/presentation/http/express/interceptor
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IAdminUserController } from '@/presentation/http/express/v1/controllers/admin-user.controller';
 import type { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
+import type { IOperationsController } from '@/presentation/http/express/v1/controllers/operations.controller';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import type { IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
@@ -20,7 +21,6 @@ import type { IConversationPipe } from '@/presentation/http/express/v1/pipes/con
 import type { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
 import type { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
 import type { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import type { IOperationsController } from '@/presentation/http/express/v1/controllers/operations.controller';
 import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import type { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
 import type { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';

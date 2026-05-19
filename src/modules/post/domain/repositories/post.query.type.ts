@@ -2,7 +2,6 @@ import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
 import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 import { EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
 import { Prettify } from 'ts-essentials';
 
 export interface IsViewerInteractedWithPostInput {
@@ -50,9 +49,26 @@ export interface FindPostsForSearchInput {
 
 // Output
 
+// reference from UserFullProps
+type PostMentionUserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED' | 'UNKNOWN'; // EnumUserStatus
+export type PostAuthorPreview = Prettify<{
+  id: string;
+  name: string;
+  email: string;
+  username?: string;
+  avatar?: string;
+}>;
+export type PostMentionPreview = Prettify<{
+  id: string;
+  name: string;
+  email: string;
+  username?: string;
+  status: PostMentionUserStatus;
+}>;
+
 export interface PostDetailOutput extends Omit<PostFullProps, 'mentions' | 'hashtags'> {
   hashtags: HashtagFullProps[];
-  mentions: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'status'>>[];
+  mentions: PostMentionPreview[];
   likeCount: number;
   bookmarkCount: number;
   repostCount: number;
@@ -61,5 +77,5 @@ export interface PostDetailOutput extends Omit<PostFullProps, 'mentions' | 'hash
 }
 
 export interface PostDetailWithAuthorOutput extends PostDetailOutput {
-  author: Prettify<Pick<UserFullProps, 'id' | 'name' | 'email' | 'username' | 'avatar'>>;
+  author: PostAuthorPreview;
 }

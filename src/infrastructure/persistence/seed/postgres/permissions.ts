@@ -7,6 +7,7 @@
  * Prerequisite:
  * Run `pnpm run db:migrate:postgres --env=development` first.
  */
+import { appConfig } from '@/bootstrap/config/app.config';
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
@@ -15,7 +16,7 @@ import { PermissionMapper } from '@/modules/authorization/infrastructure/persist
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
-import { HttpRoutePermissionCatalog } from '@/modules/operations/infrastructure/http-route-permission-catalog';
+import { HttpRoutePermissionCatalog } from '@/modules/operations/presentation/http-route-permission-catalog';
 
 const databaseService = new PostgresDatabase({
   uri: dbConfig.postgres.uri,
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog()
+    new HttpRoutePermissionCatalog({ apiPrefix: appConfig.api.prefix })
   );
   const result = await syncRolePermissionsUC.execute();
 

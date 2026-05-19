@@ -1,21 +1,30 @@
-import { envConfig } from '@/bootstrap/config/env.config';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+type SesEmailConfig = {
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  fromAddress: string;
+};
+
 export class SesOtpEmailSender {
   private readonly sesClient: SESClient;
   private readonly log: LoggerPort;
 
-  constructor(private readonly logger: LoggerPort) {
+  constructor(
+    private readonly logger: LoggerPort,
+    private readonly config: SesEmailConfig
+  ) {
     this.log = this.logger.child({ module: 'otp-email-sender' });
     this.sesClient = new SESClient({
-      region: envConfig.AWS_REGION,
+      region: config.region,
       credentials: {
-        secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
-        accessKeyId: envConfig.AWS_ACCESS_KEY_ID
+        secretAccessKey: config.secretAccessKey,
+        accessKeyId: config.accessKeyId
       }
     });
   }
@@ -73,7 +82,7 @@ export class SesOtpEmailSender {
   }): Promise<SendEmailCommandOutput> {
     const sender = 'Social App';
     const sendEmailCommand = this.createSendEmailCommand({
-      fromAddress: envConfig.SES_FROM_ADDRESS,
+      fromAddress: this.config.fromAddress,
       toAddresses: toAddress,
       subject,
       body: (await this.getTemplate())

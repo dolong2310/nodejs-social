@@ -17,6 +17,7 @@ import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type.
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository.js';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper.js';
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum.js';
+import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type.js';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object.js';
@@ -24,10 +25,7 @@ import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mon
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper.js';
 import { PostRepository } from '@/modules/post/infrastructure/persistence/mongo/post.impl.repository.js';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper.js';
-import {
-  FriendshipRepository,
-  normalizeFriendshipPair
-} from '@/modules/relationship/infrastructure/persistence/mongo/friendship.impl.repository.js';
+import { FriendshipRepository } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.impl.repository.js';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper.js';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity.js';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.type.js';
