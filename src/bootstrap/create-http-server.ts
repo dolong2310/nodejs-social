@@ -8,13 +8,13 @@ import { createExpressApp } from '@/presentation/http/express/app';
 import { initUploadsFolder } from '@/presentation/http/express/utils/file.util';
 import { createSocketApp } from '@/presentation/socket/socket.app';
 import { rateLimit } from 'express-rate-limit';
-import { type Server as HttpServer } from 'http';
+import { createServer } from 'http';
 import { type RedisReply, RedisStore } from 'rate-limit-redis';
 import { type Server as SocketIOServer } from 'socket.io';
 
 initUploadsFolder();
 
-export async function createHttpServer(httpServer: HttpServer, io: SocketIOServer) {
+export async function createHttpServer(io: SocketIOServer) {
   const [database, redis] = await Promise.all([setupDatabase(), setupRedis()]);
 
   const container = setupContainer(database, redis, io);
@@ -23,7 +23,9 @@ export async function createHttpServer(httpServer: HttpServer, io: SocketIOServe
 
   createSocketApp(io, container);
 
-  httpServer.on('request', app);
+  const httpServer = createServer(app);
+
+  io.attach(httpServer);
 
   if (appConfig.rateLimit.enabled) {
     app.use(

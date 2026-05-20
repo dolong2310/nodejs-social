@@ -5,8 +5,8 @@ import { createSocketServer } from '@/bootstrap/create-socket-server';
 import logger from '@/infrastructure/logger/create-logger';
 
 async function bootstrap() {
-  const { httpServer, io } = await createSocketServer();
-  const { server, port, appUrl } = await createHttpServer(httpServer, io);
+  const { io } = await createSocketServer();
+  const { server, port, appUrl } = await createHttpServer(io);
   server.listen(port, () => {
     logger.info({ port, appUrl }, 'server:::running');
   });
