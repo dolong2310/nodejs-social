@@ -8,6 +8,7 @@ import {
 } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { generateId } from '@/modules/core/domain/helpers/ids';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -57,7 +58,7 @@ export class LoginGoogleUseCase extends LoginGooglePort {
       email,
       password: hashedPassword,
       birthday: new Date(),
-      username: `user-${generateId()}`,
+      username: `user_${generateUniqueString()}`,
       roleId: userRoleId
     });
     const newUser = await this.userRepository.insert(userEntity, {
