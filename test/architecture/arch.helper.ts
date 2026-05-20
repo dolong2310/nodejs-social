@@ -80,7 +80,7 @@ function walkFiles(directory: string): string[] {
 export function sourceFiles(root = 'src'): string[] {
   const rootPath = path.resolve(process.cwd(), root);
   return walkFiles(rootPath)
-    .filter((file) => file.endsWith('.ts'))
+    .filter((file) => file.endsWith('.ts') && !file.endsWith('.test.ts'))
     .map((file) => toProjectPath(path.relative(process.cwd(), file)))
     .sort();
 }

@@ -11,11 +11,12 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".", // Đường dẫn base cho các import
     "paths": {
-      "@/*": ["./src/*"] // Đường dẫn tương đối cho các import (alias)
+      "@/*": ["./src/*"], // Đường dẫn tương đối cho các import source
+      "@test/*": ["./test/*"] // Đường dẫn tương đối cho test support
     },
     "rootDirs": ["./src", "."] // Giúp TS hiểu cấu trúc thư mục khi dùng alias + entry ở root (main.ts)
   },
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*", "main.ts"], // Đường dẫn include cho các file cần build
-  "exclude": ["src/modules-sample/**/*"] // Loại bỏ folder sample khỏi build
+  "include": ["src/**/*", "test/**/*", "main.ts"], // Đường dẫn include cho các file cần build
+  "exclude": []
 }

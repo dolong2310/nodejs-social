@@ -8,7 +8,9 @@ expect.extend({
       return JestResultFactory.error('expected something checkable as an argument for expect()');
     }
     const violations = await checkable.check();
-    const jestViolations = violations.map((violation) => JestViolationFactory.from(violation));
+    const jestViolations = violations.map((violation: Parameters<typeof JestViolationFactory.from>[0]) =>
+      JestViolationFactory.from(violation)
+    );
     return JestResultFactory.result(this.isNot, jestViolations);
   }
 });
