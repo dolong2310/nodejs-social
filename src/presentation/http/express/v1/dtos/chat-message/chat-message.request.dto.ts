@@ -14,6 +14,6 @@ export class MarkChatReadBodyDTO {
   lastReadMessageId?: string;
 
   constructor(body: { lastReadMessageId?: string }) {
-    this.lastReadMessageId = body.lastReadMessageId;
+    this.lastReadMessageId = body?.lastReadMessageId;
   }
 }
