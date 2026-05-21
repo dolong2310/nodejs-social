@@ -57,7 +57,10 @@ import {
   NotificationServicePort
 } from '@/modules/notification/application/services/notification.service';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import { CheckSystemHealthPort } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.port';
+import { CheckSystemHealthUseCase } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.usecase';
 import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
+import { NodeSystemHealthProbe } from '@/modules/operations/infrastructure/system/node-system-health-probe';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import { PostService, PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
@@ -146,6 +149,7 @@ export class Container implements IContainer {
   private readonly deleteExpiredOtpsUC: DeleteExpiredOtpsPort;
   private readonly deleteExpiredRefreshTokensUC: DeleteExpiredRefreshTokensPort;
   private readonly warmRedisCacheUC: WarmRedisCacheUseCase;
+  private readonly checkSystemHealthUC: CheckSystemHealthPort;
 
   private readonly presenceFeature: PresenceFeature;
   private readonly chatFeature: ChatFeature;
@@ -227,6 +231,14 @@ export class Container implements IContainer {
     this.roleService = new RoleService(this.roleRepository);
     this.deleteExpiredOtpsUC = new DeleteExpiredOtpsUseCase(this.otpRepository);
     this.deleteExpiredRefreshTokensUC = new DeleteExpiredRefreshTokensUseCase(this.refreshTokenRepository);
+
+    this.notificationsService = new NotificationService(
+      this.notificationRepository,
+      this.notificationTrimQueue,
+      this.userService,
+      this.realtimeEmitter
+    );
+
     this.warmRedisCacheUC = new WarmRedisCacheUseCase(
       this.redis,
       this.roleRepository,
@@ -235,11 +247,16 @@ export class Container implements IContainer {
       this.userQueryRepository,
       this.friendshipRepository
     );
-    this.notificationsService = new NotificationService(
-      this.notificationRepository,
-      this.notificationTrimQueue,
-      this.userService,
-      this.realtimeEmitter
+    this.checkSystemHealthUC = new CheckSystemHealthUseCase(
+      new NodeSystemHealthProbe({ diskPath: appConfig.systemHealth.diskPath }),
+      this.redis,
+      this.emailSender,
+      this.logger,
+      {
+        adminEmails: appConfig.systemHealth.adminEmails,
+        alertCooldownSeconds: appConfig.systemHealth.alertCooldownSeconds,
+        thresholds: appConfig.systemHealth.thresholds
+      }
     );
 
     this.routers = buildHttpRouters({
@@ -321,7 +338,8 @@ export class Container implements IContainer {
       fileStorage: this.fileStorage,
       deleteExpiredOtpsUC: this.deleteExpiredOtpsUC,
       deleteExpiredRefreshTokensUC: this.deleteExpiredRefreshTokensUC,
-      warmRedisCacheUC: this.warmRedisCacheUC
+      warmRedisCacheUC: this.warmRedisCacheUC,
+      checkSystemHealthUC: this.checkSystemHealthUC
     };
   }
 }

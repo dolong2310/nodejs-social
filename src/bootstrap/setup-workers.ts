@@ -1,3 +1,4 @@
+import { appConfig } from '@/bootstrap/config/app.config';
 import { IContainer } from '@/bootstrap/container';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
@@ -7,6 +8,7 @@ import { RefreshTokenCleanupWorker } from '@/modules/authentication/infrastructu
 import { VideoStreamWorker } from '@/modules/media/infrastructure/queue/video-stream.worker';
 import { NotificationTrimWorker } from '@/modules/notification/infrastructure/queue/notification-trim.worker';
 import { CacheWarmupWorker } from '@/modules/operations/infrastructure/schedule/cache-warmup.worker';
+import { SystemHealthWorker } from '@/modules/operations/infrastructure/schedule/system-health.worker';
 import { PostViewsWorker } from '@/modules/post/infrastructure/queue/post-views.worker';
 
 export function setupWorkers(container: IContainer): void {
@@ -22,7 +24,8 @@ export function setupWorkers(container: IContainer): void {
     fileStorage,
     deleteExpiredOtpsUC,
     deleteExpiredRefreshTokensUC,
-    warmRedisCacheUC
+    warmRedisCacheUC,
+    checkSystemHealthUC
   } = container.getWorkerDeps();
 
   new OtpEmailWorker(connection, emailSender, otpRepository, logger);
@@ -32,4 +35,8 @@ export function setupWorkers(container: IContainer): void {
   new OtpCleanupWorker(connection, deleteExpiredOtpsUC, logger);
   new RefreshTokenCleanupWorker(connection, deleteExpiredRefreshTokensUC, logger);
   new CacheWarmupWorker(connection, warmRedisCacheUC, logger);
+
+  if (appConfig.systemHealth.enabled) {
+    new SystemHealthWorker(connection, checkSystemHealthUC, logger);
+  }
 }

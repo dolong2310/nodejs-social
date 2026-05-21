@@ -1,3 +1,4 @@
+import { appConfig } from '@/bootstrap/config/app.config';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
@@ -10,6 +11,7 @@ import { VideoStreamQueue } from '@/modules/media/infrastructure/queue/video-str
 import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { NotificationTrimQueue } from '@/modules/notification/infrastructure/queue/notification-trim.queue';
 import { CacheWarmupSchedule } from '@/modules/operations/infrastructure/schedule/cache-warmup.schedule';
+import { SystemHealthSchedule } from '@/modules/operations/infrastructure/schedule/system-health.schedule';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import { PostViewsQueue } from '@/modules/post/infrastructure/queue/post-views.queue';
 
@@ -27,6 +29,11 @@ export function createContainerQueues(logger: LoggerPort): ContainerQueues {
   new OtpCleanupSchedule(connection, logger);
   new RefreshTokenCleanupSchedule(connection, logger);
   new CacheWarmupSchedule(connection, logger);
+  new SystemHealthSchedule(connection, logger, {
+    enabled: appConfig.systemHealth.enabled,
+    cron: appConfig.systemHealth.cron,
+    timezone: appConfig.systemHealth.timezone
+  });
 
   // register queues
   return {

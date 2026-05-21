@@ -983,6 +983,20 @@ function testAppConfig(): IAppConfig {
     cors: { origin: ['http://localhost:3000'], credentials: true },
     rateLimit: { enabled: false },
     email: { fromAddress: 'no-reply@example.com' },
+    systemHealth: {
+      enabled: false,
+      cron: '*/1 * * * *',
+      timezone: 'Asia/Ho_Chi_Minh',
+      diskPath: '/',
+      adminEmails: [],
+      alertCooldownSeconds: 1800,
+      thresholds: {
+        cpu: { warning: 80, critical: 90 },
+        memory: { warning: 80, critical: 90 },
+        disk: { warning: 80, critical: 90 },
+        processMemoryMb: { warning: 512, critical: 1024 }
+      }
+    },
     google: {
       clientId: 'test-google-client-id',
       clientSecret: 'test-google-client-secret',

@@ -29,6 +29,32 @@ export interface IAppConfig {
   email: {
     fromAddress: string;
   };
+  systemHealth: {
+    enabled: boolean;
+    cron: string;
+    timezone: string;
+    diskPath: string;
+    adminEmails: string[];
+    alertCooldownSeconds: number;
+    thresholds: {
+      cpu: {
+        warning: number;
+        critical: number;
+      };
+      memory: {
+        warning: number;
+        critical: number;
+      };
+      disk: {
+        warning: number;
+        critical: number;
+      };
+      processMemoryMb: {
+        warning: number;
+        critical: number;
+      };
+    };
+  };
   google: {
     clientId: string;
     clientSecret: string;

@@ -33,6 +33,13 @@ function getCorsAllowedOrigins(): string[] {
   return [...new Set([envConfig.FRONTEND_URL, ...DEFAULT_DEV_CORS_ORIGINS])];
 }
 
+function parseCsv(value: string): string[] {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 // General configs
 export const appConfig: IAppConfig = {
   port: parseInt(envConfig.PORT, 10),
@@ -78,6 +85,33 @@ export const appConfig: IAppConfig = {
 
   email: {
     fromAddress: envConfig.SES_FROM_ADDRESS
+  },
+
+  systemHealth: {
+    enabled: envConfig.SYSTEM_HEALTH_MONITOR_ENABLED === '1',
+    cron: envConfig.SYSTEM_HEALTH_CRON,
+    timezone: envConfig.SYSTEM_HEALTH_TIMEZONE,
+    diskPath: envConfig.SYSTEM_HEALTH_DISK_PATH,
+    adminEmails: parseCsv(envConfig.SYSTEM_HEALTH_ADMIN_EMAILS),
+    alertCooldownSeconds: Number(envConfig.SYSTEM_HEALTH_ALERT_COOLDOWN_SECONDS),
+    thresholds: {
+      cpu: {
+        warning: Number(envConfig.SYSTEM_HEALTH_CPU_WARN),
+        critical: Number(envConfig.SYSTEM_HEALTH_CPU_CRITICAL)
+      },
+      memory: {
+        warning: Number(envConfig.SYSTEM_HEALTH_RAM_WARN),
+        critical: Number(envConfig.SYSTEM_HEALTH_RAM_CRITICAL)
+      },
+      disk: {
+        warning: Number(envConfig.SYSTEM_HEALTH_DISK_WARN),
+        critical: Number(envConfig.SYSTEM_HEALTH_DISK_CRITICAL)
+      },
+      processMemoryMb: {
+        warning: Number(envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_WARN_MB),
+        critical: Number(envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_CRITICAL_MB)
+      }
+    }
   },
 
   google: {
