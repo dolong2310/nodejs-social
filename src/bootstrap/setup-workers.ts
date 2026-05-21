@@ -6,6 +6,7 @@ import { OtpCleanupWorker } from '@/modules/authentication/infrastructure/schedu
 import { RefreshTokenCleanupWorker } from '@/modules/authentication/infrastructure/schedule/refresh-token-cleanup.worker';
 import { VideoStreamWorker } from '@/modules/media/infrastructure/queue/video-stream.worker';
 import { NotificationTrimWorker } from '@/modules/notification/infrastructure/queue/notification-trim.worker';
+import { CacheWarmupWorker } from '@/modules/operations/infrastructure/schedule/cache-warmup.worker';
 import { PostViewsWorker } from '@/modules/post/infrastructure/queue/post-views.worker';
 
 export function setupWorkers(container: IContainer): void {
@@ -20,7 +21,8 @@ export function setupWorkers(container: IContainer): void {
     s3Service,
     fileStorage,
     deleteExpiredOtpsUC,
-    deleteExpiredRefreshTokensUC
+    deleteExpiredRefreshTokensUC,
+    warmRedisCacheUC
   } = container.getWorkerDeps();
 
   new OtpEmailWorker(connection, otpEmailSender, otpRepository, logger);
@@ -29,4 +31,5 @@ export function setupWorkers(container: IContainer): void {
   new VideoStreamWorker(connection, mediaRepository, s3Service, fileStorage, logger);
   new OtpCleanupWorker(connection, deleteExpiredOtpsUC, logger);
   new RefreshTokenCleanupWorker(connection, deleteExpiredRefreshTokensUC, logger);
+  new CacheWarmupWorker(connection, warmRedisCacheUC, logger);
 }

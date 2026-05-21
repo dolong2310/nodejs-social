@@ -8,6 +8,7 @@ import { FileStoragePort } from '@/modules/media/application/ports/file-storage.
 import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
 import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
@@ -30,6 +31,7 @@ export interface IContainer {
     fileStorage: FileStoragePort;
     deleteExpiredOtpsUC: DeleteExpiredOtpsPort;
     deleteExpiredRefreshTokensUC: DeleteExpiredRefreshTokensPort;
+    warmRedisCacheUC: WarmRedisCacheUseCase;
   };
   getLogger(): LoggerPort;
 }

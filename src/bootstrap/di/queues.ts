@@ -9,6 +9,7 @@ import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-st
 import { VideoStreamQueue } from '@/modules/media/infrastructure/queue/video-stream.queue';
 import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { NotificationTrimQueue } from '@/modules/notification/infrastructure/queue/notification-trim.queue';
+import { CacheWarmupSchedule } from '@/modules/operations/infrastructure/schedule/cache-warmup.schedule';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import { PostViewsQueue } from '@/modules/post/infrastructure/queue/post-views.queue';
 
@@ -25,6 +26,7 @@ export function createContainerQueues(logger: LoggerPort): ContainerQueues {
   // register schedules
   new OtpCleanupSchedule(connection, logger);
   new RefreshTokenCleanupSchedule(connection, logger);
+  new CacheWarmupSchedule(connection, logger);
 
   // register queues
   return {
