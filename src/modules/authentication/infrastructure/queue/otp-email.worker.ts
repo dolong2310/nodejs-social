@@ -1,8 +1,8 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import { OtpEmailJobData, OtpEmailJobResult } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
 import { OTP_EMAIL_QUEUE_NAME } from '@/modules/authentication/infrastructure/queue/otp-email.queue';
+import { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { UnrecoverableError, type ConnectionOptions, type Job } from 'bullmq';
 
@@ -12,7 +12,7 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
 
   constructor(
     protected readonly connection: ConnectionOptions,
-    private readonly otpEmailSender: SesOtpEmailSender,
+    private readonly emailSender: EmailSenderPort,
     private readonly otpRepository: OtpRepositoryPort,
     private readonly logger: LoggerPort
   ) {
@@ -27,10 +27,17 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
   }
 
   protected override async process(job: Job<OtpEmailJobData, OtpEmailJobResult>): Promise<OtpEmailJobResult> {
-    await this.otpEmailSender.sendOtpEmail({
-      toAddress: job.data.toAddress,
+    await this.emailSender.sendEmail({
+      toAddresses: job.data.toAddress,
       subject: job.data.subject,
-      code: job.data.body.code
+      template: {
+        name: 'otp',
+        variables: {
+          sender: 'Social App',
+          subject: job.data.subject,
+          code: job.data.body.code
+        }
+      }
     });
     return { sentAt: new Date().toISOString() };
   }

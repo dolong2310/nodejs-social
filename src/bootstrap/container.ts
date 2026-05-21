@@ -5,6 +5,7 @@ import { createContainerRepositories } from '@/bootstrap/di/repositories';
 import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
 import { CacheStrategy } from '@/infrastructure/cache/cache.strategy';
+import { SesEmailSender } from '@/infrastructure/email/ses-email-sender';
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
@@ -21,7 +22,6 @@ import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/applica
 import { DeleteExpiredRefreshTokensUseCase } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.usecase';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
-import { SesOtpEmailSender } from '@/modules/authentication/infrastructure/email/ses-otp-email-sender';
 import { TwoFactorAuthService } from '@/modules/authentication/infrastructure/services/2fa.service';
 import { GoogleOAuthService } from '@/modules/authentication/infrastructure/services/google-oauth.service';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
@@ -39,6 +39,7 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
@@ -131,7 +132,7 @@ export class Container implements IContainer {
   private readonly googleOAuthService: GoogleOAuthServicePort;
 
   private readonly s3Service: ObjectStoragePort;
-  private readonly otpEmailSender: SesOtpEmailSender;
+  private readonly emailSender: EmailSenderPort;
 
   private readonly authService: AuthServicePort;
   private readonly userService: UserServicePort;
@@ -209,7 +210,7 @@ export class Container implements IContainer {
       secretAccessKey: appConfig.s3.secretAccessKey,
       bucketName: appConfig.s3.bucketName
     });
-    this.otpEmailSender = new SesOtpEmailSender(this.logger, {
+    this.emailSender = new SesEmailSender(this.logger, {
       region: appConfig.s3.region,
       accessKeyId: appConfig.s3.accessKeyId,
       secretAccessKey: appConfig.s3.secretAccessKey,
@@ -311,7 +312,7 @@ export class Container implements IContainer {
 
   public getWorkerDeps() {
     return {
-      otpEmailSender: this.otpEmailSender,
+      emailSender: this.emailSender,
       otpRepository: this.otpRepository,
       postCommandRepository: this.postCommandRepository,
       notificationService: this.notificationsService,

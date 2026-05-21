@@ -13,7 +13,7 @@ export function setupWorkers(container: IContainer): void {
   const connection = buildBullMQConnection(dbConfig.redis);
   const logger = container.getLogger();
   const {
-    otpEmailSender,
+    emailSender,
     otpRepository,
     postCommandRepository,
     notificationService,
@@ -25,7 +25,7 @@ export function setupWorkers(container: IContainer): void {
     warmRedisCacheUC
   } = container.getWorkerDeps();
 
-  new OtpEmailWorker(connection, otpEmailSender, otpRepository, logger);
+  new OtpEmailWorker(connection, emailSender, otpRepository, logger);
   new PostViewsWorker(connection, postCommandRepository, logger);
   new NotificationTrimWorker(connection, notificationService, logger);
   new VideoStreamWorker(connection, mediaRepository, s3Service, fileStorage, logger);

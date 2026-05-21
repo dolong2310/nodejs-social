@@ -1,5 +1,10 @@
+import {
+  EmailSenderPort,
+  EmailTemplatePayload,
+  SendEmailPayload
+} from '@/modules/core/application/ports/email-sender.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { SendEmailCommand, SendEmailCommandOutput, SESClient } from '@aws-sdk/client-ses';
+import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +16,7 @@ type SesEmailConfig = {
   fromAddress: string;
 };
 
-export class SesOtpEmailSender {
+export class SesEmailSender implements EmailSenderPort {
   private readonly sesClient: SESClient;
   private readonly log: LoggerPort;
 
@@ -19,7 +24,7 @@ export class SesOtpEmailSender {
     private readonly logger: LoggerPort,
     private readonly config: SesEmailConfig
   ) {
-    this.log = this.logger.child({ module: 'otp-email-sender' });
+    this.log = this.logger.child({ module: 'ses-email-sender' });
     this.sesClient = new SESClient({
       region: config.region,
       credentials: {
@@ -27,6 +32,24 @@ export class SesOtpEmailSender {
         accessKeyId: config.accessKeyId
       }
     });
+  }
+
+  async sendEmail(payload: SendEmailPayload): Promise<void> {
+    const sendEmailCommand = this.createSendEmailCommand({
+      fromAddress: this.config.fromAddress,
+      toAddresses: payload.toAddresses,
+      ccAddresses: payload.ccAddresses,
+      body: await this.renderTemplate(payload.template),
+      subject: payload.subject,
+      replyToAddresses: payload.replyToAddresses
+    });
+
+    try {
+      await this.sesClient.send(sendEmailCommand);
+    } catch (error) {
+      this.log.error({ err: error, toAddresses: payload.toAddresses }, 'email:::failed-to-send-email');
+      throw error;
+    }
   }
 
   private createSendEmailCommand({
@@ -66,36 +89,15 @@ export class SesOtpEmailSender {
     });
   }
 
-  private async getTemplate(): Promise<string> {
-    const otpHtmlPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'templates', 'otp.html');
-    return readFile(otpHtmlPath, 'utf8');
+  private async renderTemplate(template: EmailTemplatePayload): Promise<string> {
+    const templateHtml = await readFile(this.resolveTemplatePath(template.name), 'utf8');
+
+    return Object.entries(template.variables ?? {}).reduce((body, [key, value]) => {
+      return body.replaceAll(`{{${key}}}`, String(value ?? ''));
+    }, templateHtml);
   }
 
-  async sendOtpEmail({
-    toAddress,
-    subject,
-    code
-  }: {
-    toAddress: string;
-    subject: string;
-    code: string;
-  }): Promise<SendEmailCommandOutput> {
-    const sender = 'Social App';
-    const sendEmailCommand = this.createSendEmailCommand({
-      fromAddress: this.config.fromAddress,
-      toAddresses: toAddress,
-      subject,
-      body: (await this.getTemplate())
-        .replaceAll('{{sender}}', sender)
-        .replaceAll('{{subject}}', subject)
-        .replaceAll('{{code}}', code)
-    });
-
-    try {
-      return await this.sesClient.send(sendEmailCommand);
-    } catch (error) {
-      this.log.error({ err: error, toAddress }, 'email:::failed-to-send-otp-email');
-      throw error;
-    }
+  private resolveTemplatePath(templateName: string): string {
+    return path.join(path.dirname(fileURLToPath(import.meta.url)), 'templates', `${templateName}.html`);
   }
 }
