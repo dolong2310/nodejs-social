@@ -107,6 +107,7 @@ import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-
 import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -256,6 +257,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
 
   const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
   const authOptionGuard = new AuthOptionGuard(tokenService);
+  const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
 
   const throttlerGuard = new ThrottlerProxyGuard(appConfig);
@@ -572,7 +574,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   );
 
   const authPipe: IAuthPipe = new AuthPipe();
-  const userPipe: IUserPipe = new UsersPipe(userService);
+  const userPipe: IUserPipe = new UsersPipe();
   const adminUsersPipe: IAdminUsersPipe = new AdminUsersPipe();
   const postPipe: IPostPipe = new PostsPipe();
   const searchPipe: ISearchPipe = new SearchPipe();
@@ -580,7 +582,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const blocksPipe: IBlockPipe = new BlocksPipe(userPipe);
   const conversationPipe: IConversationPipe = new ConversationsPipe(userPipe);
   const chatMessagePipe: IChatMessagePipe = new ChatMessagesPipe();
-  const notificationPipe: INotificationPipe = new NotificationsPipe(userPipe);
+  const notificationPipe: INotificationPipe = new NotificationsPipe();
   const rolesPipe: IRolesPipe = new RolesPipe();
   const permissionsPipe: IPermissionsPipe = new PermissionsPipe();
   const hashtagsPipe: IHashtagsPipe = new HashtagsPipe();
@@ -621,6 +623,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       userPipe,
       authGuard,
       authOptionGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -629,8 +632,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new MediaRoute(
       mediaController,
-      userPipe,
       authGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -647,9 +650,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       postController,
       postPipe,
       paginationPipe,
-      userPipe,
       authGuard,
       authOptionGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -660,8 +663,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       searchController,
       searchPipe,
       paginationPipe,
-      userPipe,
       authOptionGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -671,8 +674,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       friendController,
       friendPipe,
       paginationPipe,
-      userPipe,
       authGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -683,8 +686,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       blocksController,
       blocksPipe,
       paginationPipe,
-      userPipe,
       authGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -697,8 +700,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       chatMessageController,
       chatMessagePipe,
       paginationPipe,
-      userPipe,
       authGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,
@@ -716,8 +719,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       notificationController,
       notificationPipe,
       paginationPipe,
-      userPipe,
       authGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,

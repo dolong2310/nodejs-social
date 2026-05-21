@@ -1,4 +1,5 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -86,6 +87,7 @@ function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
 }
 
 const noopAuthGuard = new Proxy({} as AuthGuard, { get: () => nextOnlyMiddleware });
+const noopActiveUserGuard = new Proxy({} as ActiveUserGuard, { get: () => nextOnlyMiddleware });
 const noopApiKeyGuard = new Proxy({} as ApiKeyGuard, { get: () => nextOnlyMiddleware });
 const noopAuthOptionGuard = new Proxy({} as AuthOptionGuard, { get: () => nextOnlyMiddleware });
 const noopThrottlerGuard = new Proxy({} as ThrottlerProxyGuard, { get: () => () => nextOnlyMiddleware });
@@ -154,6 +156,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
       userPipe,
       noopAuthGuard,
       noopAuthOptionGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -162,8 +165,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new MediaRoute(
       createNoopControllerProxyForRouteRegistration(),
-      userPipe,
       noopAuthGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -180,9 +183,9 @@ export function buildStubHttpRouters(): BaseRoute[] {
       createNoopControllerProxyForRouteRegistration(),
       postPipe,
       paginationPipe,
-      userPipe,
       noopAuthGuard,
       noopAuthOptionGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -193,8 +196,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       createNoopControllerProxyForRouteRegistration(),
       searchPipe,
       paginationPipe,
-      userPipe,
       noopAuthOptionGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -204,8 +207,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       createNoopControllerProxyForRouteRegistration(),
       friendPipe,
       paginationPipe,
-      userPipe,
       noopAuthGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -216,8 +219,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       createNoopControllerProxyForRouteRegistration(),
       blocksPipe,
       paginationPipe,
-      userPipe,
       noopAuthGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -230,8 +233,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       createNoopControllerProxyForRouteRegistration(),
       chatMessagePipe,
       paginationPipe,
-      userPipe,
       noopAuthGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,
@@ -249,8 +252,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
       createNoopControllerProxyForRouteRegistration(),
       notificationPipe,
       paginationPipe,
-      userPipe,
       noopAuthGuard,
+      noopActiveUserGuard,
       noopThrottlerGuard,
       noopInterceptor,
       noopInterceptor,

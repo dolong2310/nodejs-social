@@ -1,4 +1,5 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
@@ -7,7 +8,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
 import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class SearchRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +17,8 @@ export class SearchRoute extends BaseRoute {
     private readonly searchController: ISearchController,
     private readonly searchPipe: ISearchPipe,
     private readonly paginationPipe: IPaginationPipe,
-    private readonly userPipe: IUserPipe,
     private readonly authOptionGuard: AuthOptionGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -35,9 +35,9 @@ export class SearchRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authOptionGuard],
+        guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe, this.searchPipe.searchPipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.searchPipe.searchPipe],
         controller: this.searchController.search
       })
     );

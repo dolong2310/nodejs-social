@@ -123,6 +123,11 @@ export const VALIDATION_ERROR_MESSAGE = {
   // Media errors
   VIDEO_NOT_FOUND: 'Video not found',
 
+  // Notification errors
+  NOTIFICATION_ID_IS_REQUIRED: 'Notification ID is required',
+  NOTIFICATION_ID_MUST_BE_A_STRING: 'Notification ID must be a string',
+  INVALID_NOTIFICATION_ID: 'Invalid notification ID',
+
   // OTP errors
   TYPE_IS_REQUIRED: 'Type is required',
   TYPE_IS_INVALID: 'Invalid type',

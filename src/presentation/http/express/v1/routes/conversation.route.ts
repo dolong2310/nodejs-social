@@ -1,4 +1,5 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
@@ -10,7 +11,6 @@ import { IConversationController } from '@/presentation/http/express/v1/controll
 import { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
 import { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
 import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class ConversationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -22,8 +22,8 @@ export class ConversationRoute extends BaseRoute {
     private readonly chatMessageController: IChatMessageController,
     private readonly chatMessagePipe: IChatMessagePipe,
     private readonly paginationPipe: IPaginationPipe,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -41,14 +41,14 @@ export class ConversationRoute extends BaseRoute {
       '/direct',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.conversationPipe.peerUserIdBody],
+        pipes: [this.conversationPipe.peerUserIdBody],
         controller: this.conversationController.createDirect
       })
     );
@@ -56,14 +56,14 @@ export class ConversationRoute extends BaseRoute {
       '/groups',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.conversationPipe.createGroupBody],
+        pipes: [this.conversationPipe.createGroupBody],
         controller: this.conversationController.createGroup
       })
     );
@@ -71,9 +71,9 @@ export class ConversationRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.conversationController.listConversations
       })
     );
@@ -81,9 +81,9 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe, this.conversationPipe.conversationIdParam],
+        pipes: [this.conversationPipe.conversationIdParam],
         controller: this.conversationController.getConversation
       })
     );
@@ -91,18 +91,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam,
-          this.conversationPipe.patchConversationBody
-        ],
+        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.patchConversationBody],
         controller: this.conversationController.patchConversation
       })
     );
@@ -110,18 +106,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/members',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam,
-          this.conversationPipe.inviteUserIdBody
-        ],
+        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.inviteUserIdBody],
         controller: this.conversationController.inviteMember
       })
     );
@@ -129,14 +121,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/members/me',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.conversationPipe.conversationIdParam],
+        pipes: [this.conversationPipe.conversationIdParam],
         controller: this.conversationController.leaveConversation
       })
     );
@@ -144,18 +136,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/members/:userId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam,
-          this.conversationPipe.kickTargetUserIdParam
-        ],
+        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.kickTargetUserIdParam],
         controller: this.conversationController.kickMember
       })
     );
@@ -163,7 +151,7 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/members/:userId/role',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
@@ -171,7 +159,6 @@ export class ConversationRoute extends BaseRoute {
           this.timeoutInterceptor
         ],
         pipes: [
-          this.userPipe.userActivePipe,
           this.conversationPipe.conversationIdParam,
           this.conversationPipe.kickTargetUserIdParam,
           this.conversationPipe.patchMemberRoleBody
@@ -183,18 +170,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/admin/transfer',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam,
-          this.conversationPipe.newAdminUserIdBody
-        ],
+        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.newAdminUserIdBody],
         controller: this.conversationController.transferAdmin
       })
     );
@@ -204,13 +187,9 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/messages',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [
-          this.paginationPipe.cursorPaginationQuery,
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam
-        ],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.conversationPipe.conversationIdParam],
         controller: this.chatMessageController.listMessages
       })
     );
@@ -218,18 +197,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/messages',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam,
-          this.chatMessagePipe.sendMessageBody
-        ],
+        pipes: [this.conversationPipe.conversationIdParam, this.chatMessagePipe.sendMessageBody],
         controller: this.chatMessageController.sendMessage
       })
     );
@@ -237,18 +212,14 @@ export class ConversationRoute extends BaseRoute {
       '/:conversationId/read',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.conversationPipe.conversationIdParam,
-          this.chatMessagePipe.markReadBody
-        ],
+        pipes: [this.conversationPipe.conversationIdParam, this.chatMessagePipe.markReadBody],
         controller: this.chatMessageController.markRead
       })
     );

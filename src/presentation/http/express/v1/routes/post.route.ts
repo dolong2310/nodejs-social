@@ -1,5 +1,6 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -10,7 +11,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { IPostController } from '@/presentation/http/express/v1/controllers/post.controller';
 import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 import { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class PostRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -20,9 +20,9 @@ export class PostRoute extends BaseRoute {
     private readonly postController: IPostController,
     private readonly postPipe: IPostPipe,
     private readonly paginationPipe: IPaginationPipe,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly authOptionGuard: AuthOptionGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -41,9 +41,9 @@ export class PostRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authOptionGuard],
+        guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.postController.getNewFeeds
       })
     );
@@ -51,18 +51,14 @@ export class PostRoute extends BaseRoute {
       '/:postId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.userPipe.userActivePipe,
-          this.postPipe.postIdPipe('postId', 'params'),
-          this.postPipe.patchPostPipe
-        ],
+        pipes: [this.postPipe.postIdPipe('postId', 'params'), this.postPipe.patchPostPipe],
         controller: this.postController.patchPost
       })
     );
@@ -70,14 +66,14 @@ export class PostRoute extends BaseRoute {
       '/:postId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deletePost
       })
     );
@@ -85,9 +81,9 @@ export class PostRoute extends BaseRoute {
       '/:postId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authOptionGuard],
+        guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.getPostDetail
       })
     );
@@ -95,11 +91,10 @@ export class PostRoute extends BaseRoute {
       '/:type/:postId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authOptionGuard],
+        guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [
           this.paginationPipe.cursorPaginationQuery,
-          this.userPipe.userActivePipe,
           this.postPipe.postIdPipe('postId', 'params'),
           this.postPipe.postTypePipe
         ],
@@ -110,14 +105,14 @@ export class PostRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.createPostPipe],
+        pipes: [this.postPipe.createPostPipe],
         controller: this.postController.createPost
       })
     );
@@ -125,14 +120,14 @@ export class PostRoute extends BaseRoute {
       '/bookmarks',
       this.createRouteHandler({
         middlewares: [defaultThrottler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'body')],
+        pipes: [this.postPipe.postIdPipe('postId', 'body')],
         controller: this.postController.createBookmark
       })
     );
@@ -140,14 +135,14 @@ export class PostRoute extends BaseRoute {
       '/bookmarks/:postId',
       this.createRouteHandler({
         middlewares: [defaultThrottler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deleteBookmark
       })
     );
@@ -155,14 +150,14 @@ export class PostRoute extends BaseRoute {
       '/likes',
       this.createRouteHandler({
         middlewares: [defaultThrottler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'body')],
+        pipes: [this.postPipe.postIdPipe('postId', 'body')],
         controller: this.postController.createLike
       })
     );
@@ -170,14 +165,14 @@ export class PostRoute extends BaseRoute {
       '/likes/:postId',
       this.createRouteHandler({
         middlewares: [defaultThrottler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deleteLike
       })
     );

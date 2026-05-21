@@ -1,4 +1,5 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
@@ -8,7 +9,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
 import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class BlockRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -18,8 +18,8 @@ export class BlockRoute extends BaseRoute {
     private readonly blockController: IBlockController,
     private readonly blockPipe: IBlockPipe,
     private readonly paginationPipe: IPaginationPipe,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -37,9 +37,9 @@ export class BlockRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.paginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.paginationQuery],
         controller: this.blockController.listBlocked
       })
     );
@@ -47,14 +47,14 @@ export class BlockRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.blockPipe.blockUserBodyPipe],
+        pipes: [this.blockPipe.blockUserBodyPipe],
         controller: this.blockController.blockUser
       })
     );
@@ -62,14 +62,14 @@ export class BlockRoute extends BaseRoute {
       '/:userId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.blockPipe.unblockUserIdPipe],
+        pipes: [this.blockPipe.unblockUserIdPipe],
         controller: this.blockController.unblockUser
       })
     );

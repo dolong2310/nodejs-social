@@ -1,4 +1,5 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
@@ -8,7 +9,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
 import { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
 import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class NotificationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -18,8 +18,8 @@ export class NotificationRoute extends BaseRoute {
     private readonly notificationController: INotificationController,
     private readonly notificationPipe: INotificationPipe,
     private readonly paginationPipe: IPaginationPipe,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -37,13 +37,9 @@ export class NotificationRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [
-          this.paginationPipe.cursorPaginationQuery,
-          this.userPipe.userActivePipe,
-          this.notificationPipe.listQuery
-        ],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.notificationPipe.listQuery],
         controller: this.notificationController.list
       })
     );
@@ -52,14 +48,14 @@ export class NotificationRoute extends BaseRoute {
       '/read',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.notificationPipe.markReadBody],
+        pipes: [this.notificationPipe.markReadBody],
         controller: this.notificationController.markRead
       })
     );
@@ -68,14 +64,14 @@ export class NotificationRoute extends BaseRoute {
       '/:notificationId/read',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.notificationPipe.notificationIdParam],
+        pipes: [this.notificationPipe.notificationIdParam],
         controller: this.notificationController.markOneRead
       })
     );

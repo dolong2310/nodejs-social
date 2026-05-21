@@ -1,22 +1,15 @@
-import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { USERNAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
   InvalidUserIdException,
-  MissingAuthTokenPayloadException,
-  UserIsBannedException,
-  UserIsInactiveException,
-  UserNotFoundException,
   UsernameFormatInvalidException
 } from '@/presentation/http/express/exceptions/user.exception';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { confirmPasswordSchema, passwordSchema } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { NextFunction, Request, Response } from 'express';
+import { Request } from 'express';
 import { Location, ParamSchema, checkSchema } from 'express-validator';
 
 export const nameSchema: ParamSchema = {
@@ -65,14 +58,11 @@ export const imageSchema: ParamSchema = {
 
 export interface IUserPipe {
   updateMePipe: ExpressRequestHandler;
-  userActivePipe: ExpressRequestHandler;
   userIdPipe: (key: string, location: Location) => ExpressRequestHandler;
   changePasswordPipe: ExpressRequestHandler;
 }
 
 export class UsersPipe implements IUserPipe {
-  constructor(private readonly userService: UserServicePort) {}
-
   updateMePipe = validate(
     checkSchema(
       {
@@ -164,27 +154,6 @@ export class UsersPipe implements IUserPipe {
   );
 
   @AutoBind()
-  async userActivePipe(req: Request, _res: Response, next: NextFunction) {
-    const userId: string | undefined = req.tokenPayload?.userId;
-    if (!userId) {
-      throw MissingAuthTokenPayloadException;
-    }
-    const user = await this.userService.findUserById(userId); // TODO: cache by redis
-    if (!user) {
-      throw UserNotFoundException;
-    }
-    if (user.status === EnumUserStatus.INACTIVE) {
-      throw UserIsInactiveException;
-    }
-    if (user.status === EnumUserStatus.BANNED) {
-      throw UserIsBannedException;
-    }
-    req.user = user;
-    requestContextLogger.syncLogContextFromUser(req);
-    next();
-  }
-
-  @AutoBind()
   userIdPipe(key: string, location: Location) {
     return validate(
       checkSchema(
@@ -198,23 +167,10 @@ export class UsersPipe implements IUserPipe {
             },
             trim: true,
             custom: {
-              options: async (userId: string, { req }) => {
+              options: (userId: string) => {
                 if (!isValidId(userId)) {
                   throw InvalidUserIdException;
                 }
-
-                const user = (req as Request).user;
-
-                if (!user) {
-                  const findUser = await this.userService.findUserById(userId);
-
-                  if (!findUser) {
-                    throw UserNotFoundException;
-                  }
-
-                  (req as Request).user = findUser;
-                }
-
                 return true;
               }
             }

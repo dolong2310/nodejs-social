@@ -1,11 +1,11 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class MediaRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -13,8 +13,8 @@ export class MediaRoute extends BaseRoute {
 
   constructor(
     private readonly mediaController: IMediaController,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -31,9 +31,9 @@ export class MediaRoute extends BaseRoute {
       '/upload-image',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe],
+        pipes: [],
         controller: this.mediaController.uploadImage
       })
     );
@@ -41,9 +41,9 @@ export class MediaRoute extends BaseRoute {
       '/upload-video',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe],
+        pipes: [],
         controller: this.mediaController.uploadVideo
       })
     );
@@ -51,9 +51,9 @@ export class MediaRoute extends BaseRoute {
       '/upload-video-stream',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe],
+        pipes: [],
         controller: this.mediaController.uploadVideoStream
       })
     );
@@ -61,9 +61,9 @@ export class MediaRoute extends BaseRoute {
       '/video-status/:id',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe],
+        pipes: [],
         controller: this.mediaController.getVideoStatus
       })
     );

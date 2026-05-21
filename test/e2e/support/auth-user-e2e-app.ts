@@ -56,6 +56,7 @@ import type {
   ResetPasswordInput,
   UpdateMeInput
 } from '@/modules/user/domain/repositories/user.repository.type';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -819,6 +820,7 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
 
   const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
   const authOptionGuard = new AuthOptionGuard(tokenService);
+  const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(apiKey);
   const throttlerGuard = new ThrottlerProxyGuard(testAppConfig());
   const loggingInterceptor = new LoggingInterceptor(logger);
@@ -838,9 +840,10 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     ),
     new UserRoute(
       userController,
-      new UsersPipe(userService),
+      new UsersPipe(),
       authGuard,
       authOptionGuard,
+      activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
       transformResponseInterceptor,

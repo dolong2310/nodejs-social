@@ -2,7 +2,6 @@ import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { checkSchema } from 'express-validator';
 
 export interface INotificationPipe {
@@ -12,11 +11,26 @@ export interface INotificationPipe {
 }
 
 export class NotificationsPipe implements INotificationPipe {
-  readonly notificationIdParam: ExpressRequestHandler;
-
-  constructor(private readonly userPipe: IUserPipe) {
-    this.notificationIdParam = this.userPipe.userIdPipe('notificationId', 'params');
-  }
+  notificationIdParam = validate(
+    checkSchema(
+      {
+        notificationId: {
+          notEmpty: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.NOTIFICATION_ID_IS_REQUIRED
+          },
+          isString: {
+            errorMessage: VALIDATION_ERROR_MESSAGE.NOTIFICATION_ID_MUST_BE_A_STRING
+          },
+          trim: true,
+          custom: {
+            options: (id: string) => isValidId(id),
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_NOTIFICATION_ID
+          }
+        }
+      },
+      ['params']
+    )
+  );
 
   listQuery = validate(
     checkSchema(

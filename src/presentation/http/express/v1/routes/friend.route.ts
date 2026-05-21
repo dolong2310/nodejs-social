@@ -1,4 +1,5 @@
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
@@ -8,7 +9,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
 import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export class FriendRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -18,8 +18,8 @@ export class FriendRoute extends BaseRoute {
     private readonly friendController: IFriendController,
     private readonly friendPipe: IFriendPipe,
     private readonly paginationPipe: IPaginationPipe,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -37,9 +37,9 @@ export class FriendRoute extends BaseRoute {
       '/',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.friendController.listFriends
       })
     );
@@ -47,9 +47,9 @@ export class FriendRoute extends BaseRoute {
       '/requests/incoming',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.friendController.listIncoming
       })
     );
@@ -57,9 +57,9 @@ export class FriendRoute extends BaseRoute {
       '/requests/outgoing',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.userPipe.userActivePipe],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.friendController.listOutgoing
       })
     );
@@ -67,14 +67,14 @@ export class FriendRoute extends BaseRoute {
       '/requests',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.friendPipe.sendRequestToUserIdPipe],
+        pipes: [this.friendPipe.sendRequestToUserIdPipe],
         controller: this.friendController.sendFriendRequest
       })
     );
@@ -82,14 +82,14 @@ export class FriendRoute extends BaseRoute {
       '/requests/:fromUserId/accept',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.friendPipe.incomingFromUserIdPipe],
+        pipes: [this.friendPipe.incomingFromUserIdPipe],
         controller: this.friendController.acceptIncomingRequest
       })
     );
@@ -97,14 +97,14 @@ export class FriendRoute extends BaseRoute {
       '/requests/:fromUserId/decline',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.friendPipe.incomingFromUserIdPipe],
+        pipes: [this.friendPipe.incomingFromUserIdPipe],
         controller: this.friendController.declineIncomingRequest
       })
     );
@@ -112,14 +112,14 @@ export class FriendRoute extends BaseRoute {
       '/requests/outgoing/:toUserId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.friendPipe.revokeOutgoingToUserIdPipe],
+        pipes: [this.friendPipe.revokeOutgoingToUserIdPipe],
         controller: this.friendController.revokeOutgoingRequest
       })
     );
@@ -127,14 +127,14 @@ export class FriendRoute extends BaseRoute {
       '/:userId',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.friendPipe.unfriendUserIdPipe],
+        pipes: [this.friendPipe.unfriendUserIdPipe],
         controller: this.friendController.unfriend
       })
     );

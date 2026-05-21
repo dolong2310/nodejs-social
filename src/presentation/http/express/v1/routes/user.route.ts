@@ -1,5 +1,6 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -19,6 +20,7 @@ export class UserRoute extends BaseRoute {
     private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly authOptionGuard: AuthOptionGuard,
+    private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
     private readonly transformResponseInterceptor: TransformResponseInterceptor,
@@ -37,9 +39,9 @@ export class UserRoute extends BaseRoute {
       '/me',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.userPipe.userActivePipe],
+        pipes: [],
         controller: this.userController.getMe
       })
     );
@@ -47,14 +49,14 @@ export class UserRoute extends BaseRoute {
       '/me',
       this.createRouteHandler({
         middlewares: [throttler],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.userPipe.updateMePipe],
+        pipes: [this.userPipe.updateMePipe],
         controller: this.userController.updateMe
       })
     );
@@ -72,14 +74,14 @@ export class UserRoute extends BaseRoute {
       '/change-password',
       this.createRouteHandler({
         middlewares: [throttlerAuth],
-        guards: [this.authGuard],
+        guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
           this.transformResponseInterceptor,
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.userActivePipe, this.userPipe.changePasswordPipe],
+        pipes: [this.userPipe.changePasswordPipe],
         controller: this.userController.changePassword
       })
     );
