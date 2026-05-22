@@ -135,25 +135,25 @@ export class UserQueryRepository implements UserQueryRepositoryPort {
     const match: Record<string, unknown> = { deleted_at: null };
 
     if (query) {
-      // tìm kiếm theo text trong các trường của user
+      // Search by text across user fields.
       match['$text'] = {
         $search: query
       };
     }
 
     if (people && userId) {
-      // tìm kiếm theo bạn bè và không phải bạn bè
+      // Search by friends and non-friends.
       if ([EnumSearchPeople.FRIENDS, EnumSearchPeople.NOT_FRIENDS].includes(people)) {
         const friendIds = await findFriendUserIds(userId);
         match['_id'] = people === EnumSearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds };
       } else if (people === EnumSearchPeople.ONLY_ME) {
-        // tìm kiếm theo chính mình
+        // Search by the viewer's own account.
         match['_id'] = { $eq: userId };
       }
     }
 
     if (cursor) {
-      // Ý nghĩa nghiệp vụ: đảm bảo khi nhiều post có cùng createdAt, việc paging vẫn không bị trùng/miss do dùng thêm _id làm tie-breaker.
+      // Business meaning: when multiple rows share createdAt, using _id as a tie-breaker prevents paging duplicates/misses.
       const cursorFilter = {
         $or: [
           { created_at: { $lt: cursor.raw().createdAt } },

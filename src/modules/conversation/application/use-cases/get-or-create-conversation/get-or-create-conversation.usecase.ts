@@ -17,7 +17,7 @@ import { FriendServicePort } from '@/modules/relationship/application/services/f
 import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
- * Tạo phòng direct nếu chưa tồn tại, nếu đã tồn tại thì trả về phòng đó
+ * Create a direct room when it does not exist; otherwise return the existing room.
  */
 export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort {
   constructor(
@@ -31,16 +31,16 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
   }
 
   async execute({ userId, peerUserId }: GetOrCreateConversationCommand): Promise<GetOrCreateConversationResult> {
-    // Chặn tự gửi tin cho chính mình
+    // Prevent sending messages to yourself.
     if (userId === peerUserId) {
       throw new ConversationInvalidPeerException();
     }
 
-    // Tìm phòng direct đã tồn tại
+    // Find an existing direct room.
     const existingConvEntity = await this._getExistingConversation(userId, peerUserId);
     if (existingConvEntity) return existingConvEntity;
 
-    // chỉ cho tạo chat direct khi là bạn bè và không bị block
+    // Allow direct chat creation only when users are friends and not blocked.
     const [isFriend, isBlockedEitherWay] = await Promise.all([
       this.friendService.isFriendOf({ userId, otherUserId: peerUserId }),
       this.blockRepository.isBlockedEitherWay(userId, peerUserId)
@@ -56,7 +56,7 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
     const conv = convEntity?.toObject();
 
     if (!conv) {
-      // Xử lý race condition khi 2 request cùng tạo
+      // Handle race conditions when two requests create the room concurrently.
       const againConvEntity = await this._getExistingConversation(userId, peerUserId);
       if (againConvEntity) {
         return againConvEntity;
@@ -65,7 +65,7 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
       }
     }
 
-    // thêm 2 member vào phòng direct
+    // Add both members to the direct room.
     const conversationId = conv.id;
     await Promise.all([
       this.conversationMemberRepository.createMember({
@@ -96,11 +96,11 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
     userId: string,
     peerUserId: string
   ): Promise<GetOrCreateConversationResult | null> {
-    // Tìm phòng direct đã tồn tại
+    // Find an existing direct room.
     const convEntity = await this.conversationRepository.findDirectConversationByUserPair(userId, peerUserId);
     if (!convEntity) return null;
     const conv = convEntity.toObject();
-    // isMember để chắc chắn người gọi thực sự là member của phòng
+    // isMember ensures the caller is actually a room member.
     await this.conversationService.isMember({ conversationId: conv.id, userId });
     return new GetOrCreateConversationResult({
       id: conv.id,

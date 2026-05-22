@@ -112,7 +112,7 @@ export class MediaController extends BaseController implements IMediaController 
     videoStream.pipe(res);
 
     videoStream.on('error', () => {
-      // Nếu đã gửi headers thì tránh gọi next(error) vì dễ "headers already sent"
+      // If headers were already sent, avoid next(error) because it can cause "headers already sent".
       if (!res.headersSent) {
         next(StaticVideoStreamInternalServerErrorException);
         return;

@@ -15,11 +15,11 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**
- * Chuyển quyền admin cho người khác
- * - Chỉ áp dụng cho group (không cho phép chuyển quyền admin trong chat direct 1-1).
- * - Người thực hiện (actor = userId) phải là ADMIN.
- * - Người mới nhận quyền admin phải là member của conversation.
- * - Không cho chuyển quyền admin cho chính mình.
+ * Transfer admin ownership to another member.
+ * - Applies only to groups; direct 1-1 chats cannot transfer admin ownership.
+ * - The actor (userId) must be ADMIN.
+ * - The new admin must be a conversation member.
+ * - Admin ownership cannot be transferred to yourself.
  */
 export class TransferAdminUseCase extends TransferAdminPort {
   constructor(
@@ -30,19 +30,19 @@ export class TransferAdminUseCase extends TransferAdminPort {
   }
 
   async execute({ userId, newAdminUserId, conversationId }: TransferAdminCommand): Promise<TransferAdminResult> {
-    // kiểm tra conversation có phải là group không
+    // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();
     if (conv.type !== EnumConversationType.GROUP) {
       throw new ConversationNotFoundException();
     }
 
-    // không cho chuyển quyền admin cho chính mình
+    // Do not allow transferring admin ownership to yourself.
     if (newAdminUserId === userId) {
       throw new ConversationRoleForbiddenException();
     }
 
-    // gom 1 query để lấy membership của actor + người mới nhận quyền admin (giảm round-trip DB).
+    // Use one query to fetch actor and new-admin memberships, reducing DB round trips.
     const membershipEntities = await this.conversationMemberRepository.findMembersByUsers({
       conversationId,
       userIds: [userId, newAdminUserId]
@@ -51,7 +51,7 @@ export class TransferAdminUseCase extends TransferAdminPort {
     const actor = memberships.find((m) => m.userId === userId);
     const newAdmin = memberships.find((m) => m.userId === newAdminUserId);
 
-    // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
+    // Check whether the user is a conversation member and ADMIN.
     if (!actor) {
       throw new ConversationNotMemberException();
     }
@@ -59,7 +59,7 @@ export class TransferAdminUseCase extends TransferAdminPort {
       throw new ConversationRoleForbiddenException();
     }
 
-    // kiểm tra người mới nhận quyền admin có phải là member của conversation không
+    // Check whether the new admin is a conversation member.
     if (!newAdmin) {
       throw new UserNotFoundException();
     }
@@ -72,7 +72,7 @@ export class TransferAdminUseCase extends TransferAdminPort {
       joinedAt: updatedAt
     });
 
-    // trả về chi tiết cuộc trò chuyện với members đã cập nhật
+    // Return conversation detail with updated members.
     const memberEntities = await this.conversationMemberRepository.listMembers(conversationId);
     convEntity.updatedAt = updatedAt;
     return this.conversationService.mapConversationDetail({

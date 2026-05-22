@@ -25,7 +25,7 @@ function createAutoBindDecorator(
       // Bind once per instance, then cache the bound function on the instance.
       const bound = (originalMethod as AutoBindMethod).bind(this);
 
-      // Object.defineProperty: lần truy cập sau, JS sẽ không gọi getter nữa mà dùng thẳng hàm đã cache.
+      // Object.defineProperty makes later reads use the cached bound function instead of invoking the getter again.
       Object.defineProperty(this, propertyKey, {
         configurable: true,
         writable: true,

@@ -4,10 +4,10 @@ import { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 
 /**
- * Danh sách origin được phép (Express CORS + Socket.IO).
- * - `CORS_ORIGINS` (tùy chọn): comma-separated, ví dụ `http://localhost:3001,http://localhost:5173`
- * - Production mặc định: chỉ `FRONTEND_URL`
- * - Development mặc định: `FRONTEND_URL` + các origin local phổ biến
+ * Allowed origins for Express CORS and Socket.IO.
+ * - `CORS_ORIGINS` (optional): comma-separated, for example `http://localhost:3001,http://localhost:5173`
+ * - Production default: only `FRONTEND_URL`
+ * - Development default: `FRONTEND_URL` + common local origins
  */
 function getCorsAllowedOrigins(): string[] {
   const raw = envConfig.CORS_ORIGINS;
@@ -21,14 +21,7 @@ function getCorsAllowedOrigins(): string[] {
     return [envConfig.FRONTEND_URL];
   }
 
-  const DEFAULT_DEV_CORS_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173'
-  ] as const;
+  const DEFAULT_DEV_CORS_ORIGINS = [] as const;
 
   return [...new Set([envConfig.FRONTEND_URL, ...DEFAULT_DEV_CORS_ORIGINS])];
 }
@@ -78,9 +71,9 @@ export const appConfig: IAppConfig = {
     enabled: envConfig.RATE_LIMIT_ENABLED === '1',
     windowMs: parseInt(envConfig.RATE_LIMIT_WINDOW_MS ?? '900000', 10),
     limit: parseInt(envConfig.RATE_LIMIT_MAX ?? '100', 10),
-    standardHeaders: 'draft-8' as const, // Trả về header chuẩn rate limit (bản draft-8 của IETF) cho client.
-    legacyHeaders: false, // Tắt header kiểu cũ X-RateLimit-*.
-    ipv6Subnet: 56 // Gom IPv6 theo subnet /64-style để tránh một máy tạo quá nhiều “client” khác nhau (theo doc express-rate-limit).
+    standardHeaders: 'draft-8' as const, // Return standard rate-limit headers using the IETF draft-8 format.
+    legacyHeaders: false, // Disable legacy X-RateLimit-* headers.
+    ipv6Subnet: 56 // Group IPv6 clients by subnet to avoid one machine creating too many distinct clients.
   },
 
   email: {

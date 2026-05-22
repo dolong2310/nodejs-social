@@ -7,7 +7,7 @@ const SEGMENT_WITH_UNDERSCORE = '[a-z0-9_-]+(?:\\.[a-z0-9_-]+)*';
 // param: :userId
 const PARAM = ':[a-z0-9_]+';
 
-// không có param
+// No params.
 export const PATH_REGEX = new RegExp(`^\\/(?:${SEGMENT}(?:\\/${SEGMENT})*)?$`);
 
 // underscore

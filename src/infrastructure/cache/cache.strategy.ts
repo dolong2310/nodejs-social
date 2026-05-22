@@ -90,9 +90,9 @@ export class CacheStrategy implements CacheStrategyPort {
         await this.cache.del(key);
       }
 
-      // DB đã ghi thành công nhưng Redis lỗi.
-      // Không nên rollback DB chỉ vì cache lỗi.
-      // Có thể log error hoặc đẩy job retry sau.
+      // The DB write succeeded but Redis failed.
+      // Do not roll back the DB only because the cache failed.
+      // This can be logged or retried through a follow-up job later.
     }
 
     return data;
@@ -126,15 +126,15 @@ export class CacheStrategy implements CacheStrategyPort {
       }
     }
 
-    // Quan trọng:
-    // Không gọi DB trực tiếp ở đây.
-    // Quay lại tranh lock tiếp để đảm bảo mỗi key chỉ có 1 loader chạy.
+    // Important:
+    // Do not call the DB directly here.
+    // Compete for the lock again so each key has only one loader running.
     return this.get(key, loader, options);
   }
 
-  // Thêm một lượng ngẫu nhiên nhỏ vào TTL để các key không hết hạn cùng một thời điểm.
-  // Ví dụ: thay vì 10.000 key cùng expire đúng giây thứ 300, chúng rải ra trong khoảng 300-330 giây.
-  // Giảm spike Redis/DB do expire hàng loạt.
+  // Add a small random amount to the TTL so keys do not expire at the same time.
+  // For example, instead of 10,000 keys expiring exactly at second 300, spread them across 300-330 seconds.
+  // This reduces Redis/DB spikes caused by mass expiration.
   private withJitter(ttlSeconds: number, ratio: number): number {
     const jitter = Math.floor(ttlSeconds * ratio * Math.random());
     return ttlSeconds + jitter;

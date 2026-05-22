@@ -27,11 +27,11 @@ import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? 'ddl.231098@gmail.com';
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? '@Bc123';
-const ADMIN_NAME = process.env.SEED_ADMIN_NAME ?? 'Administrator';
-const ADMIN_USERNAME = process.env.SEED_ADMIN_USERNAME ?? 'admin';
-const ADMIN_BIRTHDAY = new Date(process.env.SEED_ADMIN_BIRTHDAY ?? '2000-01-01T00:00:00.000Z');
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL!;
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD!;
+const ADMIN_NAME = process.env.SEED_ADMIN_NAME!;
+const ADMIN_USERNAME = process.env.SEED_ADMIN_USERNAME!;
+const ADMIN_BIRTHDAY = new Date(process.env.SEED_ADMIN_BIRTHDAY!);
 
 if (Number.isNaN(ADMIN_BIRTHDAY.getTime())) {
   throw new Error('SEED_ADMIN_BIRTHDAY must be a valid ISO date string.');

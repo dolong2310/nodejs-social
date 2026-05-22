@@ -6,7 +6,7 @@ export interface ListPermissionsInput {
   skip?: number;
 }
 
-/** Trùng cặp `path` + `method` = một permission. `excludeId` khi cập nhật (bỏ qua bản ghi hiện tại). */
+/** Duplicate `path` + `method` means the same permission. `excludeId` skips the current record during updates. */
 export interface FindPermissionByPathAndMethodInput {
   path: string;
   method: EnumHttpMethod;

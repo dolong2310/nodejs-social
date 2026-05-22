@@ -49,7 +49,7 @@ export class PostsPipe implements IPostPipe {
   createPostPipe = validate(
     checkSchema(
       {
-        // type phải là 1 trong 4 giá trị: post, repost, comment, quote
+        // type must be one of: post, repost, comment, quote.
         type: {
           isIn: {
             options: [[EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE]],
@@ -69,7 +69,7 @@ export class PostsPipe implements IPostPipe {
             errorMessage: VALIDATION_ERROR_MESSAGE.ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN
           }
         },
-        // POST hợp lệ khi có content hoặc media; COMMENT/QUOTE phải có content; REPOST không có content riêng.
+        // POST is valid with content or media; COMMENT/QUOTE require content; REPOST has no own content.
         content: {
           isString: {
             errorMessage: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_STRING
@@ -95,15 +95,15 @@ export class PostsPipe implements IPostPipe {
             }
           }
         },
-        // nếu type là repost, comment, quote thì parentId phải là postId của bài viết cha (không được null hoặc string rỗng)
-        // nếu type là post thì parentId phải là null
+        // If type is repost, comment, or quote, parentId must be the parent post id and cannot be null or an empty string.
+        // If type is post, parentId must be null.
         parentId: {
           custom: {
             options: (parentId: string | null, { req }) => {
               const { type } = req.body as CreatePostRequestDTO;
 
               if ([EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type)) {
-                // parentId không được null, phải là string hợp lệ (ObjectId)
+                // parentId cannot be null and must be a valid string id.
                 if (parentId === null || typeof parentId !== 'string' || !isValidId(parentId)) {
                   throw ParentIdMustBeValidPostIdException;
                 }
@@ -117,7 +117,7 @@ export class PostsPipe implements IPostPipe {
             }
           }
         },
-        // hashtags phải là mảng các string
+        // hashtags must be an array of strings.
         hashtags: {
           isArray: {
             errorMessage: VALIDATION_ERROR_MESSAGE.HASHTAGS_MUST_BE_AN_ARRAY
@@ -141,7 +141,7 @@ export class PostsPipe implements IPostPipe {
             }
           }
         },
-        // mentions phải là mảng các userId
+        // mentions must be an array of userIds.
         mentions: {
           isArray: {
             errorMessage: VALIDATION_ERROR_MESSAGE.MENTIONS_MUST_BE_AN_ARRAY
@@ -161,7 +161,7 @@ export class PostsPipe implements IPostPipe {
             }
           }
         },
-        // media phải là mảng các media
+        // media must be an array of media items.
         media: {
           isArray: {
             errorMessage: VALIDATION_ERROR_MESSAGE.MEDIA_MUST_BE_AN_ARRAY

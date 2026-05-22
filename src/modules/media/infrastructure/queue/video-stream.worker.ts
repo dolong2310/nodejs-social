@@ -60,7 +60,7 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
     const filepaths = await getFiles({ fileStorage: this.fileStorage, dir: folderPath });
     const concurrency = 2;
 
-    // Upload các segment sang S3 với giới hạn concurrency để tránh bão hòa network/CPU.
+    // Upload segments to S3 with a concurrency limit to avoid saturating network/CPU.
     await mapWithConcurrency(filepaths, concurrency, async (_filepath) => {
       const filename = 'videos-stream' + _filepath.replace(path.resolve(uploadDir), '');
       await this.s3Service.uploadFile({
@@ -80,14 +80,14 @@ export class VideoStreamWorker extends BaseWorker<VideoStreamJobData, VideoStrea
 }
 
 /**
- * Giả sử:
+ * Suppose:
  * dir = /stream/vid123
- * Trong đó có:
+ * Which includes:
  * - master.m3u8
  * - v0/0.ts
  * - v0/1.ts
  * - sub/v1.ts
- * Thì output: [ "/stream/vid123/master.m3u8", "/stream/vid123/v0/0.ts", "/stream/vid123/v0/1.ts", "/stream/vid123/sub/v1.ts" ]
+ * Then output is: [ "/stream/vid123/master.m3u8", "/stream/vid123/v0/0.ts", "/stream/vid123/v0/1.ts", "/stream/vid123/sub/v1.ts" ]
  */
 async function getFiles({ fileStorage, dir }: { fileStorage: FileStoragePort; dir: string }): Promise<string[]> {
   const result: string[] = [];

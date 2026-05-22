@@ -33,8 +33,8 @@ import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper.js';
 import { faker } from '@faker-js/faker';
 
-// ID của user viewer/admin đã tồn tại trong DB (format: "entity_<uuidv7>").
-// Tìm trong MongoDB collection `users` field `id`.
+// ID of an existing viewer/admin user in the DB (format: "entity_<uuidv7>").
+// Find it in the MongoDB `users` collection's `id` field.
 const MYID = 'user_019e310c-504e-77b2-b685-e213e0a19f9d';
 const PASSWORD = '@Bc123';
 const USER_COUNT = 10;
@@ -74,20 +74,20 @@ const createRandomUserBody = (): UserSeedBody => ({
 });
 
 const createRandomPostData = (userId: string, mentionedUserIds: string[], parentPostIds: string[]) => {
-  // 1. type phải là 1 trong 4 giá trị: post, repost, comment, quote.
+  // 1. type must be one of: post, repost, comment, quote.
   // 2. audience: public | friends-only | only-me (phase 3 literals).
-  // 3.1. nếu type là repost thì content phải là '' (string rỗng).
-  // 3.2. nếu type là post, comment, quote và không có mentions, hashtags thì content phải là string không được rỗng.
-  // 4.1. nếu type là repost, comment, quote thì parentId phải là postId của bài viết cha.
-  // 4.2. nếu type là post thì parentId phải là null.
-  // 5. hashtags phải là mảng các string.
-  // 6. mentions phải là mảng các userId.
-  // 7. media phải là mảng các media.
+  // 3.1. if type is repost, content must be an empty string.
+  // 3.2. if type is post, comment, or quote and there are no mentions/hashtags, content must be non-empty.
+  // 4.1. if type is repost, comment, or quote, parentId must be the parent post id.
+  // 4.2. if type is post, parentId must be null.
+  // 5. hashtags must be an array of strings.
+  // 6. mentions must be an array of userIds.
+  // 7. media must be an array of media items.
 
   // 1. random type
   const typePool =
     parentPostIds.length === 0
-      ? [EnumPostType.POST] // chưa có post gốc nào thì chỉ cho phép POST
+      ? [EnumPostType.POST] // only allow POST when no root post exists yet
       : [EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE];
 
   const randomType = faker.helpers.arrayElement(typePool);
@@ -99,7 +99,7 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
     EnumPostAudience.ONLY_ME
   ]);
 
-  // 3. random hashtags (unique, số lượng 1..HASHTAG_PER_POST)
+  // 3. random hashtags (unique, count 1..HASHTAG_PER_POST)
   // HashtagEntity allows [a-zA-Z0-9_], non-empty, max 100 chars.
   const hashtagCount = faker.number.int({ min: 1, max: HASHTAG_PER_POST });
   const toHashtagName = (word: string) => word.replace(/[^a-zA-Z0-9_]/g, '').replace(/^./, (c) => c.toUpperCase());
@@ -108,7 +108,7 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
     .filter((name) => name.length > 0);
   const uniqueHashtagNames = Array.from(new Set(rawHashtagNames)).slice(0, hashtagCount);
 
-  // 4. random mentions (unique, số lượng 1..MENTION_PER_POST)
+  // 4. random mentions (unique, count 1..MENTION_PER_POST)
   const mentionCount = faker.number.int({ min: 0, max: Math.min(MENTION_PER_POST, mentionedUserIds.length) });
   const rawMentions = faker.helpers.multiple(() => faker.helpers.arrayElement(mentionedUserIds), {
     count: MENTION_PER_POST * 2
@@ -118,7 +118,7 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   const canHaveMedia = randomType === EnumPostType.POST;
   const canHaveSocialMetadata = randomType !== EnumPostType.REPOST;
 
-  // 5. random media (unique theo url, chỉ POST được phép có media)
+  // 5. random media (unique by url, only POST can have media)
   const mediaCount = canHaveMedia ? faker.number.int({ min: 1, max: MEDIA_PER_POST }) : 0;
   const mediaMap = new Map<string, { url: string; type: EnumMediaType }>();
   while (mediaMap.size < mediaCount) {
@@ -129,11 +129,11 @@ const createRandomPostData = (userId: string, mentionedUserIds: string[], parent
   }
   const randomMedia = Array.from(mediaMap.values()).map((m) => new Media(m));
 
-  // 6. content theo đúng rule của PostEntity
+  // 6. content according to PostEntity rules
   const content = randomType === EnumPostType.REPOST ? '' : faker.lorem.paragraph({ min: 2, max: 5 });
 
-  // 7. parentId theo đúng rule
-  // REPOST / COMMENT / QUOTE => phải có parentId là postId của bài viết cha (post gốc)
+  // 7. parentId according to the rules
+  // REPOST / COMMENT / QUOTE => parentId must be the parent root post id
   const parentId = randomType === EnumPostType.POST ? null : faker.helpers.arrayElement(parentPostIds);
 
   return {
@@ -212,10 +212,10 @@ const seedFriendshipsForViewer = async (viewerId: string, candidatePeerIds: stri
 const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
   console.log('Creating posts...');
   let count = 0;
-  const parentPostIds: string[] = []; // danh sách id các post gốc (type = POST)
+  const parentPostIds: string[] = []; // list of root post ids (type = POST)
 
   for (const userId of userIds) {
-    // Mỗi user tạo POST_PER_USER bài viết (có thể là post gốc hoặc con)
+    // Each user creates POST_PER_USER posts, either root posts or child posts.
     for (let i = 0; i < POST_PER_USER; i++) {
       const data = createRandomPostData(userId, userIds, parentPostIds);
 
@@ -234,7 +234,7 @@ const insertMultiplePosts = async (userIds: string[]): Promise<void> => {
         media: data.media
       });
 
-      // Nếu là post gốc thì lưu lại id để làm parent cho các post con sau này
+      // Save root post ids so later child posts can use them as parents.
       if (post.getProps().type === EnumPostType.POST) {
         parentPostIds.push(post.id.toString());
       }
@@ -262,7 +262,7 @@ const main = async () => {
   const userBodies = faker.helpers.multiple(createRandomUserBody, { count: USER_COUNT });
   const userIds = await insertMultipleUsers(userBodies, userRoleId);
 
-  // random friend edges từ MYID với số lượng candidate từ 0 đến userIds.length (deduped trong seedFriendshipsForViewer)
+  // Random friend edges from MYID with candidate count from 0 to userIds.length, deduped in seedFriendshipsForViewer.
   const candidatePeerIds = faker.helpers.multiple(() => faker.helpers.arrayElement(userIds), {
     count: faker.number.int({ min: 0, max: userIds.length })
   });

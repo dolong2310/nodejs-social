@@ -22,7 +22,7 @@ export class ChatFeature implements ISocketFeature {
     private readonly presenceUC: GetConversationPresencePort
   ) {}
 
-  /** Kiểm tra song song xem có member nào đang online không */
+  /** Check in parallel whether any member is online. */
   private async checkAnyOnline(io: Server, userIds: string[]): Promise<boolean> {
     if (userIds.length === 0) return false;
     const results = await Promise.all(

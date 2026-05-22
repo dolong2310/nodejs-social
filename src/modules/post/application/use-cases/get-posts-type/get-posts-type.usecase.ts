@@ -42,22 +42,22 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
     await this.postAudienceAccess.assertViewerCanAccessPostDetail(parentPost, userId);
 
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
-    // Lấy danh sách bài viết theo postId và type.
+    // Load posts by postId and type.
     const results = await this.postQueryRepository.findPostsType({ postId, type, cursor: before, limit });
     const hasMore = results.length > limit;
     const posts = results.slice(0, limit);
 
     if (userId) {
-      // Lấy toàn bộ user có quan hệ block với viewer theo cả 2 chiều (viewer block họ hoặc họ block viewer).
+      // Load all users with a two-way block relationship with the viewer (viewer blocked them or they blocked viewer).
       const blockedIds = await this.blockService.getBlockedIdsByUserId(userId);
       if (blockedIds.length > 0) {
-        // Kiểm tra viewer đã từng tương tác post cha chưa (like/bookmark/comment).
+        // Check whether the viewer has previously interacted with the parent post (like/bookmark/comment).
         const isInteracted = await this.postQueryRepository.isViewerInteractedWithPost({ viewerId: userId, postId });
         if (isInteracted) {
           const uniqueIds = new Set(blockedIds);
           for (const post of posts) {
             if (uniqueIds.has(post.userId)) {
-              // Ẩn thông tin tác giả của từng row bị block (thay thế thành “Unknown user”), giữ nội dung post.
+              // Redact the author of each blocked row by replacing it with Unknown user while keeping post content.
               transformUnknownAuthorForPostDetail(post);
             }
           }
@@ -65,7 +65,7 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
       }
     }
 
-    // Cập nhật lượt xem cho các bài vừa load.
+    // Update view counters for the loaded posts.
     const updatedPosts = this.postService.updatePostsViews<PostDetailOutput>({ posts, userId });
 
     const last = posts[posts.length - 1];

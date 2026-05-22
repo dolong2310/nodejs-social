@@ -15,12 +15,12 @@ import { ConversationRepositoryPort } from '@/modules/conversation/domain/reposi
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**
- * Đuổi thành viên khỏi group
- * - Chỉ áp dụng cho group (không kick được trong chat direct 1-1).
- * - Người thực hiện (actor = userId) phải là MANAGER hoặc ADMIN.
- * - Không cho kick chính mình (việc tự rời group là nghiệp vụ khác: leaveConversation).
- * - Không cho kick ADMIN.
- * - MANAGER chỉ được kick MEMBER (không kick được MANAGER/ADMIN). ADMIN thì kick được MEMBER và MANAGER (nhưng vẫn không kick ADMIN).
+ * Kick a member from a group.
+ * - Applies only to groups; direct 1-1 chats cannot kick members.
+ * - The actor (userId) must be MANAGER or ADMIN.
+ * - Users cannot kick themselves; leaving a group is handled by leaveConversation.
+ * - ADMIN cannot be kicked.
+ * - MANAGER can kick only MEMBER. ADMIN can kick MEMBER and MANAGER, but still cannot kick ADMIN.
  */
 export class KickMemberUseCase extends KickMemberPort {
   constructor(
@@ -32,18 +32,18 @@ export class KickMemberUseCase extends KickMemberPort {
   }
 
   async execute({ userId, conversationId, targetUserId }: KickMemberCommand): Promise<void> {
-    // kiểm tra conversation có phải là group không
+    // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     if (convEntity.getProps().type === EnumConversationType.DIRECT) {
       throw new ConversationDirectNoKickException();
     }
 
-    // không cho kick chính mình
+    // Do not allow kicking yourself.
     if (targetUserId === userId) {
       throw new ConversationCannotKickMemberException();
     }
 
-    // Gom 1 query để lấy membership của actor (người thực hiện) + target (người bị kick) (giảm query so với findMembership 2 lần).
+    // Use one query to fetch actor and target memberships, reducing queries compared with two findMembership calls.
     const memberEntities = await this.conversationMemberRepository.findMembersByUsers({
       conversationId,
       userIds: [userId, targetUserId]
@@ -52,25 +52,25 @@ export class KickMemberUseCase extends KickMemberPort {
     const actor = members.find((m) => m.userId === userId);
     const target = members.find((m) => m.userId === targetUserId);
 
-    // kiểm tra user có phải là member của conversation không
+    // Check whether the user is a conversation member.
     if (!actor) {
       throw new ConversationNotMemberException();
     }
-    // kiểm tra người bị kick có phải là member của conversation không
+    // Check whether the target is a conversation member.
     if (!target) {
       throw new UserNotFoundException();
     }
 
-    // kiểm tra quyền của người thực hiện
+    // Check actor permissions.
     if (actor.role === EnumConversationMemberRole.MEMBER) {
       throw new ConversationCannotKickMemberException();
     }
-    // không cho kick ADMIN
+    // Do not allow kicking ADMIN.
     if (target.role === EnumConversationMemberRole.ADMIN) {
       throw new ConversationCannotKickMemberException();
     }
-    // ADMIN thì kick được MEMBER và MANAGER (không kick được ADMIN).
-    // MANAGER chỉ được kick MEMBER (không kick được MANAGER/ADMIN).
+    // ADMIN can kick MEMBER and MANAGER, but not ADMIN.
+    // MANAGER can kick only MEMBER, not MANAGER/ADMIN.
     if (actor.role === EnumConversationMemberRole.MANAGER) {
       if (target.role !== EnumConversationMemberRole.MEMBER) {
         throw new ConversationCannotKickMemberException();
@@ -78,9 +78,9 @@ export class KickMemberUseCase extends KickMemberPort {
     }
 
     const deletedCount = await this.conversationMemberRepository.deleteMember({ conversationId, userId: targetUserId });
-    // chỉ khi xóa thực sự xảy ra (tránh write thừa trong race condition).
+    // Only continue when deletion actually happened, avoiding extra writes during race conditions.
     if (deletedCount > 0) {
-      // cập nhật updatedAt của conversation (vì cần hiển thị message "kick member" trong danh sách messages)
+      // Update conversation.updatedAt so the "kick member" message can appear correctly in message lists.
       await this.conversationRepository.touchUpdatedAt(conversationId, { updatedAt: new Date() });
     }
   }

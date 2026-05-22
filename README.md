@@ -175,8 +175,6 @@ pnpm run db:migrations:executed:postgres --env=development
 pnpm run db:rollback:postgres --env=development
 ```
 
-See [DATABASE_MIGRATIONS.md](./DATABASE_MIGRATIONS.md) for details.
-
 ### Seed Data
 
 MongoDB:
@@ -262,7 +260,6 @@ Routes are mounted under `/api/v1`.
 Useful docs and collections:
 
 - Swagger UI: `/api/docs`
-- Postman collection: [postman/nodejs-social.postman_collection.json](./postman/nodejs-social.postman_collection.json)
 - Postman environment: [postman/nodejs-social.postman_environment.json](./postman/nodejs-social.postman_environment.json)
 - Admin users collection: [postman/admin-users.postman_collection.json](./postman/admin-users.postman_collection.json)
 

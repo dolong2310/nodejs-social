@@ -1,27 +1,27 @@
 tags:
   - name: auth
-    description: Đăng ký, đăng nhập, logout, GET refresh-token (cookie), quên mật khẩu — refresh qua cookie httpOnly
+    description: Register, login, logout, GET refresh-token via cookie, and forgot-password flows. Refresh uses an HttpOnly cookie.
   - name: users
-    description: Profile — GET/PATCH /users/me, GET /users/:username, PUT /users/change-password
+    description: Profile - GET/PATCH /users/me, GET /users/:username, PUT /users/change-password
   - name: oauth
-    description: Google OAuth — GET `/oauth/google/url`, GET `/oauth/google` (callback + Set-Cookie + redirect frontend)
+    description: Google OAuth - GET `/oauth/google/url`, GET `/oauth/google` (callback + Set-Cookie + redirect frontend)
   - name: media
-    description: Upload và quản lý media (ảnh, video)
+    description: Upload and manage media assets, including images and videos.
   - name: posts
-    description: Quản lý bài viết, feed, comments, like và bookmark
+    description: Manage posts, feeds, comments, likes, and bookmarks.
   - name: friends
-    description: Kết bạn — lời mời, chấp nhận/từ chối, danh sách bạn, hủy kết bạn
+    description: Friend relationships, including requests, accept/decline actions, friend lists, and unfriending.
   - name: blocks
-    description: Chặn / bỏ chặn — tự động gỡ bạn và xóa lời mời liên quan
+    description: Block and unblock users, automatically removing friendships and related requests.
   - name: search
-    description: Tìm kiếm bài viết, người dùng
+    description: Search posts and users.
   - name: conversations
-    description: Conversations HTTP (Mongo chat DB) — direct/group, tin nhắn, đã đọc
+    description: Conversation HTTP APIs for direct/group chats, messages, and read state.
   - name: notifications
-    description: Hộp thông báo in-app (social DB) — list cursor, đánh dấu đã đọc
+    description: In-app notifications with cursor listing and read-state updates.
   - name: roles
-    description: Vai trò hệ thống (ADMIN, USER) — chỉ tài khoản admin; danh sách + permissionIds
+    description: System roles (ADMIN, USER). Admin-only list and permissionId management.
   - name: permissions
-    description: Bản ghi quyền theo path/method (seed từ route) — chỉ admin
+    description: Permission records by path and method, seeded from routes. Admin-only.
   - name: static
-    description: Phục vụ file tĩnh (ảnh, video)
+    description: Serve static image and video files.

@@ -136,7 +136,7 @@ export class UsersPipe implements IUserPipe {
                 throw UsernameFormatInvalidException;
               }
 
-              // nếu username gửi lên trùng username hiện tại của user thì skip, tránh query DB không cần thiết
+              // If the submitted username matches the current username, skip the unnecessary DB query.
               const authenticatedUser = (req as Request).user;
               if (authenticatedUser?.username === username) {
                 return true;
