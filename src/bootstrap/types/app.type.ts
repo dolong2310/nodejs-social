@@ -66,4 +66,9 @@ export interface IAppConfig {
     secretAccessKey: string;
     bucketName: string;
   };
+  cloudinary: {
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
+  };
 }

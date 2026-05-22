@@ -30,6 +30,9 @@ const defaults: Record<string, string> = {
   AWS_REGION: 'us-east-1',
   AWS_S3_BUCKET_NAME: 'test-bucket',
   SES_FROM_ADDRESS: 'no-reply@example.com',
+  CLOUDINARY_CLOUD_NAME: 'test-cloud-name',
+  CLOUDINARY_API_KEY: 'test-cloudinary-api-key',
+  CLOUDINARY_API_SECRET: 'test-cloudinary-api-secret',
   RATE_LIMIT_ENABLED: '0',
   RATE_LIMIT_WINDOW_MS: '900000',
   RATE_LIMIT_MAX: '1000'

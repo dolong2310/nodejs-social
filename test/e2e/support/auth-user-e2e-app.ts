@@ -1007,6 +1007,11 @@ function testAppConfig(): IAppConfig {
       accessKeyId: 'test-aws-access-key-id',
       secretAccessKey: 'test-aws-secret-access-key',
       bucketName: 'test-bucket'
+    },
+    cloudinary: {
+      cloudName: 'test-cloud-name',
+      apiKey: 'test-cloudinary-api-key',
+      apiSecret: 'test-cloudinary-api-secret'
     }
   };
 }

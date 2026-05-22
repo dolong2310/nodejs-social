@@ -125,5 +125,11 @@ export const appConfig: IAppConfig = {
     accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
     secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
     bucketName: envConfig.AWS_S3_BUCKET_NAME
+  },
+
+  cloudinary: {
+    cloudName: envConfig.CLOUDINARY_CLOUD_NAME,
+    apiKey: envConfig.CLOUDINARY_API_KEY,
+    apiSecret: envConfig.CLOUDINARY_API_SECRET
   }
 };
