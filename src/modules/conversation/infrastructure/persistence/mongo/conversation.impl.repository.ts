@@ -67,7 +67,7 @@ export class ConversationRepository
       await this.dbCollection.insertOne(record);
       return this.mapper.toDomain(record);
     } catch (error) {
-      // Xử lý race condition khi 2 request cùng tạo
+      // Handle race conditions when two requests create the conversation concurrently.
       if (error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
@@ -83,7 +83,7 @@ export class ConversationRepository
       name
     });
 
-    // thêm admin và members vào group
+    // Add admin and members to the group.
     const admin = ConversationMemberEntity.create({
       conversationId: group.id.toString(),
       userId: createdBy,
@@ -106,7 +106,7 @@ export class ConversationRepository
 
     const allMembers: ConversationMemberEntity[] = [admin, ...members];
 
-    // tạo transaction thực hiện 2 operation: insert group và insert members
+    // Create a transaction that performs two operations: insert group and insert members.
     await this.transaction(async () => {
       const groupRecord = this.mapper.toPersistence(group);
       await this.dbCollection.insertOne(groupRecord, { session: this.session });

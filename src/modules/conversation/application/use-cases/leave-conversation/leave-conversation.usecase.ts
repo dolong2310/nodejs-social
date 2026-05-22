@@ -20,10 +20,10 @@ export class LeaveConversationUseCase extends LeaveConversationPort {
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
     const conv = (await this.conversationService.loadConversation(conversationId)).toObject();
 
-    // không cho phép "admin cuối cùng" rời khỏi group mà khiến group không còn admin nào.
+    // Do not allow the last admin to leave a group and leave it without any admin.
     if (conv.type === EnumConversationType.GROUP && self.role === EnumConversationMemberRole.ADMIN) {
       const adminsCount = await this.conversationMemberRepository.countAdmins(conversationId);
-      // nếu chỉ còn 1 admin thì không cho rời group
+      // If only one admin remains, do not allow leaving the group.
       if (adminsCount === 1) {
         throw new ConversationRoleForbiddenException();
       }

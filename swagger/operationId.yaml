@@ -1,4 +1,4 @@
-# operationId theo `swagger/paths.yaml` (khớp `src/presentation/http/routes/*.route.ts`)
+# operationIds defined by `swagger/paths.yaml` (matching `src/presentation/http/routes/*.route.ts`)
 #
 # auth: register | login | logout | refreshToken | forgotPassword
 # users: getMe | updateMe | getUserProfile | changePassword

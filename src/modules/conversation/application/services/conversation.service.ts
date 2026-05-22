@@ -28,11 +28,11 @@ export class ConversationService implements ConversationServicePort {
   ) {}
 
   /**
-   * lấy userId của người còn lại trong cuộc trò chuyện direct (1-1)
-   * Ví dụ:
+   * Get the other user's id in a direct (1-1) conversation.
+   * Example:
    * userIdLow = A, userIdHigh = B
-   * userId là A -> return B
-   * userId là B -> return A
+   * userId is A -> return B
+   * userId is B -> return A
    */
   getDirectPeerId({ conv, userId }: GetDirectPeerIdPayload): string {
     const { type, userIdLow, userIdHigh } = conv.getProps();
@@ -43,8 +43,8 @@ export class ConversationService implements ConversationServicePort {
   }
 
   /**
-   * - Chỉ thành viên của conversation mới được gửi tin.
-   * - Tại sao: conversationId có thể hợp lệ (ObjectId đúng format) nhưng user không nằm trong bảng member => không được phép ghi tin.
+   * - Only conversation members can send messages.
+   * - Why: conversationId may be valid, but if the user is not in the members table, writing messages is not allowed.
    */
   async isMember({ conversationId, userId }: AssertMemberPayload): Promise<ConversationMemberEntity> {
     const memberEntity = await this.conversationMemberRepository.findMember({ conversationId, userId });

@@ -46,14 +46,14 @@ import { StaticRoute } from '@/presentation/http/express/v1/routes/static.route'
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
 import type { RequestHandler } from 'express';
 
-/** Middleware rỗng: chỉ gọi `next()` — dùng khi cần object pipe/controller giả cho Express đăng ký route, không thực thi logic. */
+/** Empty middleware: only calls `next()`. Used for fake pipe/controller objects when Express registers routes without running logic. */
 const nextOnlyMiddleware: RequestHandler = (_request, _response, next) => {
   next();
 };
 
 /**
- * Tạo proxy giả: mỗi field là `nextOnlyMiddleware`, hoặc factory trả về nó (userId / postId).
- * Chỉ phục vụ bước khai báo route trong constructor — không dùng xử lý request thật.
+ * Create a fake proxy: each field is `nextOnlyMiddleware`, or a factory returning it (userId / postId).
+ * Only used for route declaration in constructors, not for real request handling.
  */
 function createNoopPipeProxyForRouteRegistration<T extends object>(): T {
   return new Proxy({} as T, {
@@ -76,7 +76,7 @@ function createNoopPipeProxyForRouteRegistration<T extends object>(): T {
 }
 
 /**
- * Tạo proxy controller giả: mỗi method trả về hàm async rỗng (đủ cho route + `interceptor`).
+ * Create a fake controller proxy: each method returns an empty async function, enough for route + `interceptor`.
  */
 function createNoopControllerProxyForRouteRegistration<T extends object>(): T {
   return new Proxy({} as T, {
@@ -103,7 +103,7 @@ const noopInterceptor = new Proxy(
 );
 
 /**
- * Thứ tự giống `buildHttpRouters` để danh sách route trùng runtime.
+ * Keep the same order as `buildHttpRouters` so the route list matches runtime.
  */
 export function buildStubHttpRouters(): BaseRoute[] {
   const authPipe: IAuthPipe = createNoopPipeProxyForRouteRegistration();
@@ -302,8 +302,8 @@ export function buildStubHttpRouters(): BaseRoute[] {
 }
 
 /**
- * Chuỗi `module` lưu trên bản ghi permission: lấy từ `BaseRoute.pathName` (vd. `/auth` → `AUTH`).
- * Dùng khi cần lọc theo khu vực API.
+ * The `module` string stored on permission records comes from `BaseRoute.pathName`, e.g. `/auth` -> `AUTH`.
+ * Used when filtering by API area.
  */
 export function permissionModuleTagFromBaseRoutePath(baseRoutePath: string): string {
   const pathAfterLeadingSlash = baseRoutePath.replace(/^\//, '');

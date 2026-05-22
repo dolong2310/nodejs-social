@@ -2,8 +2,8 @@ import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-m
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
 
 /**
- * Class lỗi cơ sở cho tất cả các lỗi tùy chỉnh trong API
- * Kế thừa từ class Error có sẵn của JavaScript
+ * Base error class for all custom API errors.
+ * Extends JavaScript's built-in Error class.
  */
 export class HttpException extends Error {
   statusCode: number;
@@ -19,9 +19,9 @@ export class HttpException extends Error {
 }
 
 /**
- * Lỗi yêu cầu không hợp lệ - Mã lỗi 400
- * Sử dụng khi yêu cầu bị lỗi cú pháp hoặc thiếu thông tin
- * Ví dụ: Thiếu trường bắt buộc, định dạng dữ liệu không hợp lệ
+ * Bad request error - status code 400.
+ * Used when the request has syntax errors or missing information.
+ * Example: missing required fields or invalid data format.
  */
 export class BadRequestException extends HttpException {
   constructor(
@@ -34,9 +34,9 @@ export class BadRequestException extends HttpException {
 }
 
 /**
- * Lỗi xác thực - Mã lỗi 401
- * Sử dụng khi người dùng chưa đăng nhập hoặc token không hợp lệ
- * Ví dụ: Token hết hạn, sai mật khẩu, thiếu token xác thực
+ * Authentication error - status code 401.
+ * Used when the user is not logged in or the token is invalid.
+ * Example: expired token, wrong password, or missing authentication token.
  */
 export class UnauthorizedException extends HttpException {
   constructor(
@@ -49,9 +49,9 @@ export class UnauthorizedException extends HttpException {
 }
 
 /**
- * Lỗi cấm truy cập - Mã lỗi 403
- * Sử dụng khi người dùng không có quyền truy cập tài nguyên
- * Ví dụ: Người dùng thường truy cập trang admin, không đủ quyền thực hiện hành động
+ * Forbidden error - status code 403.
+ * Used when the user does not have permission to access a resource.
+ * Example: a regular user accesses an admin page or lacks permission for an action.
  */
 export class ForbiddenException extends HttpException {
   constructor(
@@ -64,9 +64,9 @@ export class ForbiddenException extends HttpException {
 }
 
 /**
- * Lỗi không tìm thấy - Mã lỗi 404
- * Sử dụng khi không tìm thấy tài nguyên được yêu cầu
- * Ví dụ: Truy cập vào user không tồn tại, URL không hợp lệ
+ * Not found error - status code 404.
+ * Used when the requested resource cannot be found.
+ * Example: accessing a non-existent user or invalid URL.
  */
 export class NotFoundException extends HttpException {
   constructor(
@@ -79,8 +79,8 @@ export class NotFoundException extends HttpException {
 }
 
 /**
- * Lỗi phương thức không được phép - Mã lỗi 405
- * Sử dụng khi endpoint tồn tại nhưng không hỗ trợ HTTP method hiện tại
+ * Method not allowed error - status code 405.
+ * Used when the endpoint exists but does not support the current HTTP method.
  */
 export class MethodNotAllowedException extends HttpException {
   constructor(
@@ -93,8 +93,8 @@ export class MethodNotAllowedException extends HttpException {
 }
 
 /**
- * Lỗi không chấp nhận được - Mã lỗi 406
- * Sử dụng khi server không thể tạo response phù hợp với header Accept của client
+ * Not acceptable error - status code 406.
+ * Used when the server cannot produce a response matching the client's Accept header.
  */
 export class NotAcceptableException extends HttpException {
   constructor(
@@ -107,9 +107,9 @@ export class NotAcceptableException extends HttpException {
 }
 
 /**
- * Lỗi timeout - Mã lỗi 408
- * Sử dụng khi yêu cầu không được xử lý trong thời gian quy định
- * Ví dụ: Yêu cầu API không được xử lý trong 30 giây
+ * Request timeout error - status code 408.
+ * Used when the request is not processed within the allowed time.
+ * Example: an API request is not processed within 30 seconds.
  */
 export class RequestTimeoutException extends HttpException {
   constructor(
@@ -122,9 +122,9 @@ export class RequestTimeoutException extends HttpException {
 }
 
 /**
- * Lỗi xung đột - Mã lỗi 409
- * Sử dụng khi yêu cầu xung đột với trạng thái hiện tại của server
- * Ví dụ: Tạo tài khoản với email đã tồn tại, tạo sản phẩm với mã đã có
+ * Conflict error - status code 409.
+ * Used when the request conflicts with the current server state.
+ * Example: creating an account with an existing email or a product with an existing code.
  */
 export class ConflictException extends HttpException {
   constructor(
@@ -137,8 +137,8 @@ export class ConflictException extends HttpException {
 }
 
 /**
- * Lỗi tài nguyên đã bị xóa - Mã lỗi 410
- * Sử dụng khi tài nguyên không còn tồn tại và không có địa chỉ thay thế
+ * Gone error - status code 410.
+ * Used when the resource no longer exists and has no replacement address.
  */
 export class GoneException extends HttpException {
   constructor(
@@ -151,8 +151,8 @@ export class GoneException extends HttpException {
 }
 
 /**
- * Lỗi điều kiện tiên quyết thất bại - Mã lỗi 412
- * Sử dụng khi các precondition trong header không được thỏa mãn
+ * Precondition failed error - status code 412.
+ * Used when header preconditions are not satisfied.
  */
 export class PreconditionFailedException extends HttpException {
   constructor(
@@ -165,8 +165,8 @@ export class PreconditionFailedException extends HttpException {
 }
 
 /**
- * Lỗi payload quá lớn - Mã lỗi 413
- * Sử dụng khi body request vượt quá giới hạn server cho phép
+ * Payload too large error - status code 413.
+ * Used when the request body exceeds the server's allowed limit.
  */
 export class PayloadTooLargeException extends HttpException {
   constructor(
@@ -179,8 +179,8 @@ export class PayloadTooLargeException extends HttpException {
 }
 
 /**
- * Lỗi media type không được hỗ trợ - Mã lỗi 415
- * Sử dụng khi định dạng dữ liệu request không được server hỗ trợ
+ * Unsupported media type error - status code 415.
+ * Used when the request data format is not supported by the server.
  */
 export class UnsupportedMediaTypeException extends HttpException {
   constructor(
@@ -193,8 +193,8 @@ export class UnsupportedMediaTypeException extends HttpException {
 }
 
 /**
- * Lỗi teapot - Mã lỗi 418
- * Sử dụng khi server không thể tạo response phù hợp với header Accept của client
+ * Teapot error - status code 418.
+ * Used when the server cannot produce a response matching the client's Accept header.
  */
 export class ImATeapotException extends HttpException {
   constructor(
@@ -207,9 +207,9 @@ export class ImATeapotException extends HttpException {
 }
 
 /**
- * Lỗi dữ liệu không hợp lệ - Mã lỗi 422
- * Sử dụng khi dữ liệu gửi lên đúng format nhưng không hợp lệ về mặt logic
- * Ví dụ: Ngày sinh trong tương lai, số điện thoại sai định dạng
+ * Unprocessable entity error - status code 422.
+ * Used when submitted data has the correct format but is logically invalid.
+ * Example: birth date in the future or invalid phone number format.
  */
 export class UnprocessableEntityException extends HttpException {
   constructor(
@@ -222,9 +222,9 @@ export class UnprocessableEntityException extends HttpException {
 }
 
 /**
- * Lỗi quá nhiều yêu cầu - Mã lỗi 429
- * Sử dụng khi người dùng gửi quá nhiều yêu cầu trong một khoảng thời gian
- * Ví dụ: Giới hạn số lần đăng nhập, giới hạn số request API
+ * Too many requests error - status code 429.
+ * Used when a user sends too many requests within a time window.
+ * Example: login attempt limits or API request limits.
  */
 export class TooManyRequestsException extends HttpException {
   constructor(
@@ -237,9 +237,9 @@ export class TooManyRequestsException extends HttpException {
 }
 
 /**
- * Lỗi server - Mã lỗi 500
- * Sử dụng khi có lỗi không mong muốn xảy ra trên server
- * Ví dụ: Lỗi kết nối database, lỗi xử lý dữ liệu
+ * Server error - status code 500.
+ * Used when an unexpected server error occurs.
+ * Example: database connection error or data processing error.
  */
 export class InternalServerErrorException extends HttpException {
   constructor(
@@ -252,8 +252,8 @@ export class InternalServerErrorException extends HttpException {
 }
 
 /**
- * Lỗi chưa được implement - Mã lỗi 501
- * Sử dụng khi server chưa hỗ trợ chức năng được yêu cầu
+ * Not implemented error - status code 501.
+ * Used when the server does not support the requested functionality yet.
  */
 export class NotImplementedException extends HttpException {
   constructor(
@@ -266,9 +266,9 @@ export class NotImplementedException extends HttpException {
 }
 
 /**
- * Lỗi gateway - Mã lỗi 502
- * Sử dụng khi server nhận được phản hồi không hợp lệ từ server khác
- * Ví dụ: Lỗi khi gọi API bên thứ 3, lỗi kết nối microservice
+ * Bad gateway error - status code 502.
+ * Used when the server receives an invalid response from another server.
+ * Example: third-party API failure or microservice connection error.
  */
 export class BadGatewayException extends HttpException {
   constructor(
@@ -281,9 +281,9 @@ export class BadGatewayException extends HttpException {
 }
 
 /**
- * Lỗi service không khả dụng - Mã lỗi 503
- * Sử dụng khi server tạm thời không thể xử lý yêu cầu
- * Ví dụ: Server đang bảo trì, server quá tải
+ * Service unavailable error - status code 503.
+ * Used when the server temporarily cannot handle the request.
+ * Example: maintenance or overload.
  */
 export class ServiceUnavailableException extends HttpException {
   constructor(
@@ -296,8 +296,8 @@ export class ServiceUnavailableException extends HttpException {
 }
 
 /**
- * Lỗi gateway timeout - Mã lỗi 504
- * Sử dụng khi server đóng vai trò gateway và không nhận được response kịp thời
+ * Gateway timeout error - status code 504.
+ * Used when the server acts as a gateway and does not receive a timely response.
  */
 export class GatewayTimeoutException extends HttpException {
   constructor(
@@ -310,8 +310,8 @@ export class GatewayTimeoutException extends HttpException {
 }
 
 /**
- * Lỗi HTTP version không được hỗ trợ - Mã lỗi 505
- * Sử dụng khi server không hỗ trợ phiên bản HTTP trong request
+ * HTTP version not supported error - status code 505.
+ * Used when the server does not support the HTTP version in the request.
  */
 export class HttpVersionNotSupportedException extends HttpException {
   constructor(

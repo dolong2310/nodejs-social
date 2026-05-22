@@ -20,37 +20,37 @@ export class MarkReadUseCase extends MarkReadPort {
   }
 
   async execute({ userId, conversationId, lastReadMessageId }: MarkReadCommand): Promise<void> {
-    // Người xem phải là thành viên của conversation.
+    // The viewer must be a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
     let messageEntity: ChatMessageEntity;
     let messageId: string;
     if (lastReadMessageId) {
-      // client cung cấp messageId đã đọc. (client báo “tôi đã scroll/đọc tới tin này”)
+      // The client provides the read messageId, meaning "I have scrolled/read up to this message".
       messageId = lastReadMessageId;
-      // Kiểm tra messageId có hợp lệ không.
-      // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
+      // Check whether messageId is valid.
+      // messageId must exist and belong to conversationId, avoiding deleted messages or messages from another conversation.
       const entity = await this.chatMessageRepository.findMessageById(messageId);
       if (!entity || entity.getProps().conversationId !== conversationId) {
         throw new ConversationNotFoundException();
       }
       messageEntity = entity;
     } else {
-      // Lấy 1 tin nhắn mới nhất trong conversation.
+      // Load the latest message in the conversation.
       const entities = await this.chatMessageRepository.findMessages(conversationId, { limit: 1, before: undefined });
       if (!entities.length) return;
       messageEntity = entities[0];
       messageId = messageEntity.id.toString();
-      // Kiểm tra messageId có hợp lệ không.
-      // messageId phải tồn tại và thuộc conversationId, tránh case bị xoá hoặc gửi tin ngoài conversation.
+      // Check whether messageId is valid.
+      // messageId must exist and belong to conversationId, avoiding deleted messages or messages from another conversation.
       if (messageEntity.getProps().conversationId !== conversationId) {
         throw new ConversationNotFoundException();
       }
     }
 
-    // Cập nhật thời gian đọc cuối cùng của người xem.
+    // Update the viewer's latest read timestamp.
     const lastReadAt = messageEntity.createdAt;
-    // Cập nhật thời gian đọc cuối cùng của người xem trong conversationMember.
+    // Update the viewer's latest read timestamp in conversationMember.
     const updated = await this.conversationMemberRepository.updateReadState({
       conversationId,
       userId,
@@ -60,10 +60,10 @@ export class MarkReadUseCase extends MarkReadPort {
     if (!updated) return;
 
     if (this.realtimeEmitter) {
-      // Lấy danh sách thành viên trong conversation.
+      // Load conversation members.
       const membersInConversation = await this.conversationMemberRepository.listMembers(conversationId);
       const memberIds = membersInConversation.map((m) => m.getProps().userId);
-      // Đẩy realtime cho mọi người trong phòng.
+      // Push realtime updates to everyone in the room.
       this.realtimeEmitter.emitReadUpdated(conversationId, memberIds, userId, {
         lastReadMessageId: messageId,
         lastReadAt: lastReadAt.toISOString()

@@ -5,9 +5,9 @@ import {
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 
 /**
- * Hàm được gọi khi user đã đọc một hoặc nhiều thông báo.
- * - Nếu ids không trống, mark read cho từng id.
- * - Nếu ids trống, mark read cho tất cả thông báo chưa đọc.
+ * Called when the user has read one or more notifications.
+ * - If ids is not empty, mark each id as read.
+ * - If ids is empty, mark all unread notifications as read.
  */
 export class MarkNotificationsReadUseCase extends MarkNotificationsReadPort {
   constructor(private readonly notificationRepository: NotificationRepositoryPort) {

@@ -25,9 +25,9 @@ export class GetConversationsUseCase extends GetConversationsPort {
   async execute({ userId, limit, cursor }: GetConversationsQuery): Promise<GetConversationsResult> {
     const decoded = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
 
-    // giới hạn kích thước trang trong khoảng an toàn (1-100), tránh gửi limit quá lớn.
+    // Clamp page size to a safe range (1-100) to avoid overly large limits.
     const page = Math.min(100, Math.max(1, limit));
-    // lấy danh sách phòng chat (conversations) của user
+    // Load the user's chat rooms (conversations).
     const results = await this.conversationMemberQueryRepository.listConversationsForUser({
       userId,
       limit: page + 1,
@@ -37,7 +37,7 @@ export class GetConversationsUseCase extends GetConversationsPort {
     const slice = results.slice(0, page);
     const last = slice[slice.length - 1];
     const nextCursor =
-      // Nếu còn dữ liệu, mã hóa updatedAt và conversationId của phần tử cuối trong slice làm cursor cho request phân trang sau.
+      // If more data exists, encode updatedAt and conversationId of the last item in the slice as the next-page cursor.
       hasMore && slice.length > 0 ? encodeCursor(last.updatedAt, last.conversationId) : null;
 
     const ids = slice.map((r) => r.conversationId);
@@ -59,11 +59,11 @@ export class GetConversationsUseCase extends GetConversationsPort {
     const conversations: ConversationItem[] = [];
     for (const row of slice) {
       const convId = row.conversationId;
-      // Kiểm tra phòng chat có tồn tại không
+      // Check whether the chat room exists.
       const convEntity = convById.get(convId);
       if (!convEntity) continue;
-      // Tương đương với isMember(...), nhưng làm theo batch để giảm số query.
-      // Kiểm tra user có phải là member của phòng chat không
+      // Equivalent to isMember(...), but batched to reduce query count.
+      // Check whether the user is a member of the chat room.
       if (!memberChatIds.has(convId)) continue;
 
       const conv = convEntity.toObject();
@@ -78,7 +78,7 @@ export class GetConversationsUseCase extends GetConversationsPort {
       };
 
       if (conv.type === EnumConversationType.DIRECT) {
-        // getDirectPeerId: cần biết đối phương là ai (so sánh userIdLow / userIdHigh với userId đang xem).
+        // getDirectPeerId needs to know the peer user by comparing userIdLow/userIdHigh with the viewing userId.
         conversations.push({
           ...payload,
           peerUserId: this.conversationService.getDirectPeerId({ conv: convEntity, userId })

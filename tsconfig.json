@@ -1,22 +1,22 @@
 {
   "compilerOptions": {
-    "module": "ESNext", // Emit ESM hiện đại (Node sẽ chạy theo package.json "type": "module")
-    "moduleResolution": "Bundler", // Cho phép alias kiểu "@/..." + tsc-alias rewrite sau build
-    "target": "ES2023", // Target output cho code
-    "outDir": "dist", // Đường dẫn output cho thư mục build
+    "module": "ESNext", // Emit modern ESM; Node runs it through package.json "type": "module".
+    "moduleResolution": "Bundler", // Allow "@/..." aliases plus tsc-alias rewrites after build.
+    "target": "ES2023", // Target output for code.
+    "outDir": "dist", // Output path for build artifacts.
     "esModuleInterop": true,
     "strict": true /* Enable all strict type-checking options. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "baseUrl": ".", // Đường dẫn base cho các import
+    "baseUrl": ".", // Base path for imports.
     "paths": {
-      "@/*": ["./src/*"], // Đường dẫn tương đối cho các import source
-      "@test/*": ["./test/*"] // Đường dẫn tương đối cho test support
+      "@/*": ["./src/*"], // Relative path for source imports.
+      "@test/*": ["./test/*"] // Relative path for test support imports.
     },
-    "rootDirs": ["./src", "."] // Giúp TS hiểu cấu trúc thư mục khi dùng alias + entry ở root (main.ts)
+    "rootDirs": ["./src", "."] // Help TS understand the folder layout when using aliases plus the root entry (main.ts).
   },
-  "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*", "test/**/*", "main.ts"], // Đường dẫn include cho các file cần build
+  "files": ["src/type.d.ts"], // Files that define project-wide global types.
+  "include": ["src/**/*", "test/**/*", "main.ts"], // Include paths for files that need to be built.
   "exclude": []
 }

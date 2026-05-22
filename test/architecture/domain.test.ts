@@ -2,11 +2,11 @@ import { filesOfProject } from 'tsarch';
 import { describe, expect, it } from 'vitest';
 import { expectFilesMatch, expectNoForbiddenImports, parseModuleImport, sourceFiles } from './arch.helper';
 
-// Lấy toàn bộ file thuộc src/modules/*/domain.
+// Get all files under src/modules/*/domain.
 const domainFiles = sourceFiles('src/modules').filter((file) => file.includes('/domain/'));
 
 describe.concurrent('Domain boundaries', () => {
-  // 1. domain không được phép import application, infrastructure, presentation, bootstrap
+  // 1. domain must not import application, infrastructure, presentation, or bootstrap.
   it('domain does not depend on application, infrastructure, presentation, or bootstrap', () => {
     expectNoForbiddenImports(domainFiles, ({ importPath }) => {
       if (importPath.startsWith('@/presentation')) return 'domain must not depend on presentation';
@@ -21,14 +21,14 @@ describe.concurrent('Domain boundaries', () => {
     });
   });
 
-  // 2. folder domain phải không có cycle
+  // 2. domain folders must be cycle-free.
   it('domain files are cycle free', async () => {
     const rule = filesOfProject().inFolder('src/modules/*/domain').should().beFreeOfCycles();
 
     await expect(rule).toPassAsync();
   });
 
-  // 3. folder domain phải theo convention hiện tại
+  // 3. domain folders must follow the current convention.
   it('domain folder names match the current module convention', () => {
     const allowedDomainFolders = new Set([
       'entities',
@@ -46,7 +46,7 @@ describe.concurrent('Domain boundaries', () => {
     expect(filesWithUnknownDomainFolder).toEqual([]);
   });
 
-  // 4. suffix file domain phải theo convention hiện tại
+  // 4. domain file suffixes must follow the current convention.
   it('domain entities, value objects, and repository ports use project suffixes', () => {
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/entities/')),

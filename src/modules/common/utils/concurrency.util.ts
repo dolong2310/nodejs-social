@@ -1,18 +1,18 @@
 /**
- * hàm tiện ích để chạy một tác vụ bất đồng bộ trên nhiều phần tử, nhưng giới hạn số tác vụ chạy đồng thời (concurrency).
- * Mục tiêu là tránh "excute" quá nhiều request/IO/CPU cùng lúc gây nghẽn (đặc biệt đúng với upload S3 nhiều file/segment hoặc xử lý Sharp/encode video).
+ * Utility for running an async task over many items while limiting how many tasks run at the same time.
+ * The goal is to avoid executing too many requests/IO/CPU tasks at once, especially for multi-file/segment S3 uploads or Sharp/video encoding.
  */
 export async function mapWithConcurrency<T, R>(
   items: T[],
-  concurrency: number, // số "worker" tối đa chạy song song
-  mapper: (item: T, index: number) => Promise<R> // hàm biến đổi bất đồng bộ cho từng phần tử
+  concurrency: number, // maximum number of workers running in parallel
+  mapper: (item: T, index: number) => Promise<R> // async mapper for each item
 ): Promise<R[]> {
-  // đảm bảo ít nhất là 1 concurrent worker
+  // Ensure there is at least one concurrent worker.
   const safeConcurrency = Math.max(1, concurrency);
   const results: R[] = new Array(items.length);
 
-  // index của phần tử tiếp theo sẽ được xử lý
-  let nextIndex = 0; // con trỏ chia sẻ giữa các worker
+  // Index of the next item to process.
+  let nextIndex = 0; // shared cursor across workers
 
   const worker = async () => {
     while (true) {

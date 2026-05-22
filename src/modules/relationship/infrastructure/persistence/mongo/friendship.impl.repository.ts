@@ -75,7 +75,7 @@ export class FriendshipRepository
       await this.dbCollection.insertOne(record);
       return this.mapper.toDomain(record);
     } catch (error) {
-      // có thể đụng unique index (Mongo error 11000) nếu friendship đã tồn tại do race condition.
+      // May hit the unique index (Mongo error 11000) if the friendship already exists due to a race condition.
       if (error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
@@ -90,8 +90,9 @@ export class FriendshipRepository
   }
 
   /**
-   * - Đếm số lượng mối quan hệ bạn bè giữa tất cả các member trong group với admin.
-   * - Nghĩa là nó đang lấy tất cả số lượng member trong group là bạn bè của admin và so sánh với số lượng member trong group (trừ admin ra) phải bằng nhau.
+   * - Count friendship relationships between all group members and the admin.
+   * - This means counting how many group members are friends with the admin and comparing it with the number
+   *   of group members excluding the admin; they must be equal.
    */
   async countFriendshipsWithUserAmongOthers({
     userId,

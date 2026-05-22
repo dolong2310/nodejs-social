@@ -133,11 +133,8 @@ export class FriendController extends BaseController implements IFriendControlle
 
   @AutoBind()
   async sendFriendRequest(req: ExpressRequest<ParamsDictionary, object, SendFriendRequestBodyDTO>) {
-    console.log('req.body: ', req.body);
     const userId = this.getUserId(req);
-    console.log('userId: ', userId);
     const dto = new SendFriendRequestBodyDTO(req.body);
-    console.log('dto: ', dto);
     const created = await this.sendFriendRequestUC.execute({ userId, toUserId: dto.toUserId });
 
     return this.response<FriendRequestResponseDTO>({

@@ -7,18 +7,18 @@ import {
   sourceFiles
 } from './arch.helper';
 
-// Lấy toàn bộ file thuộc src/modules/*/application.
+// Get all files under src/modules/*/application.
 const applicationFiles = sourceFiles('src/modules').filter((file) => file.includes('/application/'));
 
 describe.concurrent('Application boundaries', () => {
-  // 1. application không được phụ thuộc presentation adapters như controller/route/guard/pipe/interceptor.
+  // 1. application must not depend on presentation adapters such as controllers/routes/guards/pipes/interceptors.
   it('application does not depend on presentation adapters', () => {
     expectNoForbiddenImports(applicationFiles, ({ importPath }) => {
       return importPath.startsWith('@/presentation') ? 'application must not depend on presentation' : false;
     });
   });
 
-  // 2. application chỉ phụ thuộc port/contract, không phụ thuộc concrete infrastructure adapter.
+  // 2. application depends only on ports/contracts, not concrete infrastructure adapters.
   it('application depends on ports, not concrete infrastructure adapters', () => {
     expectNoForbiddenImports(applicationFiles, ({ importPath }) => {
       if (importPath.startsWith('@/infrastructure')) return 'application must not depend on root infrastructure';
@@ -27,7 +27,7 @@ describe.concurrent('Application boundaries', () => {
     });
   });
 
-  // 3. use-case implementation và application port phải theo suffix convention của project.
+  // 3. use-case implementations and application ports must follow project suffix conventions.
   it('use cases and application ports use project suffixes', () => {
     expectFilesMatch(
       applicationFiles.filter((file) => file.includes('/application/use-cases/')),
@@ -40,7 +40,7 @@ describe.concurrent('Application boundaries', () => {
     );
   });
 
-  // 4. các folder support trong application phải dùng suffix rõ vai trò file.
+  // 4. application support folders must use suffixes that clearly describe each file role.
   it('application support folders use project suffixes', () => {
     expectFilesMatch(
       applicationFiles.filter((file) => file.includes('/application/services/')),
@@ -61,7 +61,7 @@ describe.concurrent('Application boundaries', () => {
     );
   });
 
-  // 5. application không được import bootstrap config/types trực tiếp; config phải là type nhỏ do application sở hữu.
+  // 5. application must not import bootstrap config/types directly; config should be an application-owned small type.
   it('application receives config through application-owned types instead of bootstrap types', () => {
     expectNoForbiddenImports(applicationFiles, ({ importPath }) => {
       return isBootstrapConfigImport(importPath)

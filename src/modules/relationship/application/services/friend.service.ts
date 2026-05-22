@@ -18,8 +18,9 @@ export class FriendService implements FriendServicePort {
   }
 
   /**
-   * Vì hệ thống có cache danh sách bạn bè theo user (Redis key CACHE_KEYS.friends(userId)), dùng ở findFriendUserIds().
-   * Khi decline/revoke/unfriend thì graph bạn bè / trạng thái liên quan thay đổi, nên cần xóa cache của cả hai người để các API khác (list friends, check mutual, permissions “friends-only”, mở direct conversation, …) không bị đọc dữ liệu cũ.
+   * The system caches each user's friend list (Redis key CACHE_KEYS.friends(userId)) for findFriendUserIds().
+   * When decline/revoke/unfriend changes the friend graph or related state, invalidate both users so APIs such
+   * as list friends, mutual checks, friends-only permissions, and opening direct conversations do not read stale data.
    */
   async invalidateBoth(userIdA: string, userIdB: string): Promise<void> {
     await Promise.all([this.invalidateFriendCache(userIdA), this.invalidateFriendCache(userIdB)]);

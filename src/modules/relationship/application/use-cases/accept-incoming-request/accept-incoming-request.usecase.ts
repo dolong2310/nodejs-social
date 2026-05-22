@@ -24,26 +24,26 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
   }
 
   async execute({ userId, fromUserId }: AcceptIncomingRequestCommand): Promise<void> {
-    // kiểm tra xem người nhận có yêu cầu kết bạn tới người gửi không
+    // Check whether the receiver has a friend request from the sender.
     const pending = await this.friendRequestRepository.findPendingRequestByUserPair({ fromUserId, toUserId: userId });
     if (!pending) {
-      // kiểm tra xem người gửi và người nhận đã là bạn bè không
-      // Mục tiêu: xử lý case "user bấm accept lại / request đã được xử lý trước đó".
-      // - Nếu đã là bạn bè, không cần xử lý gì thêm.
-      // - Nếu không phải bạn bè và không có pending, throw lỗi NO_PENDING_FRIEND_REQUEST.
+      // Check whether sender and receiver are already friends.
+      // Goal: handle "user clicked accept again / request was already processed".
+      // - If already friends, no extra work is needed.
+      // - If not friends and no pending request exists, throw NO_PENDING_FRIEND_REQUEST.
       const alreadyFriends = await this.friendshipRepository.findFriendshipPair(fromUserId, userId);
       if (alreadyFriends) return;
       throw new NoPendingFriendRequestException();
     }
 
-    // kiểm tra xem người nhận có block người gửi không
+    // Check whether the receiver blocked the sender.
     if (await this.blockRepository.isBlockedEitherWay(userId, fromUserId)) {
       throw new FriendActionBlockedException();
     }
 
     const entity = await this.friendshipRepository.createFriendship(fromUserId, userId);
     if (!entity) {
-      // nếu đã tồn tại friendship, xóa request và invalidate cache
+      // If friendship already exists, delete the request and invalidate cache.
       await Promise.all([
         this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId }),
         this.friendService.invalidateBoth(userId, fromUserId)
@@ -52,10 +52,10 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
     }
 
     await Promise.all([
-      // xóa request và invalidate cache
+      // Delete the request and invalidate cache.
       this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId }),
       this.friendService.invalidateBoth(userId, fromUserId),
-      // notification "friend accepted" cho người gửi
+      // Send "friend accepted" notification to the sender.
       this.notificationsService.recordFriendAccepted({ originalRequesterUserId: fromUserId, accepterUserId: userId })
     ]);
   }

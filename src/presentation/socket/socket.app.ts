@@ -8,7 +8,7 @@ import { ExtendedError, Server, Socket } from 'socket.io';
 export const createSocketApp = (io: Server, container: IContainer): Server => {
   const { tokenService, userService, features } = container.getSocketDeps();
 
-  // middleware lúc bắt đầu kết nối
+  // Middleware used when a socket starts connecting.
   io.use((socket, next) => socketAuthMiddleware(socket, next, tokenService, userService));
 
   io.on('connection', async (socket: Socket) => {
@@ -20,7 +20,7 @@ export const createSocketApp = (io: Server, container: IContainer): Server => {
 
     socket.join(userRoom(decoded.userId));
 
-    // middleware xử lý mỗi event
+    // Middleware used for each socket event.
     socket.use((_, next) => eventSocketMiddleware(socket, next, tokenService));
 
     socket.on('error', (error) => {

@@ -23,9 +23,9 @@ export class TwoFactorAuthService implements TwoFactorAuthPort {
 
   verifyTOTP(data: { email: string; secret?: string; token: string }): boolean {
     const totp = this.createTOTP(data.email, data?.secret);
-    // window: 1 là số lượng khoảng thời gian (time step) mà token có thể hợp lệ
-    // Giả sử period là 30s thì window: 1 là 30s, trong khoảng thời gian sau khi token mới được tạo ra thì token cũ vẫn còn hợp lệ
+    // window: 1 is the number of time steps in which the token may be valid.
+    // With a 30s period, window: 1 gives a 30s grace period where the previous token can still be valid.
     const delta = totp.validate({ token: data.token, window: 1 });
-    return delta !== null; // nếu token không hợp lệ thì delta sẽ là null và ngược lại thì delta sẽ là number
+    return delta !== null; // invalid tokens return null; valid tokens return a number.
   }
 }

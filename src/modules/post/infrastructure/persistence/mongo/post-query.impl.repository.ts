@@ -42,20 +42,20 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     // const v = new ObjectId(data.viewerId);
     // const p = new ObjectId(data.postId);
     const [like, bookmark, comment] = await Promise.all([
-      // Tìm like của viewer với post (likes.findOne)
+      // Find the viewer's like for the post (likes.findOne).
       this.likesCollection.findOne({ user_id: userId, post_id: postId, deleted_at: null }, { projection: { _id: 1 } }),
-      // Tìm bookmark của viewer với post (bookmarks.findOne)
+      // Find the viewer's bookmark for the post (bookmarks.findOne).
       this.bookmarksCollection.findOne(
         { user_id: userId, post_id: postId, deleted_at: null },
         { projection: { _id: 1 } }
       ),
-      // Tìm comment mà viewer comment vào post đó (posts.findOne với parentId = postId và type = COMMENT)
+      // Find a comment the viewer added to that post (posts.findOne with parentId = postId and type = COMMENT).
       this.dbCollection.findOne(
         { user_id: userId, parent_id: postId, type: EnumPostType.COMMENT, deleted_at: null },
         { projection: { _id: 1 } }
       )
     ]);
-    // Nếu có ít nhất 1 trong 3 loại tương tác thì trả true
+    // Return true if at least one of the three interaction types exists.
     return like !== null || bookmark !== null || comment !== null;
   }
 
@@ -370,7 +370,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const $and: Record<string, unknown>[] = [{ deleted_at: null }];
 
     if (query) {
-      // tìm kiếm theo text trong các trường của post
+      // Search by text across post fields.
       $and.push({
         $text: {
           $search: query
@@ -379,7 +379,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     }
 
     if (type) {
-      // tìm kiếm theo type của post
+      // Search by post type.
       if ([EnumSearchType.VIDEO, EnumSearchType.VIDEO_STREAM].includes(type)) {
         $and.push({ 'media.type': { $in: [EnumMediaType.VIDEO, EnumMediaType.VIDEO_STREAM] } });
       } else if (type === EnumSearchType.IMAGE) {
@@ -387,14 +387,14 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       }
     }
 
-    // Nếu đang đăng nhập thì hiển thị post PUBLIC và post FRIENDS_ONLY (bạn bè) (không bị block)
-    // Nếu không đăng nhập thì chỉ hiển thị post PUBLIC
+    // When authenticated, show PUBLIC posts and FRIENDS_ONLY posts from friends, excluding blocked users.
+    // When unauthenticated, show only PUBLIC posts.
     if (userId) {
       const blocked = (blockedAuthorIds ?? []).filter((id) => id !== userId);
       const friendIds = await findFriendUserIds(userId);
       const friendIdsFriendsOnly = friendIds.filter((id) => id !== userId);
 
-      // Chỉ hiển thị post PUBLIC và post FRIENDS_ONLY (bạn bè) (không bị block)
+      // Show only PUBLIC posts and FRIENDS_ONLY posts from friends, excluding blocked users.
       const orVisibility: Record<string, unknown>[] = [
         {
           audience: EnumPostAudience.PUBLIC,
@@ -406,20 +406,20 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           user_id: { $in: friendIdsFriendsOnly, $nin: blocked }
         }
       ];
-      // nếu viewer từng tương tác (like/bookmark/comment) với bài của các tác giả bị block, thì vẫn lấy ra postId của các bài đó để hiển thị (Unknown user)
+      // If the viewer previously interacted with posts by blocked authors, still load those postIds for display as Unknown user.
       if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
         orVisibility.push({ _id: { $in: extraVisiblePostIds } });
       }
       $and.push({ $or: orVisibility });
 
       if (people) {
-        // tìm kiếm theo bạn bè và không phải bạn bè
+        // Search by friends and non-friends.
         if ([EnumSearchPeople.FRIENDS, EnumSearchPeople.NOT_FRIENDS].includes(people)) {
           $and.push({
             user_id: people === EnumSearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds }
           });
         } else if (people === EnumSearchPeople.ONLY_ME) {
-          // tìm kiếm theo chính mình
+          // Search by the viewer's own posts.
           $and.push({ user_id: { $eq: userId } });
         }
       }
@@ -431,7 +431,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
 
     // build cursor filter
     if (cursor) {
-      // Ý nghĩa nghiệp vụ: đảm bảo khi nhiều post có cùng createdAt, việc paging vẫn không bị trùng/miss do dùng thêm _id làm tie-breaker.
+      // Business meaning: when multiple posts share createdAt, using _id as a tie-breaker prevents paging duplicates/misses.
       const cursorFilter = {
         $or: [
           { created_at: { $lt: cursor.raw().createdAt } },

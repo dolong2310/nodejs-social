@@ -55,9 +55,9 @@ export class S3Service implements ObjectStoragePort {
           Bucket: this.config.bucketName,
           Key: filename,
           // Body: readFileSync(filepath),
-          Body: this.fileStorage.createReadStream(filepath), // dùng createReadStream thay vì readFileSync để tránh block event-loop và giảm RAM khi upload file lớn.
+          Body: this.fileStorage.createReadStream(filepath), // Use createReadStream to avoid blocking the event loop and reduce memory use for large files.
           ContentType: contentType,
-          ContentLength: size // giúp multipart upload hoạt động ổn định với stream
+          ContentLength: size // Helps multipart upload work reliably with streams.
         },
         // (optional) tags
         tags: [],

@@ -49,10 +49,10 @@ export class HashtagRepository
       };
     });
 
-    // Thực hiện bulkWrite để upsert (chèn mới hoặc cập nhật) nhiều hashtag cùng lúc.
-    // option { ordered: false } cho phép các thao tác upsert diễn ra song song, không dừng lại khi có 1 thao tác bị lỗi (ví dụ trùng key),
-    // Điều này giúp tối ưu hiệu suất khi insert nhiều hashtag cùng lúc và không bị ảnh hưởng nếu có hashtag đã tồn tại.
-    // Tránh loop find one and update vì N + 1 query (nhiều round-trip).
+    // Use bulkWrite to upsert many hashtags at once.
+    // { ordered: false } allows upserts to continue independently and not stop on one failed operation, such as a duplicate key.
+    // This improves performance when inserting many hashtags and is unaffected by existing hashtags.
+    // Avoid looping findOneAndUpdate because that creates N + 1 queries and many round trips.
     await this.dbCollection.bulkWrite(ops, { ordered: false });
 
     const result = await this.dbCollection

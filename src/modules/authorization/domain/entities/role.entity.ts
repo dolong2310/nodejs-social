@@ -24,7 +24,7 @@ export class RoleEntity extends Entity<RoleProps, RoleFullProps> {
     return role;
   }
 
-  /** `ADMIN` / `USER` do seed tạo — không đổi tên / xóa qua API thường. */
+  /** `ADMIN` / `USER` are seed-created roles and cannot be renamed or deleted through normal APIs. */
   isSystemRole(): boolean {
     const { name } = this.getProps();
     return name.value === EnumRoleName.ADMIN || name.value === EnumRoleName.USER;

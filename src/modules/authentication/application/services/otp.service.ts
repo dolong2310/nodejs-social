@@ -83,8 +83,8 @@ export class OtpService {
       }
     } else if (emailOtpCode) {
       // 2.2 Verify email OTP code
-      // emailOtpCode là option nếu như user đã enable 2FA bằng TOTP nhưng giả sử không có thiết bị để lấy được TOTP code thì sẽ dùng OTP gửi qua email để login
-      // vì vậy không cần check email OTP code mỗi lần login
+      // emailOtpCode is optional: if the user enabled TOTP 2FA but cannot access the device, they can use an email OTP to log in.
+      // Therefore the email OTP code does not need to be checked on every login.
       const otpCode = await this.findAndValidateOtpCode({
         email: email,
         code: emailOtpCode,

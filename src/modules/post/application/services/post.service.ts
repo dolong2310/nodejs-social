@@ -57,8 +57,8 @@ export class PostService implements PostServicePort {
   }
 
   /**
-   * Kiểm tra người xem (viewerId) đã từng tương tác với bài viết (postId) hay chưa.
-   * Trả về true/false để dùng cho rule quyền xem trong các tình huống block.
+   * Check whether the viewer (viewerId) has ever interacted with the post (postId).
+   * Return true/false for visibility rules in block scenarios.
    */
   async isViewerInteractedWithPost({ viewerId, postId }: IsViewerInteractedWithPostPayload): Promise<boolean> {
     const isInteracted = await this.postQueryRepository.isViewerInteractedWithPost({ viewerId, postId });
@@ -66,9 +66,9 @@ export class PostService implements PostServicePort {
   }
 
   /**
-   * Dù tác giả bài viết đang bị block,
-   * nếu người xem (userId) đã từng tương tác với bài của những tác giả đó (like/bookmark/comment)
-   * thì vẫn lấy ra danh sách post id để có thể hiển thị thêm theo rule "blocked-engagement exception".
+   * Even when post authors are blocked, if the viewer (userId) has previously interacted with their posts
+   * (like/bookmark/comment), still return those post ids so they can be shown by the "blocked-engagement
+   * exception" rule.
    */
   async getBlockedPostIds({ userId, blockedAuthorIds }: GetBlockedPostIdsPayload): Promise<string[]> {
     const authorIds = blockedAuthorIds.filter((id) => id !== userId).sort();

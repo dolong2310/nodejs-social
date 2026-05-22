@@ -16,8 +16,8 @@ export class TokenService implements TokenServicePort {
   ) {}
 
   signAccessToken(payload: AccessTokenPayloadCreate): Promise<string> {
-    // thêm uuid để tránh trường hợp 2 request cùng payload được gọi cùng 1 thời điểm thì sẽ bị trùng jwt token
-    // thêm uuid để tạo khác biệt giữa 2 jwt token
+    // Add uuid so two requests with the same payload at the same time do not produce duplicate JWTs.
+    // The uuid makes the two JWTs distinct.
     return this.jwtService.signAsync(
       { ...payload, uuid: uuidv4() },
       {
@@ -29,8 +29,8 @@ export class TokenService implements TokenServicePort {
   }
 
   signRefreshToken(payload: RefreshTokenPayloadCreate): Promise<string> {
-    // thêm uuid để tránh trường hợp 2 request cùng payload được gọi cùng 1 thời điểm thì sẽ bị trùng jwt token
-    // thêm uuid để tạo khác biệt giữa 2 jwt token
+    // Add uuid so two requests with the same payload at the same time do not produce duplicate JWTs.
+    // The uuid makes the two JWTs distinct.
     return this.jwtService.signAsync(
       { ...payload, uuid: uuidv4() },
       {

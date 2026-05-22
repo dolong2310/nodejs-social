@@ -11,9 +11,9 @@ import { NotificationRepositoryPort } from '@/modules/notification/domain/reposi
 import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
- * Hàm dùng để lấy danh sách thông báo (notifications) cho một user đang xem, có hỗ trợ:
- * - Lọc theo người bị block (không hiển thị thông báo từ user mà mình block hoặc block mình).
- * - Filter chỉ thông báo chưa đọc nếu unreadOnly = true.
+ * Fetch notifications for the viewing user, with support for:
+ * - Filtering blocked users (hide notifications from users I blocked or who blocked me).
+ * - Filtering only unread notifications when unreadOnly = true.
  */
 export class ListNotificationsUseCase extends ListNotificationsPort {
   constructor(
@@ -32,8 +32,8 @@ export class ListNotificationsUseCase extends ListNotificationsPort {
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
 
     const pageSize = Math.min(100, Math.max(1, limit));
-    const actorNin = [...blockedIds]; // Danh sách id user không được xuất hiện trong trường actor của notification (vì đã block)
-    // lấy danh sách notification cho user, có filter block + unread + cursor
+    const actorNin = [...blockedIds]; // user ids that must not appear in notification.actor because they are blocked
+    // Load notifications for the user with block + unread + cursor filters.
     const results = await this.notificationRepository.findNotifications({
       recipientId: viewerId,
       limit: pageSize + 1,

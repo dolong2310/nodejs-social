@@ -33,12 +33,12 @@ export class SearchPostsUseCase extends SearchPostsPort {
     let blockedAuthorIds: string[] | undefined;
     let extraVisiblePostIds: string[] = [];
 
-    // Lấy danh sách tác giả bị block (nếu đang đăng nhập)
+    // Load blocked authors when authenticated.
     if (userId) {
       blockedAuthorIds = await this.blockService.getBlockedIdsByUserId(userId);
     }
 
-    // nếu viewer từng tương tác (like/bookmark/comment) với bài của các tác giả bị block, thì vẫn lấy ra postId của các bài đó để hiển thị (Unknown user)
+    // If the viewer previously interacted with posts by blocked authors, still load those postIds for display as Unknown user.
     if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
       extraVisiblePostIds = await this.postsService.getBlockedPostIds({
         userId,
@@ -61,7 +61,7 @@ export class SearchPostsUseCase extends SearchPostsPort {
     const hasMore = results.length > limit;
     const posts = results.slice(0, limit);
 
-    // Redact (ẩn danh) tác giả nếu post thuộc người bị block
+    // Redact the author if the post belongs to a blocked user.
     if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
       const blockedIds = new Set(blockedAuthorIds.filter((id) => id !== userId));
       for (const post of posts) {
@@ -71,7 +71,7 @@ export class SearchPostsUseCase extends SearchPostsPort {
       }
     }
 
-    // Cập nhật lượt xem cho các bài vừa load
+    // Update view counters for the loaded posts.
     const updatedPosts = this.postsService.updatePostsViews<PostDetailWithAuthorOutput>({ posts, userId });
 
     const last = posts[posts.length - 1];

@@ -41,7 +41,7 @@ export class UpdateRoleUseCase extends UpdateRolePort {
       }
     }
 
-    // Không được deactive role admin
+    // The admin role cannot be deactivated.
     if (currentName === EnumRoleName.ADMIN && !command.isActive) {
       throw new CannotDeactivateAdminRoleException();
     }

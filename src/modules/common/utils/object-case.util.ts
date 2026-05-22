@@ -8,7 +8,7 @@ export function convertObjectToSnakeCase(
       acc[fallbackKey] = value;
       return acc;
     }
-    const UPPERCASE_LETTER_REGEX = /[A-Z]/g; // Tìm tất cả ký tự viết hoa (A-Z) trong chuỗi
+    const UPPERCASE_LETTER_REGEX = /[A-Z]/g; // Find all uppercase letters (A-Z) in the string.
     const snakeKey = key.replace(UPPERCASE_LETTER_REGEX, (letter) => `_${letter.toLowerCase()}`);
     acc[snakeKey] = value;
     return acc;

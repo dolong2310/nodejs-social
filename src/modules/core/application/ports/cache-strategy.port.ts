@@ -1,26 +1,26 @@
 export type ReadThroughOptions = {
   /**
-   * TTL cho cache hit, tính bằng giây. Khi loader trả data thật, data sẽ được cache trong khoảng này.
+   * TTL for cache hits, in seconds. When the loader returns real data, it is cached for this duration.
    */
   ttlSeconds: number;
   /**
-   * TTL cho cache null. Dùng chống cache penetration. Ví dụ user không tồn tại, cache { type: 'null' } trong 30 giây để request sau không query DB lại.
+   * TTL for cached null values. Used to prevent cache penetration. For example, cache { type: 'null' } for a missing user for 30 seconds so later requests do not hit the DB again.
    */
   negativeTtlSeconds?: number;
   /**
-   * TTL của lock chống cache stampede, tính bằng milliseconds. Request đầu tiên miss cache sẽ giữ lock và gọi DB. Lock cần đủ dài để loader chạy xong.
+   * TTL for the anti-stampede lock, in milliseconds. The first request that misses cache holds the lock and calls the DB. The lock must be long enough for the loader to finish.
    */
   lockTtlMs?: number;
   /**
-   * Thời gian mỗi request không lấy được lock sẽ đợi trước khi đọc cache lại.
+   * Time each request waits before reading cache again when it cannot acquire the lock.
    */
   waitMs?: number;
   /**
-   * Số lần retry đọc cache khi không lấy được lock. Nếu quá số lần, nó quay lại tranh lock tiếp bằng cách gọi lại get().
+   * Number of cache-read retries when the lock cannot be acquired. If exhausted, it calls get() again to compete for the lock.
    */
   maxWaitAttempts?: number;
   /**
-   * Tỷ lệ random cộng thêm vào TTL để tránh nhiều key hết hạn cùng lúc. Ví dụ ttlSeconds = 300, jitterRatio = 0.1 thì TTL thực tế khoảng 300-330 giây.
+   * Random ratio added to TTL so many keys do not expire at the same time. For example, ttlSeconds = 300 and jitterRatio = 0.1 gives an effective TTL around 300-330 seconds.
    */
   jitterRatio?: number;
 };
@@ -29,8 +29,8 @@ export type WriteThroughOptions = {
   ttlSeconds: number;
   jitterRatio?: number;
   /**
-   * Nếu DB đã ghi thành công nhưng set cache lỗi, option này cho phép xóa cache key để tránh giữ data cũ.
-   * Lưu ý: nó không rollback DB. DB là source of truth; cache lỗi thì chỉ xử lý cache.
+   * If the DB write succeeded but setting cache failed, this option allows deleting the cache key to avoid keeping stale data.
+   * Note: it does not roll back the DB. The DB is the source of truth; cache failures only affect cache handling.
    */
   rollbackCacheOnError?: boolean;
 };

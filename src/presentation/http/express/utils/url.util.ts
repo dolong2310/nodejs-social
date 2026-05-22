@@ -1,22 +1,23 @@
 import { ParamsDictionary } from 'express-serve-static-core';
 
 /**
- * Chuẩn hóa đường dẫn logic (pattern + mount) để khớp quyền kiểu `METHOD-path` (vd. auth guard).
+ * Normalize the logical path (pattern + mount) so it matches `METHOD-path` permissions, e.g. auth guard checks.
  *
- * Case A — `typeof path === 'string'` và `path !== '/'`: bỏ qua `params` / `originalUrl`.
- *   - { baseUrl: '', path: '/users/:id' } → '/users/:id'
- *   - { baseUrl: '/api/v1', path: '/users/:userId' } → '/api/v1/users/:userId'
+ * Case A - `typeof path === 'string'` and `path !== '/'`: ignore `params` / `originalUrl`.
+ *   - { baseUrl: '', path: '/users/:id' } -> '/users/:id'
+ *   - { baseUrl: '/api/v1', path: '/users/:userId' } -> '/api/v1/users/:userId'
  *
- * Case B — `path === '/'`: không nối thêm segment (tránh `//`).
- *   - { baseUrl: '/api/v1', path: '/' } → '/api/v1'
+ * Case B - `path === '/'`: do not append another segment, avoiding `//`.
+ *   - { baseUrl: '/api/v1', path: '/' } -> '/api/v1'
  *
- * Case C — `path` không phải string (vd. route RegExp ở runtime): pathname từ `originalUrl` (bỏ `?query`),
- *   thay mỗi `/<giá trị param>` bằng `/:<tên>`; giá trị rỗng bỏ qua; xử lý param có giá trị dài trước (sort).
+ * Case C - `path` is not a string (for example, a runtime RegExp route): take pathname from `originalUrl`
+ *   without `?query`, replace each `/<param value>` with `/:<name>`, skip empty values, and handle longer
+ *   values first through sorting.
  *   - { originalUrl: '/api/users/42?x=1', params: { userId: '42' }, path: <RegExp>, baseUrl: '/api' }
- *     → '/api/users/:userId'
- *   - Nếu `template` rỗng sau vòng lặp → trả `baseUrl`.
+ *     -> '/api/users/:userId'
+ *   - If `template` is empty after the loop, return `baseUrl`.
  *
- * Express thường dùng: `request.route.path` là string → hầu hết Case A/B.
+ * Express commonly uses `request.route.path` as a string, so most routes use Case A/B.
  */
 export function resolveUrlPath(data: {
   path: string;

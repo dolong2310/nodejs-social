@@ -324,7 +324,7 @@ export abstract class MongoRepositoryBase<
 
   protected _toMongoFieldName(field: string): string {
     if (field === 'id' || field === '_id') return '_id';
-    const UPPERCASE_LETTER_REGEX = /[A-Z]/g; // Tìm tất cả ký tự viết hoa (A-Z) trong chuỗi
+    const UPPERCASE_LETTER_REGEX = /[A-Z]/g; // Find all uppercase letters (A-Z) in the string.
     return field.replace(UPPERCASE_LETTER_REGEX, (letter) => `_${letter.toLowerCase()}`);
   }
 
