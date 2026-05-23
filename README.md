@@ -135,7 +135,7 @@ Important variables:
 | `APP_URL`                                                                        | Backend application URL             |
 | `FRONTEND_URL`                                                                   | Frontend URL used for CORS defaults |
 | `CORS_ORIGINS`                                                                   | Comma-separated allowed origins     |
-| `DATABASE_ADAPTER`                                                             | `mongo` or `postgres`               |
+| `DATABASE_ADAPTER`                                                               | `mongo` or `postgres`               |
 | `MONGO_URI`, `MONGO_DB_NAME`                                                     | MongoDB connection config           |
 | `POSTGRES_URI`, `POSTGRES_SSL`                                                   | PostgreSQL connection config        |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`                         | Redis connection config             |
@@ -260,8 +260,8 @@ Routes are mounted under `/api/v1`.
 Useful docs and collections:
 
 - Swagger UI: `/api/docs`
-- Postman environment: [postman/nodejs-social.postman_environment.json](./postman/nodejs-social.postman_environment.json)
-- Admin users collection: [postman/admin-users.postman_collection.json](./postman/admin-users.postman_collection.json)
+- Postman collection: [postman/COLLECTION_API.postman.json](./postman/COLLECTION_API.postman.json)
+- Postman environment: [postman/ENV.postman.json](./postman/ENV.postman.json)
 
 ## Testing Strategy
 
