@@ -98,7 +98,6 @@ export class AuthGuard implements BaseGuard {
 
     // Check if user is active and has permission to access the route
     const canAccess = cachedRole?.isActive && !!cachedRole?.permissionsMap[`${method}-${path}`];
-    // console.log('canAccess: ', canAccess);
 
     if (!canAccess) {
       throw new ForbiddenException();
