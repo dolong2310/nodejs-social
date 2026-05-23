@@ -55,7 +55,11 @@ export const appConfig: IAppConfig = {
 
   logs: {
     /** Pino levels: fatal, error, warn, info, debug, trace, silent */
-    level: envConfig.LOG_LEVEL || (isDevelopment ? 'debug' : 'info')
+    level: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'].includes(envConfig.LOG_LEVEL)
+      ? envConfig.LOG_LEVEL
+      : isDevelopment
+        ? 'debug'
+        : 'info'
   },
 
   api: {

@@ -135,7 +135,7 @@ Important variables:
 | `APP_URL`                                                                        | Backend application URL             |
 | `FRONTEND_URL`                                                                   | Frontend URL used for CORS defaults |
 | `CORS_ORIGINS`                                                                   | Comma-separated allowed origins     |
-| `PERSISTENCE_DRIVER`                                                             | `mongo` or `postgres`               |
+| `DATABASE_ADAPTER`                                                             | `mongo` or `postgres`               |
 | `MONGO_URI`, `MONGO_DB_NAME`                                                     | MongoDB connection config           |
 | `POSTGRES_URI`, `POSTGRES_SSL`                                                   | PostgreSQL connection config        |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`                         | Redis connection config             |
@@ -300,7 +300,7 @@ The project uses an explicit container in `src/bootstrap` instead of a framework
 
 ### Repository ports with MongoDB and PostgreSQL adapters
 
-Domain and application code depend on repository contracts, not database clients. The selected persistence driver is configured with `PERSISTENCE_DRIVER`, and the composition root wires either MongoDB or PostgreSQL implementations.
+Domain and application code depend on repository contracts, not database clients. The selected persistence driver is configured with `DATABASE_ADAPTER`, and the composition root wires either MongoDB or PostgreSQL implementations.
 
 ### Use cases as application entry points
 
