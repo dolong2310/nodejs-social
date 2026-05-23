@@ -1,5 +1,7 @@
 # NodeJS Social
 
+English | [Tiếng Việt](README.vi.md)
+
 Backend service for a social networking application. The project focuses on user identity, posts, relationships, conversations, notifications, media upload, realtime events, and role-based administration.
 
 This repository is built as a TypeScript backend API, with a clean/hexagonal architecture style so business rules stay separated from HTTP, database, queue, and third-party infrastructure concerns.
@@ -38,6 +40,8 @@ This repository is built as a TypeScript backend API, with a clean/hexagonal arc
 | Logging         | Pino                                    |
 | API docs        | Swagger UI, OpenAPI YAML                |
 | Testing         | Vitest, Supertest, tsarch               |
+| Container       | Docker                                  |
+| Deployment      | GitHub Actions, Render                  |
 
 ## Architecture
 
@@ -81,6 +85,8 @@ src/
 swagger/              OpenAPI YAML fragments used by Swagger UI
 postman/              Postman collections and environment
 scripts/              Utility and seed scripts
+.github/workflows/    GitHub Actions deployment workflows
+Dockerfile            Production container image definition
 test/
   architecture/       Architecture boundary tests
   e2e/                End-to-end HTTP tests
@@ -218,6 +224,28 @@ Swagger UI is available at:
 /api/docs
 ```
 
+### Build and Run with Docker
+
+The repository includes a production `Dockerfile` based on `node:22-alpine`. The image installs dependencies with pnpm, builds the TypeScript app, and starts it with:
+
+```bash
+pnpm start:prod
+```
+
+Build the image:
+
+```bash
+docker build -t nodejs-social .
+```
+
+Run the container with a production environment file:
+
+```bash
+docker run --rm --env-file .env.production -p 3000:3000 nodejs-social
+```
+
+The container only runs the API process. MongoDB/PostgreSQL, Redis, S3/SES or Cloudinary, and other external services still need to be provided separately.
+
 ## Scripts
 
 | Command                      | Description                                      |
@@ -233,6 +261,34 @@ Swagger UI is available at:
 | `pnpm run test`              | Run all configured Vitest tests                  |
 | `pnpm run test:unit`         | Run module/unit tests                            |
 | `pnpm run test:architecture` | Run architecture boundary tests                  |
+
+## CI/CD
+
+Production deployment is configured in `.github/workflows/deploy-production.yml`.
+
+The workflow runs on:
+
+- Pushes to `main`
+- Manual runs through `workflow_dispatch`
+
+Deployment flow:
+
+- Checks out the repository
+- Verifies the production Docker build with `docker build --platform linux/amd64 -t nodejs-social:ci .`
+- Installs the Render CLI
+- Creates a Render deploy for the configured service and waits for completion
+- Sends Telegram notifications for success or failure
+
+Required GitHub repository secrets:
+
+| Secret              | Purpose                       |
+| ------------------- | ----------------------------- |
+| `RENDER_API_KEY`    | Authenticates Render CLI      |
+| `RENDER_SERVICE_ID` | Target Render service         |
+| `TELEGRAM_TO`       | Telegram chat/user identifier |
+| `TELEGRAM_TOKEN`    | Telegram bot token            |
+
+Runtime application environment variables should be configured in Render or the target deployment environment, not committed to the repository.
 
 ## API Overview
 
@@ -322,15 +378,17 @@ Implemented:
 - Media upload and video processing pipeline
 - MongoDB and PostgreSQL persistence adapters
 - Redis, queue, Swagger, and Postman integration
+- Docker production image
+- GitHub Actions deployment to Render with Docker build verification and Telegram notifications
 - Unit, architecture, and e2e test setup
 
 Good next improvements:
 
 - Add Docker Compose for local MongoDB/PostgreSQL/Redis startup
-- Add CI workflow for lint, typecheck, tests, and build
+- Add CI quality gates for lint, typecheck, tests, and build
 - Add coverage reporting and thresholds
 - Expand e2e tests for posts, relationships, conversations, and media
-- Document deployment topology and worker scaling strategy
+- Document deployment topology, runtime environment setup, and worker scaling strategy
 
 ## Engineering Focus
 
@@ -340,4 +398,4 @@ This project is designed to demonstrate:
 - Testable application use cases with explicit dependencies
 - Modular backend structure for a social networking domain
 - Swappable persistence adapters for MongoDB and PostgreSQL
-- Production-oriented concerns such as queues, caching, rate limits, logs, migrations, API docs, and realtime events
+- Production-oriented concerns such as queues, caching, rate limits, logs, migrations, API docs, Docker deployment, and realtime events
