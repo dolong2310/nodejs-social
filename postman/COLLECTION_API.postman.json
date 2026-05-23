@@ -1,0 +1,2258 @@
+{
+  "info": {
+    "_postman_id": "073f7ec1-ce58-45ee-a550-5203d857e657",
+    "name": "NodeJS Social API",
+    "description": "Complete collection for the NodeJS Social API.\n\n## Usage\n1. Import this collection into Postman\n2. Import `ENV.postman_environment.json` into Postman\n3. Select the **NodeJS Social - Prod** environment\n4. Run **Auth / Register** or **Auth / Login** to automatically save `accessToken` and `refreshToken` into environment variables\n5. Authenticated requests use the Bearer token from `{{accessToken}}`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "10436737"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('accessToken', res.data.accessToken);",
+                  "  console.log('✅ accessToken saved');",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"USER\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"confirmPassword\": \"{{password}}\",\n  \"birthday\": \"2000-01-01T00:00:00.000Z\",\n  \"code\": \"{{otpCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('accessToken', res.data.accessToken);",
+                  "}",
+                  "",
+                  "// Save refreshToken from the cookie when present",
+                  "const refreshToken = pm.cookies.get('refreshToken');",
+                  "if (refreshToken) {",
+                  "  pm.environment.set('refreshToken', refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n    // \"totpCode\": \"{{totpCode}}\"\n    // \"emailOtpCode\": \"{{emailOtpCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.environment.unset('accessToken');",
+                  "pm.environment.unset('refreshToken');",
+                  "console.log('✅ Tokens cleared');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('accessToken', res.data.accessToken);",
+                  "  console.log('✅ accessToken refreshed');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "refreshToken={{refreshToken}}",
+                "description": "refreshToken is set automatically after login"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh-token"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"code\": \"{{otpCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{email}}",
+                  "type": "text",
+                  "uuid": "b16cd0e5-df48-4789-b2e8-2019434599a4"
+                },
+                {
+                  "key": "type",
+                  "value": "REGISTER",
+                  "description": "LOGIN / REGISTER / FORGOT_PASSWORD / DISABLE_2FA",
+                  "type": "text",
+                  "uuid": "f0f00e09-21f2-4771-ae00-3307a1f35d1e"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "otp"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup 2FA",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/2fa/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "2fa", "enable"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "totpCode",
+                  "value": "{{totpCode}}",
+                  "type": "text",
+                  "uuid": "736a8644-5df4-47b7-8bb9-8e6e6771033e"
+                },
+                {
+                  "key": "emailOtpCode",
+                  "value": "{{emailOtpCode}}",
+                  "type": "text",
+                  "uuid": "060f49d5-5773-4fa1-86c7-2e9ce8948633",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/2fa/disable",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "2fa", "disable"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Registration, login, logout, and token refresh"
+    },
+    {
+      "name": "OAuth",
+      "item": [
+        {
+          "name": "Get Google Auth URL",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth/google/url?ip=127.0.0.1&userAgent=PostmanRuntime",
+              "host": ["{{baseUrl}}"],
+              "path": ["oauth", "google", "url"],
+              "query": [
+                {
+                  "key": "ip",
+                  "value": "127.0.0.1"
+                },
+                {
+                  "key": "userAgent",
+                  "value": "PostmanRuntime"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Google Callback",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth/google?state=STATE&code=CODE",
+              "host": ["{{baseUrl}}"],
+              "path": ["oauth", "google"],
+              "query": [
+                {
+                  "key": "state",
+                  "value": "STATE",
+                  "description": "State returned by the Google redirect"
+                },
+                {
+                  "key": "code",
+                  "value": "CODE",
+                  "description": "Code returned by the Google redirect"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Google OAuth login"
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "",
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('myUserId', res.data._id);",
+                  "  pm.environment.set('myUsername', res.data.username);",
+                  "  console.log('✅ myUserId saved:', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile (by username)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/user_lsr2mzwc0f9c7ipw",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "user_lsr2mzwc0f9c7ipw"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "test-123",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"USER\",\n    // \"birthday\": \"\",\n    \"bio\": \"My bio\",\n    \"location\": \"Ho Chi Minh, Vietnam\",\n    \"website\": \"https://example.com\"\n    // \"username\": \"\",\n    // \"avatar\": \"\",\n    // \"coverPhoto\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewPassword123!\",\n  \"confirmPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "change-password"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "User profile management"
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get New Feeds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "eyJ0IjoxNzc4MTQ5ODg5NDE5LCJpIjoicG9zdF8wMTllMDFmZS0xNThiLTczMmEtYjY2ZS0wN2E5ZDZlZGQ1MjUifQ",
+                  "description": "Leave empty for the first page; use the cursor from the response for the next page",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/post_019e3294-b9e2-7369-8aa2-c688bd8a49db",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "post_019e3294-b9e2-7369-8aa2-c688bd8a49db"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Posts by Type (comments of a post)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comment/post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comment", "post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "",
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('postId', res.data._id);",
+                  "  console.log('✅ postId saved:', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"post\",\n  \"audience\": \"public\", // public / friends-only / only-me\n  \"allowStrangerComments\": true,\n  \"content\": \"Hello World! #test\",\n  \"parentId\": null,\n  \"hashtags\": [\"test\"],\n  \"mentions\": [],\n  \"media\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Repost",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"repost\",\n  \"audience\": \"public\",\n  \"allowStrangerComments\": true,\n  \"content\": \"\",\n  \"parentId\": \"post_019e3284-20b2-71e9-a60c-ce999ccdbae4\",\n  \"hashtags\": [],\n  \"mentions\": [],\n  \"media\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('commentId', res.data._id);",
+                  "  console.log('✅ commentId saved:', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"comment\",\n  \"audience\": \"public\",\n  \"allowStrangerComments\": true,\n  \"content\": \"This is a comment!\",\n  \"parentId\": \"post_019dd86c-a559-71e2-881b-10c0bae3d168\",\n  \"hashtags\": [],\n  \"mentions\": [],\n  \"media\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"audience\": \"public\", // public / friends-only / only-me\n    \"allowStrangerComments\": true,\n    \"content\": \"hihi\",\n    \"hashtags\": [\"test123\", \"abc\"],\n    \"mentions\": [],\n    \"media\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/post_019e3294-b9e2-7369-8aa2-c688bd8a49db",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "post_019e3294-b9e2-7369-8aa2-c688bd8a49db"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": \"post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/likes",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "likes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/likes/post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "likes", "post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bookmark Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": \"post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "bookmarks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unbookmark Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/bookmarks/post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "bookmarks", "post_019e1c3c-dfc8-76f5-97a5-6d2d7cfba6c8"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Create, view, update, and delete posts and feeds"
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?query=admin&type=user&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "admin"
+                },
+                {
+                  "key": "type",
+                  "value": "user",
+                  "description": "user | post | image | video | video-stream"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?query=hihi&type=post&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "hihi"
+                },
+                {
+                  "key": "type",
+                  "value": "post"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Friends",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?query=&type=user&people=friends&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": ""
+                },
+                {
+                  "key": "type",
+                  "value": "user"
+                },
+                {
+                  "key": "people",
+                  "value": "friends",
+                  "description": "friends | not_friends | only_me"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Search users, posts, and friends"
+    },
+    {
+      "name": "Friends",
+      "item": [
+        {
+          "name": "Get Friends",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Incoming Friend Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends/requests/incoming?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "requests", "incoming"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Outgoing Friend Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends/requests/outgoing?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "requests", "outgoing"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toUserId\": \"user_019e3a86-8676-71da-9e03-c5a2bd1cc0fb\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/friends/requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "requests"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends/requests/user_019e499b-78c6-7069-afea-69f811ab7ebf/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "requests", "user_019e499b-78c6-7069-afea-69f811ab7ebf", "accept"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Decline Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends/requests/user_019e01fd-9110-7635-bf24-ea92f89cc0f4/decline",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "requests", "user_019e01fd-9110-7635-bf24-ea92f89cc0f4", "decline"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Outgoing Request",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends/requests/outgoing/user_019e01fc-5689-7639-91b1-7b4b08528a62",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "requests", "outgoing", "user_019e01fc-5689-7639-91b1-7b4b08528a62"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unfriend",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/friends/user_019e01fc-5689-7639-91b1-7b4b08528a62",
+              "host": ["{{baseUrl}}"],
+              "path": ["friends", "user_019e01fc-5689-7639-91b1-7b4b08528a62"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Friend requests, acceptance, decline, revoke, and unfriend flows"
+    },
+    {
+      "name": "Blocks",
+      "item": [
+        {
+          "name": "Get Blocked Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blocks?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["blocks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{targetUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["blocks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blocks/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blocks", "{{targetUserId}}"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Block and unblock users"
+    },
+    {
+      "name": "Hashtags",
+      "item": [
+        {
+          "name": "Get Hashtags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hashtags?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["hashtags"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hashtags/hashtag_019df50d-6f61-77b9-b16b-b60e1594eb0d",
+              "host": ["{{baseUrl}}"],
+              "path": ["hashtags", "hashtag_019df50d-6f61-77b9-b16b-b60e1594eb0d"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Hashtag",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"test_hashtag\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hashtags",
+              "host": ["{{baseUrl}}"],
+              "path": ["hashtags"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Hashtag",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"test_hashtag_123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hashtags/hashtag_019df50d-6f61-77b9-b16b-b60e1594eb0d",
+              "host": ["{{baseUrl}}"],
+              "path": ["hashtags", "hashtag_019df50d-6f61-77b9-b16b-b60e1594eb0d"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Hashtag",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hashtags/hashtag_019df50d-6f61-77b9-b16b-b60e1594eb0d",
+              "host": ["{{baseUrl}}"],
+              "path": ["hashtags", "hashtag_019df50d-6f61-77b9-b16b-b60e1594eb0d"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "Get Conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversations?limit=10&cursor=",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get or Create Direct Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('conversationId', res.data._id);",
+                  "  console.log('✅ conversationId saved:', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"peerUserId\": \"{{targetUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/direct",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "direct"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Group Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberIds\": [\"{{targetUserId}}\"],\n  \"name\": \"My Group\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "groups"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Conversation Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Conversation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Group Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/messages?limit=20&cursor=",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "cursor",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Hello!\",\n  \"attachments\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Messages as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastReadMessageId\": \"{{lastMessageId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invite Member to Group",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{targetUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "members"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Leave Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/members/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "members", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Kick Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/members/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "members", "{{targetUserId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Member Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"manager\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/members/{{targetUserId}}/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "members", "{{targetUserId}}", "role"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newAdminUserId\": \"{{targetUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/admin/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "admin", "transfer"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Direct messages and group conversations"
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications?limit=10&cursor=&unreadOnly=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": ""
+                },
+                {
+                  "key": "unreadOnly",
+                  "value": "false",
+                  "description": "true | false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification Read (single)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "{{notificationId}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notifications Read (bulk)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{notificationId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "read"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "User notifications"
+    },
+    {
+      "name": "Media",
+      "item": [
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "description": "Select an image file (jpg, png, webp...)",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/media/upload-image",
+              "host": ["{{baseUrl}}"],
+              "path": ["media", "upload-image"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Video",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "description": "Select a video file (mp4...)",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/media/upload-video",
+              "host": ["{{baseUrl}}"],
+              "path": ["media", "upload-video"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Video Stream (HLS)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "description": "Video file to encode as HLS",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/media/upload-video-stream",
+              "host": ["{{baseUrl}}"],
+              "path": ["media", "upload-video-stream"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Video Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/media/video-status/{{videoJobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["media", "video-status", "{{videoJobId}}"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Upload images and videos"
+    },
+    {
+      "name": "Static Media",
+      "item": [
+        {
+          "name": "Get Image",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/static/images/{{filename}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["static", "images", "{{filename}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Video Stream (Range)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Range",
+                "value": "bytes=0-",
+                "description": "Range header for video streaming"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/static/videos-stream/{{filename}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["static", "videos-stream", "{{filename}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get HLS Master Playlist",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/static/videos-stream/{{videoId}}/master.m3u8",
+              "host": ["{{baseUrl}}"],
+              "path": ["static", "videos-stream", "{{videoId}}", "master.m3u8"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get HLS Segment",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/static/videos-stream/{{videoId}}/360p/segment_000.ts",
+              "host": ["{{baseUrl}}"],
+              "path": ["static", "videos-stream", "{{videoId}}", "360p", "segment_000.ts"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Access public static image and video assets"
+    },
+    {
+      "name": "Admin - Roles",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache",
+                "description": "enable if want to prevent cache request interceptor",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/roles?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('roleId', res.data._id);",
+                  "  console.log('✅ roleId saved:', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"MODERATOR\",\n  \"description\": \"Moderator role\",\n  \"isActive\": true,\n  \"permissionIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/roles/role_019dd514-987d-77b9-93f4-34afe6178beb",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "role_019dd514-987d-77b9-93f4-34afe6178beb"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"USER\",\n    \"description\": \"User\",\n    \"isActive\": false,\n    \"permissionIds\": [\n        \"permission_019dd98f-f5d3-773c-8090-1354f5232f73\",\n        \"permission_019dd98f-f5d3-773c-8090-0faefa8e86ea\",\n        \"permission_019dd98f-f5d3-773c-8090-0474c745bfaa\",\n        \"permission_019dd98f-f5d3-773c-808f-fb3a6dd0f1a7\",\n        \"permission_019dd98f-f5d3-773c-808f-fdfe88161ca5\",\n        \"permission_019dd98f-f5d3-773c-8090-092647ba9e44\",\n        \"permission_019dd98f-f5d3-773c-8090-02f18683f7c6\",\n        \"permission_019dd98f-f5d3-773c-808f-f6570a579a5f\",\n        \"permission_019dd98f-f5d5-7449-9e31-0ade45c7fe4f\",\n        \"permission_019dd98f-f5d5-7449-9e31-0cefa7a414be\",\n        \"permission_019dd98f-f5d5-7449-9e31-128233dce972\",\n        \"permission_019dd98f-f5d4-7098-ac77-4a748cfe93d6\",\n        \"permission_019dd98f-f5d4-7098-ac77-4e093ef78291\",\n        \"permission_019dd98f-f5d5-7449-9e31-1cdfcc6f9acb\",\n        \"permission_019dd98f-f5d5-7449-9e31-22727ba6134c\",\n        \"permission_019dd98f-f5d5-7449-9e31-27e773c5bc4c\",\n        \"permission_019dd98f-f5d5-7449-9e31-3b43ca5fcaae\",\n        \"permission_019dd98f-f5d5-7449-9e31-2b5708a23b85\",\n        \"permission_019dd98f-f5d5-7449-9e31-32f35ddf9837\",\n        \"permission_019dd98f-f5d5-7449-9e31-35a56281be07\",\n        \"permission_019dd98f-f5d5-7449-9e31-2eeb32b3ca48\",\n        \"permission_019dd98f-f5d5-7449-9e31-3d64fd2821b5\",\n        \"permission_019dd98f-f5d5-7449-9e31-4050ac4f50a3\",\n        \"permission_019dd98f-f5d5-7449-9e31-47b4f9562ef6\",\n        \"permission_019dd98f-f5d5-7449-9e31-164177ec85b8\",\n        \"permission_019dd98f-f5d5-7449-9e31-181875fc41d5\",\n        \"permission_019dd98f-f5d4-7098-ac77-8964d754edca\",\n        \"permission_019dd98f-f5d5-7449-9e31-068291ab6b9d\",\n        \"permission_019dd98f-f5d4-7098-ac77-970caa994635\",\n        \"permission_019dd98f-f5d4-7098-ac77-993020c2d416\",\n        \"permission_019dd98f-f5d4-7098-ac77-9e5f8cce83db\",\n        \"permission_019dd98f-f5d4-7098-ac77-8cd5e5cf566f\",\n        \"permission_019dd98f-f5d4-7098-ac77-931a2fbad016\",\n        \"permission_019dd98f-f5d5-7449-9e31-039b08ee538f\",\n        \"permission_019dd98f-f5d4-7098-ac77-5044d9d79951\",\n        \"permission_019dd98f-f5d4-7098-ac77-561d12df2969\",\n        \"permission_019dd98f-f5d4-7098-ac77-5a3fe89f7598\",\n        \"permission_019dd98f-f5d4-7098-ac77-5e89253871ff\",\n        \"permission_019dd98f-f5d4-7098-ac77-6190d9b0b441\",\n        \"permission_019dd98f-f5d4-7098-ac77-660e6326c32a\",\n        \"permission_019dd98f-f5d5-7449-9e31-5aca289f8157\",\n        \"permission_019dd98f-f5d5-7449-9e31-624b8705d97e\",\n        \"permission_019dd98f-f5d5-7449-9e31-5f48db696464\",\n        \"permission_019dd98f-f5d4-7098-ac77-6d9dd1874d94\",\n        \"permission_019dd98f-f5d4-7098-ac77-6b1120203c03\",\n        \"permission_019dd98f-f5d4-7098-ac77-7139804916b2\",\n        \"permission_019dd98f-f5d4-7098-ac77-83daaf82aa91\",\n        \"permission_019dd98f-f5d4-7098-ac77-7a33a1b93ae4\",\n        \"permission_019dd98f-f5d4-7098-ac77-77e5f6d795cd\",\n        \"permission_019dd98f-f5d4-7098-ac77-7c435715b5e0\",\n        \"permission_019dd98f-f5d4-7098-ac77-8467b4b2c8d8\",\n        \"permission_019dd98f-f5d5-7449-9e31-4942c3efc062\",\n        \"permission_019dd98f-f5d5-7449-9e31-4f320478b2dd\",\n        \"permission_019dd98f-f5d5-7449-9e31-5638b6654374\",\n        \"permission_019dd98f-f5d5-7449-9e31-508d8b8d64d0\",\n        \"permission_019dd98f-f5d4-7098-ac77-410e7e81c1f6\",\n        \"permission_019dd98f-f5d4-7098-ac77-451fbd9acdc5\",\n        \"permission_019dd98f-f5d3-773c-8090-165db56135ad\",\n        \"permission_019dd98f-f5d4-7098-ac77-3fcb899052aa\"\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/role_019dd514-987d-77b9-93f4-34afe6178beb",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "role_019dd514-987d-77b9-93f4-34afe6178beb"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/roles/role_019dd991-0e8a-74df-b4c4-950e042e47ec",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "role_019dd991-0e8a-74df-b4c4-950e042e47ec"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Role management. Requires admin access."
+    },
+    {
+      "name": "Admin - Permissions",
+      "item": [
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/permissions?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('permissionId', res.data._id);",
+                  "  console.log('✅ permissionId saved:', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"View Posts\",\n  \"description\": \"Allows viewing posts\",\n  \"path\": \"/posts\",\n  \"method\": \"GET\",\n  \"module\": \"POSTS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permission",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/permissions/{{permissionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "{{permissionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Permission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"View Posts Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permissions/{{permissionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "{{permissionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Permission",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/permissions/{{permissionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "{{permissionId}}"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Permission management. Requires admin access."
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "List Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// pm.test('status is 200', function () {",
+                  "//   pm.response.to.have.status(200);",
+                  "// });",
+                  "",
+                  "// pm.test('response has paginated data', function () {",
+                  "//   const json = pm.response.json();",
+                  "//   pm.expect(json.data).to.have.property('data');",
+                  "//   pm.expect(json.data.data).to.be.an('array');",
+                  "// });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// pm.test('status is 200', function () {",
+                  "//   pm.response.to.have.status(200);",
+                  "// });",
+                  "",
+                  "// pm.test('response id matches variable', function () {",
+                  "//   const json = pm.response.json();",
+                  "//   pm.expect(json.data.id).to.eql(pm.collectionVariables.get('adminUserId'));",
+                  "// });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/user_019e3283-d778-7206-9c29-d9519a0b1308",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", "user_019e3283-d778-7206-9c29-d9519a0b1308"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// pm.test('status is 201', function () {",
+                  "//   pm.response.to.have.status(201);",
+                  "// });",
+                  "",
+                  "// pm.test('save created user id', function () {",
+                  "//   const json = pm.response.json();",
+                  "//   pm.expect(json.data).to.have.property('id');",
+                  "//   pm.collectionVariables.set('adminUserId', json.data.id);",
+                  "// });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Managed User\",\n  \"email\": \"admin.managed.user@example.com\",\n  \"password\": \"@Bc123\",\n  \"confirmPassword\": \"@Bc123\",\n  \"birthday\": \"2000-01-01T00:00:00.000Z\",\n  \"roleId\": \"{{roleId}}\",\n  \"status\": \"ACTIVE\",\n  \"username\": \"admin_managed_user\",\n  \"bio\": \"Created from Postman\",\n  \"location\": \"Ho Chi Minh City\",\n  \"website\": \"https://example.com\",\n  \"avatar\": \"https://example.com/avatar.jpg\",\n  \"coverPhoto\": \"https://example.com/cover.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// pm.test('status is 200', function () {",
+                  "//   pm.response.to.have.status(200);",
+                  "// });",
+                  "",
+                  "// pm.test('response has updated name', function () {",
+                  "//   const json = pm.response.json();",
+                  "//   pm.expect(json.data.name).to.eql('Admin Managed User Updated');",
+                  "// });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Managed User Updated\",\n  \"password\": \"@Bc1234\",\n  \"confirmPassword\": \"@Bc1234\",\n  \"status\": \"ACTIVE\",\n  \"bio\": \"Updated from Postman\",\n  \"location\": \"Da Nang\",\n  \"website\": \"https://updated.example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{adminUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", "{{adminUserId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('status is 200', function () {", "  pm.response.to.have.status(200);", "});"],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/user_019e310c-504e-77b2-b685-e213e0a19f9d",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", "user_019e310c-504e-77b2-b685-e213e0a19f9d"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Operations",
+      "item": [
+        {
+          "name": "Admin - Clear Cache",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/internal/cache/redis",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "cache", "redis"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Sync Role Permission",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/internal/role-permissions/sync",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "role-permissions", "sync"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    }
+  ]
+}

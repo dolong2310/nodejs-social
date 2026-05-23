@@ -47,7 +47,6 @@ Thumbs.db
 # Project-specific
 .gitnexus
 my-docs/
-postman/
 uploads/
 scripts/
 .planning/
