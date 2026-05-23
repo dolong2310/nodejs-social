@@ -1,0 +1,73 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Verify Docker build
+        run: docker build --platform linux/amd64 -t nodejs-social:ci .
+
+      - name: Install Render CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | sh
+
+      - name: Deploy to Render and wait
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          CI: true
+        run: |
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "RENDER_API_KEY is required."
+            exit 1
+          fi
+
+          if [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "RENDER_SERVICE_ID is required."
+            exit 1
+          fi
+
+          render deploys create "$RENDER_SERVICE_ID" \
+            --commit "${{ github.sha }}" \
+            --wait \
+            --output json \
+            --confirm
+
+      - name: Send Telegram success message
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ✅ Render deploy completed successfully.
+
+            Actor: ${{ github.actor }}
+            Commit: ${{ github.sha }}
+            Commit message: ${{ github.event.head_commit.message }}
+            Repository: ${{ github.repository }}
+
+            Changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+
+      - name: Send Telegram failure message
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ❌ Render deploy failed.
+
+            Actor: ${{ github.actor }}
+            Commit: ${{ github.sha }}
+            Commit message: ${{ github.event.head_commit.message }}
+            Repository: ${{ github.repository }}
+
+            Changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}

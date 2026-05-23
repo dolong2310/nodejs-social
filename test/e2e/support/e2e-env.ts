@@ -4,7 +4,7 @@ const defaults: Record<string, string> = {
   FRONTEND_URL: 'http://localhost:3000',
   APP_URL: 'http://localhost:3000',
   CORS_ORIGINS: 'http://localhost:3000',
-  PERSISTENCE_DRIVER: 'memory',
+  DATABASE_ADAPTER: 'memory',
   MONGO_URI: 'mongodb://localhost:27017/nodejs-social-test',
   MONGO_SECONDARY_URI: 'mongodb://localhost:27017/nodejs-social-test',
   MONGO_DB_NAME: 'nodejs-social-test',
