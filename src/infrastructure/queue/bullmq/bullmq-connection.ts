@@ -1,8 +1,7 @@
-import type { ConnectionOptions } from 'bullmq';
-import type { RedisOptions } from 'ioredis';
+import IORedis, { type RedisOptions } from 'ioredis';
 
-export function buildBullMQConnection(redisOptions: RedisOptions): ConnectionOptions {
-  return {
+export function buildBullMQConnection(redisOptions: RedisOptions): IORedis {
+  return new IORedis({
     host: redisOptions.host,
     port: redisOptions.port,
     username: redisOptions.username,
@@ -13,5 +12,5 @@ export function buildBullMQConnection(redisOptions: RedisOptions): ConnectionOpt
     enableReadyCheck: false,
 
     retryStrategy: (times: number) => Math.min(times * 200, 5000)
-  };
+  });
 }
