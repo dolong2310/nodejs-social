@@ -4,6 +4,7 @@ import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
+  FindPostsByUserIdInput,
   FindGuestPostsInput,
   FindPostIdsWhereViewerInteractedWithAuthorsInput,
   FindPostsForSearchInput,
@@ -153,6 +154,50 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const params: unknown[] = [EnumPostAudience.PUBLIC];
     const whereParts = [`p.audience = $1`];
     this.addCursorFilter(whereParts, params, cursor);
+    return this.findDetailedPosts({
+      whereSql: whereParts.join(' AND '),
+      params,
+      includeAuthor: true,
+      limit: limit + 1
+    }) as Promise<PostDetailWithAuthorOutput[]>;
+  }
+
+  async findPostsByUserId({
+    targetUserId,
+    currentUserId,
+    type,
+    canViewFriendsOnly,
+    includeOnlyMe,
+    cursor,
+    limit
+  }: FindPostsByUserIdInput): Promise<PostDetailWithAuthorOutput[]> {
+    const params: unknown[] = [];
+    const whereParts = [`p.user_id = ${this.addParam(params, targetUserId)}`];
+    const visibility = [`p.audience = ${this.addParam(params, EnumPostAudience.PUBLIC)}`];
+
+    if (canViewFriendsOnly) {
+      visibility.push(`p.audience = ${this.addParam(params, EnumPostAudience.FRIENDS_ONLY)}`);
+    } else if (currentUserId) {
+      visibility.push(
+        `(p.audience = ${this.addParam(params, EnumPostAudience.FRIENDS_ONLY)} AND ${this.addParam(
+          params,
+          currentUserId
+        )} = ANY(p.mentions))`
+      );
+    }
+
+    if (includeOnlyMe) {
+      visibility.push(`p.audience = ${this.addParam(params, EnumPostAudience.ONLY_ME)}`);
+    }
+
+    whereParts.push(`(${visibility.join(' OR ')})`);
+
+    if (type) {
+      whereParts.push(`p.type = ${this.addParam(params, type)}`);
+    }
+
+    this.addCursorFilter(whereParts, params, cursor);
+
     return this.findDetailedPosts({
       whereSql: whereParts.join(' AND '),
       params,

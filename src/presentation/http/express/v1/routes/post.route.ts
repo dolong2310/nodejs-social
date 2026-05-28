@@ -47,6 +47,20 @@ export class PostRoute extends BaseRoute {
         controller: this.postController.getNewFeeds
       })
     );
+    this.router.get(
+      '/users/:userId',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authOptionGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.paginationPipe.cursorPaginationQuery,
+          this.postPipe.userIdPipe('userId', 'params'),
+          this.postPipe.postTypeQueryPipe
+        ],
+        controller: this.postController.getPostsByUser
+      })
+    );
     this.router.patch(
       '/:postId',
       this.createRouteHandler({

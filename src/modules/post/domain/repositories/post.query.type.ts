@@ -28,6 +28,16 @@ export interface FindPostsInput {
   limit: number;
 }
 
+export interface FindPostsByUserIdInput {
+  targetUserId: string;
+  currentUserId?: string;
+  type?: EnumPostType;
+  canViewFriendsOnly: boolean;
+  includeOnlyMe: boolean;
+  cursor?: DateIdCursor;
+  limit: number;
+}
+
 export interface FindPostsTypeInput {
   postId: string;
   type: EnumPostType;

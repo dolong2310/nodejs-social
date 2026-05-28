@@ -18,6 +18,7 @@ import {
   RepostHashtagsMustBeEmptyException,
   RepostMentionsMustBeEmptyException
 } from '@/presentation/http/express/exceptions/post.exception';
+import { InvalidUserIdException } from '@/presentation/http/express/exceptions/user.exception';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { CreatePostRequestDTO } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
@@ -25,9 +26,11 @@ import { checkSchema, Location } from 'express-validator';
 
 export interface IPostPipe {
   postIdPipe: (key: string, location: Location) => ExpressRequestHandler;
+  userIdPipe: (key: string, location: Location) => ExpressRequestHandler;
   createPostPipe: ExpressRequestHandler;
   patchPostPipe: ExpressRequestHandler;
   postTypePipe: ExpressRequestHandler;
+  postTypeQueryPipe: ExpressRequestHandler;
 }
 
 const MAX_HASHTAGS_PER_POST = 20;
@@ -293,6 +296,32 @@ export class PostsPipe implements IPostPipe {
       )
     );
 
+  userIdPipe = (key: string, location: Location) =>
+    validate(
+      checkSchema(
+        {
+          [key]: {
+            notEmpty: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.USER_ID_IS_REQUIRED
+            },
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.USER_ID_MUST_BE_A_STRING
+            },
+            trim: true,
+            custom: {
+              options: (userId: string) => {
+                if (!isValidId(userId)) {
+                  throw InvalidUserIdException;
+                }
+                return true;
+              }
+            }
+          }
+        },
+        [location]
+      )
+    );
+
   postTypePipe = validate(
     checkSchema(
       {
@@ -305,6 +334,22 @@ export class PostsPipe implements IPostPipe {
         }
       },
       ['params']
+    )
+  );
+
+  postTypeQueryPipe = validate(
+    checkSchema(
+      {
+        type: {
+          optional: true,
+          isIn: {
+            options: [[EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
+          },
+          trim: true
+        }
+      },
+      ['query']
     )
   );
 }
