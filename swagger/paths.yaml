@@ -421,6 +421,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /posts/users/{userId}:
+    get:
+      tags: [posts]
+      summary: List posts by user
+      operationId: getPostsByUser
+      description: Bearer token is optional. When `type` is omitted, all post types are returned. Visibility is evaluated for the viewer; guests only see public posts.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [post, repost, comment, quote]
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor to send on the next request for the next page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success - `data.items` plus `data.nextCursor`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostFeedCursorSuccessResponse'
+        '401':
+          description: Invalid token when Authorization is provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Profile cannot be viewed because of block rules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /posts/{postId}:
     get:
       tags: [posts]

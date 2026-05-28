@@ -4,7 +4,7 @@
 # users: getMe | updateMe | getUserProfile | changePassword
 # oauth: getGoogleAuthUrl | googleLogin
 # media: uploadImage | uploadVideo | uploadVideoStream | getVideoStatus
-# posts: getNewFeeds | createPost | getPostDetail | patchPost | getPostsType | createBookmark | deleteBookmark | createLike | deleteLike
+# posts: getNewFeeds | createPost | getPostsByUser | getPostDetail | patchPost | getPostsType | createBookmark | deleteBookmark | createLike | deleteLike
 # friends: listFriends | sendFriendRequest | listIncomingFriendRequests | listOutgoingFriendRequests | acceptFriendRequest | declineFriendRequest | revokeOutgoingFriendRequest | unfriendUser
 # blocks: listBlockedUsers | blockUser | unblockUser
 # search: search

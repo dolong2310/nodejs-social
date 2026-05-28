@@ -4,6 +4,7 @@ import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
+  FindPostsByUserIdInput,
   FindGuestPostsInput,
   FindPostIdsWhereViewerInteractedWithAuthorsInput,
   FindPostsForSearchInput,
@@ -329,6 +330,52 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     });
 
     return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetGuestNewFeeds).toArray();
+  }
+
+  async findPostsByUserId({
+    targetUserId,
+    currentUserId,
+    type,
+    canViewFriendsOnly,
+    includeOnlyMe,
+    cursor,
+    limit
+  }: FindPostsByUserIdInput): Promise<PostDetailWithAuthorOutput[]> {
+    const $and: Record<string, unknown>[] = [{ user_id: targetUserId }];
+    const visibility: Record<string, unknown>[] = [{ audience: EnumPostAudience.PUBLIC }];
+
+    if (canViewFriendsOnly) {
+      visibility.push({ audience: EnumPostAudience.FRIENDS_ONLY });
+    } else if (currentUserId) {
+      visibility.push({ audience: EnumPostAudience.FRIENDS_ONLY, mentions: currentUserId });
+    }
+
+    if (includeOnlyMe) {
+      visibility.push({ audience: EnumPostAudience.ONLY_ME });
+    }
+
+    $and.push({ $or: visibility });
+
+    if (type) {
+      $and.push({ type });
+    }
+
+    if (cursor) {
+      $and.push({
+        $or: [
+          { created_at: { $lt: cursor.raw().createdAt } },
+          { created_at: cursor.raw().createdAt, _id: { $lt: cursor.raw().id } }
+        ]
+      });
+    }
+
+    const pipelineGetPostsByUser = buildBasePostPipeline({
+      match: { $and },
+      limit: limit + 1,
+      includeAuthor: true
+    });
+
+    return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetPostsByUser).toArray();
   }
 
   async findPostsType(data: FindPostsTypeInput): Promise<PostDetailOutput[]> {

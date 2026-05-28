@@ -1,4 +1,5 @@
 import {
+  FindPostsByUserIdInput,
   FindGuestPostsInput,
   FindPostIdsWhereViewerInteractedWithAuthorsInput,
   FindPostsForSearchInput,
@@ -17,6 +18,7 @@ export interface PostQueryRepositoryPort {
   ): Promise<string[]>;
   findPosts(data: FindPostsInput): Promise<PostDetailWithAuthorOutput[]>;
   findGuestPosts(data: FindGuestPostsInput): Promise<PostDetailWithAuthorOutput[]>;
+  findPostsByUserId(data: FindPostsByUserIdInput): Promise<PostDetailWithAuthorOutput[]>;
   findPostsType(data: FindPostsTypeInput): Promise<PostDetailOutput[]>;
   findPostsForSearch(data: FindPostsForSearchInput): Promise<PostDetailWithAuthorOutput[]>;
 }

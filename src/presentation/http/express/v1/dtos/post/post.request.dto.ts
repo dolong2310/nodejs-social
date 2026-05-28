@@ -1,6 +1,6 @@
 import { CreatePostProps, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
-import { ParamsDictionary } from 'express-serve-static-core';
+import { ParamsDictionary, Query } from 'express-serve-static-core';
 
 function toMedia(item: Media | IMedia): Media {
   return item instanceof Media ? item : new Media(item);
@@ -69,6 +69,16 @@ export interface GetPostDetailParamsDTO extends ParamsDictionary {
 export interface GetPostsParamsDTO extends ParamsDictionary {
   postId: string;
   type: EnumPostType;
+}
+
+export interface GetPostsByUserParamsDTO extends ParamsDictionary {
+  userId: string;
+}
+
+export interface GetPostsByUserQueryDTO extends Query {
+  limit: string;
+  cursor?: string;
+  type?: EnumPostType;
 }
 
 export class CreateBookmarkRequestDTO {

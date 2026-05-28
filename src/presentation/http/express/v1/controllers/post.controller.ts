@@ -7,6 +7,10 @@ import {
   GetPostDetailPort,
   GetPostDetailQuery
 } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
+import {
+  GetPostsByUserPort,
+  GetPostsByUserQuery
+} from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
 import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
 import { CreateLikePort } from '@/modules/post/application/use-cases/like-post/like-post.port';
@@ -25,6 +29,8 @@ import {
   DeleteBookmarkParamsDTO,
   DeleteLikeParamsDTO,
   GetPostDetailParamsDTO,
+  GetPostsByUserParamsDTO,
+  GetPostsByUserQueryDTO,
   GetPostsParamsDTO,
   PatchPostRequestDTO
 } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
@@ -47,6 +53,11 @@ export interface IPostController {
   ): Promise<unknown>;
   getPostDetail(
     req: ExpressRequest<GetPostDetailParamsDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getPostsByUser(
+    req: ExpressRequest<GetPostsByUserParamsDTO, object, object, GetPostsByUserQueryDTO>,
     res: ExpressResponse,
     next: NextFunction
   ): Promise<unknown>;
@@ -91,6 +102,7 @@ export class PostController extends BaseController implements IPostController {
     private readonly getPostDetailUC: GetPostDetailPort,
     private readonly increaseViewsUC: IncreaseViewsPort,
     private readonly getPostsTypeUC: GetPostsTypePort,
+    private readonly getPostsByUserUC: GetPostsByUserPort,
     private readonly createPostUC: CreatePostPort,
     private readonly updatePostUC: UpdatePostPort,
     private readonly deletePostUC: DeletePostPort,
@@ -133,6 +145,29 @@ export class PostController extends BaseController implements IPostController {
       items,
       nextCursor,
       message: 'Get new feeds successfully'
+    });
+  }
+
+  @AutoBind()
+  async getPostsByUser(req: ExpressRequest<GetPostsByUserParamsDTO, object, object, GetPostsByUserQueryDTO>) {
+    const { userId: targetUserId } = req.params;
+    const { cursor, limit, type } = req.query;
+    const currentUserId = this.getUserId(req, { optional: true }) || undefined;
+
+    const { items, nextCursor } = await this.getPostsByUserUC.execute<PostDetailWithAuthorResponseDTO>(
+      new GetPostsByUserQuery({
+        targetUserId,
+        currentUserId,
+        type,
+        cursor,
+        limit
+      })
+    );
+
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+      items,
+      nextCursor,
+      message: 'Get posts by user successfully'
     });
   }
 
