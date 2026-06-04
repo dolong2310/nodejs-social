@@ -22,7 +22,7 @@ export class UnlikePostUseCase extends UnlikePort {
     if (!post) {
       throw new PostNotFoundException();
     }
-    await this.postAudienceAccess.assertViewerCanAccessPostDetail(post, userId);
+    await this.postAudienceAccess.assertUserCanAccessPostDetail(post, userId);
 
     const likeEntity = await this.likeRepository.deleteLike({ userId, postId });
     const like = likeEntity?.toObject();

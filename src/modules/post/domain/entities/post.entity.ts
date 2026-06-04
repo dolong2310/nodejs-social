@@ -61,6 +61,12 @@ export class PostEntity extends Entity<PostProps, PostFullProps> {
     }
 
     invariant(hasContent, new ArgumentNotProvidedException(`${type} content is required`));
+
+    // comment allow media (optional)
+    if (type === EnumPostType.COMMENT) {
+      return;
+    }
+
     invariant(!hasMedia, new ArgumentInvalidException(`${type} media must be empty`));
   }
 }

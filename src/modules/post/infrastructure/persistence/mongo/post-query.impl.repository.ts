@@ -4,14 +4,14 @@ import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
-  FindPostsByUserIdInput,
   FindGuestPostsInput,
-  FindPostIdsWhereViewerInteractedWithAuthorsInput,
+  FindPostIdsWhereUserInteractedWithAuthorsInput,
+  FindPostsByUserIdInput,
+  FindPostsByUserInteractionInput,
   FindPostsForSearchInput,
   FindPostsInput,
   FindPostsTypeInput,
-  IsViewerInteractedWithPostInput,
-  PostDetailOutput,
+  IsUserInteractedWithPostInput,
   PostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.type';
 import { BookmarkModel } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
@@ -39,18 +39,18 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return this.db.collection<BookmarkModel>('bookmarks');
   }
 
-  async isViewerInteractedWithPost({ postId, viewerId: userId }: IsViewerInteractedWithPostInput): Promise<boolean> {
-    // const v = new ObjectId(data.viewerId);
+  async isUserInteractedWithPost({ postId, userId }: IsUserInteractedWithPostInput): Promise<boolean> {
+    // const v = new ObjectId(data.userId);
     // const p = new ObjectId(data.postId);
     const [like, bookmark, comment] = await Promise.all([
-      // Find the viewer's like for the post (likes.findOne).
+      // Find the user's like for the post (likes.findOne).
       this.likesCollection.findOne({ user_id: userId, post_id: postId, deleted_at: null }, { projection: { _id: 1 } }),
-      // Find the viewer's bookmark for the post (bookmarks.findOne).
+      // Find the user's bookmark for the post (bookmarks.findOne).
       this.bookmarksCollection.findOne(
         { user_id: userId, post_id: postId, deleted_at: null },
         { projection: { _id: 1 } }
       ),
-      // Find a comment the viewer added to that post (posts.findOne with parentId = postId and type = COMMENT).
+      // Find a comment the user added to that post (posts.findOne with parentId = postId and type = COMMENT).
       this.dbCollection.findOne(
         { user_id: userId, parent_id: postId, type: EnumPostType.COMMENT, deleted_at: null },
         { projection: { _id: 1 } }
@@ -60,173 +60,28 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     return like !== null || bookmark !== null || comment !== null;
   }
 
-  async findPostDetailById(id: string): Promise<PostDetailOutput> {
-    const pipelineGetDetailPost = [
-      {
-        $match: {
-          _id: id,
-          deleted_at: null
-        }
-      },
-      {
-        $addFields: {
-          allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] }
-        }
-      },
-      {
-        $lookup: {
-          from: 'hashtags',
-          let: { hashtagIds: '$hashtags' },
-          pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$hashtagIds'] } } }],
-          as: 'hashtags'
-        }
-      },
-      {
-        $addFields: {
-          hashtags: {
-            $map: {
-              input: '$hashtags',
-              as: 'hashtag',
-              in: {
-                id: '$$hashtag._id',
-                name: '$$hashtag.name',
-                createdAt: '$$hashtag.created_at',
-                updatedAt: '$$hashtag.updated_at'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          let: { mentionIds: '$mentions' },
-          pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$mentionIds'] } } }],
-          as: 'mentions'
-        }
-      },
-      {
-        $addFields: {
-          mentions: {
-            $map: {
-              input: '$mentions',
-              as: 'mention',
-              in: {
-                id: '$$mention._id',
-                name: '$$mention.name',
-                username: '$$mention.username',
-                status: '$$mention.status'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'likes',
-          let: { rootPostId: '$_id' },
-          pipeline: [
-            { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
-            { $count: 'totalLikes' }
-          ],
-          as: 'likeCountLookupResults'
-        }
-      },
-      {
-        $lookup: {
-          from: 'bookmarks',
-          let: { rootPostId: '$_id' },
-          pipeline: [
-            { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
-            { $count: 'totalBookmarks' }
-          ],
-          as: 'bookmarkCountLookupResults'
-        }
-      },
-      {
-        $lookup: {
-          from: 'posts',
-          let: { rootPostId: '$_id' },
-          pipeline: [
-            { $match: { deleted_at: null, $expr: { $eq: ['$parent_id', '$$rootPostId'] } } },
-            { $project: { _id: 0, type: 1 } }
-          ],
-          as: 'childPostsWithTypeOnly'
-        }
-      },
-      {
-        $addFields: {
-          likeCount: {
-            $ifNull: [{ $arrayElemAt: ['$likeCountLookupResults.totalLikes', 0] }, 0]
-          },
-          bookmarkCount: {
-            $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
-          },
-          repostCount: {
-            $size: {
-              $filter: {
-                input: '$childPostsWithTypeOnly',
-                as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EnumPostType.REPOST] }
-              }
-            }
-          },
-          commentCount: {
-            $size: {
-              $filter: {
-                input: '$childPostsWithTypeOnly',
-                as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EnumPostType.COMMENT] }
-              }
-            }
-          },
-          quoteCount: {
-            $size: {
-              $filter: {
-                input: '$childPostsWithTypeOnly',
-                as: 'childPost',
-                cond: { $eq: ['$$childPost.type', EnumPostType.QUOTE] }
-              }
-            }
-          }
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: { $mergeObjects: [postOutputProjection(), '$$ROOT'] }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          user_id: 0,
-          allow_stranger_comments: 0,
-          parent_id: 0,
-          guest_views: 0,
-          user_views: 0,
-          created_at: 0,
-          updated_at: 0,
-          likeCountLookupResults: 0,
-          bookmarkCountLookupResults: 0,
-          childPostsWithTypeOnly: 0
-        }
-      }
-    ];
-    const [post] = await this.dbCollection.aggregate<PostDetailOutput>(pipelineGetDetailPost).toArray();
+  async findPostDetailById(id: string, currentUserId?: string): Promise<PostDetailWithAuthorOutput> {
+    const pipelineGetDetailPost = buildBasePostPipeline({
+      match: { _id: id },
+      limit: 1,
+      includeAuthor: true,
+      currentUserId
+    });
+    const [post] = await this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetDetailPost).toArray();
 
     return post;
   }
 
-  async findPostIdsWhereViewerInteractedWithAuthors(
-    data: FindPostIdsWhereViewerInteractedWithAuthorsInput
+  async findPostIdsWhereUserInteractedWithAuthors(
+    data: FindPostIdsWhereUserInteractedWithAuthorsInput
   ): Promise<string[]> {
-    const { viewerId, authorIds } = data;
+    const { userId, authorIds } = data;
     if (authorIds.length === 0) return [];
 
     const [fromLikes, fromBookmarks, fromComments] = await Promise.all([
       this.likesCollection
         .aggregate<{ _id: string }>([
-          { $match: { user_id: viewerId, deleted_at: null } },
+          { $match: { user_id: userId, deleted_at: null } },
           {
             $lookup: {
               from: 'posts',
@@ -242,7 +97,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         .toArray(),
       this.bookmarksCollection
         .aggregate<{ _id: string }>([
-          { $match: { user_id: viewerId, deleted_at: null } },
+          { $match: { user_id: userId, deleted_at: null } },
           {
             $lookup: {
               from: 'posts',
@@ -260,7 +115,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         .aggregate<{ _id: string }>([
           {
             $match: {
-              user_id: viewerId,
+              user_id: userId,
               type: EnumPostType.COMMENT,
               parent_id: { $ne: null },
               deleted_at: null
@@ -289,22 +144,24 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
   }
 
   async findPosts(data: FindPostsInput): Promise<PostDetailWithAuthorOutput[]> {
-    const { userId, friendUserIds, blockedAuthorIds, extraVisiblePostIds, cursor, limit } = data;
+    const { userId, friendUserIds, blockedAuthorIds, extraVisiblePostIds, authorUserIds, cursor, limit } = data;
     const blocked = blockedAuthorIds.filter((id) => id !== userId);
     const friendIds = friendUserIds.filter((id) => id !== userId);
 
     const match = this.buildFeedMatch({
-      viewerId: userId,
+      userId,
       blocked,
       friendIds,
       extraVisiblePostIds,
+      authorUserIds,
       cursor
     });
 
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
       limit: limit + 1,
-      includeAuthor: true
+      includeAuthor: true,
+      currentUserId: userId
     });
 
     return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
@@ -314,6 +171,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const { cursor, limit } = data;
     const match: Record<string, unknown> = {
       audience: EnumPostAudience.PUBLIC,
+      type: { $in: [EnumPostType.POST, EnumPostType.REPOST] },
       deleted_at: null
     };
     if (cursor) {
@@ -372,14 +230,73 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const pipelineGetPostsByUser = buildBasePostPipeline({
       match: { $and },
       limit: limit + 1,
-      includeAuthor: true
+      includeAuthor: true,
+      currentUserId
     });
 
     return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetPostsByUser).toArray();
   }
 
-  async findPostsType(data: FindPostsTypeInput): Promise<PostDetailOutput[]> {
-    const { cursor, limit, postId, type } = data;
+  async findPostsByUserInteraction({
+    currentUserId,
+    interaction,
+    friendUserIds,
+    blockedAuthorIds,
+    extraVisiblePostIds,
+    cursor,
+    limit
+  }: FindPostsByUserInteractionInput): Promise<PostDetailWithAuthorOutput[]> {
+    const interactionCollection = interaction === 'likes' ? this.likesCollection : this.bookmarksCollection;
+    const interactionRows = await interactionCollection
+      .find({ user_id: currentUserId, deleted_at: null }, { projection: { post_id: 1 } })
+      .toArray();
+    const postIds = interactionRows.map((row) => row.post_id);
+
+    if (postIds.length === 0) {
+      return [];
+    }
+
+    const blocked = blockedAuthorIds.filter((id) => id !== currentUserId);
+    const friendIds = friendUserIds.filter((id) => id !== currentUserId);
+    const visibility: Record<string, unknown>[] = [
+      {
+        audience: EnumPostAudience.PUBLIC,
+        user_id: { $nin: blocked }
+      },
+      { user_id: currentUserId },
+      {
+        audience: EnumPostAudience.FRIENDS_ONLY,
+        user_id: { $in: friendIds, $nin: blocked }
+      },
+      {
+        audience: EnumPostAudience.FRIENDS_ONLY,
+        mentions: currentUserId
+      }
+    ];
+
+    if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
+      visibility.push({ _id: { $in: extraVisiblePostIds } });
+    }
+
+    const match = this.withCursorFilter(
+      {
+        $and: [{ _id: { $in: postIds } }, { $or: visibility }]
+      },
+      cursor
+    );
+
+    const pipelineGetPostsByUserInteraction = buildBasePostPipeline({
+      match,
+      limit: limit + 1,
+      includeAuthor: true,
+      currentUserId
+    });
+
+    return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetPostsByUserInteraction).toArray();
+  }
+
+  async findPostsType(data: FindPostsTypeInput): Promise<PostDetailWithAuthorOutput[]> {
+    const { cursor, limit, postId, type, currentUserId } = data;
     const match: Record<string, unknown> = {
       parent_id: postId,
       type,
@@ -395,10 +312,11 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const pipelineGetPostsType = buildBasePostPipeline({
       match,
       limit: limit + 1,
-      includeAuthor: false
+      includeAuthor: true,
+      currentUserId
     });
 
-    const posts = await this.dbCollection.aggregate<PostDetailOutput>(pipelineGetPostsType).toArray();
+    const posts = await this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetPostsType).toArray();
     return posts;
   }
 
@@ -453,7 +371,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
           user_id: { $in: friendIdsFriendsOnly, $nin: blocked }
         }
       ];
-      // If the viewer previously interacted with posts by blocked authors, still load those postIds for display as Unknown user.
+      // If the user previously interacted with posts by blocked authors, still load those postIds for display as Unknown user.
       if (extraVisiblePostIds && extraVisiblePostIds.length > 0) {
         orVisibility.push({ _id: { $in: extraVisiblePostIds } });
       }
@@ -466,7 +384,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             user_id: people === EnumSearchPeople.FRIENDS ? { $in: friendIds } : { $nin: friendIds }
           });
         } else if (people === EnumSearchPeople.ONLY_ME) {
-          // Search by the viewer's own posts.
+          // Search by the user's own posts.
           $and.push({ user_id: { $eq: userId } });
         }
       }
@@ -491,22 +409,25 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     const pipelineGetNewFeeds = buildBasePostPipeline({
       match,
       limit: limit + 1,
-      includeAuthor: true
+      includeAuthor: true,
+      currentUserId: userId
     });
     return this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetNewFeeds).toArray();
   }
 
   private buildFeedMatch({
-    viewerId,
+    userId,
     blocked,
     friendIds,
     extraVisiblePostIds,
+    authorUserIds,
     cursor
   }: {
-    viewerId: string;
+    userId: string;
     blocked: string[];
     friendIds: string[];
     extraVisiblePostIds?: string[];
+    authorUserIds?: string[];
     cursor?: DateIdCursor;
   }): Record<string, unknown> {
     const orBranches: Record<string, unknown>[] = [
@@ -514,7 +435,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
         audience: EnumPostAudience.PUBLIC,
         user_id: { $nin: blocked }
       },
-      { user_id: viewerId },
+      { user_id: userId },
       {
         audience: EnumPostAudience.FRIENDS_ONLY,
         user_id: { $in: friendIds, $nin: blocked }
@@ -524,7 +445,19 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
       orBranches.push({ _id: { $in: extraVisiblePostIds } });
     }
 
-    const base: Record<string, unknown> = { deleted_at: null, $or: orBranches };
+    const base: Record<string, unknown> = {
+      deleted_at: null,
+      type: { $in: [EnumPostType.POST, EnumPostType.REPOST] },
+      $or: orBranches
+    };
+    if (authorUserIds && authorUserIds.length > 0) {
+      return this.withCursorFilter({ $and: [base, { user_id: { $in: authorUserIds } }] }, cursor);
+    }
+
+    return this.withCursorFilter(base, cursor);
+  }
+
+  private withCursorFilter(base: Record<string, unknown>, cursor?: DateIdCursor): Record<string, unknown> {
     if (!cursor) {
       return base;
     }
@@ -548,17 +481,22 @@ function buildBasePostPipeline({
   match,
   skip,
   limit,
-  includeAuthor = false
+  includeAuthor = false,
+  currentUserId
 }: {
   match?: Record<string, unknown>;
   skip?: number;
   limit?: number;
   includeAuthor?: boolean;
+  currentUserId?: string;
 }) {
   const pipeline: Document[] = [];
 
   if (match) {
     pipeline.push({ $match: { deleted_at: null, ...match } });
+  }
+
+  if (match) {
     pipeline.push({ $sort: { created_at: -1, _id: -1 } });
   }
 
@@ -679,6 +617,46 @@ function buildBasePostPipeline({
     },
     {
       $lookup: {
+        from: 'likes',
+        let: { rootPostId: '$_id' },
+        pipeline: currentUserId
+          ? [
+              {
+                $match: {
+                  user_id: currentUserId,
+                  deleted_at: null,
+                  $expr: { $eq: ['$post_id', '$$rootPostId'] }
+                }
+              },
+              { $limit: 1 },
+              { $project: { _id: 1 } }
+            ]
+          : [{ $match: { _id: null } }],
+        as: 'likedByMeLookupResults'
+      }
+    },
+    {
+      $lookup: {
+        from: 'bookmarks',
+        let: { rootPostId: '$_id' },
+        pipeline: currentUserId
+          ? [
+              {
+                $match: {
+                  user_id: currentUserId,
+                  deleted_at: null,
+                  $expr: { $eq: ['$post_id', '$$rootPostId'] }
+                }
+              },
+              { $limit: 1 },
+              { $project: { _id: 1 } }
+            ]
+          : [{ $match: { _id: null } }],
+        as: 'bookmarkedByMeLookupResults'
+      }
+    },
+    {
+      $lookup: {
         from: 'posts',
         let: { rootPostId: '$_id' },
         pipeline: [
@@ -689,12 +667,29 @@ function buildBasePostPipeline({
       }
     },
     {
+      $lookup: {
+        from: 'posts',
+        let: { sourcePostId: '$parent_id', rootType: '$type' },
+        pipeline: buildSourcePostLookupPipeline(currentUserId),
+        as: 'sourcePostLookupResults'
+      }
+    },
+    {
       $addFields: {
+        sourcePost: {
+          $ifNull: [{ $arrayElemAt: ['$sourcePostLookupResults', 0] }, null]
+        },
         likeCount: {
           $ifNull: [{ $arrayElemAt: ['$likeCountLookupResults.totalLikes', 0] }, 0]
         },
         bookmarkCount: {
           $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
+        },
+        likedByMe: {
+          $gt: [{ $size: '$likedByMeLookupResults' }, 0]
+        },
+        bookmarkedByMe: {
+          $gt: [{ $size: '$bookmarkedByMeLookupResults' }, 0]
         },
         repostCount: {
           $size: {
@@ -742,7 +737,10 @@ function buildBasePostPipeline({
         updated_at: 0,
         likeCountLookupResults: 0,
         bookmarkCountLookupResults: 0,
-        childPostsWithTypeOnly: 0
+        likedByMeLookupResults: 0,
+        bookmarkedByMeLookupResults: 0,
+        childPostsWithTypeOnly: 0,
+        sourcePostLookupResults: 0
       }
     }
   );
@@ -761,4 +759,232 @@ function postOutputProjection(): Record<string, unknown> {
     createdAt: '$created_at',
     updatedAt: '$updated_at'
   };
+}
+
+function buildSourcePostLookupPipeline(currentUserId?: string): Document[] {
+  return [
+    {
+      $match: {
+        deleted_at: null,
+        $expr: {
+          $and: [{ $eq: ['$_id', '$$sourcePostId'] }, { $eq: ['$$rootType', EnumPostType.REPOST] }]
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user_id',
+        foreignField: '_id',
+        pipeline: [
+          { $match: { deleted_at: null } },
+          {
+            $replaceRoot: {
+              newRoot: {
+                id: '$_id',
+                name: '$name',
+                email: '$email',
+                username: '$username',
+                avatar: '$avatar'
+              }
+            }
+          }
+        ],
+        as: 'author'
+      }
+    },
+    {
+      $unwind: {
+        path: '$author',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $lookup: {
+        from: 'hashtags',
+        let: { hashtagIds: '$hashtags' },
+        pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$hashtagIds'] } } }],
+        as: 'hashtags'
+      }
+    },
+    {
+      $addFields: {
+        hashtags: {
+          $map: {
+            input: '$hashtags',
+            as: 'hashtag',
+            in: {
+              id: '$$hashtag._id',
+              name: '$$hashtag.name',
+              createdAt: '$$hashtag.created_at',
+              updatedAt: '$$hashtag.updated_at'
+            }
+          }
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        let: { mentionIds: '$mentions' },
+        pipeline: [{ $match: { deleted_at: null, $expr: { $in: ['$_id', '$$mentionIds'] } } }],
+        as: 'mentions'
+      }
+    },
+    {
+      $addFields: {
+        allow_stranger_comments: { $ifNull: ['$allow_stranger_comments', true] },
+        mentions: {
+          $map: {
+            input: '$mentions',
+            as: 'mention',
+            in: {
+              id: '$$mention._id',
+              name: '$$mention.name',
+              username: '$$mention.username',
+              status: '$$mention.status'
+            }
+          }
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: 'likes',
+        let: { rootPostId: '$_id' },
+        pipeline: [
+          { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $count: 'totalLikes' }
+        ],
+        as: 'likeCountLookupResults'
+      }
+    },
+    {
+      $lookup: {
+        from: 'bookmarks',
+        let: { rootPostId: '$_id' },
+        pipeline: [
+          { $match: { deleted_at: null, $expr: { $eq: ['$post_id', '$$rootPostId'] } } },
+          { $count: 'totalBookmarks' }
+        ],
+        as: 'bookmarkCountLookupResults'
+      }
+    },
+    {
+      $lookup: {
+        from: 'likes',
+        let: { rootPostId: '$_id' },
+        pipeline: currentUserId
+          ? [
+              {
+                $match: {
+                  user_id: currentUserId,
+                  deleted_at: null,
+                  $expr: { $eq: ['$post_id', '$$rootPostId'] }
+                }
+              },
+              { $limit: 1 },
+              { $project: { _id: 1 } }
+            ]
+          : [{ $match: { _id: null } }],
+        as: 'likedByMeLookupResults'
+      }
+    },
+    {
+      $lookup: {
+        from: 'bookmarks',
+        let: { rootPostId: '$_id' },
+        pipeline: currentUserId
+          ? [
+              {
+                $match: {
+                  user_id: currentUserId,
+                  deleted_at: null,
+                  $expr: { $eq: ['$post_id', '$$rootPostId'] }
+                }
+              },
+              { $limit: 1 },
+              { $project: { _id: 1 } }
+            ]
+          : [{ $match: { _id: null } }],
+        as: 'bookmarkedByMeLookupResults'
+      }
+    },
+    {
+      $lookup: {
+        from: 'posts',
+        let: { rootPostId: '$_id' },
+        pipeline: [
+          { $match: { deleted_at: null, $expr: { $eq: ['$parent_id', '$$rootPostId'] } } },
+          { $project: { _id: 0, type: 1 } }
+        ],
+        as: 'childPostsWithTypeOnly'
+      }
+    },
+    {
+      $addFields: {
+        likeCount: {
+          $ifNull: [{ $arrayElemAt: ['$likeCountLookupResults.totalLikes', 0] }, 0]
+        },
+        bookmarkCount: {
+          $ifNull: [{ $arrayElemAt: ['$bookmarkCountLookupResults.totalBookmarks', 0] }, 0]
+        },
+        likedByMe: {
+          $gt: [{ $size: '$likedByMeLookupResults' }, 0]
+        },
+        bookmarkedByMe: {
+          $gt: [{ $size: '$bookmarkedByMeLookupResults' }, 0]
+        },
+        repostCount: {
+          $size: {
+            $filter: {
+              input: '$childPostsWithTypeOnly',
+              as: 'childPost',
+              cond: { $eq: ['$$childPost.type', EnumPostType.REPOST] }
+            }
+          }
+        },
+        commentCount: {
+          $size: {
+            $filter: {
+              input: '$childPostsWithTypeOnly',
+              as: 'childPost',
+              cond: { $eq: ['$$childPost.type', EnumPostType.COMMENT] }
+            }
+          }
+        },
+        quoteCount: {
+          $size: {
+            $filter: {
+              input: '$childPostsWithTypeOnly',
+              as: 'childPost',
+              cond: { $eq: ['$$childPost.type', EnumPostType.QUOTE] }
+            }
+          }
+        }
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: { $mergeObjects: [postOutputProjection(), '$$ROOT'] }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        user_id: 0,
+        allow_stranger_comments: 0,
+        parent_id: 0,
+        guest_views: 0,
+        user_views: 0,
+        created_at: 0,
+        updated_at: 0,
+        likeCountLookupResults: 0,
+        bookmarkCountLookupResults: 0,
+        likedByMeLookupResults: 0,
+        bookmarkedByMeLookupResults: 0,
+        childPostsWithTypeOnly: 0
+      }
+    }
+  ];
 }

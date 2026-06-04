@@ -59,6 +59,7 @@ export const imageSchema: ParamSchema = {
 export interface IUserPipe {
   updateMePipe: ExpressRequestHandler;
   userIdPipe: (key: string, location: Location) => ExpressRequestHandler;
+  usernamePipe: (key: string, location: Location) => ExpressRequestHandler;
   changePasswordPipe: ExpressRequestHandler;
 }
 
@@ -170,6 +171,34 @@ export class UsersPipe implements IUserPipe {
               options: (userId: string) => {
                 if (!isValidId(userId)) {
                   throw InvalidUserIdException;
+                }
+                return true;
+              }
+            }
+          }
+        },
+        [location]
+      )
+    );
+  }
+
+  @AutoBind()
+  usernamePipe(key: string, location: Location) {
+    return validate(
+      checkSchema(
+        {
+          [key]: {
+            notEmpty: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_IS_REQUIRED
+            },
+            isString: {
+              errorMessage: VALIDATION_ERROR_MESSAGE.USERNAME_MUST_BE_A_STRING
+            },
+            trim: true,
+            custom: {
+              options: (username: string) => {
+                if (!USERNAME_REGEX.test(username)) {
+                  throw UsernameFormatInvalidException;
                 }
                 return true;
               }

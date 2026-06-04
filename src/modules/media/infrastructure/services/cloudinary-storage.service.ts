@@ -16,7 +16,7 @@ type CloudinaryResourceType = 'image' | 'video' | 'raw';
 const IMAGE_EXTENSIONS = new Set(['.avif', '.gif', '.heic', '.jpeg', '.jpg', '.png', '.svg', '.webp']);
 const VIDEO_EXTENSIONS = new Set(['.avi', '.m4v', '.mkv', '.mov', '.mp4', '.mpeg', '.mpg', '.webm']);
 
-export class CloudinaryStorageService implements ObjectStoragePort {
+export class CloudinaryService implements ObjectStoragePort {
   private readonly log: LoggerPort;
 
   constructor(

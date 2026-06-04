@@ -135,7 +135,7 @@ export class FriendController extends BaseController implements IFriendControlle
   async sendFriendRequest(req: ExpressRequest<ParamsDictionary, object, SendFriendRequestBodyDTO>) {
     const userId = this.getUserId(req);
     const dto = new SendFriendRequestBodyDTO(req.body);
-    const created = await this.sendFriendRequestUC.execute({ userId, toUserId: dto.toUserId });
+    const created = await this.sendFriendRequestUC.execute({ userId, username: dto.username });
 
     return this.response<FriendRequestResponseDTO>({
       instance: Created,

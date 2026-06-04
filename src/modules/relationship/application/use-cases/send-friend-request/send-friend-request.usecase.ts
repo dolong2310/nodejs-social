@@ -19,12 +19,11 @@ import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repo
 
 /**
  * Send a friend request.
+ * - Resolve the target user by username.
  * - Do not allow sending a friend request to yourself.
- * - Check whether the target user exists.
  * - Check whether the target user blocked the sender.
  * - Check whether the target user is already friends with the sender.
- * - Check whether the target user has already sent a friend request to the sender.
- * - Check whether the target user has already sent a friend request to the sender.
+ * - Check whether the sender exceeded the daily outgoing request limit.
  */
 export class SendFriendRequestUseCase extends SendFriendRequestPort {
   private readonly OUTGOING_REQUESTS_PER_UTC_DAY = 100;
@@ -40,15 +39,15 @@ export class SendFriendRequestUseCase extends SendFriendRequestPort {
     super();
   }
 
-  async execute({ userId, toUserId }: SendFriendRequestCommand): Promise<SendFriendRequestResult> {
-    if (userId === toUserId) {
-      throw new CannotSendFriendRequestToYourselfException();
-    }
-
-    // Check whether the target user exists.
-    const userEntity = await this.userRepository.findUserById(toUserId);
+  async execute({ userId, username }: SendFriendRequestCommand): Promise<SendFriendRequestResult> {
+    const userEntity = await this.userRepository.findUserByUsername(username);
     if (!userEntity) {
       throw new UserNotFoundException();
+    }
+
+    const toUserId = userEntity.id.toString();
+    if (userId === toUserId) {
+      throw new CannotSendFriendRequestToYourselfException();
     }
 
     const { start, endExclusive } = this._utcDayRange(new Date());

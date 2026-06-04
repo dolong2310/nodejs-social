@@ -22,7 +22,7 @@ export class BookmarkPostUseCase extends BookmarkPostPort {
     if (!post) {
       throw new PostNotFoundException();
     }
-    await this.postAudienceAccess.assertViewerCanAccessPostDetail(post, userId);
+    await this.postAudienceAccess.assertUserCanAccessPostDetail(post, userId);
 
     const bookmarkEntity = await this.bookmarkRepository.createBookmark({ userId, postId });
     if (!bookmarkEntity) {

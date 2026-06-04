@@ -60,17 +60,17 @@ export class CreatePostUseCase extends CreatePostPort {
       }
 
       // Ensure the user is allowed to see the parent post.
-      await this.assertViewerCanSeeParentForInteraction(userId, parent);
+      await this.assertUserCanSeeParentForInteraction(userId, parent);
 
-      // Determine the viewer's relationship to the parent post.
+      // Determine the user's relationship to the parent post.
       const ownerId = parent.userId;
       const isOwner = userId === ownerId; // parent post owner
       const isMention = parent.mentions.some((mentionId) => mentionId === userId); // tagged in the parent post
-      // Apply the "stranger comments" rule only when the parent post is PUBLIC and viewer is a stranger.
+      // Apply the "stranger comments" rule only when the parent post is PUBLIC and user is a stranger.
       const isPublic = parent.audience === EnumPostAudience.PUBLIC;
 
       // If this flag is false and the new post type is COMMENT | REPOST | QUOTE, block with StrangerCommentsNotAllowedException.
-      // For FRIENDS_ONLY posts, assertViewerCanSeeParentForInteraction already ensures only friends/tagged users pass.
+      // For FRIENDS_ONLY posts, assertUserCanSeeParentForInteraction already ensures only friends/tagged users pass.
       if (isPublic && !isOwner && !isMention) {
         const allowStrangerComments = parent.allowStrangerComments ?? true;
         if (!allowStrangerComments) {
@@ -115,10 +115,10 @@ export class CreatePostUseCase extends CreatePostPort {
   /**
    * This method focuses only on parent post access.
    */
-  private async assertViewerCanSeeParentForInteraction(viewerId: string, parent: PostFullProps): Promise<void> {
+  private async assertUserCanSeeParentForInteraction(userId: string, parent: PostFullProps): Promise<void> {
     const ownerId = parent.userId;
-    // If viewer owns the parent post (viewerId === ownerId), no access check is needed.
-    if (viewerId === ownerId) {
+    // If user owns the parent post (userId === ownerId), no access check is needed.
+    if (userId === ownerId) {
       return;
     }
     // Check parent post access.
@@ -126,7 +126,7 @@ export class CreatePostUseCase extends CreatePostPort {
     const isPublic = audienceStr === EnumPostAudience.PUBLIC;
     const isFriendsOnly = audienceStr === EnumPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
     const isOnlyMe = audienceStr === EnumPostAudience.ONLY_ME || audienceStr === 'only_me';
-    const isMention = parent.mentions.some((mentionId) => mentionId === viewerId);
+    const isMention = parent.mentions.some((mentionId) => mentionId === userId);
     // ONLY_ME parent posts cannot be accessed by other users.
     if (isOnlyMe) {
       throw new CannotEngageWithInaccessiblePostException();
@@ -136,7 +136,7 @@ export class CreatePostUseCase extends CreatePostPort {
     }
     // FRIENDS_ONLY parent posts allow access only for friends or users tagged in the parent post.
     if (isFriendsOnly && !isMention) {
-      const isFriend = await this.friendService.isFriendOf({ userId: viewerId, otherUserId: ownerId });
+      const isFriend = await this.friendService.isFriendOf({ userId, otherUserId: ownerId });
       if (isFriend) {
         return;
       }

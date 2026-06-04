@@ -4,9 +4,9 @@ import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 import { EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { Prettify } from 'ts-essentials';
 
-export interface IsViewerInteractedWithPostInput {
+export interface IsUserInteractedWithPostInput {
   postId: string;
-  viewerId: string;
+  userId: string;
 }
 
 export interface FindGuestPostsInput {
@@ -14,16 +14,19 @@ export interface FindGuestPostsInput {
   limit: number;
 }
 
-export interface FindPostIdsWhereViewerInteractedWithAuthorsInput {
-  viewerId: string;
+export interface FindPostIdsWhereUserInteractedWithAuthorsInput {
+  userId: string;
   authorIds: string[];
 }
+
+export type PostUserInteractionType = 'likes' | 'bookmarks';
 
 export interface FindPostsInput {
   userId: string;
   friendUserIds: string[];
   blockedAuthorIds: string[];
   extraVisiblePostIds?: string[];
+  authorUserIds?: string[];
   cursor?: DateIdCursor;
   limit: number;
 }
@@ -41,6 +44,17 @@ export interface FindPostsByUserIdInput {
 export interface FindPostsTypeInput {
   postId: string;
   type: EnumPostType;
+  currentUserId?: string;
+  cursor?: DateIdCursor;
+  limit: number;
+}
+
+export interface FindPostsByUserInteractionInput {
+  currentUserId: string;
+  interaction: PostUserInteractionType;
+  friendUserIds: string[];
+  blockedAuthorIds: string[];
+  extraVisiblePostIds?: string[];
   cursor?: DateIdCursor;
   limit: number;
 }
@@ -81,9 +95,12 @@ export interface PostDetailOutput extends Omit<PostFullProps, 'mentions' | 'hash
   mentions: PostMentionPreview[];
   likeCount: number;
   bookmarkCount: number;
+  likedByMe: boolean;
+  bookmarkedByMe: boolean;
   repostCount: number;
   commentCount: number;
   quoteCount: number;
+  sourcePost?: PostDetailWithAuthorOutput | null;
 }
 
 export interface PostDetailWithAuthorOutput extends PostDetailOutput {

@@ -1,5 +1,5 @@
 /**
- * consistent "unknown user" payloads when a viewer must not see a blocked author's PII but may still see post content they previously engaged with (like, bookmark, or comment on that post).
+ * consistent "unknown user" payloads when a user must not see a blocked author's PII but may still see post content they previously engaged with (like, bookmark, or comment on that post).
  */
 
 import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
@@ -19,9 +19,12 @@ export function transformUnknownAuthor(post: PostDetailWithAuthorOutput): void {
 }
 
 /** Redact root post author on detail DTO (mutates). */
-export function transformUnknownAuthorForPostDetail(post: PostDetailOutput): void {
+export function transformUnknownAuthorForPostDetail(post: PostDetailOutput | PostDetailWithAuthorOutput): void {
   const authorId = post.userId;
   post.userId = UNKNOWN_USER_ID;
+  if ('author' in post) {
+    transformUnknownAuthor(post);
+  }
   post.mentions = post.mentions.map((mention) => {
     if (mention.id === authorId) {
       return {

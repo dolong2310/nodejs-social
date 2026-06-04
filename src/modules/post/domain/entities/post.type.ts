@@ -36,3 +36,8 @@ export enum EnumPostAudience {
   FRIENDS_ONLY = 'friends-only',
   ONLY_ME = 'only-me'
 }
+
+export enum EnumNewFeedFilter {
+  FOR_YOU = 'for-you',
+  FOLLOWING = 'following'
+}

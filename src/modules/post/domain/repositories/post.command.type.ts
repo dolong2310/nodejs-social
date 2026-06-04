@@ -5,7 +5,7 @@ export interface IncreasePostViewsInput {
 
 export interface IncreasePostsViewsInput {
   ids: string[];
-  isAuthenticatedViewer: boolean;
+  isAuthenticatedUser: boolean;
 }
 
 // Output
