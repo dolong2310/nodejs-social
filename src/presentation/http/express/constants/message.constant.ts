@@ -34,6 +34,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   USER_NOT_FOUND: 'User not found',
   USER_IS_INACTIVE: 'User is inactive',
   USER_IS_BANNED: 'User is banned',
+  USERNAME_IS_REQUIRED: 'Username is required',
   BIO_MUST_BE_A_STRING: 'Bio must be a string',
   BIO_LENGTH_MUST_BE_FROM_1_TO_500: 'Bio length must be from 1 to 500 characters',
   LOCATION_MUST_BE_A_STRING: 'Location must be a string',
@@ -51,6 +52,7 @@ export const VALIDATION_ERROR_MESSAGE = {
   USERNAME_ALREADY_EXISTS: 'Username already exists',
 
   // Post errors
+  INVALID_NEW_FEED_FILTER: 'Invalid new feed filter',
   INVALID_POST_TYPE: 'Invalid post type',
   INVALID_POST_AUDIENCE: 'Invalid post audience',
   ALLOW_STRANGER_COMMENTS_MUST_BE_BOOLEAN: 'allowStrangerComments must be a boolean',

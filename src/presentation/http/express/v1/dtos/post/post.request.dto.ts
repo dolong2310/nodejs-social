@@ -1,4 +1,9 @@
-import { CreatePostProps, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import {
+  CreatePostProps,
+  EnumNewFeedFilter,
+  EnumPostAudience,
+  EnumPostType
+} from '@/modules/post/domain/entities/post.type';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 
@@ -79,6 +84,12 @@ export interface GetPostsByUserQueryDTO extends Query {
   limit: string;
   cursor?: string;
   type?: EnumPostType;
+}
+
+export interface GetNewFeedsQueryDTO extends Query {
+  limit: string;
+  cursor?: string;
+  filter?: EnumNewFeedFilter;
 }
 
 export class CreateBookmarkRequestDTO {

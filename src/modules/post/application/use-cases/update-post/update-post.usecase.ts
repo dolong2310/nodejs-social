@@ -2,8 +2,8 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   EmptyPostUpdateException,
   OnlyOwnerCanUpdatePostSettingsException,
-  OnlyRootPostCanBeUpdatedException,
-  PostNotFoundException
+  PostNotFoundException,
+  RepostCannotBeUpdatedException
 } from '@/modules/post/application/exceptions/post.exception';
 import {
   UpdatePostCommand,
@@ -40,8 +40,8 @@ export class UpdatePostUseCase extends UpdatePostPort {
       throw new OnlyOwnerCanUpdatePostSettingsException();
     }
 
-    if (postExisting.type !== EnumPostType.POST) {
-      throw new OnlyRootPostCanBeUpdatedException();
+    if (postExisting.type === EnumPostType.REPOST) {
+      throw new RepostCannotBeUpdatedException();
     }
 
     if (!this.hasUpdatePayload(command)) {

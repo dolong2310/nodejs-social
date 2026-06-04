@@ -34,9 +34,9 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
       : null;
   }
 
-  async increasePostsViews({ ids, isAuthenticatedViewer }: IncreasePostsViewsInput): Promise<number> {
+  async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
     if (ids.length === 0) return 0;
-    const column = isAuthenticatedViewer ? 'user_views' : 'guest_views';
+    const column = isAuthenticatedUser ? 'user_views' : 'guest_views';
     const result = await this.pool.query(
       `
         UPDATE posts

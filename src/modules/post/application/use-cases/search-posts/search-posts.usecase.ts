@@ -38,7 +38,7 @@ export class SearchPostsUseCase extends SearchPostsPort {
       blockedAuthorIds = await this.blockService.getBlockedIdsByUserId(userId);
     }
 
-    // If the viewer previously interacted with posts by blocked authors, still load those postIds for display as Unknown user.
+    // If the user previously interacted with posts by blocked authors, still load those postIds for display as Unknown user.
     if (userId && blockedAuthorIds && blockedAuthorIds.length > 0) {
       extraVisiblePostIds = await this.postsService.getBlockedPostIds({
         userId,

@@ -22,7 +22,7 @@ export class UnbookmarkPostUseCase extends UnbookmarkPostPort {
     if (!post) {
       throw new PostNotFoundException();
     }
-    await this.postAudienceAccess.assertViewerCanAccessPostDetail(post, userId);
+    await this.postAudienceAccess.assertUserCanAccessPostDetail(post, userId);
 
     const bookmarkEntity = await this.bookmarkRepository.deleteBookmark({ userId, postId });
     if (!bookmarkEntity) {

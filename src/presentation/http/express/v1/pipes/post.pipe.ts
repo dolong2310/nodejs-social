@@ -1,6 +1,6 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumNewFeedFilter, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
 import {
@@ -31,6 +31,7 @@ export interface IPostPipe {
   patchPostPipe: ExpressRequestHandler;
   postTypePipe: ExpressRequestHandler;
   postTypeQueryPipe: ExpressRequestHandler;
+  newFeedFilterQueryPipe: ExpressRequestHandler;
 }
 
 const MAX_HASHTAGS_PER_POST = 20;
@@ -73,6 +74,7 @@ export class PostsPipe implements IPostPipe {
           }
         },
         // POST is valid with content or media; COMMENT/QUOTE require content; REPOST has no own content.
+        // COMMENT can include optional media, while QUOTE/REPOST cannot.
         content: {
           isString: {
             errorMessage: VALIDATION_ERROR_MESSAGE.CONTENT_MUST_BE_A_STRING
@@ -172,10 +174,7 @@ export class PostsPipe implements IPostPipe {
           custom: {
             options: (mediaItems: unknown[], { req }) => {
               const { type } = req.body as CreatePostRequestDTO;
-              if (
-                [EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE].includes(type) &&
-                mediaItems.length > 0
-              ) {
+              if ([EnumPostType.REPOST, EnumPostType.QUOTE].includes(type) && mediaItems.length > 0) {
                 throw MediaMustBeEmptyForThisPostTypeException;
               }
 
@@ -345,6 +344,22 @@ export class PostsPipe implements IPostPipe {
           isIn: {
             options: [[EnumPostType.POST, EnumPostType.REPOST, EnumPostType.COMMENT, EnumPostType.QUOTE]],
             errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_POST_TYPE
+          },
+          trim: true
+        }
+      },
+      ['query']
+    )
+  );
+
+  newFeedFilterQueryPipe = validate(
+    checkSchema(
+      {
+        filter: {
+          optional: true,
+          isIn: {
+            options: [[EnumNewFeedFilter.FOR_YOU, EnumNewFeedFilter.FOLLOWING]],
+            errorMessage: VALIDATION_ERROR_MESSAGE.INVALID_NEW_FEED_FILTER
           },
           trim: true
         }

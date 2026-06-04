@@ -4,7 +4,7 @@ import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cach
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import {
   GetBlockedPostIdsPayload,
-  IsViewerInteractedWithPostPayload,
+  IsUserInteractedWithPostPayload,
   UpdatePostsViewsPayload
 } from '@/modules/post/application/services/post.service.type';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -12,7 +12,7 @@ import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/dom
 
 export interface PostServicePort {
   updatePostsViews<T extends PostDetailOutput | PostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];
-  isViewerInteractedWithPost(payload: IsViewerInteractedWithPostPayload): Promise<boolean>;
+  isUserInteractedWithPost(payload: IsUserInteractedWithPostPayload): Promise<boolean>;
   getBlockedPostIds(payload: GetBlockedPostIdsPayload): Promise<string[]>;
 }
 
@@ -36,7 +36,7 @@ export class PostService implements PostServicePort {
     void this.postViewsQueue
       .add({
         postIds: posts.map((post) => post.id),
-        isAuthenticatedViewer: Boolean(userId)
+        isAuthenticatedUser: Boolean(userId)
       })
       .catch((err: unknown) => {
         this.log.warn({ err }, 'post-service:::enqueue-post-views-job-failed');
@@ -57,17 +57,17 @@ export class PostService implements PostServicePort {
   }
 
   /**
-   * Check whether the viewer (viewerId) has ever interacted with the post (postId).
+   * Check whether the user (userId) has ever interacted with the post (postId).
    * Return true/false for visibility rules in block scenarios.
    */
-  async isViewerInteractedWithPost({ viewerId, postId }: IsViewerInteractedWithPostPayload): Promise<boolean> {
-    const isInteracted = await this.postQueryRepository.isViewerInteractedWithPost({ viewerId, postId });
+  async isUserInteractedWithPost({ userId, postId }: IsUserInteractedWithPostPayload): Promise<boolean> {
+    const isInteracted = await this.postQueryRepository.isUserInteractedWithPost({ userId, postId });
     return isInteracted;
   }
 
   /**
-   * Even when post authors are blocked, if the viewer (userId) has previously interacted with their posts
-   * (like/bookmark/comment), still return those post ids so they can be shown by the "blocked-engagement
+   * Even when post authors are blocked, if the user (userId) has previously interacted with their posts
+   * (like/bookmark/comment), still return those post ids so they can be shown by the "blocked-interaction
    * exception" rule.
    */
   async getBlockedPostIds({ userId, blockedAuthorIds }: GetBlockedPostIdsPayload): Promise<string[]> {
@@ -76,7 +76,7 @@ export class PostService implements PostServicePort {
     const key = CACHE_KEYS.blockedPostIds({ userId, blockedAuthorIds: authorIds });
     const extraVisiblePostIds = await this.cache.get(
       key,
-      () => this.postQueryRepository.findPostIdsWhereViewerInteractedWithAuthors({ viewerId: userId, authorIds }),
+      () => this.postQueryRepository.findPostIdsWhereUserInteractedWithAuthors({ userId, authorIds }),
       { ttlSeconds: CACHE_TTL.BLOCKED_INTERACTION_POST_IDS }
     );
 

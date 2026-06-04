@@ -60,9 +60,12 @@ export class PostDetailResponseDTO implements PostDetailOutput {
   updatedAt: Date;
   likeCount: number;
   bookmarkCount: number;
+  likedByMe: boolean;
+  bookmarkedByMe: boolean;
   repostCount: number;
   commentCount: number;
   quoteCount: number;
+  sourcePost?: PostDetailWithAuthorResponseDTO | null;
   constructor(payload: PostDetailOutput) {
     this.id = payload.id;
     this.userId = payload.userId;
@@ -86,9 +89,12 @@ export class PostDetailResponseDTO implements PostDetailOutput {
     this.updatedAt = payload.updatedAt;
     this.likeCount = payload.likeCount;
     this.bookmarkCount = payload.bookmarkCount;
+    this.likedByMe = payload.likedByMe;
+    this.bookmarkedByMe = payload.bookmarkedByMe;
     this.repostCount = payload.repostCount;
     this.commentCount = payload.commentCount;
     this.quoteCount = payload.quoteCount;
+    this.sourcePost = payload.sourcePost ? new PostDetailWithAuthorResponseDTO(payload.sourcePost) : null;
   }
 }
 
@@ -109,10 +115,13 @@ export class PostDetailWithAuthorResponseDTO implements PostDetailWithAuthorOutp
   updatedAt: Date;
   likeCount: number;
   bookmarkCount: number;
+  likedByMe: boolean;
+  bookmarkedByMe: boolean;
   repostCount: number;
   commentCount: number;
   quoteCount: number;
   author: PostAuthorPreview;
+  sourcePost?: PostDetailWithAuthorResponseDTO | null;
   constructor(payload: PostDetailWithAuthorOutput) {
     this.id = payload.id;
     this.userId = payload.userId;
@@ -136,10 +145,13 @@ export class PostDetailWithAuthorResponseDTO implements PostDetailWithAuthorOutp
     this.updatedAt = payload.updatedAt;
     this.likeCount = payload.likeCount;
     this.bookmarkCount = payload.bookmarkCount;
+    this.likedByMe = payload.likedByMe;
+    this.bookmarkedByMe = payload.bookmarkedByMe;
     this.repostCount = payload.repostCount;
     this.commentCount = payload.commentCount;
     this.quoteCount = payload.quoteCount;
     this.author = payload.author;
+    this.sourcePost = payload.sourcePost ? new PostDetailWithAuthorResponseDTO(payload.sourcePost) : null;
   }
 }
 
