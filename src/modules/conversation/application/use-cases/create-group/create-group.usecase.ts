@@ -19,21 +19,21 @@ export class CreateGroupUseCase extends CreateGroupPort {
   }
 
   async execute({ userId, name, memberIds: memberIdsPayload }: CreateGroupCommand): Promise<CreateGroupResult> {
-    // unique memberIds và filter chính mình khỏi list
+    // Deduplicate memberIds and filter out the creator.
     const memberIds = [...new Set(memberIdsPayload)].filter((id) => id !== userId);
 
-    // chỉ cho tạo group khi có ít nhất 1 member khác chính mình
+    // Allow group creation only when at least one member is not the creator.
     if (memberIds.length < 1) {
       throw new ConversationGroupNeedsMemberException();
     }
 
-    // chỉ cho tạo group khi tất cả members đều là bạn bè của admin
+    // Allow group creation only when all members are friends with the admin.
     const allFriends = await this.areAllFriends({ userId, otherUserIds: memberIds });
     if (!allFriends) {
       throw new ConversationPeerNotFriendException();
     }
 
-    // tạo transaction thực hiện 2 operation: insert group và insert members
+    // Create a transaction that performs two operations: insert group and insert members.
     const groupEntity = await this.conversationRepository.createGroupConversation({
       name,
       createdBy: userId,
@@ -44,7 +44,8 @@ export class CreateGroupUseCase extends CreateGroupPort {
   }
 
   /**
-   * Lấy tất cả số lượng member trong group là bạn bè của admin và so sánh với số lượng member trong group (trừ admin ra) phải bằng nhau.
+   * Count all group members who are friends with the admin and compare that count with the number of group
+   * members excluding the admin; both values must be equal.
    */
   async areAllFriends({ userId, otherUserIds }: { userId: string; otherUserIds: string[] }): Promise<boolean> {
     if (otherUserIds.length === 0) return true;

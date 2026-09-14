@@ -1,47 +1,51 @@
 # NodeJS Social
 
-Dịch vụ backend cho một ứng dụng mạng xã hội. Dự án tập trung vào định danh người dùng, bài viết, quan hệ bạn bè, hội thoại, thông báo, upload media, realtime event và quản trị phân quyền.
+[English](README.md) | Tiếng Việt
 
-Repository này được xây dựng như một TypeScript backend API, theo hướng clean/hexagonal architecture để tách business rule khỏi HTTP, database, queue và các hạ tầng bên ngoài.
+Backend service cho một social networking application. Dự án tập trung vào user identity, posts, relationships, conversations, notifications, media upload, realtime events và role-based administration.
 
-## Tính năng
+Repository này là một TypeScript backend API, được xây theo clean/hexagonal architecture để business rules tách khỏi HTTP, database, queue và third-party infrastructure.
 
-- Đăng ký/đăng nhập bằng email và mật khẩu với access token và refresh-token cookie
-- Đăng nhập bằng Google OAuth
-- Luồng OTP email và hỗ trợ xác thực hai lớp
-- Hồ sơ người dùng, đổi mật khẩu và quản trị người dùng
-- Gửi/lọc/chấp nhận/từ chối lời mời kết bạn, kết bạn, chặn và bỏ chặn người dùng
-- Bài viết, bảng tin, hashtag, lượt thích, bookmark, tìm kiếm và tracking lượt xem
-- Hội thoại, group chat, tin nhắn, typing, trạng thái đã đọc và realtime presence
-- Thông báo với realtime delivery và background cleanup jobs
-- Upload ảnh, upload video, kiểm tra trạng thái xử lý video và static video streaming
-- Quản lý role và permission cho các thao tác được bảo vệ
+## Features
+
+- Email/password authentication với access tokens và refresh-token cookies
+- Google OAuth login flow
+- OTP email flow và hỗ trợ two-factor authentication
+- User profile, password change và admin user management
+- Friend requests, friendships, blocking và unblocking
+- Posts, feeds, hashtags, likes, bookmarks, search và view tracking
+- Conversations, group chat, messages, typing, read state và realtime presence
+- Notifications với realtime delivery và cleanup jobs
+- Image upload, video upload, video stream status và static video streaming
+- Role và permission management cho protected operations
 - Swagger/OpenAPI documentation và Postman collections
-- Adapter persistence cho MongoDB và PostgreSQL thông qua repository ports
+- MongoDB và PostgreSQL persistence adapters nằm sau repository ports
 - Hỗ trợ cache/rate-limit bằng Redis và background jobs bằng BullMQ
 
-## Công nghệ sử dụng
+## Tech Stack
 
-| Nhóm            | Công nghệ                               |
+| Phạm vi         | Công nghệ                               |
 | --------------- | --------------------------------------- |
-| Ngôn ngữ        | TypeScript, ESM                         |
+| Language        | TypeScript, ESM                         |
 | Runtime         | Node.js                                 |
 | Package manager | pnpm 11                                 |
 | HTTP API        | Express 5                               |
 | Realtime        | Socket.IO                               |
 | Database        | MongoDB, PostgreSQL                     |
-| Cache / queue   | Redis, BullMQ                           |
-| Authentication  | JWT, bcrypt, Google OAuth, OTPAuth      |
+| Cache / queues  | Redis, BullMQ                           |
+| Auth            | JWT, bcrypt, Google OAuth, OTPAuth      |
 | Storage / email | AWS S3, AWS SES                         |
 | Media           | Sharp, ffmpeg-compatible video pipeline |
 | Validation      | Valibot, express-validator-style pipes  |
 | Logging         | Pino                                    |
 | API docs        | Swagger UI, OpenAPI YAML                |
 | Testing         | Vitest, Supertest, tsarch               |
+| Container       | Docker                                  |
+| Deployment      | GitHub Actions, Render                  |
 
 ## Kiến trúc
 
-Codebase đi theo hướng layered clean/hexagonal architecture với các feature module theo chiều dọc.
+Codebase theo layered clean/hexagonal architecture với vertical feature modules.
 
 ```txt
 HTTP / Socket.IO
@@ -59,32 +63,34 @@ Infrastructure adapters
 MongoDB, PostgreSQL, Redis, BullMQ, S3, SES, JWT, Google OAuth
 ```
 
-Các ý chính:
+Ý tưởng chính:
 
 - `src/modules/<feature>/domain` chứa business entities, value objects và repository contracts.
 - `src/modules/<feature>/application` chứa use cases, application services và outbound ports.
-- `src/modules/<feature>/infrastructure` chứa persistence, queue và service adapters.
-- `src/presentation` chứa Express và Socket.IO adapters.
-- `src/bootstrap` là composition root, chịu trách nhiệm wiring repositories, services, routes, workers và socket features.
-- Code phụ thuộc database được ẩn sau repository ports, cho phép chọn MongoDB hoặc PostgreSQL thông qua cấu hình.
+- `src/modules/<feature>/infrastructure` chứa các adapter cho persistence, queue và service.
+- `src/presentation` chứa adapter Express và Socket.IO.
+- `src/bootstrap` là composition root dùng để nối repositories, services, routes, workers và socket features.
+- Database-specific code được ẩn sau repository ports, cho phép chọn implementation MongoDB hoặc PostgreSQL bằng configuration.
 
 ## Cấu trúc dự án
 
 ```txt
 src/
-  bootstrap/          Khởi động app, config, manual DI, wiring route/worker
-  infrastructure/     Database, Redis, queue, logger và technical adapters dùng chung
-  modules/            Feature modules theo domain/application/infrastructure layers
+  bootstrap/          Application startup, config, manual DI, route/worker wiring
+  infrastructure/     Database, Redis, queue, logger và technical adapters
+  modules/            Feature modules dùng các lớp domain/application/infrastructure
   presentation/       Express HTTP API và Socket.IO presentation adapters
   index.ts            Process entry point
 
 swagger/              OpenAPI YAML fragments dùng bởi Swagger UI
 postman/              Postman collections và environment
 scripts/              Utility và seed scripts
+.github/workflows/    GitHub Actions deployment workflows
+Dockerfile            Production container image definition
 test/
   architecture/       Architecture boundary tests
   e2e/                End-to-end HTTP tests
-  support/            Builders, doubles và mocks cho tests
+  support/            Builders, doubles và mocks cho test
 ```
 
 Các module chính:
@@ -97,19 +103,19 @@ Các module chính:
 - `conversation`: conversations, members, messages và group operations
 - `notification`: notification listing, read state, realtime presence và cleanup
 - `media`: image upload, video upload, stream status và static video streaming
-- `operations`: các thao tác admin/maintenance nội bộ như clear cache và sync permission
-- `core`: DDD primitives dùng chung, base use-case contracts, repository bases và app-wide ports
+- `operations`: internal admin/maintenance actions như cache clearing và permission sync
+- `core`: shared DDD primitives, base use-case contracts, repository bases và app-wide ports
 
-## Chạy dự án
+## Bắt đầu
 
 ### Yêu cầu
 
-- Node.js. Dự án hiện đang được phát triển với Node `v25.3.0`.
+- Node.js. Dự án hiện được phát triển với Node `v25.3.0`.
 - pnpm `11.0.0`
 - MongoDB hoặc PostgreSQL
 - Redis
-- ffmpeg trong `PATH` nếu muốn chạy các luồng xử lý video
-- AWS S3/SES credentials nếu muốn chạy media/email flow giống production
+- ffmpeg có trong `PATH` nếu muốn chạy các luồng xử lý video
+- AWS S3/SES credentials cho các luồng media và email gần giống production
 
 ### Cài đặt
 
@@ -117,39 +123,39 @@ Các module chính:
 pnpm install
 ```
 
-### Environment
+### Môi trường
 
-Tạo file environment local từ file mẫu:
+Tạo local environment file từ example:
 
 ```bash
 cp .env.example .env.development
 ```
 
-Sau đó điền các biến môi trường cần thiết.
+Sau đó điền các biến bắt buộc.
 
 Các biến quan trọng:
 
-| Biến                                                                             | Mục đích                                  |
-| -------------------------------------------------------------------------------- | ----------------------------------------- |
-| `PORT`                                                                           | Port của HTTP server                      |
-| `APP_URL`                                                                        | URL của backend application               |
-| `FRONTEND_URL`                                                                   | URL frontend dùng cho CORS mặc định       |
-| `CORS_ORIGINS`                                                                   | Danh sách origin, phân tách bằng dấu phẩy |
-| `PERSISTENCE_DRIVER`                                                             | `mongo` hoặc `postgres`                   |
-| `MONGO_URI`, `MONGO_DB_NAME`                                                     | Cấu hình kết nối MongoDB                  |
-| `POSTGRES_URI`, `POSTGRES_SSL`                                                   | Cấu hình kết nối PostgreSQL               |
-| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`                         | Cấu hình kết nối Redis                    |
-| `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`                                    | JWT secrets                               |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                | Cấu hình Google OAuth                     |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME` | Cấu hình S3 storage                       |
-| `SES_FROM_ADDRESS`                                                               | Email sender cho OTP/email flows          |
-| `RATE_LIMIT_ENABLED`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`                   | Cấu hình API rate limit                   |
+| Variable                                                                         | Mục Đích                                             |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `PORT`                                                                           | HTTP server port                                     |
+| `APP_URL`                                                                        | Backend application URL                              |
+| `FRONTEND_URL`                                                                   | Frontend URL dùng cho CORS defaults                  |
+| `CORS_ORIGINS`                                                                   | Danh sách origins được phép, phân tách bằng dấu phẩy |
+| `DATABASE_ADAPTER`                                                               | `mongo` hoặc `postgres`                              |
+| `MONGO_URI`, `MONGO_DB_NAME`                                                     | MongoDB connection config                            |
+| `POSTGRES_URI`, `POSTGRES_SSL`                                                   | PostgreSQL connection config                         |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`                         | Redis connection config                              |
+| `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`                                    | JWT secrets                                          |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                | Google OAuth config                                  |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME` | S3 storage config                                    |
+| `SES_FROM_ADDRESS`                                                               | Email người gửi cho luồng OTP/email                  |
+| `RATE_LIMIT_ENABLED`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`                   | API rate limit config                                |
 
-Không commit secret thật trong các file `.env.*`.
+Không commit secrets thật trong `.env.*`.
 
 ### Database Migrations
 
-Chạy migration tương ứng với persistence driver bạn chọn.
+Chạy migration cho persistence driver bạn đã chọn.
 
 MongoDB:
 
@@ -163,7 +169,7 @@ PostgreSQL:
 pnpm run db:migrate:postgres --env=development
 ```
 
-Một số lệnh migration hữu ích:
+Các lệnh migration hữu ích:
 
 ```bash
 pnpm run db:migrations:pending:mongo --env=development
@@ -174,8 +180,6 @@ pnpm run db:migrations:pending:postgres --env=development
 pnpm run db:migrations:executed:postgres --env=development
 pnpm run db:rollback:postgres --env=development
 ```
-
-Xem thêm tại [DATABASE_MIGRATIONS.md](./DATABASE_MIGRATIONS.md).
 
 ### Seed Data
 
@@ -201,46 +205,96 @@ pnpm run seed:fake-data:postgres
 pnpm run dev
 ```
 
-Các environment khác:
+Các môi trường khác:
 
 ```bash
 pnpm run dev:staging
 pnpm run dev:prod
 ```
 
-API prefix:
+API prefix là:
 
 ```txt
 /api/v1
 ```
 
-Swagger UI:
+Swagger UI có tại:
 
 ```txt
 /api/docs
 ```
 
+### Build và chạy bằng Docker
+
+Repository có production `Dockerfile` dựa trên `node:22-alpine`. Image cài dependencies bằng pnpm, build TypeScript app và start bằng:
+
+```bash
+pnpm start:prod
+```
+
+Build image:
+
+```bash
+docker build -t nodejs-social .
+```
+
+Run container với production environment file:
+
+```bash
+docker run --rm --env-file .env.production -p 3000:3000 nodejs-social
+```
+
+Container chỉ chạy API process. MongoDB/PostgreSQL, Redis, S3/SES hoặc Cloudinary, và các external services khác vẫn cần được cung cấp riêng.
+
 ## Scripts
 
-| Lệnh                         | Mô tả                                          |
-| ---------------------------- | ---------------------------------------------- |
-| `pnpm run dev`               | Chạy development server với `.env.development` |
-| `pnpm run build`             | Compile TypeScript và rewrite path aliases     |
-| `pnpm run build:clean`       | Xóa `dist` rồi build lại                       |
-| `pnpm run start:dev`         | Chạy compiled app với development env          |
-| `pnpm run lint`              | Chạy ESLint                                    |
-| `pnpm run prettier`          | Kiểm tra format                                |
-| `pnpm run typecheck`         | Type-check production build config             |
-| `pnpm run typecheck:test`    | Type-check test config                         |
-| `pnpm run test`              | Chạy toàn bộ Vitest tests đã cấu hình          |
-| `pnpm run test:unit`         | Chạy module/unit tests                         |
-| `pnpm run test:architecture` | Chạy architecture boundary tests               |
+| Lệnh                         | Mô tả                                           |
+| ---------------------------- | ----------------------------------------------- |
+| `pnpm run dev`               | Start development server với `.env.development` |
+| `pnpm run build`             | Compile TypeScript và rewrite path aliases      |
+| `pnpm run build:clean`       | Xóa `dist` và build lại                         |
+| `pnpm run start:dev`         | Run compiled app với development env            |
+| `pnpm run lint`              | Chạy ESLint                                     |
+| `pnpm run prettier`          | Kiểm tra formatting                             |
+| `pnpm run typecheck`         | Type-check production build config              |
+| `pnpm run typecheck:test`    | Type-check test config                          |
+| `pnpm run test`              | Chạy toàn bộ configured Vitest tests            |
+| `pnpm run test:unit`         | Chạy module/unit tests                          |
+| `pnpm run test:architecture` | Chạy architecture boundary tests                |
+
+## CI/CD
+
+Production deployment được configure trong `.github/workflows/deploy-production.yml`.
+
+Workflow chạy khi:
+
+- Push lên `main`
+- Chạy thủ công qua `workflow_dispatch`
+
+Luồng deployment:
+
+- Checkout repository
+- Kiểm tra production Docker build bằng `docker build --platform linux/amd64 -t nodejs-social:ci .`
+- Install Render CLI
+- Tạo Render deploy cho configured service và chờ hoàn tất
+- Gửi thông báo Telegram khi thành công hoặc thất bại
+
+Các GitHub repository secrets bắt buộc:
+
+| Secret              | Mục đích                      |
+| ------------------- | ----------------------------- |
+| `RENDER_API_KEY`    | Authenticate Render CLI       |
+| `RENDER_SERVICE_ID` | Render service đích           |
+| `TELEGRAM_TO`       | Telegram chat/user identifier |
+| `TELEGRAM_TOKEN`    | Telegram bot token            |
+
+Các biến môi trường runtime của ứng dụng nên được cấu hình trong Render hoặc môi trường deploy đích, không commit vào repository.
 
 ## Tổng quan API
 
 Routes được mount dưới `/api/v1`.
 
-| Khu vực             | Base path                            |
+| Phạm vi             | Base path                            |
 | ------------------- | ------------------------------------ |
 | Authentication      | `/api/v1/auth`                       |
 | OAuth               | `/api/v1/oauth`                      |
@@ -259,22 +313,21 @@ Routes được mount dưới `/api/v1`.
 | Permissions         | `/api/v1/permissions`                |
 | Internal operations | `/api/v1/internal`                   |
 
-Tài liệu và collection hữu ích:
+Tài liệu và collections hữu ích:
 
 - Swagger UI: `/api/docs`
-- Postman collection: [postman/nodejs-social.postman_collection.json](./postman/nodejs-social.postman_collection.json)
-- Postman environment: [postman/nodejs-social.postman_environment.json](./postman/nodejs-social.postman_environment.json)
-- Admin users collection: [postman/admin-users.postman_collection.json](./postman/admin-users.postman_collection.json)
+- Postman collection: [postman/COLLECTION_API.postman.json](./postman/COLLECTION_API.postman.json)
+- Postman environment: [postman/ENV.postman.json](./postman/ENV.postman.json)
 
-## Chiến lược testing
+## Chiến lược Testing
 
 Dự án dùng Vitest cho unit, architecture, integration và e2e tests.
 
-Các trọng tâm test hiện tại:
+Trọng tâm test hiện tại:
 
-- Application use cases trong các feature modules, đặc biệt là authentication và user flows
-- Architecture boundary tests bằng `tsarch`
-- E2E authentication-user flow đi qua HTTP layer
+- Application use cases trong feature modules, đặc biệt là các luồng authentication và user
+- Architecture boundary tests với `tsarch`
+- Luồng e2e authentication-user qua HTTP layer
 - Test support helpers, builders, doubles và mocks trong `test/support`
 
 Chạy tests:
@@ -283,35 +336,35 @@ Chạy tests:
 pnpm run test
 ```
 
-Chạy riêng architecture tests:
+Chỉ chạy architecture tests:
 
 ```bash
 pnpm run test:architecture
 ```
 
-Architecture tests giúp đảm bảo hướng phụ thuộc giữa các layer, tránh để domain/application code phụ thuộc ngược vào presentation hoặc infrastructure details.
+Architecture tests giúp enforce layer direction như dự kiến, để domain/application code không vô tình depend on presentation hoặc infrastructure details.
 
-## Design Decisions
+## Quyết định thiết kế
 
 ### Clean architecture với feature modules
 
-Mỗi business area được tổ chức thành một module theo chiều dọc. Cách này giữ domain language gần với use cases, đồng thời vẫn tách rõ domain, application và infrastructure responsibilities.
+Mỗi vùng nghiệp vụ được tổ chức thành một vertical module. Cách này giữ domain language gần với use cases, đồng thời vẫn tách biệt trách nhiệm domain, application và infrastructure.
 
 ### Manual dependency injection
 
-Dự án dùng container rõ ràng trong `src/bootstrap` thay vì framework-level DI container. Điều này làm object wiring dễ nhìn hơn và giữ runtime framework nhẹ hơn.
+Dự án dùng một container tường minh trong `src/bootstrap` thay vì DI container ở cấp framework. Cách này làm object wiring rõ ràng và giữ runtime framework gọn nhẹ.
 
-### Repository ports với MongoDB và PostgreSQL adapters
+### Repository ports với adapter MongoDB và PostgreSQL
 
-Domain và application code phụ thuộc vào repository contracts, không phụ thuộc trực tiếp vào database clients. Persistence driver được chọn bằng `PERSISTENCE_DRIVER`, và composition root sẽ wire MongoDB hoặc PostgreSQL implementations tương ứng.
+Domain và application code phụ thuộc vào repository contracts, không phụ thuộc database clients. Persistence driver được chọn bằng `DATABASE_ADAPTER`, và composition root nối implementation MongoDB hoặc PostgreSQL tương ứng.
 
-### Use cases là application entry points
+### Use cases là điểm vào của application
 
-Controllers gọi application use cases thay vì trực tiếp orchestrate repositories. Điều này giữ HTTP concerns bên ngoài business workflow và giúp use cases dễ test hơn.
+Controllers gọi application use cases thay vì trực tiếp điều phối repositories. Điều này giữ HTTP concerns nằm ngoài business workflow và giúp use cases dễ test hơn.
 
 ### Realtime và background jobs là adapters
 
-Socket.IO features và BullMQ workers được xem là delivery mechanisms bao quanh application logic, không phải trung tâm của domain model.
+Socket.IO features và BullMQ workers được xem là cơ chế delivery bao quanh application logic, không phải trung tâm của domain model.
 
 ## Trạng thái hiện tại
 
@@ -319,28 +372,30 @@ Socket.IO features và BullMQ workers được xem là delivery mechanisms bao q
 
 - Core authentication và user flows
 - Role và permission management
-- Post/feed/social interaction flows
+- Các luồng post/feed/social interaction
 - Friend/block relationship flows
-- Conversation và notification modules
-- Media upload và video processing pipeline
+- Module conversation và notification
+- Pipeline upload media và xử lý video
 - MongoDB và PostgreSQL persistence adapters
-- Redis, queue, Swagger và Postman integration
-- Unit, architecture và e2e test setup
+- Tích hợp Redis, queue, Swagger và Postman
+- Production image bằng Docker
+- GitHub Actions deploy lên Render với bước kiểm tra Docker build và thông báo Telegram
+- Thiết lập unit, architecture và e2e tests
 
-Các hướng cải thiện tiếp theo:
+Cải tiến tiếp theo nên làm:
 
-- Thêm Docker Compose cho MongoDB/PostgreSQL/Redis local
-- Thêm CI workflow cho lint, typecheck, tests và build
+- Thêm Docker Compose để khởi động MongoDB/PostgreSQL/Redis local
+- Thêm CI quality gates cho lint, typecheck, tests và build
 - Thêm coverage reporting và thresholds
 - Mở rộng e2e tests cho posts, relationships, conversations và media
-- Document deployment topology và worker scaling strategy
+- Document deployment topology, runtime environment setup và worker scaling strategy
 
 ## Trọng tâm kỹ thuật
 
-Dự án này được thiết kế để thể hiện:
+Dự án được thiết kế để thể hiện:
 
 - Business logic được tách khỏi HTTP và database frameworks
-- Application use cases dễ test với dependencies rõ ràng
-- Cấu trúc backend modular cho social networking domain
-- Persistence adapters có thể thay đổi giữa MongoDB và PostgreSQL
-- Các concern gần production như queues, caching, rate limits, logs, migrations, API docs và realtime events
+- Application use cases dễ test với dependencies tường minh
+- Cấu trúc backend modular cho domain mạng xã hội
+- Adapter persistence có thể thay thế giữa MongoDB và PostgreSQL
+- Các concern hướng production như queues, caching, rate limits, logs, migrations, API docs, Docker deployment và realtime events

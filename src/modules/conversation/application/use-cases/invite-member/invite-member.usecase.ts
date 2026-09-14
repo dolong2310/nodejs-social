@@ -17,8 +17,8 @@ import { NotificationServicePort } from '@/modules/notification/application/serv
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
 /**
- * Mời thành viên vào group
- * Ràng buộc về quyền + quan hệ bạn bè + trạng thái dữ liệu
+ * Invite a member to a group.
+ * Constraints: permissions, friendship relationship, and data state.
  */
 export class InviteMemberUseCase extends InviteMemberPort {
   constructor(
@@ -32,7 +32,7 @@ export class InviteMemberUseCase extends InviteMemberPort {
   }
 
   async execute({ userId, inviteeUserId, conversationId }: InviteMemberCommand): Promise<InviteMemberResult> {
-    // kiểm tra user có phải là member của conversation không
+    // Check whether the user is a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
     // Parallel: load conversation + check membership + check friendship.
@@ -43,22 +43,22 @@ export class InviteMemberUseCase extends InviteMemberPort {
     ]);
     const conv = convEntity.toObject();
 
-    // kiểm tra conversation có phải là group không
+    // Check whether the conversation is a group.
     if (conv.type !== EnumConversationType.GROUP) {
       throw new ConversationNotFoundException();
     }
 
-    // kiểm tra người được mới có phải là member của conversation không
+    // Check whether the invitee is already a conversation member.
     if (memberEntity) {
       throw new ConversationUserAlreadyMemberException();
     }
 
-    // kiểm tra người được mời có phải là bạn bè của người đang mời không
+    // Check whether the invitee is friends with the inviter.
     if (!isFriend) {
       throw new ConversationInviteNotFriendException();
     }
 
-    // kiểm tra người tạo group có phải là bạn bè của người được mời không
+    // Check whether the group creator is friends with the invitee.
     const creatorFriend = await this.friendService.isFriendOf({
       userId: conv.createdBy,
       otherUserId: inviteeUserId
@@ -67,14 +67,14 @@ export class InviteMemberUseCase extends InviteMemberPort {
       throw new ConversationInviteNotFriendException();
     }
 
-    // thêm người được mời vào group database
+    // Add the invitee to the group in the database.
     await this.conversationMemberRepository.createMember({
       conversationId,
       userId: inviteeUserId,
       role: EnumConversationMemberRole.MEMBER
     });
 
-    // Cập nhật updatedAt + gửi notification song song sau khi insert member.
+    // Update updatedAt and send notification in parallel after inserting the member.
     const updatedAt = new Date();
     const [memberEntities] = await Promise.all([
       this.conversationMemberRepository.listMembers(conversationId),
@@ -88,7 +88,7 @@ export class InviteMemberUseCase extends InviteMemberPort {
       createdBy: conv.createdBy,
       name: conv.name,
       avatarMediaId: conv.avatarMediaId ?? null,
-      updatedAt: updatedAt, // override lại field này để response đúng thời điểm.
+      updatedAt: updatedAt, // override this field so the response uses the correct timestamp
       createdAt: conv.createdAt,
       members: memberEntities.map((member) => member.toObject())
     });

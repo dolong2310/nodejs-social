@@ -11,8 +11,8 @@ import { EnumConversationType } from '@/modules/conversation/domain/entities/con
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
 /**
- * Cập nhật thông tin cuộc trò chuyện
- * Sửa metadata của cuộc trò chuyện (ví dụ đổi name, đổi avatarMediaId) có phân quyền theo role trong conversation
+ * Update conversation information.
+ * Edit conversation metadata, such as name or avatarMediaId, with role-based permissions inside the conversation.
  */
 export class UpdateConversationUseCase extends UpdateConversationPort {
   constructor(
@@ -28,22 +28,22 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
     avatarMediaId,
     name
   }: UpdateConversationCommand): Promise<UpdateConversationResult> {
-    // kiểm tra user có phải là member của conversation không
+    // Check whether the user is a conversation member.
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
-    // chỉ cho phép admin và manager được sửa metadata của conversation
+    // Only admin and manager can edit conversation metadata.
     if (self.role === EnumConversationMemberRole.MEMBER) {
       throw new ConversationRoleForbiddenException();
     }
 
-    // patch object chứa các thay đổi cần thực hiện
+    // Patch object containing changes to apply.
     const patch: Partial<{ name: string; avatarMediaId: string | null; updatedAt: Date }> = {};
     if (name !== undefined) {
       patch.name = name;
     }
     if (avatarMediaId !== undefined) {
-      patch.avatarMediaId = avatarMediaId || null; // chấp nhận string hoặc null, undefined thì bỏ qua
+      patch.avatarMediaId = avatarMediaId || null; // accept string or null; skip undefined
     }
-    // nếu patch object không có thay đổi gì thì trả về conversation hiện tại
+    // If the patch object has no changes, return the current conversation.
     if (Object.keys(patch).length === 0) {
       const convEntity = await this.conversationService.loadConversation(conversationId);
       const conv = convEntity.toObject();
@@ -66,7 +66,7 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
       return payload;
     }
 
-    // cập nhật conversation
+    // Update conversation.
     let convEntity: ConversationEntity | null;
     convEntity = await this.conversationRepository.updateConversation(conversationId, {
       avatarMediaId: patch.avatarMediaId,

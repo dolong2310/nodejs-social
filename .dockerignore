@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+.env
+.env.*
+.git/
+.gitnexus/
+.github/
+logs/
+*.log
+tmp/
+temp/
+uploads/

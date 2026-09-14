@@ -1,13 +1,13 @@
 import { describe, it } from 'vitest';
 import { expectFilesMatch, expectNoForbiddenImports, parseModuleImport, sourceFiles } from './arch.helper';
 
-// Lấy toàn bộ file thuộc src/presentation.
+// Get all files under src/presentation.
 const presentationFiles = sourceFiles('src/presentation');
-// Lấy toàn bộ file thuộc src/presentation/controllers.
+// Get all files under src/presentation/controllers.
 const controllerFiles = presentationFiles.filter((file) => file.includes('/controllers/'));
 
 describe.concurrent('Presentation boundaries', () => {
-  // 1. presentation không được phụ thuộc concrete infrastructure adapter của module.
+  // 1. presentation must not depend on concrete module infrastructure adapters.
   it('presentation does not depend on module infrastructure adapters', () => {
     expectNoForbiddenImports(presentationFiles, ({ importPath }) => {
       const moduleImport = parseModuleImport(importPath);
@@ -15,7 +15,7 @@ describe.concurrent('Presentation boundaries', () => {
     });
   });
 
-  // 2. controller chỉ gọi use-case port; không gọi thẳng implementation, repository port, hoặc infrastructure.
+  // 2. controllers call use-case ports only, not implementations, repository ports, or infrastructure.
   it('controllers depend on use-case ports, not use-case implementations or repositories', () => {
     expectNoForbiddenImports(controllerFiles, ({ importPath }) => {
       if (/\.usecase$/.test(importPath) || importPath.endsWith('.usecase')) {
@@ -29,7 +29,7 @@ describe.concurrent('Presentation boundaries', () => {
     });
   });
 
-  // 3. các adapter HTTP chính phải dùng suffix theo vai trò file.
+  // 3. main HTTP adapters must use suffixes matching each file role.
   it('http presentation adapters use project suffixes', () => {
     expectFilesMatch(
       presentationFiles.filter((file) => file.includes('/controllers/')),
@@ -57,7 +57,7 @@ describe.concurrent('Presentation boundaries', () => {
     );
   });
 
-  // 4. DTO request/response phải thể hiện rõ chiều dữ liệu.
+  // 4. request/response DTOs must clearly express data direction.
   it('http dtos use request or response suffixes', () => {
     expectFilesMatch(
       presentationFiles.filter((file) => file.includes('/dtos/')),

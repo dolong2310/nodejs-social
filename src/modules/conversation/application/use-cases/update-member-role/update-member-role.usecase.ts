@@ -15,14 +15,14 @@ import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**
- * Cập nhật quyền thành viên trong group
- * - Chỉ áp dụng cho group (không cho phép thay đổi quyền trong chat direct 1-1).
- * - Chỉ ADMIN mới được đổi role.
- * - Không cho đụng tới ADMIN (không đổi role của ADMIN và cũng không cho set role thành ADMIN bằng endpoint này).
- * - ADMIN thì có thể thay đổi quyền của MEMBER và MANAGER.
- * - Chỉ cho “đổi qua lại” giữa MEMBER và MANAGER:
- * + Nếu target đang là MANAGER thì chỉ được hạ xuống MEMBER.
- * + Nếu target đang là MEMBER thì chỉ được nâng lên MANAGER.
+ * Update member permissions in a group.
+ * - Applies only to groups; direct 1-1 chats cannot change roles.
+ * - Only ADMIN can change roles.
+ * - ADMIN cannot be modified, and this endpoint cannot set a role to ADMIN.
+ * - ADMIN can change MEMBER and MANAGER permissions.
+ * - Only switching between MEMBER and MANAGER is allowed:
+ * + If target is MANAGER, it can only be downgraded to MEMBER.
+ * + If target is MEMBER, it can only be upgraded to MANAGER.
  */
 export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
   constructor(
@@ -38,14 +38,14 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
     targetUserId,
     role
   }: UpdateMemberRoleCommand): Promise<UpdateMemberRoleResult> {
-    // kiểm tra conversation có phải là group không
+    // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();
     if (conv.type !== EnumConversationType.GROUP) {
       throw new ConversationNotFoundException();
     }
 
-    // gom 1 query để lấy membership của actor + target (giảm round-trip DB).
+    // Use one query to fetch actor and target memberships, reducing DB round trips.
     const membershipEntities = await this.conversationMemberRepository.findMembersByUsers({
       conversationId,
       userIds: [userId, targetUserId]
@@ -53,14 +53,14 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
     const memberships = membershipEntities.map((member) => member.toObject());
     const actor = memberships.find((m) => m.userId === userId);
     const target = memberships.find((m) => m.userId === targetUserId);
-    // kiểm tra user có phải là member của conversation không và có phải là ADMIN không
+    // Check whether the user is a conversation member and ADMIN.
     if (!actor) {
       throw new ConversationNotMemberException();
     }
     if (actor.role !== EnumConversationMemberRole.ADMIN) {
       throw new ConversationRoleForbiddenException();
     }
-    // kiểm tra người bị đổi role có phải là member của conversation không và có phải là ADMIN không
+    // Check whether the target is a conversation member and not ADMIN.
     if (!target) {
       throw new UserNotFoundException();
     }
@@ -68,7 +68,7 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
       throw new ConversationRoleForbiddenException();
     }
 
-    // kiểm tra role mới có phải là MEMBER hoặc MANAGER không
+    // Check whether the new role is MEMBER or MANAGER.
     const nextRole = role;
     if (nextRole === EnumConversationMemberRole.ADMIN) {
       throw new ConversationRoleForbiddenException();
@@ -80,11 +80,11 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
       throw new ConversationRoleForbiddenException();
     }
 
-    // cập nhật role của người bị đổi role
+    // Update the target member role.
     await this.conversationMemberRepository.updateRole({ conversationId, userId: targetUserId, role: nextRole });
-    // lấy members của conversation
+    // Load conversation members.
     const memberEntities = await this.conversationMemberRepository.listMembers(conversationId);
-    // trả về chi tiết cuộc trò chuyện với members đã cập nhật
+    // Return conversation detail with updated members.
     return this.conversationService.mapConversationDetail({ userId, conv: convEntity, members: memberEntities });
   }
 }

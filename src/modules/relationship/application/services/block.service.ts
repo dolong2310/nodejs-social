@@ -19,10 +19,10 @@ export class BlockService implements BlockServicePort {
   }
 
   /**
-   * Lấy danh sách user đang có quan hệ block với viewer và cache ngắn hạn bằng Redis.
-   * - Tránh query DB lặp lại nhiều lần khi load feed/bài viết.
-   * - Chuẩn hóa dữ liệu “block hai chiều”: gồm cả người dùng mà viewer block và người block lại viewer.
-   * - Dùng cho logic ẩn/che thông tin bài viết liên quan block (ở flow lấy posts).
+   * Load users with a block relationship to the viewer and cache them briefly in Redis.
+   * - Avoid repeated DB queries while loading feeds/posts.
+   * - Normalize two-way block data: users blocked by viewer and users who blocked viewer.
+   * - Used by block-related post hiding/redaction logic.
    */
   async getBlockedIdsByUserId(userId: string): Promise<string[]> {
     const key = CACHE_KEYS.blockedUserIds(userId);

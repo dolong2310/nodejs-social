@@ -43,8 +43,22 @@ export class PostRoute extends BaseRoute {
         middlewares: [throttler],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [this.paginationPipe.cursorPaginationQuery, this.postPipe.newFeedFilterQueryPipe],
         controller: this.postController.getNewFeeds
+      })
+    );
+    this.router.get(
+      '/users/:userId',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authOptionGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [
+          this.paginationPipe.cursorPaginationQuery,
+          this.postPipe.userIdPipe('userId', 'params'),
+          this.postPipe.postTypeQueryPipe
+        ],
+        controller: this.postController.getPostsByUser
       })
     );
     this.router.patch(
@@ -85,6 +99,26 @@ export class PostRoute extends BaseRoute {
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.getPostDetail
+      })
+    );
+    this.router.get(
+      '/me/likes',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard, this.activeUserGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
+        controller: this.postController.getUserLikedPosts
+      })
+    );
+    this.router.get(
+      '/me/bookmarks',
+      this.createRouteHandler({
+        middlewares: [throttler],
+        guards: [this.authGuard, this.activeUserGuard],
+        interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
+        pipes: [this.paginationPipe.cursorPaginationQuery],
+        controller: this.postController.getUserBookmarkedPosts
       })
     );
     this.router.get(

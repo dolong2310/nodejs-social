@@ -35,7 +35,7 @@ export async function createHttpServer(io: SocketIOServer) {
         standardHeaders: appConfig.rateLimit.standardHeaders,
         legacyHeaders: appConfig.rateLimit.legacyHeaders,
         ipv6Subnet: appConfig.rateLimit.ipv6Subnet,
-        // Lưu bộ đếm trên Redis thay vì RAM process — cần khi nhiều instance hoặc restart không mất counter.
+        // Store counters in Redis instead of process memory so multiple instances and restarts keep consistent counters.
         store: new RedisStore({
           sendCommand: (...args: string[]) => redis.sendRawCommand(...args) as Promise<RedisReply>
         })

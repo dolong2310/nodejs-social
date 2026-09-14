@@ -11,7 +11,7 @@ import {
 } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 
 export class GetPostsTypeUseCase extends GetPostsTypePort {
@@ -28,36 +28,36 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends PostDetailOutput>({
+  async execute<T extends PostDetailWithAuthorOutput>({
     userId,
     cursor,
     limit,
     postId,
     type
   }: GetPostsTypeQuery): Promise<GetPostsTypeResult<T>> {
-    const parentPost = await this.postQueryRepository.findPostDetailById(postId);
+    const parentPost = await this.postQueryRepository.findPostDetailById(postId, userId);
     if (!parentPost) {
       throw new PostNotFoundException();
     }
-    await this.postAudienceAccess.assertViewerCanAccessPostDetail(parentPost, userId);
+    await this.postAudienceAccess.assertUserCanAccessPostDetail(parentPost, userId);
 
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
-    // Lấy danh sách bài viết theo postId và type.
-    const results = await this.postQueryRepository.findPostsType({ postId, type, cursor: before, limit });
+    // Load posts by postId and type.
+    const results = await this.postQueryRepository.findPostsType({ postId, type, currentUserId: userId, cursor: before, limit });
     const hasMore = results.length > limit;
     const posts = results.slice(0, limit);
 
     if (userId) {
-      // Lấy toàn bộ user có quan hệ block với viewer theo cả 2 chiều (viewer block họ hoặc họ block viewer).
+      // Load all users with a two-way block relationship with the user (user blocked them or they blocked user).
       const blockedIds = await this.blockService.getBlockedIdsByUserId(userId);
       if (blockedIds.length > 0) {
-        // Kiểm tra viewer đã từng tương tác post cha chưa (like/bookmark/comment).
-        const isInteracted = await this.postQueryRepository.isViewerInteractedWithPost({ viewerId: userId, postId });
+        // Check whether the user has previously interacted with the parent post (like/bookmark/comment).
+        const isInteracted = await this.postQueryRepository.isUserInteractedWithPost({ userId, postId });
         if (isInteracted) {
           const uniqueIds = new Set(blockedIds);
           for (const post of posts) {
             if (uniqueIds.has(post.userId)) {
-              // Ẩn thông tin tác giả của từng row bị block (thay thế thành “Unknown user”), giữ nội dung post.
+              // Redact the author of each blocked row by replacing it with Unknown user while keeping post content.
               transformUnknownAuthorForPostDetail(post);
             }
           }
@@ -65,8 +65,8 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
       }
     }
 
-    // Cập nhật lượt xem cho các bài vừa load.
-    const updatedPosts = this.postService.updatePostsViews<PostDetailOutput>({ posts, userId });
+    // Update view counters for the loaded posts.
+    const updatedPosts = this.postService.updatePostsViews<PostDetailWithAuthorOutput>({ posts, userId });
 
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;

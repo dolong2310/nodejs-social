@@ -1,10 +1,11 @@
+import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export class SendFriendRequestBodyDTO {
-  toUserId: string;
+  username: string;
 
-  constructor(body: { toUserId: string }) {
-    this.toUserId = body.toUserId;
+  constructor(body: { username: string }) {
+    this.username = Username.normalize(body.username) ?? '';
   }
 }
 

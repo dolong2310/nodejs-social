@@ -1,6 +1,6 @@
 export interface PostViewsJobData {
   postIds: string[];
-  isAuthenticatedViewer: boolean;
+  isAuthenticatedUser: boolean;
 }
 
 export interface PostViewsJobResult {

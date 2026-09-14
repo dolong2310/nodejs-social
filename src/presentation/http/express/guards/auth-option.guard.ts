@@ -8,8 +8,8 @@ export class AuthOptionGuard implements BaseGuard {
   constructor(private readonly tokenService: TokenServicePort) {}
 
   /**
-   * Cho phép request không có token đi qua — set tokenPayload nếu token hợp lệ.
-   * Dùng cho các route public nhưng áp dụng logic bổ sung khi đã đăng nhập.
+   * Allow requests without a token to pass through, and set tokenPayload when the token is valid.
+   * Used for public routes that apply extra logic when the user is authenticated.
    */
   async canActivate(request: Request): Promise<boolean> {
     const token = extractTokenFromHeader(request);
@@ -21,7 +21,7 @@ export class AuthOptionGuard implements BaseGuard {
       request.tokenPayload = await this.tokenService.verifyAccessToken(token);
       requestContextLogger.syncLogContextFromAuth(request);
     } catch {
-      // Token không hợp lệ trên optional route => coi như guest.
+      // Invalid token on an optional route => treat as guest.
       // if (error instanceof jwt.TokenExpiredError) {
       //   throw TokenHasExpiredException;
       // }

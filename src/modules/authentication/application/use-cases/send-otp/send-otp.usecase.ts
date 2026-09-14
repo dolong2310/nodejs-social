@@ -64,9 +64,9 @@ export class SendOtpUseCase extends SendOtpPort {
   }
 
   private generateOtpCode(): string {
-    // 6 chữ số
+    // 6 digits.
     // min <= n < max
-    // -> n có thể là 100000, 100001, ..., 999999
+    // -> n can be 100000, 100001, ..., 999999.
     return randomInt(100000, 1000000).toString();
     // return Math.floor(100000 + Math.random() * 900000).toString();
   }

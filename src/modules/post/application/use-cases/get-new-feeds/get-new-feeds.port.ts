@@ -1,14 +1,17 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
+import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.type';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
 export class GetNewFeedsQuery {
   userId: string;
   limit: number;
   cursor?: string;
-  constructor(payload: { userId: string; limit: string; cursor?: string }) {
+  filter: EnumNewFeedFilter;
+  constructor(payload: { userId: string; limit: string; cursor?: string; filter?: EnumNewFeedFilter }) {
     this.userId = payload.userId;
     this.limit = Number(payload.limit);
     this.cursor = payload.cursor;
+    this.filter = payload.filter ?? EnumNewFeedFilter.FOR_YOU;
   }
 }
 

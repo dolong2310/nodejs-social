@@ -81,7 +81,7 @@ export class AuthGuard implements BaseGuard {
           return null;
         }
 
-        // Key by method and path (mục đích transform lại thành method:path để dễ dàng check canAccess bằng object)
+        // Key by method and path so canAccess can be checked efficiently through an object lookup.
         const permissionsMap = keyBy(rolePermissions.permissions, (p) => `${p.method}-${p.path}`);
 
         return {

@@ -9,22 +9,22 @@ export function notificationSummary(entity: NotificationEntity): string {
   const notification = entity.toObject();
   switch (notification.type) {
     case EnumNotificationType.FRIEND_REQUEST:
-      return `${notification.actor.displayName} đã gửi lời mời kết bạn`;
+      return `${notification.actor.displayName} sent you a friend request`;
     case EnumNotificationType.FRIEND_ACCEPTED:
-      return `${notification.actor.displayName} đã chấp nhận lời mời kết bạn`;
+      return `${notification.actor.displayName} accepted your friend request`;
     case EnumNotificationType.NEW_MESSAGE: {
       const p = notification.payload as INewMessageNotificationPayload;
       if (p.previewKind === EnumNewMessagePreviewKind.ATTACHMENT) {
-        return 'Đã gửi một ảnh';
+        return 'Sent a photo';
       }
       if (p.previewText) {
         return p.previewText.length > 80 ? `${p.previewText.slice(0, 80)}…` : p.previewText;
       }
-      return 'Tin nhắn mới';
+      return 'New message';
     }
     case EnumNotificationType.ADDED_TO_GROUP:
-      return `${notification.actor.displayName} đã thêm bạn vào nhóm chat`;
+      return `${notification.actor.displayName} added you to a group chat`;
     default:
-      return 'Thông báo';
+      return 'Notification';
   }
 }

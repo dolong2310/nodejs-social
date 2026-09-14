@@ -48,8 +48,9 @@ import { ImageProcessorPort } from '@/modules/media/application/ports/image-proc
 import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import { CloudinaryService } from '@/modules/media/infrastructure/services/cloudinary-storage.service';
 import { LocalFileStorage } from '@/modules/media/infrastructure/services/file-storage.service';
-import { S3Service } from '@/modules/media/infrastructure/services/s3-storage.service';
+// import { S3Service } from '@/modules/media/infrastructure/services/s3-storage.service';
 import { SharpImageProcessor } from '@/modules/media/infrastructure/services/sharp-image-processor.service';
 import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import {
@@ -208,11 +209,16 @@ export class Container implements IContainer {
       clientSecret: appConfig.google.clientSecret,
       redirectUri: appConfig.google.redirectUri
     });
-    this.s3Service = new S3Service(this.logger, this.fileStorage, {
-      region: appConfig.s3.region,
-      accessKeyId: appConfig.s3.accessKeyId,
-      secretAccessKey: appConfig.s3.secretAccessKey,
-      bucketName: appConfig.s3.bucketName
+    // this.s3Service = new S3Service(this.logger, this.fileStorage, {
+    //   region: appConfig.s3.region,
+    //   accessKeyId: appConfig.s3.accessKeyId,
+    //   secretAccessKey: appConfig.s3.secretAccessKey,
+    //   bucketName: appConfig.s3.bucketName
+    // });
+    this.s3Service = new CloudinaryService(this.logger, {
+      cloudName: appConfig.cloudinary.cloudName,
+      apiKey: appConfig.cloudinary.apiKey,
+      apiSecret: appConfig.cloudinary.apiSecret
     });
     this.emailSender = new SesEmailSender(this.logger, {
       region: appConfig.s3.region,

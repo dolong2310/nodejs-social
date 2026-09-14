@@ -15,7 +15,7 @@ import { UserServicePort } from '@/modules/user/application/services/user.servic
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
 
 export interface PostAudienceAccessServicePort {
-  assertViewerCanAccessPostDetail(post: PostDetailOutput, viewerUserId: string | undefined): Promise<void>;
+  assertUserCanAccessPostDetail(post: PostDetailOutput, currentUserId: string | undefined): Promise<void>;
 }
 
 export class PostAudienceAccessService implements PostAudienceAccessServicePort {
@@ -26,10 +26,10 @@ export class PostAudienceAccessService implements PostAudienceAccessServicePort 
     private readonly friendsService: FriendServicePort
   ) {}
 
-  async assertViewerCanAccessPostDetail(post: PostDetailOutput, viewerUserId: string | undefined): Promise<void> {
+  async assertUserCanAccessPostDetail(post: PostDetailOutput, currentUserId: string | undefined): Promise<void> {
     const ownerId = post.userId;
-    const isGuestUser = !viewerUserId;
-    const isOwner = !isGuestUser && ownerId === viewerUserId;
+    const isGuestUser = !currentUserId;
+    const isOwner = !isGuestUser && ownerId === currentUserId;
 
     const audienceStr = post.audience as string;
     const isPublicAudience = audienceStr === EnumPostAudience.PUBLIC;
@@ -58,10 +58,10 @@ export class PostAudienceAccessService implements PostAudienceAccessServicePort 
     }
 
     if (isFriendsOnlyAudience) {
-      const isMention = post.mentions.some((mention) => mention.id === viewerUserId);
+      const isMention = post.mentions.some((mention) => mention.id === currentUserId);
       if (!isOwner && !isMention) {
         const isFriend = await this.friendsService.isFriendOf({
-          userId: viewerUserId,
+          userId: currentUserId,
           otherUserId: ownerId
         });
         if (!isFriend) {
@@ -71,10 +71,10 @@ export class PostAudienceAccessService implements PostAudienceAccessServicePort 
     }
 
     if (!isOwner) {
-      const blocked = await this.blockService.isBlockedEitherWay(viewerUserId, post.userId);
+      const blocked = await this.blockService.isBlockedEitherWay(currentUserId, post.userId);
       if (blocked) {
-        const isInteracted = await this.postQueryRepository.isViewerInteractedWithPost({
-          viewerId: viewerUserId,
+        const isInteracted = await this.postQueryRepository.isUserInteractedWithPost({
+          userId: currentUserId,
           postId: post.id
         });
         if (!isInteracted) {

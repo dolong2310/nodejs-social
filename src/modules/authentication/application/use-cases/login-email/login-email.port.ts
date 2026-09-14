@@ -6,9 +6,9 @@ export class LoginEmailCommand {
   totpCode?: string;
   emailOtpCode?: string;
   constructor(payload: { email: string; password: string; totpCode?: string; emailOtpCode?: string }) {
-    // nếu cả 2 trường đều có hoặc không có thì sẽ chạy vào if này
+    // Enter this branch when both fields are present or both fields are absent.
     if ((payload.totpCode !== undefined) === (payload.emailOtpCode !== undefined)) {
-      throw new Error('Only one of the fields is allowed, not both'); // TODO: validate ở middleware presentation layer => OnlyOneOfFieldsRequired
+      throw new Error('Only one of the fields is allowed, not both'); // TODO: validate in presentation middleware => OnlyOneOfFieldsRequired
     }
     this.email = payload.email.toLowerCase().trim();
     this.password = payload.password;

@@ -55,6 +55,11 @@ export class OnlyRootPostCanBeUpdatedException extends ExceptionBase {
   readonly statusCode = 403;
 }
 
+export class RepostCannotBeUpdatedException extends ExceptionBase {
+  readonly code = 'POST.REPOST_CANNOT_BE_UPDATED';
+  readonly statusCode = 403;
+}
+
 export class EmptyPostUpdateException extends ExceptionBase {
   readonly code = 'POST.EMPTY_UPDATE';
   readonly statusCode = 400;

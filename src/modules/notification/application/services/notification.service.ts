@@ -81,10 +81,10 @@ export class NotificationService implements NotificationServicePort {
   }
 
   /**
-   * Hàm được gọi khi có notification mới được tạo.
-   * - Thêm notification vào database
-   * - trimRecipientIfNeeded để không vượt NOTIFICATION_MAX_PER_USER
-   * - emit notification đến recipient
+   * Called when a new notification is created.
+   * - Add notification to the database.
+   * - trimRecipientIfNeeded so the recipient does not exceed NOTIFICATION_MAX_PER_USER.
+   * - emit notification to the recipient.
    */
   private async persistAndEmit(recipientId: string, entity: NotificationEntity): Promise<void> {
     await this.notificationRepository.createNotification(entity);
@@ -120,9 +120,9 @@ export class NotificationService implements NotificationServicePort {
   }
 
   /**
-   * Sau khi insert noti mới, đảm bảo tổng số noti của user này không vượt NOTIFICATION_MAX_PER_USER:
-   * - Đếm tổng noti hiện có
-   * - Nếu vượt quá thì tìm các noti cũ nhất và xóa bớt
+   * After inserting a new notification, ensure the user's total notification count does not exceed NOTIFICATION_MAX_PER_USER:
+   * - Count existing notifications.
+   * - If over the limit, find the oldest notifications and delete the excess.
    */
   async trimRecipientIfNeeded(recipientUserId: string): Promise<void> {
     const count = await this.notificationRepository.countForRecipient(recipientUserId);
@@ -136,8 +136,8 @@ export class NotificationService implements NotificationServicePort {
   }
 
   /**
-   * Hàm được gọi khi một lời mời kết bạn được chấp nhận.
-   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã gửi lời mời kết bạn").
+   * Called when a friend request is created.
+   * The notification needs "who performed this action" so the client can display it, e.g. "A sent a friend request".
    */
   async recordFriendRequest({ recipientUserId, fromUserId }: RecordFriendRequestPayload): Promise<void> {
     const actor = await this.buildActor(fromUserId);
@@ -153,8 +153,8 @@ export class NotificationService implements NotificationServicePort {
   }
 
   /**
-   * Hàm được gọi khi một lời mời kết bạn được chấp nhận.
-   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã chấp nhận lời mời kết bạn của bạn").
+   * Called when a friend request is accepted.
+   * The notification needs "who performed this action" so the client can display it, e.g. "A accepted your friend request".
    */
   async recordFriendAccepted({ originalRequesterUserId, accepterUserId }: RecordFriendAcceptedPayload): Promise<void> {
     const actor = await this.buildActor(accepterUserId);
@@ -170,11 +170,11 @@ export class NotificationService implements NotificationServicePort {
   }
 
   /**
-   * Hàm này tạo notification “new_message” cho tất cả những người nhận liên quan (trừ chính người gửi).
-   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã gửi tin nhắn mới").
+   * Create a "new_message" notification for all relevant recipients except the sender.
+   * The notification needs "who performed this action" so the client can display it, e.g. "A sent a new message".
    */
   async recordNewMessage({ message, senderUserId, recipientUserIds }: RecordNewMessagePayload): Promise<void> {
-    // Lọc ra những người nhận liên quan (trừ chính người gửi)
+    // Filter relevant recipients, excluding the sender.
     const recipientIds = [...new Set(recipientUserIds)].filter((rid) => rid !== senderUserId);
     const actor = await this.buildActor(senderUserId);
     const payload = this.newMessagePayload(message);
@@ -212,8 +212,8 @@ export class NotificationService implements NotificationServicePort {
   }
 
   /**
-   * Hàm được gọi khi một người dùng được thêm vào một nhóm chat.
-   * notification cần có thông tin "ai đã làm hành động này" để client hiển thị (ví dụ: "A đã thêm bạn vào nhóm chat").
+   * Called when a user is added to a group chat.
+   * The notification needs "who performed this action" so the client can display it, e.g. "A added you to a group chat".
    */
   async recordAddedToGroup({ inviteeUserId, inviterUserId, conv }: RecordAddedToGroupPayload): Promise<void> {
     const actor = await this.buildActor(inviterUserId);
@@ -234,9 +234,9 @@ export class NotificationService implements NotificationServicePort {
 
 /**
  * In-memory cache with TTL and max-entries cap.
- * - TTL (ms) tính từ thời điểm set.
- * - Khi vượt quá số lượng entry, cache sẽ quét key hết hạn và remove dần từ key cũ nhất.
- * - Áp dụng cho bất kỳ loại value nào (generic).
+ * - TTL (ms) is counted from set time.
+ * - When entry count exceeds the limit, cache scans expired keys and removes oldest keys gradually.
+ * - Applies to any value type (generic).
  */
 function createTtlCapCache<K, V>(ttlMs: number, maxEntries: number) {
   const store = new Map<K, { value: V; expiresAt: number }>();

@@ -14,4 +14,4 @@ components:
       type: apiKey
       in: cookie
       name: refreshToken
-      description: HttpOnly cookie — server set khi login / refresh / OAuth Google; không có trong JSON response.
+      description: HttpOnly cookie set by the server during login, refresh, or Google OAuth. It is not returned in the JSON response.

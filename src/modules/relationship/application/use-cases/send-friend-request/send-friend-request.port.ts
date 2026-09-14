@@ -3,11 +3,11 @@ import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/f
 
 export class SendFriendRequestCommand {
   userId: string;
-  toUserId: string;
+  username: string;
 
-  constructor(payload: { userId: string; toUserId: string }) {
+  constructor(payload: { userId: string; username: string }) {
     this.userId = payload.userId;
-    this.toUserId = payload.toUserId;
+    this.username = payload.username;
   }
 }
 

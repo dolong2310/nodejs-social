@@ -63,7 +63,7 @@ const getResolution = async (filePath: string) => {
 
 const getWidth = (height: number, resolution: { width: number; height: number }) => {
   const width = Math.round((height * resolution.width) / resolution.height);
-  // Vì ffmpeg yêu cầu width và height phải là số chẵn
+  // ffmpeg requires width and height to be even numbers.
   return width % 2 === 0 ? width : width + 1;
 };
 

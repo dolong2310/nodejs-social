@@ -5,8 +5,8 @@ export interface UpdatePostsViewsPayload<T extends PostDetailOutput | PostDetail
   userId?: string;
 }
 
-export interface IsViewerInteractedWithPostPayload {
-  viewerId: string;
+export interface IsUserInteractedWithPostPayload {
+  userId: string;
   postId: string;
 }
 

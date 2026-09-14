@@ -17,7 +17,7 @@ export interface RoleFullProps extends Prettify<RolePrimitiveProps & Omit<BaseEn
 
 export interface CreateRoleProps extends MarkOptional<RolePrimitiveProps, 'description' | 'permissionIds'> {}
 
-/** Tên role mặc định hệ thống (seed) — dùng khi cần so khớp cố định. */
+/** Default system role names created by seed data; use when fixed matching is required. */
 export enum EnumRoleName {
   ADMIN = 'ADMIN',
   USER = 'USER'

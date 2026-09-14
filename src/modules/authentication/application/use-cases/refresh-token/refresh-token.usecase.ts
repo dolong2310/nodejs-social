@@ -27,7 +27,7 @@ export class RefreshTokenUseCase extends RefreshTokenPort {
   async execute(command: RefreshTokenCommand): Promise<RefreshTokenResult> {
     try {
       // 1. Check valid refresh token + Decode refresh token get user id
-      const decoded = await this.tokenService.verifyRefreshToken(command.refreshToken); // nếu error thì chạy ở catch
+      const decoded = await this.tokenService.verifyRefreshToken(command.refreshToken); // errors are handled by catch
 
       const user = await this.userQueryRepository.findUserByIdIncludeRole(decoded.userId);
 

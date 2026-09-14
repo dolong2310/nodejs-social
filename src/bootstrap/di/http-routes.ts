@@ -73,6 +73,8 @@ import { GetGuestNewFeedsUseCase } from '@/modules/post/application/use-cases/ge
 import { GetHashtagUseCase } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.usecase';
 import { GetNewFeedsUseCase } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.usecase';
 import { GetPostDetailUseCase } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.usecase';
+import { GetPostsByUserUseCase } from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.usecase';
+import { GetPostsByUserInteractionUseCase } from '@/modules/post/application/use-cases/get-posts-by-user-interaction/get-posts-by-user-interaction.usecase';
 import { GetPostsTypeUseCase } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.usecase';
 import { IncreaseViewsUseCase } from '@/modules/post/application/use-cases/increase-views/increase-views.usecase';
 import { LikePostUseCase } from '@/modules/post/application/use-cases/like-post/like-post.usecase';
@@ -379,6 +381,19 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     blockService,
     logger
   );
+  const getPostsByUserUC = new GetPostsByUserUseCase(
+    postQueryRepository,
+    postService,
+    userService,
+    friendService,
+    blockService
+  );
+  const getPostsByUserInteractionUC = new GetPostsByUserInteractionUseCase(
+    postQueryRepository,
+    postService,
+    friendService,
+    blockService
+  );
   const createPostUC = new CreatePostUseCase(postRepository, hashtagRepository, blockService, friendService, logger);
   const updatePostUC = new UpdatePostUseCase(postRepository, hashtagRepository, logger);
   const deletePostUC = new DeletePostUseCase(postRepository, roleService);
@@ -488,6 +503,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     getPostDetailUC,
     increaseViewsUC,
     getPostsTypeUC,
+    getPostsByUserUC,
+    getPostsByUserInteractionUC,
     createPostUC,
     updatePostUC,
     deletePostUC,

@@ -74,7 +74,7 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.sendRequestToUserIdPipe],
+        pipes: [this.friendPipe.sendRequestToUsernamePipe],
         controller: this.friendController.sendFriendRequest
       })
     );

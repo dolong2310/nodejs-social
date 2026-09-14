@@ -3,10 +3,19 @@ import { CreatePostPort } from '@/modules/post/application/use-cases/create-post
 import { DeletePostPort } from '@/modules/post/application/use-cases/delete-post/delete-post.port';
 import { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
 import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
+import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.type';
 import {
   GetPostDetailPort,
   GetPostDetailQuery
 } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
+import {
+  GetPostsByUserPort,
+  GetPostsByUserQuery
+} from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
+import {
+  GetPostsByUserInteractionPort,
+  GetPostsByUserInteractionQuery
+} from '@/modules/post/application/use-cases/get-posts-by-user-interaction/get-posts-by-user-interaction.port';
 import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
 import { CreateLikePort } from '@/modules/post/application/use-cases/like-post/like-post.port';
@@ -24,7 +33,10 @@ import {
   CreatePostRequestDTO,
   DeleteBookmarkParamsDTO,
   DeleteLikeParamsDTO,
+  GetNewFeedsQueryDTO,
   GetPostDetailParamsDTO,
+  GetPostsByUserParamsDTO,
+  GetPostsByUserQueryDTO,
   GetPostsParamsDTO,
   PatchPostRequestDTO
 } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
@@ -32,7 +44,6 @@ import {
   CreateBookmarkResponseDTO,
   CreateLikeResponseDTO,
   DeleteLikeResponseDTO,
-  PostDetailResponseDTO,
   PostDetailWithAuthorResponseDTO,
   PostResponseDTO
 } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
@@ -41,7 +52,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostController {
   getNewFeeds(
-    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    req: ExpressRequest<ParamsDictionary, object, object, GetNewFeedsQueryDTO>,
     res: ExpressResponse,
     next: NextFunction
   ): Promise<unknown>;
@@ -50,8 +61,23 @@ export interface IPostController {
     res: ExpressResponse,
     next: NextFunction
   ): Promise<unknown>;
+  getPostsByUser(
+    req: ExpressRequest<GetPostsByUserParamsDTO, object, object, GetPostsByUserQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
   getPostsType(
     req: ExpressRequest<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getUserLikedPosts(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
+    res: ExpressResponse,
+    next: NextFunction
+  ): Promise<unknown>;
+  getUserBookmarkedPosts(
+    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
     res: ExpressResponse,
     next: NextFunction
   ): Promise<unknown>;
@@ -91,6 +117,8 @@ export class PostController extends BaseController implements IPostController {
     private readonly getPostDetailUC: GetPostDetailPort,
     private readonly increaseViewsUC: IncreaseViewsPort,
     private readonly getPostsTypeUC: GetPostsTypePort,
+    private readonly getPostsByUserUC: GetPostsByUserPort,
+    private readonly getPostsByUserInteractionUC: GetPostsByUserInteractionPort,
     private readonly createPostUC: CreatePostPort,
     private readonly updatePostUC: UpdatePostPort,
     private readonly deletePostUC: DeletePostPort,
@@ -103,8 +131,8 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getNewFeeds(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
-    const { cursor, limit } = req.query;
+  async getNewFeeds(req: ExpressRequest<ParamsDictionary, object, object, GetNewFeedsQueryDTO>) {
+    const { cursor, limit, filter } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
     let items: PostDetailWithAuthorResponseDTO[];
@@ -114,7 +142,8 @@ export class PostController extends BaseController implements IPostController {
       const results = await this.getNewFeedsUC.execute<PostDetailWithAuthorResponseDTO>({
         userId,
         cursor,
-        limit: Number(limit)
+        limit: Number(limit),
+        filter: filter ?? EnumNewFeedFilter.FOR_YOU
       });
 
       items = results.items;
@@ -137,11 +166,34 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
+  async getPostsByUser(req: ExpressRequest<GetPostsByUserParamsDTO, object, object, GetPostsByUserQueryDTO>) {
+    const { userId: targetUserId } = req.params;
+    const { cursor, limit, type } = req.query;
+    const currentUserId = this.getUserId(req, { optional: true }) || undefined;
+
+    const { items, nextCursor } = await this.getPostsByUserUC.execute<PostDetailWithAuthorResponseDTO>(
+      new GetPostsByUserQuery({
+        targetUserId,
+        currentUserId,
+        type,
+        cursor,
+        limit
+      })
+    );
+
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+      items,
+      nextCursor,
+      message: 'Get posts by user successfully'
+    });
+  }
+
+  @AutoBind()
   async getPostDetail(req: ExpressRequest<GetPostDetailParamsDTO>) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
-    const postDetail = await this.getPostDetailUC.execute(new GetPostDetailQuery({ postId, viewerUserId: userId }));
-    const post = new PostDetailResponseDTO(postDetail);
+    const postDetail = await this.getPostDetailUC.execute(new GetPostDetailQuery({ postId, currentUserId: userId }));
+    const post = new PostDetailWithAuthorResponseDTO(postDetail);
 
     const updatedViews = await this.increaseViewsUC.execute({ postId, userId });
     if (updatedViews) {
@@ -150,7 +202,7 @@ export class PostController extends BaseController implements IPostController {
       post.updatedAt = updatedViews.updatedAt!;
     }
 
-    return this.response<PostDetailResponseDTO>({
+    return this.response<PostDetailWithAuthorResponseDTO>({
       data: post,
       message: 'Get post detail successfully'
     });
@@ -162,7 +214,7 @@ export class PostController extends BaseController implements IPostController {
     const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    const { items, nextCursor } = await this.getPostsTypeUC.execute<PostDetailResponseDTO>({
+    const { items, nextCursor } = await this.getPostsTypeUC.execute<PostDetailWithAuthorResponseDTO>({
       userId,
       postId,
       type,
@@ -170,10 +222,50 @@ export class PostController extends BaseController implements IPostController {
       limit: Number(limit)
     });
 
-    return this.cursorPaginatedResponse<PostDetailResponseDTO>({
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
       items,
       nextCursor,
       message: 'Get posts type successfully'
+    });
+  }
+
+  @AutoBind()
+  async getUserLikedPosts(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+    const userId = this.getUserId(req);
+    const { cursor, limit } = req.query;
+    const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponseDTO>(
+      new GetPostsByUserInteractionQuery({
+        userId,
+        interaction: 'likes',
+        cursor,
+        limit
+      })
+    );
+
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+      items,
+      nextCursor,
+      message: 'Get liked posts successfully'
+    });
+  }
+
+  @AutoBind()
+  async getUserBookmarkedPosts(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+    const userId = this.getUserId(req);
+    const { cursor, limit } = req.query;
+    const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponseDTO>(
+      new GetPostsByUserInteractionQuery({
+        userId,
+        interaction: 'bookmarks',
+        cursor,
+        limit
+      })
+    );
+
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+      items,
+      nextCursor,
+      message: 'Get bookmarked posts successfully'
     });
   }
 

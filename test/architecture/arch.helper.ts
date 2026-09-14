@@ -3,8 +3,8 @@ import path from 'node:path';
 import { expect } from 'vitest';
 
 /**
- * Là một import được tìm thấy trong file source.
- * Ví dụ:
+ * Represents an import found in a source file.
+ * Example:
   {
     file: 'src/modules/user/domain/repositories/user.query.type.ts',
     importPath: '@/modules/common/domain/enums/search.enum',
@@ -18,9 +18,9 @@ type ImportRecord = {
 };
 
 /**
- * kết quả parse import theo convention:
+ * Import parse result by convention:
  * @/modules/user/domain/...
- * sẽ thành
+ * becomes
   {
     moduleName: 'user',
     layer: 'domain'
@@ -37,15 +37,15 @@ type ForbiddenImportViolation = ImportRecord & {
 
 type ForbiddenImportRule = (record: ImportRecord) => string | false;
 
-// Regex để bắt import/export static
+// Regexes for static import/export statements.
 const importFromRegex = /(?:import|export)\s+(?:type\s+)?(?:[\s\S]*?)\s+from\s+['"]([^'"]+)['"]/g;
 const sideEffectImportRegex = /import\s+['"]([^'"]+)['"]/g;
 
 /**
- * Chuyển đổi đường dẫn file từ Windows sang Unix convention.
- * Ví dụ:
+ * Convert a file path from Windows separators to the project Unix-style convention.
+ * Example:
  * 'src\modules\user\domain\repositories\user.query.type.ts'
- * thành
+ * becomes
  * 'src/modules/user/domain/repositories/user.query.type.ts'
  */
 function toProjectPath(filePath: string): string {
@@ -53,10 +53,10 @@ function toProjectPath(filePath: string): string {
 }
 
 /**
- * Duyệt qua tất cả các file trong thư mục và subdirectories
- * Ví dụ:
+ * Walk all files in the directory and its subdirectories.
+ * Example:
  * 'src'
- * sẽ trả về
+ * returns
  * ['src/modules/user/domain/repositories/user.query.type.ts', 'src/modules/user/domain/entities/user.entity.ts']
  */
 function walkFiles(directory: string): string[] {
@@ -73,9 +73,9 @@ function walkFiles(directory: string): string[] {
 }
 
 /**
- * Lấy danh sách file .ts trong thư mục root (default là 'src' hoặc 'src/modules').
- * Đổi về relative project path.
- * Sort để output ổn định.
+ * Get .ts files under the root directory (default is 'src' or 'src/modules').
+ * Convert them to project-relative paths.
+ * Sort for stable output.
  */
 export function sourceFiles(root = 'src'): string[] {
   const rootPath = path.resolve(process.cwd(), root);
@@ -86,11 +86,11 @@ export function sourceFiles(root = 'src'): string[] {
 }
 
 /**
- * Đọc một file rồi trả ra danh sách import/export trong file đó.
- * Mục đích để các test kiểm tra "layer này có import layer kia không".
- * Ví dụ nếu file có:
+ * Read a file and return its import/export list.
+ * This lets tests check whether one layer imports another layer.
+ * Example if the file contains:
  * import { UserFullProps } from '@/modules/user/domain/entities/user.type';
- * Thì trả:
+ * returns:
   {
     file: '...',
     importPath: '@/modules/user/domain/entities/user.type',
@@ -116,11 +116,11 @@ export function importsOf(file: string): ImportRecord[] {
 }
 
 /**
- * Parse import dạng module-local.
- * Nếu import không theo dạng @/modules/<module>/<layer> thì trả null.
- * Ví dụ:
+ * Parse a module-local import.
+ * Return null if the import does not match @/modules/<module>/<layer>.
+ * Example:
  * @/modules/post/domain/entities/post.type
- * sẽ thành
+ * becomes
   {
     moduleName: 'post',
     layer: 'domain'
@@ -136,21 +136,21 @@ export function parseModuleImport(importPath: string): ModuleImport | null {
 }
 
 /**
- * Bootstrap config/types chỉ nên được dùng ở composition root.
- * Application/infrastructure muốn dùng env/config thì tự định nghĩa config type nhỏ của layer đó,
- * sau đó bootstrap truyền giá trị vào qua constructor.
+ * Bootstrap config/types should only be used at the composition root.
+ * Application/infrastructure layers should define their own small config types,
+ * then bootstrap passes values through constructors.
  */
 export function isBootstrapConfigImport(importPath: string): boolean {
   return importPath.startsWith('@/bootstrap/config') || importPath.startsWith('@/bootstrap/types');
 }
 
 /**
- * Helper assert "không có import bị cấm".
- * 1. Duyệt từng file.
- * 2. Lấy toàn bộ import bằng importsOf.
- * 3. Đưa từng import vào rule.
- * 4. Nếu rule trả string, import đó bị xem là violation.
- * 5. Cuối cùng expect violations bằng [].
+ * Helper asserting that there are no forbidden imports.
+ * 1. Walk each file.
+ * 2. Read all imports with importsOf.
+ * 3. Pass each import to the rule.
+ * 4. If the rule returns a string, the import is considered a violation.
+ * 5. Finally expect violations to equal [].
  */
 export function expectNoForbiddenImports(files: string[], rule: ForbiddenImportRule): void {
   const violations: ForbiddenImportViolation[] = files.flatMap((file) => {
@@ -164,7 +164,7 @@ export function expectNoForbiddenImports(files: string[], rule: ForbiddenImportR
 }
 
 /**
- * Helper assert tất cả file đều match một convention nào đó.
+ * Helper asserting that all files match a convention.
  */
 export function expectFilesMatch(files: string[], predicate: (file: string) => boolean): void {
   expect(files.filter((file) => !predicate(file))).toEqual([]);

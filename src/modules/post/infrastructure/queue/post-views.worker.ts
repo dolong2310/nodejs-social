@@ -24,7 +24,7 @@ export class PostViewsWorker extends BaseWorker<PostViewsJobData, PostViewsJobRe
     }
     const updatedCount = await this.postCommandRepository.increasePostsViews({
       ids: postIds,
-      isAuthenticatedViewer: job.data.isAuthenticatedViewer
+      isAuthenticatedUser: job.data.isAuthenticatedUser
     });
     return { updatedCount };
   }

@@ -46,14 +46,14 @@ export class ChatMessageRepository
     const { limit, before } = data;
     const filter: Filter<ChatMessageModel> = { conversation_id: id, deleted_at: null };
     if (before) {
-      // Chỉ lấy tin “đứng trước” điểm đó: createdAt < before.createdAt hoặc cùng createdAt nhưng _id < before._id.
+      // Only fetch messages before that point: createdAt < before.createdAt, or same createdAt and _id < before._id.
       filter.$or = [
         { created_at: { $lt: before.raw().createdAt } },
         { created_at: before.raw().createdAt, _id: { $lt: before.raw().id } }
       ];
     }
     // Sort: createdAt: -1, _id: -1
-    // => mới trước, cũ sau trong kết quả.
+    // => newest first, older later in the result.
     const results = await this.dbCollection
       .find<ChatMessageModel>(filter)
       .sort({ created_at: -1, _id: -1 })

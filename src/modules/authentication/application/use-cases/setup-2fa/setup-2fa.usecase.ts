@@ -23,7 +23,7 @@ export class Setup2FAUseCase extends Setup2FAPort {
   }
 
   async execute({ userId }: Setup2FACommand): Promise<Setup2FAResult> {
-    // 1. Lấy user từ database, kiểm tra user có tồn tại không và kiểm tra đã enable 2FA chưa
+    // 1. Load user from the database, verify the user exists, and verify 2FA is not already enabled.
     const user = await this.userService.findUserById(userId);
 
     if (!user) {
@@ -34,16 +34,16 @@ export class Setup2FAUseCase extends Setup2FAPort {
       throw new UserAlreadyHas2FAException();
     }
 
-    // 2. Tạo secret key và URI cho 2FA
+    // 2. Create the secret key and URI for 2FA.
     const { secret, uri } = this.twoFactorAuthenticationService.generateSecret(user.email);
 
-    // 3. Lưu secret key vào database
+    // 3. Save the secret key to the database.
     await this.userRepository.updateOne(userId, { totpSecret: secret } as Partial<UserEntity>);
 
     // 4. Delete user from cache
     await this.cache.invalidate(CACHE_KEYS.user(user.id));
 
-    // 5. Return secret key và URI
+    // 5. Return the secret key and URI.
     return new Setup2FAResult({
       secret,
       uri

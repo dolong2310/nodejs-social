@@ -18,13 +18,12 @@ import { UserNotFoundException } from '@/modules/user/application/exceptions/use
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 /**
- * Gửi yêu cầu kết bạn
- * - Không cho gửi yêu cầu kết bạn tới chính mình.
- * - Kiểm tra xem người được gửi yêu cầu có tồn tại không.
- * - Kiểm tra xem người được gửi yêu cầu có block người gửi không.
- * - Kiểm tra xem người được gửi yêu cầu có là bạn bè với người gửi không.
- * - Kiểm tra xem người được gửi yêu cầu có đã gửi yêu cầu kết bạn tới người gửi không.
- * - Kiểm tra xem người được gửi yêu cầu có đã gửi yêu cầu kết bạn tới người gửi không.
+ * Send a friend request.
+ * - Resolve the target user by username.
+ * - Do not allow sending a friend request to yourself.
+ * - Check whether the target user blocked the sender.
+ * - Check whether the target user is already friends with the sender.
+ * - Check whether the sender exceeded the daily outgoing request limit.
  */
 export class SendFriendRequestUseCase extends SendFriendRequestPort {
   private readonly OUTGOING_REQUESTS_PER_UTC_DAY = 100;
@@ -40,15 +39,15 @@ export class SendFriendRequestUseCase extends SendFriendRequestPort {
     super();
   }
 
-  async execute({ userId, toUserId }: SendFriendRequestCommand): Promise<SendFriendRequestResult> {
-    if (userId === toUserId) {
-      throw new CannotSendFriendRequestToYourselfException();
-    }
-
-    // kiểm tra xem người được gửi yêu cầu có tồn tại không
-    const userEntity = await this.userRepository.findUserById(toUserId);
+  async execute({ userId, username }: SendFriendRequestCommand): Promise<SendFriendRequestResult> {
+    const userEntity = await this.userRepository.findUserByUsername(username);
     if (!userEntity) {
       throw new UserNotFoundException();
+    }
+
+    const toUserId = userEntity.id.toString();
+    if (userId === toUserId) {
+      throw new CannotSendFriendRequestToYourselfException();
     }
 
     const { start, endExclusive } = this._utcDayRange(new Date());
@@ -62,34 +61,34 @@ export class SendFriendRequestUseCase extends SendFriendRequestPort {
       })
     ]);
 
-    // kiểm tra xem người được gửi yêu cầu có block người gửi không
+    // Check whether the target user blocked the sender.
     if (isBlockedEitherWay) {
       throw new FriendActionBlockedException();
     }
 
-    // kiểm tra xem người được gửi yêu cầu có là bạn bè với người gửi không
+    // Check whether the target user is already friends with the sender.
     if (existingFriendship) {
       throw new AlreadyFriendsException();
     }
 
-    // kiểm tra xem người gửi có vượt quá số lượng yêu cầu kết bạn tới người được gửi yêu cầu không
-    // Vì 1 ngày chỉ được gửi 100 yêu cầu kết bạn tới người được gửi yêu cầu không => tránh spam
+    // Check whether the sender exceeded the number of friend requests allowed to the target user.
+    // A sender can send only 100 friend requests per day to the target user to prevent spam.
     if (sentToday >= this.OUTGOING_REQUESTS_PER_UTC_DAY) {
       throw new FriendRequestDailyLimitExceededException();
     }
 
-    // try/catch để bắt lỗi Mongo duplicate key 11000 (thường do unique index theo cặp directed fromUserId+toUserId)
-    // -> map sang lỗi nghiệp vụ FRIEND_REQUEST_ALREADY_PENDING (409).
-    // - nếu đang có request B->A pending, hệ thống vẫn cho phép A gửi A->B (tạo 2 request ngược chiều cùng lúc).
-    // - DB chỉ chống trùng cùng chiều (A->B) chứ không chống "ngược chiều".
-    // - đây là lựa chọn nghiệp vụ (có hệ thống sẽ tự chuyển thành "accept" hoặc chặn, nhưng ở đây thì không).
+    // try/catch handles Mongo duplicate key 11000, usually from the unique index on directed fromUserId+toUserId.
+    // -> map to the FRIEND_REQUEST_ALREADY_PENDING business error (409).
+    // - if a B->A request is pending, the system still allows A to send A->B, creating two opposite requests.
+    // - the DB only prevents duplicates in the same direction (A->B), not the opposite direction.
+    // - this is a product choice; some systems auto-accept or block this, but this one does not.
     const friendRequestEntity = await this.friendRequestRepository.createPendingRequest({
       fromUserId: userId,
       toUserId
     });
-    // invalidate cache của người gửi
+    // Invalidate sender cache.
     await this.friendService.invalidateFriendCache(userId);
-    // notification "friend request" cho người nhận
+    // Send "friend request" notification to the receiver.
     await this.notificationsService.recordFriendRequest({ recipientUserId: toUserId, fromUserId: userId });
 
     return new SendFriendRequestResult(friendRequestEntity.toObject());

@@ -23,7 +23,7 @@ export class Disable2FAUseCase extends Disable2FAPort {
   }
 
   async execute({ userId, totpCode, emailOtpCode }: Disable2FACommand): Promise<boolean> {
-    // 1. Lấy user từ database, kiểm tra user có tồn tại không và kiểm tra đã enable 2FA chưa
+    // 1. Load user from the database, verify the user exists, and verify 2FA is enabled.
     const user = await this.userService.findUserById(userId);
 
     if (!user) {

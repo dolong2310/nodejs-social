@@ -14,12 +14,12 @@ export class GetPostDetailUseCase extends GetPostDetailPort {
     super();
   }
 
-  async execute({ postId, viewerUserId }: GetPostDetailQuery) {
-    const post = await this.postQueryRepository.findPostDetailById(postId);
+  async execute({ postId, currentUserId }: GetPostDetailQuery) {
+    const post = await this.postQueryRepository.findPostDetailById(postId, currentUserId);
     if (!post) {
       throw new PostNotFoundException();
     }
-    await this.postAudienceAccess.assertViewerCanAccessPostDetail(post, viewerUserId);
+    await this.postAudienceAccess.assertUserCanAccessPostDetail(post, currentUserId);
     return post;
   }
 }

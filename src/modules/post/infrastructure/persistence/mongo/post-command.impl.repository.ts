@@ -34,12 +34,12 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
       : null;
   }
 
-  async increasePostsViews({ ids, isAuthenticatedViewer }: IncreasePostsViewsInput): Promise<number> {
+  async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const res = await this.dbCollection.updateMany(
       { _id: { $in: ids }, deleted_at: null },
       {
-        $inc: isAuthenticatedViewer ? { user_views: 1 } : { guest_views: 1 },
+        $inc: isAuthenticatedUser ? { user_views: 1 } : { guest_views: 1 },
         $currentDate: { updated_at: true }
       }
     );

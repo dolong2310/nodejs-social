@@ -42,39 +42,39 @@ export class CreatePostUseCase extends CreatePostPort {
     media,
     mentions
   }: CreatePostCommand): Promise<CreatePostResult> {
-    // xử lý quyền tương tác vào bài cha trước khi cho tạo comment/repost/quote
+    // Check interaction permissions on the parent post before allowing comment/repost/quote creation.
     if (type !== EnumPostType.POST) {
       if (!parentId) {
         throw new PostNotFoundException();
       }
-      // lấy bài post cha
+      // Load the parent post.
       const postEntity = await this.postRepository.findPostById(parentId);
       const parent = postEntity?.toObject();
       if (!parent) {
         throw new PostNotFoundException();
       }
 
-      // Kiểm tra block 2 chiều
+      // Check two-way block status.
       if (await this.blockService.isBlockedEitherWay(userId, parent.userId)) {
         throw new CannotEngagePostBlockedException();
       }
 
-      // chắc chắn người dùng được phép nhìn thấy bài cha
-      await this.assertViewerCanSeeParentForInteraction(userId, parent);
+      // Ensure the user is allowed to see the parent post.
+      await this.assertUserCanSeeParentForInteraction(userId, parent);
 
-      // Xác định vai trò người tương tác với bài cha
+      // Determine the user's relationship to the parent post.
       const ownerId = parent.userId;
-      const isOwner = userId === ownerId; // chính chủ bài cha
-      const isMention = parent.mentions.some((mentionId) => mentionId === userId); // được tag trong bài cha
-      // Chỉ xử lý rule "stranger comments" khi bài cha là PUBLIC và viewer là stranger.
+      const isOwner = userId === ownerId; // parent post owner
+      const isMention = parent.mentions.some((mentionId) => mentionId === userId); // tagged in the parent post
+      // Apply the "stranger comments" rule only when the parent post is PUBLIC and user is a stranger.
       const isPublic = parent.audience === EnumPostAudience.PUBLIC;
 
-      // Nếu flag này là false và post type tạo mới nằm trong COMMENT | REPOST | QUOTE thì chặn bằng StrangerCommentsNotAllowedException.
-      // Với bài FRIENDS_ONLY, assertViewerCanSeeParentForInteraction đã đảm bảo chỉ bạn bè/được tag mới qua được.
+      // If this flag is false and the new post type is COMMENT | REPOST | QUOTE, block with StrangerCommentsNotAllowedException.
+      // For FRIENDS_ONLY posts, assertUserCanSeeParentForInteraction already ensures only friends/tagged users pass.
       if (isPublic && !isOwner && !isMention) {
         const allowStrangerComments = parent.allowStrangerComments ?? true;
         if (!allowStrangerComments) {
-          const isFriend = await this.friendService.isFriendOf({ userId, otherUserId: ownerId }); // chỉ query khi cần enforce stranger rule
+          const isFriend = await this.friendService.isFriendOf({ userId, otherUserId: ownerId }); // query only when enforcing the stranger rule
           if (!isFriend) {
             throw new StrangerCommentsNotAllowedException();
           }
@@ -82,7 +82,7 @@ export class CreatePostUseCase extends CreatePostPort {
       }
     }
 
-    // tạo post mới
+    // Create the new post.
     const hashtagEntities = await this.createHashtags(hashtagsPayload);
     const hashtagIds = hashtagEntities.filter((h) => h !== null).map((hashtag) => hashtag.id.toString());
     const postEntity = await this.postRepository.createPost({
@@ -101,9 +101,9 @@ export class CreatePostUseCase extends CreatePostPort {
   }
 
   private async createHashtags(hashtagsPayload: string[]): Promise<HashtagEntity[]> {
-    // 1. Deduplicate input trước khi bulkWrite để tránh duplicate tags.
-    // 2. Normalize hashtag (trim/lowercase) trước khi upsert để giảm phân mảnh dữ liệu ("NodeJS" vs "nodejs").
-    // 3. Giới hạn số hashtag tối đa ở validation (hiện chưa thấy limit), tránh request bất thường làm batch quá lớn.
+    // 1. Deduplicate input before bulkWrite to avoid duplicate tags.
+    // 2. Normalize hashtags (trim/lowercase) before upsert to reduce fragmentation ("NodeJS" vs "nodejs").
+    // 3. Limit the maximum hashtag count in validation to avoid abnormal requests creating oversized batches.
     const normalizedHashtags = [...new Set(hashtagsPayload.map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
     if (normalizedHashtags.length === 0) {
       return Promise.resolve([]);
@@ -113,36 +113,36 @@ export class CreatePostUseCase extends CreatePostPort {
   }
 
   /**
-   * Hàm này chỉ tập trung vào khả năng truy cập bài cha
+   * This method focuses only on parent post access.
    */
-  private async assertViewerCanSeeParentForInteraction(viewerId: string, parent: PostFullProps): Promise<void> {
+  private async assertUserCanSeeParentForInteraction(userId: string, parent: PostFullProps): Promise<void> {
     const ownerId = parent.userId;
-    // Nếu viewer là chủ bài cha (viewerId === ownerId) thì không cần kiểm tra quyền truy cập.
-    if (viewerId === ownerId) {
+    // If user owns the parent post (userId === ownerId), no access check is needed.
+    if (userId === ownerId) {
       return;
     }
-    // Kiểm tra quyền truy cập bài cha
+    // Check parent post access.
     const audienceStr = parent.audience as string;
     const isPublic = audienceStr === EnumPostAudience.PUBLIC;
     const isFriendsOnly = audienceStr === EnumPostAudience.FRIENDS_ONLY || audienceStr === 'followers';
     const isOnlyMe = audienceStr === EnumPostAudience.ONLY_ME || audienceStr === 'only_me';
-    const isMention = parent.mentions.some((mentionId) => mentionId === viewerId);
-    // Nếu bài cha là ONLY_ME thì không cho phép truy cập.
+    const isMention = parent.mentions.some((mentionId) => mentionId === userId);
+    // ONLY_ME parent posts cannot be accessed by other users.
     if (isOnlyMe) {
       throw new CannotEngageWithInaccessiblePostException();
     }
     if (isPublic) {
       return;
     }
-    // Nếu bài cha là FRIENDS_ONLY thì chỉ cho phép truy cập nếu là bạn bè hoặc được tag trong bài cha.
+    // FRIENDS_ONLY parent posts allow access only for friends or users tagged in the parent post.
     if (isFriendsOnly && !isMention) {
-      const isFriend = await this.friendService.isFriendOf({ userId: viewerId, otherUserId: ownerId });
+      const isFriend = await this.friendService.isFriendOf({ userId, otherUserId: ownerId });
       if (isFriend) {
         return;
       }
       throw new CannotEngageWithInaccessiblePostException();
     }
-    // Nếu bài cha không phải là PUBLIC hoặc FRIENDS_ONLY thì không cho phép truy cập.
+    // If the parent post is neither PUBLIC nor FRIENDS_ONLY, deny access.
     if (!isPublic && !isFriendsOnly) {
       throw new CannotEngageWithInaccessiblePostException();
     }
