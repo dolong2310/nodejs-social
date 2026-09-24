@@ -2223,6 +2223,95 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Payment Sandbox",
+      "description": "Create fixed 10,000 VND example payments against sandbox providers. After creating one, open the returned checkoutUrl in a browser. Provider callbacks must be sent by VNPay or MoMo because they require valid signatures.",
+      "item": [
+        {
+          "name": "Create VNPay Example Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "if (res.data && res.data.paymentId) pm.environment.set('paymentId', res.data.paymentId);",
+                  "if (res.data && res.data.checkoutUrl) console.log('Open checkoutUrl in a browser to finish sandbox payment.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"vnpay\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/examples",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "examples"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create MoMo Example Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "if (res.data && res.data.paymentId) pm.environment.set('paymentId', res.data.paymentId);",
+                  "if (res.data && res.data.checkoutUrl) console.log('Open checkoutUrl in a browser to finish sandbox payment.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"momo\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/examples",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "examples"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/{{paymentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "{{paymentId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {

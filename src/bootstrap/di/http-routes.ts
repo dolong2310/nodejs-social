@@ -1,5 +1,7 @@
 import { appConfig } from '@/bootstrap/config/app.config';
+import { paymentConfig } from '@/bootstrap/config/payment.config';
 import { ContainerRepositories } from '@/bootstrap/di/repositories';
+import { buildPaymentModule } from '@/bootstrap/di/payment';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
@@ -229,6 +231,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     roleRepository,
     roleQueryRepository,
     permissionRepository,
+    paymentRepository,
     postQueryRepository,
     postCommandRepository,
     userQueryRepository,
@@ -783,6 +786,18 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       idempotencyInterceptor
     )
   ];
+
+  routers.push(
+    ...buildPaymentModule({
+      paymentRepository,
+      paymentConfig,
+      authGuard,
+      activeUserGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor
+    })
+  );
 
   return routers;
 }

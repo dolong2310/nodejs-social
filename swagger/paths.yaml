@@ -123,6 +123,142 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ==================== PAYMENTS ====================
+  /payments/examples:
+    post:
+      tags: [payments]
+      summary: Create an example sandbox payment
+      operationId: createExamplePayment
+      description: Creates a fixed 10,000 VND example payment and returns a provider checkout URL. VNPay and MoMo are sandbox-only in every app environment.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+          description: Reuse the same key to safely retry this request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExamplePaymentRequest'
+      responses:
+        '201':
+          description: Example payment created or returned for the same idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '400':
+          description: Invalid provider or missing Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payments/{paymentId}:
+    get:
+      tags: [payments]
+      summary: Get the current user's payment status
+      operationId: getPayment
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/MongoId' }
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment not found for the current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payments/callbacks/vnpay/ipn:
+    get:
+      tags: [payments]
+      summary: VNPay server-to-server IPN
+      operationId: receiveVnpayIpn
+      description: Configure this HTTPS URL in the VNPay sandbox merchant settings. The API verifies the signature and persists the notification before acknowledging it.
+      security: []
+      responses:
+        '200':
+          description: VNPay protocol response with RspCode and Message
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [RspCode, Message]
+                properties:
+                  RspCode: { type: string, example: '00' }
+                  Message: { type: string, example: Success }
+  /payments/callbacks/vnpay/return:
+    get:
+      tags: [payments]
+      summary: VNPay browser return
+      operationId: receiveVnpayReturn
+      description: Read-only return page. The payment state is updated only by the verified VNPay IPN.
+      security: []
+      responses:
+        '200':
+          description: User-facing instruction to check payment status in the application
+          content:
+            text/plain:
+              schema: { type: string }
+  /payments/callbacks/momo/ipn:
+    post:
+      tags: [payments]
+      summary: MoMo server-to-server IPN
+      operationId: receiveMomoIpn
+      description: Verifies the MoMo signature and persists the notification. A 204 response means the notification was applied or was an idempotent duplicate.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MomoIpnRequest'
+      responses:
+        '204':
+          description: Notification applied or duplicate
+        '400':
+          description: Invalid signature, payload, order, or amount
+        '409':
+          description: Payment is in a conflicting final state
+        '500':
+          description: Notification could not be durably processed; provider may retry
+  /payments/callbacks/momo/return:
+    get:
+      tags: [payments]
+      summary: MoMo browser return
+      operationId: receiveMomoReturn
+      description: Read-only return page. The payment state is updated only by the verified MoMo IPN.
+      security: []
+      responses:
+        '200':
+          description: User-facing instruction to check payment status in the application
+          content:
+            text/plain:
+              schema: { type: string }
+
   # ==================== USERS ====================
   /users/me:
     get:

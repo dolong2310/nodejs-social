@@ -16,6 +16,7 @@ import { ConversationRepositoryPort } from '@/modules/conversation/domain/reposi
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
@@ -46,6 +47,7 @@ type Repositories = {
   otpRepository: OtpRepositoryPort;
   roleRepository: RoleRepositoryPort;
   permissionRepository: PermissionRepositoryPort;
+  paymentRepository: PaymentRepositoryPort;
 };
 
 type QueryRepositories = {

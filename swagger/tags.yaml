@@ -19,6 +19,8 @@ tags:
     description: Conversation HTTP APIs for direct/group chats, messages, and read state.
   - name: notifications
     description: In-app notifications with cursor listing and read-state updates.
+  - name: payments
+    description: Example-order payments through VNPay and MoMo sandbox. All configured app environments remain sandbox-only.
   - name: roles
     description: System roles (ADMIN, USER). Admin-only list and permissionId management.
   - name: permissions

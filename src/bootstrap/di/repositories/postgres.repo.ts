@@ -21,6 +21,7 @@ import { VideoStatusRepository } from '@/modules/media/infrastructure/persistenc
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/postgres/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/postgres/notification.impl.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/postgres/notification.mapper';
+import { PostgresPaymentRepository } from '@/modules/payment/infrastructure/persistence/postgres/payment.impl.repository';
 import { BookmarkRepository } from '@/modules/post/infrastructure/persistence/postgres/bookmark.impl.repository';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/postgres/bookmark.mapper';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
@@ -83,7 +84,8 @@ export function createPostgresContainerRepositories(
     conversationRepository: new ConversationRepository(pool, conversationMapper, conversationMemberMapper, logger),
     conversationMemberRepository: new ConversationMemberRepository(pool, conversationMemberMapper, logger),
     chatMessageRepository: new ChatMessageRepository(pool, chatMessageMapper, logger),
-    videoStatusRepository: new VideoStatusRepository(pool, videoStatusMapper, logger)
+    videoStatusRepository: new VideoStatusRepository(pool, videoStatusMapper, logger),
+    paymentRepository: new PostgresPaymentRepository(pool)
   };
 
   const queryRepositories = {

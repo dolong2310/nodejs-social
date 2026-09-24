@@ -38,12 +38,17 @@ import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
 import { OperationsRoute } from '@/presentation/http/express/v1/routes/operations.route';
+import { PaymentCallbackRoute } from '@/presentation/http/express/v1/routes/payment-callback.route';
+import { PaymentRoute } from '@/presentation/http/express/v1/routes/payment.route';
 import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
 import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
 import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
 import { SearchRoute } from '@/presentation/http/express/v1/routes/search.route';
 import { StaticRoute } from '@/presentation/http/express/v1/routes/static.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
+import type { IPaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
+import type { IPaymentCallbackController } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
+import type { IPaymentPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
 import type { RequestHandler } from 'express';
 
 /** Empty middleware: only calls `next()`. Used for fake pipe/controller objects when Express registers routes without running logic. */
@@ -120,6 +125,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
   const rolesPipe: IRolesPipe = createNoopPipeProxyForRouteRegistration();
   const permissionsPipe: IPermissionsPipe = createNoopPipeProxyForRouteRegistration();
   const hashtagsPipe: IHashtagsPipe = createNoopPipeProxyForRouteRegistration();
+  const paymentPipe: IPaymentPipe = createNoopPipeProxyForRouteRegistration();
 
   return [
     new OperationsRoute(
@@ -297,7 +303,18 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopInterceptor,
       noopInterceptor,
       noopInterceptor
-    )
+    ),
+    new PaymentRoute(
+      createNoopControllerProxyForRouteRegistration<IPaymentController>(),
+      paymentPipe,
+      noopAuthGuard,
+      noopActiveUserGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new PaymentCallbackRoute(createNoopControllerProxyForRouteRegistration<IPaymentCallbackController>())
   ];
 }
 

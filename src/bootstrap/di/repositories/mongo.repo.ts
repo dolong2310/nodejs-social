@@ -21,6 +21,7 @@ import { VideoStatusRepository } from '@/modules/media/infrastructure/persistenc
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/mongo/notification.impl.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/mongo/notification.mapper';
+import { MongoPaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
 import { BookmarkRepository } from '@/modules/post/infrastructure/persistence/mongo/bookmark.impl.repository';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/mongo/bookmark.mapper';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository';
@@ -91,7 +92,8 @@ export function createMongoContainerRepositories(
     notificationRepository: new NotificationRepository(db, dbClient, notificationMapper, logger),
     otpRepository: new OtpRepository(db, dbClient, otpMapper, logger),
     roleRepository: new RoleRepository(db, dbClient, roleMapper, logger),
-    permissionRepository: new PermissionRepository(db, dbClient, permissionMapper, logger)
+    permissionRepository: new PermissionRepository(db, dbClient, permissionMapper, logger),
+    paymentRepository: new MongoPaymentRepository(db)
   };
 
   const queryRepositories = {
