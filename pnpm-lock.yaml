@@ -23,6 +23,9 @@ importers:
       '@faker-js/faker':
         specifier: ^10.3.0
         version: 10.4.0
+      '@longdoo/node-payment-gateway':
+        specifier: 1.1.2
+        version: 1.1.2(typescript@5.9.3)
       axios:
         specifier: ^1.13.6
         version: 1.16.0
@@ -871,6 +874,15 @@ packages:
 
   '@jsdevtools/ono@7.1.3':
     resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
+
+  '@longdoo/node-payment-gateway@1.1.2':
+    resolution: {integrity: sha512-+wGnoX3Yu0jDewW3h9zqtthCMdjzMC9Av2Gk1DtLQt4O6yLQ6w0SRvC0gzBc8ZvLLcgetuYOvOtdjuan5EAY0A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      typescript: '>=5.0.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   '@mongodb-js/saslprep@1.4.11':
     resolution: {integrity: sha512-o9rAHc0IpIjuPSxRutWpE1F62x7n+4mVS4rCNHkzhIUMQcc18bb6xEq5wd2NdN0WjepIyXIppRshYI2kQDOZVA==}
@@ -1941,6 +1953,9 @@ packages:
 
   dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
+
+  dayjs@1.11.23:
+    resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -4671,6 +4686,12 @@ snapshots:
 
   '@jsdevtools/ono@7.1.3': {}
 
+  '@longdoo/node-payment-gateway@1.1.2(typescript@5.9.3)':
+    dependencies:
+      dayjs: 1.11.23
+    optionalDependencies:
+      typescript: 5.9.3
+
   '@mongodb-js/saslprep@1.4.11':
     dependencies:
       sparse-bitfield: 3.0.3
@@ -5790,6 +5811,8 @@ snapshots:
   date-fns@4.1.0: {}
 
   dateformat@4.6.3: {}
+
+  dayjs@1.11.23: {}
 
   debug@2.6.9:
     dependencies:
