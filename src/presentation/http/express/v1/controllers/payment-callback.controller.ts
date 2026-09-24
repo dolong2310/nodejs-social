@@ -6,6 +6,8 @@ import { Request, Response } from 'express';
 export interface IPaymentCallbackController {
   vnpayIpn(req: Request, res: Response): Promise<void>;
   vnpayReturn(req: Request, res: Response): void;
+  momoIpn(req: Request, res: Response): Promise<void>;
+  momoReturn(req: Request, res: Response): void;
 }
 
 export class PaymentCallbackController {
@@ -30,6 +32,36 @@ export class PaymentCallbackController {
 
   @AutoBind()
   vnpayReturn(_req: Request, res: Response): void {
+    res.status(200).send('Payment result received. Please check the payment status in the application.');
+  }
+
+  @AutoBind()
+  async momoIpn(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.handlePaymentNotification.execute({ provider: 'momo', payload: req.body });
+      if (result === 'applied' || result === 'duplicate') {
+        res.status(204).end();
+        return;
+      }
+
+      if (result === 'state_conflict') {
+        res.status(409).end();
+        return;
+      }
+
+      res.status(400).end();
+    } catch (error) {
+      if (error instanceof PaymentNotificationVerificationError) {
+        res.status(400).end();
+        return;
+      }
+
+      res.status(500).end();
+    }
+  }
+
+  @AutoBind()
+  momoReturn(_req: Request, res: Response): void {
     res.status(200).send('Payment result received. Please check the payment status in the application.');
   }
 }

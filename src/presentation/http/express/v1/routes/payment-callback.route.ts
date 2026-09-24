@@ -18,5 +18,11 @@ export class PaymentCallbackRoute extends BaseRoute {
     this.router.get('/vnpay/return', (req, res) => {
       this.paymentCallbackController.vnpayReturn(req, res);
     });
+    this.router.post('/momo/ipn', (req, res) => {
+      void this.paymentCallbackController.momoIpn(req, res);
+    });
+    this.router.get('/momo/return', (req, res) => {
+      this.paymentCallbackController.momoReturn(req, res);
+    });
   }
 }
