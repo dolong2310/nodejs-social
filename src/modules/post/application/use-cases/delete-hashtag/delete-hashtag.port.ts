@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class DeleteHashtagCommand {
+export class DeleteHashtagInputPort {
   id: string;
   actorId: string | null;
   constructor(payload: { id: string; actorId?: string | null }) {
@@ -9,6 +9,6 @@ export class DeleteHashtagCommand {
   }
 }
 
-export abstract class DeleteHashtagPort implements UseCase<DeleteHashtagCommand, void> {
-  abstract execute(command: DeleteHashtagCommand): Promise<void>;
+export abstract class DeleteHashtagPort implements UseCase<DeleteHashtagInputPort, void> {
+  abstract execute(input: DeleteHashtagInputPort): Promise<void>;
 }

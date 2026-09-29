@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class AdminDeleteUserCommand {
+export class AdminDeleteUserInputPort {
   actorId: string;
   userId: string;
 
@@ -10,6 +10,6 @@ export class AdminDeleteUserCommand {
   }
 }
 
-export abstract class AdminDeleteUserPort implements UseCase<AdminDeleteUserCommand, void> {
-  abstract execute(command: AdminDeleteUserCommand): Promise<void>;
+export abstract class AdminDeleteUserPort implements UseCase<AdminDeleteUserInputPort, void> {
+  abstract execute(input: AdminDeleteUserInputPort): Promise<void>;
 }

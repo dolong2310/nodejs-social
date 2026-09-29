@@ -3,8 +3,8 @@ import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/commo
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   SearchPostsPort,
-  SearchPostsQuery,
-  SearchPostsResult
+  SearchPostsInputPort,
+  SearchPostsOutputPort
 } from '@/modules/post/application/use-cases/search-posts/search-posts.port';
 import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -22,14 +22,8 @@ export class SearchPostsUseCase extends SearchPostsPort {
     super();
   }
 
-  async execute<T extends PostDetailWithAuthorOutput>({
-    userId,
-    query = '',
-    type,
-    people,
-    cursor,
-    limit
-  }: SearchPostsQuery): Promise<SearchPostsResult<T>> {
+  async execute<T extends PostDetailWithAuthorOutput>(input: SearchPostsInputPort): Promise<SearchPostsOutputPort<T>> {
+    const { userId, query = '', type, people, cursor, limit } = input;
     let blockedAuthorIds: string[] | undefined;
     let extraVisiblePostIds: string[] = [];
 
@@ -77,6 +71,6 @@ export class SearchPostsUseCase extends SearchPostsPort {
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new SearchPostsResult({ items: updatedPosts as T[], nextCursor });
+    return new SearchPostsOutputPort({ items: updatedPosts as T[], nextCursor });
   }
 }

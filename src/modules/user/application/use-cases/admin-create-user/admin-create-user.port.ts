@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class AdminCreateUserCommand {
+export class AdminCreateUserInputPort {
   actorId: string;
   name: string;
   email: string;
@@ -47,7 +47,7 @@ export class AdminCreateUserCommand {
   }
 }
 
-export class AdminCreateUserResult implements UserSafeProps {
+export class AdminCreateUserOutputPort implements UserSafeProps {
   id: string;
   name: string;
   email: string;
@@ -81,6 +81,6 @@ export class AdminCreateUserResult implements UserSafeProps {
   }
 }
 
-export abstract class AdminCreateUserPort implements UseCase<AdminCreateUserCommand, AdminCreateUserResult> {
-  abstract execute(command: AdminCreateUserCommand): Promise<AdminCreateUserResult>;
+export abstract class AdminCreateUserPort implements UseCase<AdminCreateUserInputPort, AdminCreateUserOutputPort> {
+  abstract execute(input: AdminCreateUserInputPort): Promise<AdminCreateUserOutputPort>;
 }

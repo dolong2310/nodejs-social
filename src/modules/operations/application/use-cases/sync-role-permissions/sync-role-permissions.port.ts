@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export type RolePermissionSyncResult = {
+export type RolePermissionSyncOutputPort = {
   discoveredRoutes: number;
   moduleTags: string[];
   deletedPermissions: number;
@@ -9,6 +9,6 @@ export type RolePermissionSyncResult = {
   userPermissionCount: number;
 };
 
-export abstract class SyncRolePermissionsPort implements UseCase<void, RolePermissionSyncResult> {
-  abstract execute(): Promise<RolePermissionSyncResult>;
+export abstract class SyncRolePermissionsPort implements UseCase<void, RolePermissionSyncOutputPort> {
+  abstract execute(): Promise<RolePermissionSyncOutputPort>;
 }

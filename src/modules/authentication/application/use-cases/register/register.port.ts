@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class RegisterCommand {
+export class RegisterInputPort {
   name: string;
   email: string;
   password: string;
@@ -20,7 +20,7 @@ export class RegisterCommand {
   }
 }
 
-export class RegisterResult implements UserSafeProps {
+export class RegisterOutputPort implements UserSafeProps {
   id: string;
   name: string;
   email: string;
@@ -53,6 +53,6 @@ export class RegisterResult implements UserSafeProps {
   }
 }
 
-export abstract class RegisterPort implements UseCase<RegisterCommand, RegisterResult> {
-  abstract execute(command: RegisterCommand): Promise<RegisterResult>;
+export abstract class RegisterPort implements UseCase<RegisterInputPort, RegisterOutputPort> {
+  abstract execute(input: RegisterInputPort): Promise<RegisterOutputPort>;
 }

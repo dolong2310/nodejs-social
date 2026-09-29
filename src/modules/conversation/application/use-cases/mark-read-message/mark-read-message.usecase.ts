@@ -1,7 +1,7 @@
 import { ConversationNotFoundException } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  MarkReadCommand,
+  MarkReadInputPort,
   MarkReadPort
 } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.port';
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
@@ -19,7 +19,8 @@ export class MarkReadUseCase extends MarkReadPort {
     super();
   }
 
-  async execute({ userId, conversationId, lastReadMessageId }: MarkReadCommand): Promise<void> {
+  async execute(input: MarkReadInputPort): Promise<void> {
+    const { userId, conversationId, lastReadMessageId } = input;
     // The viewer must be a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 

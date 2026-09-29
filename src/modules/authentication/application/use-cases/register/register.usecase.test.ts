@@ -1,5 +1,5 @@
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { RegisterCommand } from '@/modules/authentication/application/use-cases/register/register.port';
+import { RegisterInputPort } from '@/modules/authentication/application/use-cases/register/register.port';
 import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
@@ -37,7 +37,7 @@ describe('RegisterUseCase', () => {
     const useCase = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
 
     const result = await useCase.execute(
-      new RegisterCommand({
+      new RegisterInputPort({
         name: 'Long Do',
         email: ' Long@Example.com ',
         password: 'password',

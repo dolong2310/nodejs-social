@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class ForgotPasswordCommand {
+export class ForgotPasswordInputPort {
   email: string;
   code: string;
   password: string;
@@ -11,6 +11,6 @@ export class ForgotPasswordCommand {
   }
 }
 
-export abstract class ForgotPasswordPort implements UseCase<ForgotPasswordCommand, boolean> {
-  abstract execute(command: ForgotPasswordCommand): Promise<boolean>;
+export abstract class ForgotPasswordPort implements UseCase<ForgotPasswordInputPort, boolean> {
+  abstract execute(input: ForgotPasswordInputPort): Promise<boolean>;
 }

@@ -1,6 +1,6 @@
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import {
-  GetGoogleAuthUrlCommand,
+  GetGoogleAuthUrlInputPort,
   GetGoogleAuthUrlPort
 } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
 
@@ -9,7 +9,8 @@ export class GetGoogleAuthUrlUseCase extends GetGoogleAuthUrlPort {
     super();
   }
 
-  execute({ ip, userAgent }: GetGoogleAuthUrlCommand): string {
+  execute(input: GetGoogleAuthUrlInputPort): string {
+    const { ip, userAgent } = input;
     const scope = [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile'

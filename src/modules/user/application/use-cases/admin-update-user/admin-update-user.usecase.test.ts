@@ -5,7 +5,7 @@ import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strate
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { AdminUpdateUserCommand } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
+import { AdminUpdateUserInputPort } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { AdminUpdateUserUseCase } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -51,7 +51,7 @@ describe('AdminUpdateUserUseCase', () => {
     );
 
     const result = await useCase.execute(
-      new AdminUpdateUserCommand({
+      new AdminUpdateUserInputPort({
         actorId: 'admin_1',
         userId: currentUser.id,
         name: updatedUser.name,

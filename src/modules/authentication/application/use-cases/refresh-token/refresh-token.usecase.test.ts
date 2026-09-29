@@ -1,6 +1,6 @@
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
-import { RefreshTokenCommand } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
+import { RefreshTokenInputPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
 import { RefreshTokenUseCase } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.usecase';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
@@ -29,7 +29,7 @@ describe('RefreshTokenUseCase', () => {
     });
     const useCase = new RefreshTokenUseCase(refreshTokenRepository, userQueryRepository, authService, tokenService);
 
-    const result = await useCase.execute(new RefreshTokenCommand({ refreshToken: 'old-refresh' }));
+    const result = await useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old-refresh' }));
 
     expect(result).toEqual({ accessToken: 'new-access', refreshToken: 'new-refresh' });
     expect(authService.createAuthSession).toHaveBeenCalledWith({

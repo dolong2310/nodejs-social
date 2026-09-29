@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class LeaveConversationCommand {
+export class LeaveConversationInputPort {
   userId: string;
   conversationId?: string;
   constructor(payload: { userId: string; conversationId?: string }) {
@@ -9,7 +9,7 @@ export class LeaveConversationCommand {
   }
 }
 
-export class LeaveConversationResult {
+export class LeaveConversationOutputPort {
   conversationId: string;
   constructor(payload: { conversationId: string }) {
     this.conversationId = payload.conversationId;
@@ -17,8 +17,8 @@ export class LeaveConversationResult {
 }
 
 export abstract class LeaveConversationPort implements UseCase<
-  LeaveConversationCommand,
-  LeaveConversationResult | null
+  LeaveConversationInputPort,
+  LeaveConversationOutputPort | null
 > {
-  abstract execute(command: LeaveConversationCommand): Promise<LeaveConversationResult | null>;
+  abstract execute(input: LeaveConversationInputPort): Promise<LeaveConversationOutputPort | null>;
 }

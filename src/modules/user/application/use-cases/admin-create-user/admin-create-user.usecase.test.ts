@@ -3,7 +3,7 @@ import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity'
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { AdminCreateUserCommand } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
+import { AdminCreateUserInputPort } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import { AdminCreateUserUseCase } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
@@ -47,7 +47,7 @@ describe('AdminCreateUserUseCase', () => {
     );
 
     const result = await useCase.execute(
-      new AdminCreateUserCommand({
+      new AdminCreateUserInputPort({
         actorId: 'admin_1',
         name: createdUser.name,
         email: createdUser.email,

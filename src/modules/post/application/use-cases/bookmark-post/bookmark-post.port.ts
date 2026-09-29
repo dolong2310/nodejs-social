@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.type';
 
-export class BookmarkPostCommand {
+export class BookmarkPostInputPort {
   postId: string;
   userId: string;
   constructor(payload: { postId: string; userId: string }) {
@@ -10,7 +10,7 @@ export class BookmarkPostCommand {
   }
 }
 
-export class BookmarkPostResult implements BookmarkFullProps {
+export class BookmarkPostOutputPort implements BookmarkFullProps {
   id: string;
   userId: string;
   postId: string;
@@ -25,6 +25,6 @@ export class BookmarkPostResult implements BookmarkFullProps {
   }
 }
 
-export abstract class BookmarkPostPort implements UseCase<BookmarkPostCommand, BookmarkPostResult> {
-  abstract execute(command: BookmarkPostCommand): Promise<BookmarkPostResult>;
+export abstract class BookmarkPostPort implements UseCase<BookmarkPostInputPort, BookmarkPostOutputPort> {
+  abstract execute(input: BookmarkPostInputPort): Promise<BookmarkPostOutputPort>;
 }

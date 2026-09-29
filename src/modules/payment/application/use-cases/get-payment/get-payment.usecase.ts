@@ -1,6 +1,6 @@
 import { NotFoundException } from '@/modules/core/domain/exceptions/exceptions';
 import {
-  GetPaymentCommand,
+  GetPaymentInputPort,
   GetPaymentPort
 } from '@/modules/payment/application/use-cases/get-payment/get-payment.port';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
@@ -12,7 +12,8 @@ export class GetPaymentUseCase extends GetPaymentPort {
     super();
   }
 
-  async execute({ userId, paymentId }: GetPaymentCommand): Promise<PaymentSafeProps> {
+  async execute(input: GetPaymentInputPort): Promise<PaymentSafeProps> {
+    const { userId, paymentId } = input;
     const payment = await this.paymentRepository.findPaymentById(paymentId);
     if (!payment || payment.getProps().userId !== userId) throw new NotFoundException('Payment not found');
     return this.toSafeProps(payment);

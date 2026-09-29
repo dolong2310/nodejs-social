@@ -4,7 +4,7 @@ import {
   OtpCleanupJobResult
 } from '@/modules/authentication/application/ports/otp-cleanup-job.port';
 import {
-  DeleteExpiredOtpsCommand,
+  DeleteExpiredOtpsInputPort,
   DeleteExpiredOtpsPort
 } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { OTP_CLEANUP_SCHEDULE_QUEUE_NAME } from '@/modules/authentication/infrastructure/schedule/otp-cleanup.schedule';
@@ -25,7 +25,7 @@ export class OtpCleanupWorker extends BaseWorker<OtpCleanupJobData, OtpCleanupJo
   }
 
   protected override async process(job: Job<OtpCleanupJobData, OtpCleanupJobResult>): Promise<OtpCleanupJobResult> {
-    const result = await this.deleteExpiredOtpsUC.execute(new DeleteExpiredOtpsCommand());
+    const result = await this.deleteExpiredOtpsUC.execute(new DeleteExpiredOtpsInputPort());
     this.log.info({ jobId: job.id, deletedCount: result.deletedCount }, 'worker:::expired-otps-deleted');
     return { deletedCount: result.deletedCount };
   }

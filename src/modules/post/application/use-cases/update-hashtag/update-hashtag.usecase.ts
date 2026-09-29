@@ -4,7 +4,7 @@ import {
 } from '@/modules/post/application/exceptions/hashtag.exception';
 import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 import {
-  UpdateHashtagCommand,
+  UpdateHashtagInputPort,
   UpdateHashtagPort
 } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
@@ -15,13 +15,13 @@ export class UpdateHashtagUseCase extends UpdateHashtagPort {
     super();
   }
 
-  async execute(command: UpdateHashtagCommand): Promise<HashtagListItem> {
-    const current = await this.hashtagRepository.findHashtagById(command.id);
+  async execute(input: UpdateHashtagInputPort): Promise<HashtagListItem> {
+    const current = await this.hashtagRepository.findHashtagById(input.id);
     if (!current) {
       throw new HashtagNotFoundException();
     }
     const currentProps = current.getProps();
-    const nextName = command.name !== undefined ? command.name.trim().toLowerCase() : currentProps.name;
+    const nextName = input.name !== undefined ? input.name.trim().toLowerCase() : currentProps.name;
 
     void new HashtagEntity({
       id: currentProps.id,
@@ -30,18 +30,18 @@ export class UpdateHashtagUseCase extends UpdateHashtagPort {
       props: { name: nextName }
     });
 
-    if (command.name !== undefined && nextName !== currentProps.name) {
+    if (input.name !== undefined && nextName !== currentProps.name) {
       const taken = await this.hashtagRepository.findHashtagByName(nextName);
-      if (taken && taken.id.toString() !== command.id) {
+      if (taken && taken.id.toString() !== input.id) {
         throw new HashtagNameAlreadyExistsException();
       }
     }
 
-    if (command.name === undefined) {
+    if (input.name === undefined) {
       return new HashtagListItem(current.toObject());
     }
 
-    const updated = await this.hashtagRepository.updateHashtag(command.id, { name: nextName });
+    const updated = await this.hashtagRepository.updateHashtag(input.id, { name: nextName });
     if (!updated) {
       throw new HashtagNotFoundException();
     }

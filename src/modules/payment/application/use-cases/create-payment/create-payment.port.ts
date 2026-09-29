@@ -8,7 +8,7 @@ export interface CreatePaymentProps {
   clientIp: string;
 }
 
-export class CreatePaymentCommand implements CreatePaymentProps {
+export class CreatePaymentInputPort implements CreatePaymentProps {
   userId: string;
   provider: PaymentProvider;
   idempotencyKey: string;
@@ -22,6 +22,6 @@ export class CreatePaymentCommand implements CreatePaymentProps {
   }
 }
 
-export abstract class CreatePaymentPort implements UseCase<CreatePaymentCommand, PaymentSafeProps> {
-  abstract execute(command: CreatePaymentCommand): Promise<PaymentSafeProps>;
+export abstract class CreatePaymentPort implements UseCase<CreatePaymentInputPort, PaymentSafeProps> {
+  abstract execute(input: CreatePaymentInputPort): Promise<PaymentSafeProps>;
 }

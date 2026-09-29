@@ -1,9 +1,9 @@
 import { ConversationRoleForbiddenException } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  UpdateConversationCommand,
+  UpdateConversationInputPort,
   UpdateConversationPort,
-  UpdateConversationResult
+  UpdateConversationOutputPort
 } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
@@ -22,12 +22,8 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
     super();
   }
 
-  async execute({
-    userId,
-    conversationId,
-    avatarMediaId,
-    name
-  }: UpdateConversationCommand): Promise<UpdateConversationResult> {
+  async execute(input: UpdateConversationInputPort): Promise<UpdateConversationOutputPort> {
+    const { userId, conversationId, avatarMediaId, name } = input;
     // Check whether the user is a conversation member.
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
     // Only admin and manager can edit conversation metadata.
@@ -48,7 +44,7 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
       const convEntity = await this.conversationService.loadConversation(conversationId);
       const conv = convEntity.toObject();
 
-      const payload: UpdateConversationResult = {
+      const payload: UpdateConversationOutputPort = {
         id: conv.id,
         type: conv.type,
         createdBy: conv.createdBy,
@@ -77,7 +73,7 @@ export class UpdateConversationUseCase extends UpdateConversationPort {
     }
     const conv = convEntity.toObject();
 
-    const payload: UpdateConversationResult = {
+    const payload: UpdateConversationOutputPort = {
       id: conv.id,
       type: conv.type,
       createdBy: conv.createdBy,

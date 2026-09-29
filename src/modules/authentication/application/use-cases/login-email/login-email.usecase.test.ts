@@ -1,6 +1,6 @@
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { LoginEmailCommand } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
+import { LoginEmailInputPort } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
 import { LoginEmailUseCase } from '@/modules/authentication/application/use-cases/login-email/login-email.usecase';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
@@ -27,7 +27,7 @@ describe('LoginEmailUseCase', () => {
     const useCase = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
 
     const result = await useCase.execute(
-      new LoginEmailCommand({ email: ' Long@Example.com ', password: 'password', totpCode: '123456' })
+      new LoginEmailInputPort({ email: ' Long@Example.com ', password: 'password', totpCode: '123456' })
     );
 
     expect(userQueryRepository.findUserByEmailIncludeRole).toHaveBeenCalledWith(user.email);

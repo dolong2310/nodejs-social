@@ -2,7 +2,7 @@ import { PermissionListItem } from '@/modules/authorization/application/use-case
 import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class UpdatePermissionCommand {
+export class UpdatePermissionInputPort {
   id: string;
   name?: string;
   description?: string;
@@ -26,6 +26,6 @@ export class UpdatePermissionCommand {
   }
 }
 
-export abstract class UpdatePermissionPort implements UseCase<UpdatePermissionCommand, PermissionListItem> {
-  abstract execute(command: UpdatePermissionCommand): Promise<PermissionListItem>;
+export abstract class UpdatePermissionPort implements UseCase<UpdatePermissionInputPort, PermissionListItem> {
+  abstract execute(input: UpdatePermissionInputPort): Promise<PermissionListItem>;
 }

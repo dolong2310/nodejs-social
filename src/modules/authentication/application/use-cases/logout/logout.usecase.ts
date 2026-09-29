@@ -1,5 +1,5 @@
 import { InvalidTokenException } from '@/modules/authentication/application/exceptions/auth.exception';
-import { LogoutCommand, LogoutPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
+import { LogoutInputPort, LogoutPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 
 export class LogoutUseCase extends LogoutPort {
@@ -7,7 +7,8 @@ export class LogoutUseCase extends LogoutPort {
     super();
   }
 
-  async execute({ refreshToken }: LogoutCommand): Promise<boolean> {
+  async execute(input: LogoutInputPort): Promise<boolean> {
+    const { refreshToken } = input;
     const refreshTokenEntity = await this.refreshTokenRepository.findRefreshToken(refreshToken);
 
     if (!refreshTokenEntity) {

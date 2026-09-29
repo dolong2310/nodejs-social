@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class LoginGoogleCommand {
+export class LoginGoogleInputPort {
   state: string;
   code: string;
   constructor(payload: { state: string; code: string }) {
@@ -9,7 +9,7 @@ export class LoginGoogleCommand {
   }
 }
 
-export class LoginGoogleResult {
+export class LoginGoogleOutputPort {
   accessToken: string;
   refreshToken: string;
   constructor(payload: { accessToken: string; refreshToken: string }) {
@@ -18,6 +18,6 @@ export class LoginGoogleResult {
   }
 }
 
-export abstract class LoginGooglePort implements UseCase<LoginGoogleCommand, LoginGoogleResult> {
-  abstract execute(command: LoginGoogleCommand): Promise<LoginGoogleResult>;
+export abstract class LoginGooglePort implements UseCase<LoginGoogleInputPort, LoginGoogleOutputPort> {
+  abstract execute(input: LoginGoogleInputPort): Promise<LoginGoogleOutputPort>;
 }

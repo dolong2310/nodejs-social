@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class IncreaseViewsCommand {
+export class IncreaseViewsInputPort {
   userId?: string;
   postId: string;
   constructor(payload: { userId?: string; postId: string }) {
@@ -9,7 +9,7 @@ export class IncreaseViewsCommand {
   }
 }
 
-export class IncreaseViewsResult {
+export class IncreaseViewsOutputPort {
   userViews: number;
   guestViews: number;
   updatedAt?: Date;
@@ -20,6 +20,6 @@ export class IncreaseViewsResult {
   }
 }
 
-export abstract class IncreaseViewsPort implements UseCase<IncreaseViewsCommand, IncreaseViewsResult | null> {
-  abstract execute(command: IncreaseViewsCommand): Promise<IncreaseViewsResult | null>;
+export abstract class IncreaseViewsPort implements UseCase<IncreaseViewsInputPort, IncreaseViewsOutputPort | null> {
+  abstract execute(input: IncreaseViewsInputPort): Promise<IncreaseViewsOutputPort | null>;
 }

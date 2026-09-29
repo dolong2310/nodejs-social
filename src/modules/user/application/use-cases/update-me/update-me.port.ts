@@ -2,7 +2,7 @@ import { Username } from '@/modules/common/domain/value-objects/username.value-o
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class UpdateMeCommand {
+export class UpdateMeInputPort {
   userId: string;
   name?: string;
   birthday?: Date;
@@ -35,7 +35,7 @@ export class UpdateMeCommand {
   }
 }
 
-export class UpdateMeResult implements UserSafeProps {
+export class UpdateMeOutputPort implements UserSafeProps {
   id: string;
   name: string;
   email: string;
@@ -68,6 +68,6 @@ export class UpdateMeResult implements UserSafeProps {
   }
 }
 
-export abstract class UpdateMePort implements UseCase<UpdateMeCommand, UpdateMeResult> {
-  abstract execute(command: UpdateMeCommand): Promise<UpdateMeResult>;
+export abstract class UpdateMePort implements UseCase<UpdateMeInputPort, UpdateMeOutputPort> {
+  abstract execute(input: UpdateMeInputPort): Promise<UpdateMeOutputPort>;
 }

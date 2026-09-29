@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class Disable2FACommand {
+export class Disable2FAInputPort {
   userId: string;
   totpCode?: string;
   emailOtpCode?: string;
@@ -15,6 +15,6 @@ export class Disable2FACommand {
   }
 }
 
-export abstract class Disable2FAPort implements UseCase<Disable2FACommand, boolean> {
-  abstract execute(command: Disable2FACommand): Promise<boolean>;
+export abstract class Disable2FAPort implements UseCase<Disable2FAInputPort, boolean> {
+  abstract execute(input: Disable2FAInputPort): Promise<boolean>;
 }

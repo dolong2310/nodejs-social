@@ -1,9 +1,9 @@
 import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
 import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
-  UnlikeCommand,
+  UnlikeInputPort,
   UnlikePort,
-  UnlikeResult
+  UnlikeOutputPort
 } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -17,7 +17,8 @@ export class UnlikePostUseCase extends UnlikePort {
     super();
   }
 
-  async execute({ userId, postId }: UnlikeCommand): Promise<UnlikeResult> {
+  async execute(input: UnlikeInputPort): Promise<UnlikeOutputPort> {
+    const { userId, postId } = input;
     const post = await this.postQueryRepository.findPostDetailById(postId);
     if (!post) {
       throw new PostNotFoundException();
@@ -29,6 +30,6 @@ export class UnlikePostUseCase extends UnlikePort {
     if (!like) {
       throw new PostNotFoundException();
     }
-    return new UnlikeResult(like);
+    return new UnlikeOutputPort(like);
   }
 }

@@ -1,9 +1,9 @@
 import { UserAlreadyHas2FAException } from '@/modules/authentication/application/exceptions/otp.exception';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import {
-  Setup2FACommand,
+  Setup2FAInputPort,
   Setup2FAPort,
-  Setup2FAResult
+  Setup2FAOutputPort
 } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
@@ -22,7 +22,8 @@ export class Setup2FAUseCase extends Setup2FAPort {
     super();
   }
 
-  async execute({ userId }: Setup2FACommand): Promise<Setup2FAResult> {
+  async execute(input: Setup2FAInputPort): Promise<Setup2FAOutputPort> {
+    const { userId } = input;
     // 1. Load user from the database, verify the user exists, and verify 2FA is not already enabled.
     const user = await this.userService.findUserById(userId);
 
@@ -44,7 +45,7 @@ export class Setup2FAUseCase extends Setup2FAPort {
     await this.cache.invalidate(CACHE_KEYS.user(user.id));
 
     // 5. Return the secret key and URI.
-    return new Setup2FAResult({
+    return new Setup2FAOutputPort({
       secret,
       uri
     });

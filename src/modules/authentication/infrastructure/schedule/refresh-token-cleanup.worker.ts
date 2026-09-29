@@ -4,7 +4,7 @@ import {
   RefreshTokenCleanupJobResult
 } from '@/modules/authentication/application/ports/refresh-token-cleanup-job.port';
 import {
-  DeleteExpiredRefreshTokensCommand,
+  DeleteExpiredRefreshTokensInputPort,
   DeleteExpiredRefreshTokensPort
 } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME } from '@/modules/authentication/infrastructure/schedule/refresh-token-cleanup.schedule';
@@ -27,7 +27,7 @@ export class RefreshTokenCleanupWorker extends BaseWorker<RefreshTokenCleanupJob
   protected override async process(
     job: Job<RefreshTokenCleanupJobData, RefreshTokenCleanupJobResult>
   ): Promise<RefreshTokenCleanupJobResult> {
-    const result = await this.deleteExpiredRefreshTokensUC.execute(new DeleteExpiredRefreshTokensCommand());
+    const result = await this.deleteExpiredRefreshTokensUC.execute(new DeleteExpiredRefreshTokensInputPort());
     this.log.info({ jobId: job.id, deletedCount: result.deletedCount }, 'worker:::expired-refresh-tokens-deleted');
     return { deletedCount: result.deletedCount };
   }

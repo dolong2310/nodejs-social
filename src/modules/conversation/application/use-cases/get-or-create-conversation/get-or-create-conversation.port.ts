@@ -1,7 +1,7 @@
 import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetOrCreateConversationCommand {
+export class GetOrCreateConversationInputPort {
   userId: string;
   peerUserId: string;
   constructor(payload: { userId: string; peerUserId: string }) {
@@ -10,7 +10,7 @@ export class GetOrCreateConversationCommand {
   }
 }
 
-export class GetOrCreateConversationResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
+export class GetOrCreateConversationOutputPort implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -41,8 +41,8 @@ export class GetOrCreateConversationResult implements Omit<ConversationFullProps
 }
 
 export abstract class GetOrCreateConversationPort implements UseCase<
-  GetOrCreateConversationCommand,
-  GetOrCreateConversationResult
+  GetOrCreateConversationInputPort,
+  GetOrCreateConversationOutputPort
 > {
-  abstract execute(command: GetOrCreateConversationCommand): Promise<GetOrCreateConversationResult>;
+  abstract execute(input: GetOrCreateConversationInputPort): Promise<GetOrCreateConversationOutputPort>;
 }

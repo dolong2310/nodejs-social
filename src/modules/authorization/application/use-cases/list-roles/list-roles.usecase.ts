@@ -1,7 +1,7 @@
 import {
   ListRolesPort,
-  ListRolesQuery,
-  ListRolesResult,
+  ListRolesInputPort,
+  ListRolesOutputPort,
   RoleListItem
 } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
@@ -11,13 +11,13 @@ export class ListRolesUseCase extends ListRolesPort {
     super();
   }
 
-  async execute(query: ListRolesQuery): Promise<ListRolesResult> {
-    const skip = (query.page - 1) * query.limit;
+  async execute(input: ListRolesInputPort): Promise<ListRolesOutputPort> {
+    const skip = (input.page - 1) * input.limit;
     const [total, entities] = await Promise.all([
       this.roleRepository.countRoles(),
-      this.roleRepository.findRoles({ limit: query.limit, skip })
+      this.roleRepository.findRoles({ limit: input.limit, skip })
     ]);
     const items = entities.map((entity) => new RoleListItem(entity.toObject()));
-    return new ListRolesResult({ items, total });
+    return new ListRolesOutputPort({ items, total });
   }
 }

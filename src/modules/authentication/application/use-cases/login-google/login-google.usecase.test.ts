@@ -1,6 +1,6 @@
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { LoginGoogleCommand } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
+import { LoginGoogleInputPort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import { LoginGoogleUseCase } from '@/modules/authentication/application/use-cases/login-google/login-google.usecase';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
@@ -35,7 +35,7 @@ describe('LoginGoogleUseCase', () => {
       userService
     );
 
-    const result = await useCase.execute(new LoginGoogleCommand({ state: 'state', code: 'oauth-code' }));
+    const result = await useCase.execute(new LoginGoogleInputPort({ state: 'state', code: 'oauth-code' }));
 
     expect(googleOAuthService.getUserInfoFromCode).toHaveBeenCalledWith('oauth-code');
     expect(authService.createAuthSession).toHaveBeenCalledWith(

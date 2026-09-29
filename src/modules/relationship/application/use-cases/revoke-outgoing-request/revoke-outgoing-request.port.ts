@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class RevokeOutgoingRequestCommand {
+export class RevokeOutgoingRequestInputPort {
   userId: string;
   toUserId: string;
   constructor(payload: { userId: string; toUserId: string }) {
@@ -9,6 +9,6 @@ export class RevokeOutgoingRequestCommand {
   }
 }
 
-export abstract class RevokeOutgoingRequestPort implements UseCase<RevokeOutgoingRequestCommand, void> {
-  abstract execute(command: RevokeOutgoingRequestCommand): Promise<void>;
+export abstract class RevokeOutgoingRequestPort implements UseCase<RevokeOutgoingRequestInputPort, void> {
+  abstract execute(input: RevokeOutgoingRequestInputPort): Promise<void>;
 }

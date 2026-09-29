@@ -1,7 +1,7 @@
 import { ChatMessageFullProps } from '@/modules/conversation/domain/entities/chat-message.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetMessagesQuery {
+export class GetMessagesInputPort {
   userId: string;
   conversationId: string;
   limit: number;
@@ -14,7 +14,7 @@ export class GetMessagesQuery {
   }
 }
 
-export class GetMessagesResult {
+export class GetMessagesOutputPort {
   items: ChatMessageFullProps[];
   nextCursor: string | null;
   constructor(items: ChatMessageFullProps[], nextCursor: string | null) {
@@ -23,6 +23,6 @@ export class GetMessagesResult {
   }
 }
 
-export abstract class GetMessagesPort implements UseCase<GetMessagesQuery, GetMessagesResult> {
-  abstract execute(query: GetMessagesQuery): Promise<GetMessagesResult>;
+export abstract class GetMessagesPort implements UseCase<GetMessagesInputPort, GetMessagesOutputPort> {
+  abstract execute(input: GetMessagesInputPort): Promise<GetMessagesOutputPort>;
 }

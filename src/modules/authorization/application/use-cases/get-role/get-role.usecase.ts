@@ -1,5 +1,5 @@
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { GetRolePort, GetRoleQuery } from '@/modules/authorization/application/use-cases/get-role/get-role.port';
+import { GetRolePort, GetRoleInputPort } from '@/modules/authorization/application/use-cases/get-role/get-role.port';
 import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 
@@ -8,8 +8,8 @@ export class GetRoleUseCase extends GetRolePort {
     super();
   }
 
-  async execute(query: GetRoleQuery) {
-    const entity = await this.roleRepository.findRoleById(query.id);
+  async execute(input: GetRoleInputPort) {
+    const entity = await this.roleRepository.findRoleById(input.id);
     if (!entity) {
       throw new RoleNotFoundException();
     }

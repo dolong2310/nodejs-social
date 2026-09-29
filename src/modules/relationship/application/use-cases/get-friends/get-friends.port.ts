@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
 
-export class GetFriendsQuery {
+export class GetFriendsInputPort {
   userId: string;
   limit: number;
   cursor?: string;
@@ -12,7 +12,7 @@ export class GetFriendsQuery {
   }
 }
 
-export class GetFriendsResult {
+export class GetFriendsOutputPort {
   items: UserRecordProps[];
   nextCursor: string | null;
   constructor(items: UserRecordProps[], nextCursor: string | null) {
@@ -21,6 +21,6 @@ export class GetFriendsResult {
   }
 }
 
-export abstract class GetFriendsPort implements UseCase<GetFriendsQuery, GetFriendsResult> {
-  abstract execute(query: GetFriendsQuery): Promise<GetFriendsResult>;
+export abstract class GetFriendsPort implements UseCase<GetFriendsInputPort, GetFriendsOutputPort> {
+  abstract execute(input: GetFriendsInputPort): Promise<GetFriendsOutputPort>;
 }

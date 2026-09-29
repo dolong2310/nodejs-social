@@ -1,5 +1,5 @@
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
-import { SendOtpCommand } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
+import { SendOtpInputPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
 import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
@@ -24,7 +24,7 @@ describe('SendOtpUseCase', () => {
     const useCase = new SendOtpUseCase(otpRepository, userRepository, otpEmailQueue);
 
     await useCase.execute(
-      new SendOtpCommand({
+      new SendOtpInputPort({
         email: 'long@example.com',
         code: '000000',
         type: EnumOtpType.REGISTER,

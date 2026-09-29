@@ -5,7 +5,7 @@ import {
 } from '@/modules/relationship/application/exceptions/friend.exception';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  AcceptIncomingRequestCommand,
+  AcceptIncomingRequestInputPort,
   AcceptIncomingRequestPort
 } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.port';
 import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
@@ -23,7 +23,8 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
     super();
   }
 
-  async execute({ userId, fromUserId }: AcceptIncomingRequestCommand): Promise<void> {
+  async execute(input: AcceptIncomingRequestInputPort): Promise<void> {
+    const { userId, fromUserId } = input;
     // Check whether the receiver has a friend request from the sender.
     const pending = await this.friendRequestRepository.findPendingRequestByUserPair({ fromUserId, toUserId: userId });
     if (!pending) {

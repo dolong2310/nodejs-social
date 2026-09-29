@@ -7,7 +7,7 @@ import {
 } from '@/modules/post/domain/entities/post.type';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 
-export class CreatePostCommand implements CreatePostProps {
+export class CreatePostInputPort implements CreatePostProps {
   userId: string;
   type: EnumPostType;
   audience: EnumPostAudience;
@@ -30,7 +30,7 @@ export class CreatePostCommand implements CreatePostProps {
   }
 }
 
-export class CreatePostResult implements PostFullProps {
+export class CreatePostOutputPort implements PostFullProps {
   id: string;
   userId: string;
   type: EnumPostType;
@@ -63,6 +63,6 @@ export class CreatePostResult implements PostFullProps {
   }
 }
 
-export abstract class CreatePostPort implements UseCase<CreatePostCommand, CreatePostResult> {
-  abstract execute(command: CreatePostCommand): Promise<CreatePostResult>;
+export abstract class CreatePostPort implements UseCase<CreatePostInputPort, CreatePostOutputPort> {
+  abstract execute(input: CreatePostInputPort): Promise<CreatePostOutputPort>;
 }

@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class MarkReadCommand {
+export class MarkReadInputPort {
   userId: string;
   conversationId: string;
   lastReadMessageId?: string;
@@ -11,6 +11,6 @@ export class MarkReadCommand {
   }
 }
 
-export abstract class MarkReadPort implements UseCase<MarkReadCommand, void> {
-  abstract execute(command: MarkReadCommand): Promise<void>;
+export abstract class MarkReadPort implements UseCase<MarkReadInputPort, void> {
+  abstract execute(input: MarkReadInputPort): Promise<void>;
 }

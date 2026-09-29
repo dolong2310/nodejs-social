@@ -6,7 +6,7 @@ export interface GetPaymentProps {
   paymentId: string;
 }
 
-export class GetPaymentCommand implements GetPaymentProps {
+export class GetPaymentInputPort implements GetPaymentProps {
   userId: string;
   paymentId: string;
 
@@ -16,6 +16,6 @@ export class GetPaymentCommand implements GetPaymentProps {
   }
 }
 
-export abstract class GetPaymentPort implements UseCase<GetPaymentCommand, PaymentSafeProps> {
-  abstract execute(command: GetPaymentCommand): Promise<PaymentSafeProps>;
+export abstract class GetPaymentPort implements UseCase<GetPaymentInputPort, PaymentSafeProps> {
+  abstract execute(input: GetPaymentInputPort): Promise<PaymentSafeProps>;
 }

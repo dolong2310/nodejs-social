@@ -1,7 +1,7 @@
 import {
-  DeleteExpiredRefreshTokensCommand,
+  DeleteExpiredRefreshTokensInputPort,
   DeleteExpiredRefreshTokensPort,
-  DeleteExpiredRefreshTokensResult
+  DeleteExpiredRefreshTokensOutputPort
 } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 
@@ -10,8 +10,8 @@ export class DeleteExpiredRefreshTokensUseCase extends DeleteExpiredRefreshToken
     super();
   }
 
-  async execute(command: DeleteExpiredRefreshTokensCommand): Promise<DeleteExpiredRefreshTokensResult> {
-    const deletedCount = await this.refreshTokenRepository.deleteExpiredRefreshTokens(command.now);
-    return new DeleteExpiredRefreshTokensResult({ deletedCount });
+  async execute(input: DeleteExpiredRefreshTokensInputPort): Promise<DeleteExpiredRefreshTokensOutputPort> {
+    const deletedCount = await this.refreshTokenRepository.deleteExpiredRefreshTokens(input.now);
+    return new DeleteExpiredRefreshTokensOutputPort({ deletedCount });
   }
 }

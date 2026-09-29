@@ -1,10 +1,10 @@
-import { SearchUsersQuery } from '@/modules/user/application/use-cases/search-users/search-users.port';
+import { SearchUsersInputPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { createHash } from 'crypto';
 
 export const CACHE_KEYS = {
   user: (userId: string) => `user:${userId}`,
   userByUsername: (username: string) => `user:username:${username.toLowerCase()}`,
-  searchUsers: (query: SearchUsersQuery): string => {
+  searchUsers: (query: SearchUsersInputPort): string => {
     const fingerprint = JSON.stringify(query);
     const hash = createHash('sha256').update(fingerprint).digest('hex').slice(0, 40);
     return `social:search:users:v2:${hash}`;

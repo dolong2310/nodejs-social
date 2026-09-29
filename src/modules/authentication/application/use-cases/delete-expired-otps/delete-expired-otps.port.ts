@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class DeleteExpiredOtpsCommand {
+export class DeleteExpiredOtpsInputPort {
   now: Date;
 
   constructor(now?: Date) {
@@ -8,7 +8,7 @@ export class DeleteExpiredOtpsCommand {
   }
 }
 
-export class DeleteExpiredOtpsResult {
+export class DeleteExpiredOtpsOutputPort {
   deletedCount: number;
 
   constructor(payload: { deletedCount: number }) {
@@ -16,6 +16,9 @@ export class DeleteExpiredOtpsResult {
   }
 }
 
-export abstract class DeleteExpiredOtpsPort implements UseCase<DeleteExpiredOtpsCommand, DeleteExpiredOtpsResult> {
-  abstract execute(command?: DeleteExpiredOtpsCommand): Promise<DeleteExpiredOtpsResult>;
+export abstract class DeleteExpiredOtpsPort implements UseCase<
+  DeleteExpiredOtpsInputPort,
+  DeleteExpiredOtpsOutputPort
+> {
+  abstract execute(input?: DeleteExpiredOtpsInputPort): Promise<DeleteExpiredOtpsOutputPort>;
 }

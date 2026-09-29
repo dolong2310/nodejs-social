@@ -1,5 +1,5 @@
 import {
-  NotifyFriendsOfflineCommand,
+  NotifyFriendsOfflineInputPort,
   NotifyFriendsOfflinePort
 } from '@/modules/notification/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.port';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
@@ -9,7 +9,7 @@ export class NotifyFriendsOfflineUseCase extends NotifyFriendsOfflinePort {
     super();
   }
 
-  async execute({ userId }: NotifyFriendsOfflineCommand): Promise<string[]> {
-    return this.friendshipRepository.findFriendIdsByUserId(userId).catch(() => []);
+  async execute(input: NotifyFriendsOfflineInputPort): Promise<string[]> {
+    return this.friendshipRepository.findFriendIdsByUserId(input.userId).catch(() => []);
   }
 }

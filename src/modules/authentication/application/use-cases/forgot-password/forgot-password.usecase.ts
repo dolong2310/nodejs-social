@@ -1,7 +1,7 @@
 import { EmailNotFoundException } from '@/modules/authentication/application/exceptions/auth.exception';
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  ForgotPasswordCommand,
+  ForgotPasswordInputPort,
   ForgotPasswordPort
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
@@ -32,7 +32,8 @@ export class ForgotPasswordUseCase extends ForgotPasswordPort {
     [confirm new password]
     [button submit]
   */
-  async execute({ email, code, password }: ForgotPasswordCommand): Promise<boolean> {
+  async execute(input: ForgotPasswordInputPort): Promise<boolean> {
+    const { email, code, password } = input;
     // 1. Check OTP code
     const otpEntity = await this.otpService.findAndValidateOtpCode({
       email,

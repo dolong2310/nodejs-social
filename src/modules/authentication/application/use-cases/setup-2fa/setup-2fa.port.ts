@@ -1,13 +1,13 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class Setup2FACommand {
+export class Setup2FAInputPort {
   userId: string;
   constructor(payload: { userId: string }) {
     this.userId = payload.userId;
   }
 }
 
-export class Setup2FAResult {
+export class Setup2FAOutputPort {
   secret: string;
   uri: string;
   constructor(payload: { secret: string; uri: string }) {
@@ -16,6 +16,6 @@ export class Setup2FAResult {
   }
 }
 
-export abstract class Setup2FAPort implements UseCase<Setup2FACommand, Setup2FAResult> {
-  abstract execute(command: Setup2FACommand): Promise<Setup2FAResult>;
+export abstract class Setup2FAPort implements UseCase<Setup2FAInputPort, Setup2FAOutputPort> {
+  abstract execute(input: Setup2FAInputPort): Promise<Setup2FAOutputPort>;
 }

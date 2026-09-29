@@ -5,9 +5,9 @@ import {
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  TransferAdminCommand,
+  TransferAdminInputPort,
   TransferAdminPort,
-  TransferAdminResult
+  TransferAdminOutputPort
 } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
@@ -29,7 +29,8 @@ export class TransferAdminUseCase extends TransferAdminPort {
     super();
   }
 
-  async execute({ userId, newAdminUserId, conversationId }: TransferAdminCommand): Promise<TransferAdminResult> {
+  async execute(input: TransferAdminInputPort): Promise<TransferAdminOutputPort> {
+    const { userId, newAdminUserId, conversationId } = input;
     // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();

@@ -5,7 +5,7 @@ import {
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  KickMemberCommand,
+  KickMemberInputPort,
   KickMemberPort
 } from '@/modules/conversation/application/use-cases/kick-member/kick-member.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
@@ -31,7 +31,8 @@ export class KickMemberUseCase extends KickMemberPort {
     super();
   }
 
-  async execute({ userId, conversationId, targetUserId }: KickMemberCommand): Promise<void> {
+  async execute(input: KickMemberInputPort): Promise<void> {
+    const { userId, conversationId, targetUserId } = input;
     // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     if (convEntity.getProps().type === EnumConversationType.DIRECT) {

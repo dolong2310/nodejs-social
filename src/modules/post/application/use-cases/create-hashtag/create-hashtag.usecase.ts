@@ -1,6 +1,6 @@
 import { HashtagNameAlreadyExistsException } from '@/modules/post/application/exceptions/hashtag.exception';
 import {
-  CreateHashtagCommand,
+  CreateHashtagInputPort,
   CreateHashtagPort
 } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.port';
 import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
@@ -11,8 +11,8 @@ export class CreateHashtagUseCase extends CreateHashtagPort {
     super();
   }
 
-  async execute(command: CreateHashtagCommand): Promise<HashtagListItem> {
-    const name = command.name.trim().toLowerCase();
+  async execute(input: CreateHashtagInputPort): Promise<HashtagListItem> {
+    const name = input.name.trim().toLowerCase();
     const duplicate = await this.hashtagRepository.findHashtagByName(name);
     if (duplicate) {
       throw new HashtagNameAlreadyExistsException();

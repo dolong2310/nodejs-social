@@ -1,13 +1,13 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class RefreshTokenCommand {
+export class RefreshTokenInputPort {
   refreshToken: string;
   constructor(payload: { refreshToken: string }) {
     this.refreshToken = payload.refreshToken;
   }
 }
 
-export class RefreshTokenResult {
+export class RefreshTokenOutputPort {
   accessToken: string;
   refreshToken: string;
   constructor(payload: { accessToken: string; refreshToken: string }) {
@@ -16,6 +16,6 @@ export class RefreshTokenResult {
   }
 }
 
-export abstract class RefreshTokenPort implements UseCase<RefreshTokenCommand, RefreshTokenResult> {
-  abstract execute(command: RefreshTokenCommand): Promise<RefreshTokenResult>;
+export abstract class RefreshTokenPort implements UseCase<RefreshTokenInputPort, RefreshTokenOutputPort> {
+  abstract execute(input: RefreshTokenInputPort): Promise<RefreshTokenOutputPort>;
 }

@@ -3,8 +3,8 @@ import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/commo
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   GetMessagesPort,
-  GetMessagesQuery,
-  GetMessagesResult
+  GetMessagesInputPort,
+  GetMessagesOutputPort
 } from '@/modules/conversation/application/use-cases/get-messages/get-messages.port';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
 
@@ -22,7 +22,8 @@ export class GetMessagesUseCase extends GetMessagesPort {
     super();
   }
 
-  async execute({ userId, conversationId, limit, cursor }: GetMessagesQuery): Promise<GetMessagesResult> {
+  async execute(input: GetMessagesInputPort): Promise<GetMessagesOutputPort> {
+    const { userId, conversationId, limit, cursor } = input;
     // The viewer must be a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
@@ -41,6 +42,6 @@ export class GetMessagesUseCase extends GetMessagesPort {
     const last = items[items.length - 1];
     const nextCursor = hasMore && items.length > 0 ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new GetMessagesResult(items, nextCursor);
+    return new GetMessagesOutputPort(items, nextCursor);
   }
 }

@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
-export class GetPostDetailQuery {
+export class GetPostDetailInputPort {
   postId: string;
   currentUserId?: string;
   constructor(payload: { postId: string; currentUserId?: string }) {
@@ -10,6 +10,6 @@ export class GetPostDetailQuery {
   }
 }
 
-export abstract class GetPostDetailPort implements UseCase<GetPostDetailQuery, PostDetailWithAuthorOutput> {
-  abstract execute(query: GetPostDetailQuery): Promise<PostDetailWithAuthorOutput>;
+export abstract class GetPostDetailPort implements UseCase<GetPostDetailInputPort, PostDetailWithAuthorOutput> {
+  abstract execute(input: GetPostDetailInputPort): Promise<PostDetailWithAuthorOutput>;
 }

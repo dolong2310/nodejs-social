@@ -1,12 +1,12 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetConversationPresenceCommand {
+export class GetConversationPresenceInputPort {
   conversationId: string;
   constructor(payload: { conversationId: string }) {
     this.conversationId = payload.conversationId;
   }
 }
 
-export abstract class GetConversationPresencePort implements UseCase<GetConversationPresenceCommand, string[]> {
-  abstract execute(command: GetConversationPresenceCommand): Promise<string[]>;
+export abstract class GetConversationPresencePort implements UseCase<GetConversationPresenceInputPort, string[]> {
+  abstract execute(input: GetConversationPresenceInputPort): Promise<string[]>;
 }

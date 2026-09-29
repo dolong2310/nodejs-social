@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class DeletePermissionCommand {
+export class DeletePermissionInputPort {
   id: string;
   actorId: string | null;
   constructor(payload: { id: string; actorId?: string | null }) {
@@ -9,6 +9,6 @@ export class DeletePermissionCommand {
   }
 }
 
-export abstract class DeletePermissionPort implements UseCase<DeletePermissionCommand, void> {
-  abstract execute(command: DeletePermissionCommand): Promise<void>;
+export abstract class DeletePermissionPort implements UseCase<DeletePermissionInputPort, void> {
+  abstract execute(input: DeletePermissionInputPort): Promise<void>;
 }

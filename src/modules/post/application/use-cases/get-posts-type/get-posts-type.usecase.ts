@@ -6,8 +6,8 @@ import { PostAudienceAccessServicePort } from '@/modules/post/application/servic
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetPostsTypePort,
-  GetPostsTypeQuery,
-  GetPostsTypeResult
+  GetPostsTypeInputPort,
+  GetPostsTypeOutputPort
 } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -28,13 +28,10 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends PostDetailWithAuthorOutput>({
-    userId,
-    cursor,
-    limit,
-    postId,
-    type
-  }: GetPostsTypeQuery): Promise<GetPostsTypeResult<T>> {
+  async execute<T extends PostDetailWithAuthorOutput>(
+    input: GetPostsTypeInputPort
+  ): Promise<GetPostsTypeOutputPort<T>> {
+    const { userId, cursor, limit, postId, type } = input;
     const parentPost = await this.postQueryRepository.findPostDetailById(postId, userId);
     if (!parentPost) {
       throw new PostNotFoundException();
@@ -43,7 +40,13 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
 
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
     // Load posts by postId and type.
-    const results = await this.postQueryRepository.findPostsType({ postId, type, currentUserId: userId, cursor: before, limit });
+    const results = await this.postQueryRepository.findPostsType({
+      postId,
+      type,
+      currentUserId: userId,
+      cursor: before,
+      limit
+    });
     const hasMore = results.length > limit;
     const posts = results.slice(0, limit);
 
@@ -71,6 +74,6 @@ export class GetPostsTypeUseCase extends GetPostsTypePort {
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new GetPostsTypeResult<T>({ items: updatedPosts as T[], nextCursor });
+    return new GetPostsTypeOutputPort<T>({ items: updatedPosts as T[], nextCursor });
   }
 }

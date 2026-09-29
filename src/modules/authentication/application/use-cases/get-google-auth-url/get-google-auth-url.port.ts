@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetGoogleAuthUrlCommand {
+export class GetGoogleAuthUrlInputPort {
   ip: string;
   userAgent: string;
   constructor(payload: { ip: string; userAgent: string }) {
@@ -9,6 +9,6 @@ export class GetGoogleAuthUrlCommand {
   }
 }
 
-export abstract class GetGoogleAuthUrlPort implements UseCase<GetGoogleAuthUrlCommand, string> {
-  abstract execute(command: GetGoogleAuthUrlCommand): string;
+export abstract class GetGoogleAuthUrlPort implements UseCase<GetGoogleAuthUrlInputPort, string> {
+  abstract execute(input: GetGoogleAuthUrlInputPort): string;
 }

@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class AdminGetUserQuery {
+export class AdminGetUserInputPort {
   userId: string;
 
   constructor(userId: string) {
@@ -9,7 +9,7 @@ export class AdminGetUserQuery {
   }
 }
 
-export class AdminGetUserResult implements UserSafeProps {
+export class AdminGetUserOutputPort implements UserSafeProps {
   id: string;
   name: string;
   email: string;
@@ -43,6 +43,6 @@ export class AdminGetUserResult implements UserSafeProps {
   }
 }
 
-export abstract class AdminGetUserPort implements UseCase<AdminGetUserQuery, AdminGetUserResult> {
-  abstract execute(query: AdminGetUserQuery): Promise<AdminGetUserResult>;
+export abstract class AdminGetUserPort implements UseCase<AdminGetUserInputPort, AdminGetUserOutputPort> {
+  abstract execute(input: AdminGetUserInputPort): Promise<AdminGetUserOutputPort>;
 }

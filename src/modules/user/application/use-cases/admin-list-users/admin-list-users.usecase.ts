@@ -1,7 +1,7 @@
 import {
   AdminListUsersPort,
-  AdminListUsersQuery,
-  AdminListUsersResult
+  AdminListUsersInputPort,
+  AdminListUsersOutputPort
 } from '@/modules/user/application/use-cases/admin-list-users/admin-list-users.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
@@ -12,9 +12,9 @@ export class AdminListUsersUseCase extends AdminListUsersPort {
     super();
   }
 
-  async execute(query: AdminListUsersQuery): Promise<AdminListUsersResult> {
-    const page = query.page;
-    const limit = query.limit;
+  async execute(input: AdminListUsersInputPort): Promise<AdminListUsersOutputPort> {
+    const page = input.page;
+    const limit = input.limit;
     const offset = (page - 1) * limit;
     const paginated = await this.userRepository.findAllPaginated({
       page,
@@ -23,7 +23,7 @@ export class AdminListUsersUseCase extends AdminListUsersPort {
       orderBy: { field: 'createdAt', param: 'desc' }
     });
 
-    return new AdminListUsersResult({
+    return new AdminListUsersOutputPort({
       items: paginated.data.map((user) => this.toSafeUser(user.toObject())),
       total: paginated.count
     });

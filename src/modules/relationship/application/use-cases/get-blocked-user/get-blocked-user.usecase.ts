@@ -1,7 +1,7 @@
 import {
   GetBlockedUserPort,
-  GetBlockedUserQuery,
-  GetBlockedUserResult
+  GetBlockedUserInputPort,
+  GetBlockedUserOutputPort
 } from '@/modules/relationship/application/use-cases/get-blocked-user/get-blocked-user.port';
 import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 import { UserFullProps, UserRecordProps } from '@/modules/user/domain/entities/user.type';
@@ -15,7 +15,8 @@ export class GetBlockedUserUseCase extends GetBlockedUserPort {
     super();
   }
 
-  async execute({ blockerUserId, page, limit }: GetBlockedUserQuery): Promise<GetBlockedUserResult> {
+  async execute(input: GetBlockedUserInputPort): Promise<GetBlockedUserOutputPort> {
+    const { blockerUserId, page, limit } = input;
     const blockedIds = await this.blockRepository.listBlockedUserIdsForBlocker(blockerUserId);
     const sorted = [...blockedIds].sort((a, b) => Buffer.compare(Buffer.from(a, 'hex'), Buffer.from(b, 'hex')));
     const total = sorted.length;
@@ -30,7 +31,7 @@ export class GetBlockedUserUseCase extends GetBlockedUserPort {
       username: user.username,
       avatar: user.avatar
     }));
-    return new GetBlockedUserResult({ users: items, total });
+    return new GetBlockedUserOutputPort({ users: items, total });
   }
 
   private parsePageLimit(page: string, limit: string): { pageNum: number; limitNum: number; skip: number } {

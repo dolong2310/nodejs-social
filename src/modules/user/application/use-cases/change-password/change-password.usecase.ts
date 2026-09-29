@@ -2,7 +2,7 @@ import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strate
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
-  ChangePasswordCommand,
+  ChangePasswordInputPort,
   ChangePasswordPort
 } from '@/modules/user/application/use-cases/change-password/change-password.port';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -16,7 +16,8 @@ export class ChangePasswordUseCase extends ChangePasswordPort {
     super();
   }
 
-  async execute({ userId, password }: ChangePasswordCommand): Promise<boolean> {
+  async execute(input: ChangePasswordInputPort): Promise<boolean> {
+    const { userId, password } = input;
     const hashedPassword = await this.hashingService.hash(password);
 
     await this.userRepository.changePassword(userId, { password: hashedPassword });

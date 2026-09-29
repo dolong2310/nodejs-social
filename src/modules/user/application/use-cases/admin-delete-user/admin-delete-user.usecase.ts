@@ -6,7 +6,7 @@ import {
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
 import {
-  AdminDeleteUserCommand,
+  AdminDeleteUserInputPort,
   AdminDeleteUserPort
 } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -20,8 +20,8 @@ export class AdminDeleteUserUseCase extends AdminDeleteUserPort {
     super();
   }
 
-  async execute(command: AdminDeleteUserCommand): Promise<void> {
-    const current = await this.userRepository.findUserById(command.userId);
+  async execute(input: AdminDeleteUserInputPort): Promise<void> {
+    const current = await this.userRepository.findUserById(input.userId);
     if (!current) {
       throw new UserNotFoundException();
     }
@@ -32,12 +32,12 @@ export class AdminDeleteUserUseCase extends AdminDeleteUserPort {
       throw new CannotMutateAdminUserException();
     }
 
-    const deleted = await this.userRepository.deleteById(command.userId, { actorId: command.actorId });
+    const deleted = await this.userRepository.deleteById(input.userId, { actorId: input.actorId });
     if (!deleted) {
       throw new UserNotFoundException();
     }
 
-    await this.invalidateUserCache(command.userId, currentUser.username);
+    await this.invalidateUserCache(input.userId, currentUser.username);
   }
 
   private async invalidateUserCache(userId: string, username?: string): Promise<void> {

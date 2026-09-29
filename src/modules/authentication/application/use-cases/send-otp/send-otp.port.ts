@@ -1,7 +1,7 @@
 import { CreateOtpProps, EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class SendOtpCommand implements Pick<CreateOtpProps, 'email' | 'type'> {
+export class SendOtpInputPort implements Pick<CreateOtpProps, 'email' | 'type'> {
   email: string;
   type: EnumOtpType;
   constructor(payload: CreateOtpProps) {
@@ -10,6 +10,6 @@ export class SendOtpCommand implements Pick<CreateOtpProps, 'email' | 'type'> {
   }
 }
 
-export abstract class SendOtpPort implements UseCase<SendOtpCommand, void> {
-  abstract execute(command: SendOtpCommand): Promise<void>;
+export abstract class SendOtpPort implements UseCase<SendOtpInputPort, void> {
+  abstract execute(input: SendOtpInputPort): Promise<void>;
 }

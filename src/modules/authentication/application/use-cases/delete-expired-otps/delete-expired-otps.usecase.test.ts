@@ -1,4 +1,4 @@
-import { DeleteExpiredOtpsCommand } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
+import { DeleteExpiredOtpsInputPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredOtpsUseCase } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.usecase';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { mockPort } from '@test/support/mocks/port.mock';
@@ -12,7 +12,7 @@ describe('DeleteExpiredOtpsUseCase', () => {
     });
     const useCase = new DeleteExpiredOtpsUseCase(otpRepository);
 
-    const result = await useCase.execute(new DeleteExpiredOtpsCommand(now));
+    const result = await useCase.execute(new DeleteExpiredOtpsInputPort(now));
 
     expect(otpRepository.deleteExpiredOtps).toHaveBeenCalledWith(now);
     expect(result.deletedCount).toBe(3);

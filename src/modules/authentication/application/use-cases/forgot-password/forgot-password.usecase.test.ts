@@ -1,5 +1,5 @@
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { ForgotPasswordCommand } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
+import { ForgotPasswordInputPort } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
@@ -45,7 +45,7 @@ describe('ForgotPasswordUseCase', () => {
     );
 
     const result = await useCase.execute(
-      new ForgotPasswordCommand({ email: 'Long@Example.com ', code: '123456', password: 'new-password' })
+      new ForgotPasswordInputPort({ email: 'Long@Example.com ', code: '123456', password: 'new-password' })
     );
 
     expect(result).toBe(true);

@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class DeleteExpiredRefreshTokensCommand {
+export class DeleteExpiredRefreshTokensInputPort {
   now: Date;
 
   constructor(payload?: { now?: Date }) {
@@ -8,7 +8,7 @@ export class DeleteExpiredRefreshTokensCommand {
   }
 }
 
-export class DeleteExpiredRefreshTokensResult {
+export class DeleteExpiredRefreshTokensOutputPort {
   deletedCount: number;
 
   constructor(payload: { deletedCount: number }) {
@@ -17,8 +17,8 @@ export class DeleteExpiredRefreshTokensResult {
 }
 
 export abstract class DeleteExpiredRefreshTokensPort implements UseCase<
-  DeleteExpiredRefreshTokensCommand,
-  DeleteExpiredRefreshTokensResult
+  DeleteExpiredRefreshTokensInputPort,
+  DeleteExpiredRefreshTokensOutputPort
 > {
-  abstract execute(command?: DeleteExpiredRefreshTokensCommand): Promise<DeleteExpiredRefreshTokensResult>;
+  abstract execute(input?: DeleteExpiredRefreshTokensInputPort): Promise<DeleteExpiredRefreshTokensOutputPort>;
 }

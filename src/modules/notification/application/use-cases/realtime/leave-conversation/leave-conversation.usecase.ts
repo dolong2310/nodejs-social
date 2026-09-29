@@ -1,9 +1,9 @@
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
-  LeaveConversationCommand,
+  LeaveConversationInputPort,
   LeaveConversationPort,
-  LeaveConversationResult
+  LeaveConversationOutputPort
 } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
 
 export class LeaveConversationUseCase extends LeaveConversationPort {
@@ -11,7 +11,8 @@ export class LeaveConversationUseCase extends LeaveConversationPort {
     super();
   }
 
-  async execute({ userId, conversationId }: LeaveConversationCommand): Promise<LeaveConversationResult | null> {
+  async execute(input: LeaveConversationInputPort): Promise<LeaveConversationOutputPort | null> {
+    const { userId, conversationId } = input;
     if (!conversationId || !isValidId(conversationId)) return null;
 
     const member = await this.conversationMemberRepository.findMember({ userId, conversationId }).catch(() => null);

@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class MarkNotificationsReadCommand {
+export class MarkNotificationsReadInputPort {
   viewerId: string;
   ids?: string[];
 
@@ -10,6 +10,6 @@ export class MarkNotificationsReadCommand {
   }
 }
 
-export abstract class MarkNotificationsReadPort implements UseCase<MarkNotificationsReadCommand, void> {
-  abstract execute(command: MarkNotificationsReadCommand): Promise<void>;
+export abstract class MarkNotificationsReadPort implements UseCase<MarkNotificationsReadInputPort, void> {
+  abstract execute(input: MarkNotificationsReadInputPort): Promise<void>;
 }

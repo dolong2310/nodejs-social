@@ -6,9 +6,9 @@ import {
 } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  UpdateMeCommand,
+  UpdateMeInputPort,
   UpdateMePort,
-  UpdateMeResult
+  UpdateMeOutputPort
 } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
@@ -21,17 +21,8 @@ export class UpdateMeUseCase extends UpdateMePort {
     super();
   }
 
-  async execute({
-    userId,
-    name,
-    birthday,
-    bio,
-    location,
-    website,
-    username,
-    avatar,
-    coverPhoto
-  }: UpdateMeCommand): Promise<UpdateMeResult> {
+  async execute(input: UpdateMeInputPort): Promise<UpdateMeOutputPort> {
+    const { userId, name, birthday, bio, location, website, username, avatar, coverPhoto } = input;
     const current = await this.userService.findUserById(userId);
 
     if (username) {
@@ -60,7 +51,7 @@ export class UpdateMeUseCase extends UpdateMePort {
     const usernames = [current?.username, user?.username].filter((username): username is string => Boolean(username));
     await this.invalidateUserCache({ userId, usernames });
 
-    return new UpdateMeResult({
+    return new UpdateMeOutputPort({
       id: user.id,
       name: user.name,
       email: user.email,
@@ -78,7 +69,8 @@ export class UpdateMeUseCase extends UpdateMePort {
     });
   }
 
-  async invalidateUserCache({ userId, usernames }: { userId: string; usernames: string[] }): Promise<void> {
+  async invalidateUserCache(input: { userId: string; usernames: string[] }): Promise<void> {
+    const { userId, usernames } = input;
     const keys = [CACHE_KEYS.user(userId), ...usernames.map((username) => CACHE_KEYS.userByUsername(username))];
     await Promise.all([...new Set(keys)].map((key) => this.cache.invalidate(key)));
   }

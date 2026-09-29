@@ -4,8 +4,8 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetNewFeedsPort,
-  GetNewFeedsQuery,
-  GetNewFeedsResult
+  GetNewFeedsInputPort,
+  GetNewFeedsOutputPort
 } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
 import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.type';
@@ -35,12 +35,8 @@ export class GetNewFeedsUseCase extends GetNewFeedsPort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends PostDetailWithAuthorOutput>({
-    userId,
-    cursor,
-    limit,
-    filter
-  }: GetNewFeedsQuery): Promise<GetNewFeedsResult<T>> {
+  async execute<T extends PostDetailWithAuthorOutput>(input: GetNewFeedsInputPort): Promise<GetNewFeedsOutputPort<T>> {
+    const { userId, cursor, limit, filter } = input;
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
 
     // Load friend list and blocked list in parallel because they are independent sources.
@@ -90,6 +86,6 @@ export class GetNewFeedsUseCase extends GetNewFeedsPort {
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new GetNewFeedsResult<T>({ items: updatedPosts as T[], nextCursor });
+    return new GetNewFeedsOutputPort<T>({ items: updatedPosts as T[], nextCursor });
   }
 }

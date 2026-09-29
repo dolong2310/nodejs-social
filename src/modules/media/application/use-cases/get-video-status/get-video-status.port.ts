@@ -1,14 +1,14 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumEncodingVideoStatus, VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.type';
 
-export class GetVideoStatusQuery {
+export class GetVideoStatusInputPort {
   name: string;
   constructor(payload: { name: string }) {
     this.name = payload.name;
   }
 }
 
-export class GetVideoStatusResult implements VideoStatusFullProps {
+export class GetVideoStatusOutputPort implements VideoStatusFullProps {
   id: string;
   name: string;
   status: EnumEncodingVideoStatus;
@@ -32,6 +32,6 @@ export class GetVideoStatusResult implements VideoStatusFullProps {
   }
 }
 
-export abstract class GetVideoStatusPort implements UseCase<GetVideoStatusQuery, GetVideoStatusResult | null> {
-  abstract execute(query: GetVideoStatusQuery): Promise<GetVideoStatusResult | null>;
+export abstract class GetVideoStatusPort implements UseCase<GetVideoStatusInputPort, GetVideoStatusOutputPort | null> {
+  abstract execute(input: GetVideoStatusInputPort): Promise<GetVideoStatusOutputPort | null>;
 }

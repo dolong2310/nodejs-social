@@ -2,8 +2,8 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import {
   GetFriendsPort,
-  GetFriendsQuery,
-  GetFriendsResult
+  GetFriendsInputPort,
+  GetFriendsOutputPort
 } from '@/modules/relationship/application/use-cases/get-friends/get-friends.port';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import { UserFullProps } from '@/modules/user/domain/entities/user.type';
@@ -17,7 +17,8 @@ export class GetFriendsUseCase extends GetFriendsPort {
     super();
   }
 
-  async execute({ userId, limit, cursor }: GetFriendsQuery): Promise<GetFriendsResult> {
+  async execute(input: GetFriendsInputPort): Promise<GetFriendsOutputPort> {
+    const { userId, limit, cursor } = input;
     const decodedCursor = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw, true), InvalidCursorException);
 
     const pageSize = Math.min(100, Math.max(1, limit));
@@ -47,6 +48,6 @@ export class GetFriendsUseCase extends GetFriendsPort {
       avatar: user.avatar
     }));
 
-    return new GetFriendsResult(items, nextCursor);
+    return new GetFriendsOutputPort(items, nextCursor);
   }
 }

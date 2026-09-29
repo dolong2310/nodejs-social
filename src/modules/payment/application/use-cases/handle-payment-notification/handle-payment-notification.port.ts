@@ -7,7 +7,7 @@ export interface HandlePaymentNotificationProps {
   payload: unknown;
 }
 
-export class HandlePaymentNotificationCommand implements HandlePaymentNotificationProps {
+export class HandlePaymentNotificationInputPort implements HandlePaymentNotificationProps {
   provider: PaymentProvider;
   payload: unknown;
 
@@ -18,8 +18,8 @@ export class HandlePaymentNotificationCommand implements HandlePaymentNotificati
 }
 
 export abstract class HandlePaymentNotificationPort implements UseCase<
-  HandlePaymentNotificationCommand,
+  HandlePaymentNotificationInputPort,
   ApplyVerifiedOutcomeResult
 > {
-  abstract execute(command: HandlePaymentNotificationCommand): Promise<ApplyVerifiedOutcomeResult>;
+  abstract execute(input: HandlePaymentNotificationInputPort): Promise<ApplyVerifiedOutcomeResult>;
 }

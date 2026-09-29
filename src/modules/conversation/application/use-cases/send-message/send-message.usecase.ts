@@ -6,9 +6,9 @@ import {
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  SendMessageCommand,
+  SendMessageInputPort,
   SendMessagePort,
-  SendMessageResult
+  SendMessageOutputPort
 } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
 import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
@@ -43,7 +43,8 @@ export class SendMessageUseCase extends SendMessagePort {
     super();
   }
 
-  async execute({ userId, conversationId, text, attachments }: SendMessageCommand): Promise<SendMessageResult> {
+  async execute(input: SendMessageInputPort): Promise<SendMessageOutputPort> {
+    const { userId, conversationId, text, attachments } = input;
     // The sender must be a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
@@ -78,7 +79,7 @@ export class SendMessageUseCase extends SendMessagePort {
     const membersInConversation = await this.conversationMemberRepository.listMembers(conversationId);
     const memberIds = membersInConversation.map((m) => m.getProps().userId);
 
-    const dto = new SendMessageResult({
+    const dto = new SendMessageOutputPort({
       id: message.id,
       conversationId: message.conversationId,
       senderId: message.senderId,

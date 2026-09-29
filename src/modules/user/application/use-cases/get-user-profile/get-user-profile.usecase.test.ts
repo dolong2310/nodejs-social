@@ -1,6 +1,6 @@
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { GetUserProfileQuery } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
+import { GetUserProfileInputPort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { makeUserSafeProps } from '@test/support/builders/user.builder';
 import { mockPort } from '@test/support/mocks/port.mock';
@@ -23,7 +23,7 @@ describe('GetUserProfileUseCase', () => {
     });
     const useCase = new GetUserProfileUseCase(userService, blockService);
 
-    const result = await useCase.execute(new GetUserProfileQuery({ userId: 'viewer_1', username: 'Profile' }));
+    const result = await useCase.execute(new GetUserProfileInputPort({ userId: 'viewer_1', username: 'Profile' }));
 
     expect(userService.findUserByUsername).toHaveBeenCalledWith('Profile', { querySafe: true });
     expect(blockService.isBlockedEitherWay).toHaveBeenCalledWith('viewer_1', user.id);

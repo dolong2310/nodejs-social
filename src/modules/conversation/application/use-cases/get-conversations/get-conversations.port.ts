@@ -1,7 +1,7 @@
 import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetConversationsQuery {
+export class GetConversationsInputPort {
   userId: string;
   limit: number;
   cursor?: string;
@@ -42,7 +42,7 @@ export class ConversationItem implements Omit<ConversationFullProps, 'userIdLow'
   }
 }
 
-export class GetConversationsResult {
+export class GetConversationsOutputPort {
   items: ConversationItem[];
   nextCursor: string | null;
   constructor(items: ConversationItem[], nextCursor: string | null) {
@@ -51,6 +51,6 @@ export class GetConversationsResult {
   }
 }
 
-export abstract class GetConversationsPort implements UseCase<GetConversationsQuery, GetConversationsResult> {
-  abstract execute(query: GetConversationsQuery): Promise<GetConversationsResult>;
+export abstract class GetConversationsPort implements UseCase<GetConversationsInputPort, GetConversationsOutputPort> {
+  abstract execute(input: GetConversationsInputPort): Promise<GetConversationsOutputPort>;
 }

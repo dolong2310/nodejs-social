@@ -1,7 +1,7 @@
 import { ConversationRoleForbiddenException } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  LeaveConversationCommand,
+  LeaveConversationInputPort,
   LeaveConversationPort
 } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
@@ -16,7 +16,8 @@ export class LeaveConversationUseCase extends LeaveConversationPort {
     super();
   }
 
-  async execute({ userId, conversationId }: LeaveConversationCommand): Promise<void> {
+  async execute(input: LeaveConversationInputPort): Promise<void> {
+    const { userId, conversationId } = input;
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
     const conv = (await this.conversationService.loadConversation(conversationId)).toObject();
 

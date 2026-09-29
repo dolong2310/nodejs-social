@@ -1,7 +1,7 @@
 import { ChatMessageFullProps, IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class SendMessageCommand {
+export class SendMessageInputPort {
   userId: string;
   conversationId: string;
   text?: string;
@@ -14,7 +14,7 @@ export class SendMessageCommand {
   }
 }
 
-export class SendMessageResult implements ChatMessageFullProps {
+export class SendMessageOutputPort implements ChatMessageFullProps {
   id: string;
   conversationId: string;
   senderId: string;
@@ -41,6 +41,6 @@ export class SendMessageResult implements ChatMessageFullProps {
   }
 }
 
-export abstract class SendMessagePort implements UseCase<SendMessageCommand, SendMessageResult> {
-  abstract execute(command: SendMessageCommand): Promise<SendMessageResult>;
+export abstract class SendMessagePort implements UseCase<SendMessageInputPort, SendMessageOutputPort> {
+  abstract execute(input: SendMessageInputPort): Promise<SendMessageOutputPort>;
 }

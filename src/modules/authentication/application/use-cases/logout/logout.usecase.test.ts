@@ -1,4 +1,4 @@
-import { LogoutCommand } from '@/modules/authentication/application/use-cases/logout/logout.port';
+import { LogoutInputPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
 import { LogoutUseCase } from '@/modules/authentication/application/use-cases/logout/logout.usecase';
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
@@ -13,7 +13,7 @@ describe('LogoutUseCase', () => {
     });
     const useCase = new LogoutUseCase(refreshTokenRepository);
 
-    const result = await useCase.execute(new LogoutCommand({ refreshToken: 'refresh' }));
+    const result = await useCase.execute(new LogoutInputPort({ refreshToken: 'refresh' }));
 
     expect(result).toBe(true);
     expect(refreshTokenRepository.findRefreshToken).toHaveBeenCalledWith('refresh');

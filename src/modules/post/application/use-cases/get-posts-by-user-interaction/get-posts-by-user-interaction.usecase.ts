@@ -3,8 +3,8 @@ import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/commo
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetPostsByUserInteractionPort,
-  GetPostsByUserInteractionQuery,
-  GetPostsByUserInteractionResult
+  GetPostsByUserInteractionInputPort,
+  GetPostsByUserInteractionOutputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user-interaction/get-posts-by-user-interaction.port';
 import { transformUnknownAuthor } from '@/modules/post/application/utils/transform-unknown-user.util';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -22,12 +22,10 @@ export class GetPostsByUserInteractionUseCase extends GetPostsByUserInteractionP
     super();
   }
 
-  async execute<T extends PostDetailWithAuthorOutput>({
-    userId,
-    interaction,
-    cursor,
-    limit
-  }: GetPostsByUserInteractionQuery): Promise<GetPostsByUserInteractionResult<T>> {
+  async execute<T extends PostDetailWithAuthorOutput>(
+    input: GetPostsByUserInteractionInputPort
+  ): Promise<GetPostsByUserInteractionOutputPort<T>> {
+    const { userId, interaction, cursor, limit } = input;
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
     const [friendUserIds, blockedAuthorIds] = await Promise.all([
       this.friendService.findFriendUserIds(userId),
@@ -65,6 +63,6 @@ export class GetPostsByUserInteractionUseCase extends GetPostsByUserInteractionP
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new GetPostsByUserInteractionResult<T>({ items: updatedPosts as T[], nextCursor });
+    return new GetPostsByUserInteractionOutputPort<T>({ items: updatedPosts as T[], nextCursor });
   }
 }

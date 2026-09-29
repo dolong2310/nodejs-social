@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class TypingCommand {
+export class TypingInputPort {
   userId: string;
   conversationId?: string;
   typing?: boolean;
@@ -11,7 +11,7 @@ export class TypingCommand {
   }
 }
 
-export class TypingResult {
+export class TypingOutputPort {
   conversationId: string;
   userId: string;
   typing: boolean;
@@ -22,6 +22,6 @@ export class TypingResult {
   }
 }
 
-export abstract class TypingPort implements UseCase<TypingCommand, TypingResult | null> {
-  abstract execute(command: TypingCommand): Promise<TypingResult | null>;
+export abstract class TypingPort implements UseCase<TypingInputPort, TypingOutputPort | null> {
+  abstract execute(input: TypingInputPort): Promise<TypingOutputPort | null>;
 }

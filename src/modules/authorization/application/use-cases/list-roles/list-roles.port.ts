@@ -1,7 +1,7 @@
 import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class ListRolesQuery {
+export class ListRolesInputPort {
   page: number;
   limit: number;
   constructor(payload: { page: number; limit: number }) {
@@ -29,7 +29,7 @@ export class RoleListItem implements RoleFullProps {
   }
 }
 
-export class ListRolesResult {
+export class ListRolesOutputPort {
   items: RoleListItem[];
   total: number;
   constructor(payload: { items: RoleListItem[]; total: number }) {
@@ -38,6 +38,6 @@ export class ListRolesResult {
   }
 }
 
-export abstract class ListRolesPort implements UseCase<ListRolesQuery, ListRolesResult> {
-  abstract execute(query: ListRolesQuery): Promise<ListRolesResult>;
+export abstract class ListRolesPort implements UseCase<ListRolesInputPort, ListRolesOutputPort> {
+  abstract execute(input: ListRolesInputPort): Promise<ListRolesOutputPort>;
 }

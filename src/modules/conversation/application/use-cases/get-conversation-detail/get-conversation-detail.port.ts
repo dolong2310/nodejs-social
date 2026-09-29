@@ -2,7 +2,7 @@ import { ConversationMemberFullProps } from '@/modules/conversation/domain/entit
 import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetConversationDetailQuery {
+export class GetConversationDetailInputPort {
   userId: string;
   conversationId: string;
   constructor(payload: { userId: string; conversationId: string }) {
@@ -11,7 +11,7 @@ export class GetConversationDetailQuery {
   }
 }
 
-export class GetConversationDetailResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
+export class GetConversationDetailOutputPort implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -45,8 +45,8 @@ export class GetConversationDetailResult implements Omit<ConversationFullProps, 
 }
 
 export abstract class GetConversationDetailPort implements UseCase<
-  GetConversationDetailQuery,
-  GetConversationDetailResult
+  GetConversationDetailInputPort,
+  GetConversationDetailOutputPort
 > {
-  abstract execute(query: GetConversationDetailQuery): Promise<GetConversationDetailResult>;
+  abstract execute(input: GetConversationDetailInputPort): Promise<GetConversationDetailOutputPort>;
 }

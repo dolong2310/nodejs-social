@@ -3,19 +3,19 @@ import { ObjectStoragePort } from '@/modules/media/application/ports/object-stor
 import { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
 import {
   GetVideoStatusPort,
-  GetVideoStatusResult
+  GetVideoStatusOutputPort
 } from '@/modules/media/application/use-cases/get-video-status/get-video-status.port';
 import {
   UploadImagePort,
-  UploadImageResult
+  UploadImageOutputPort
 } from '@/modules/media/application/use-cases/upload-image/upload-image.port';
 import {
   UploadVideoStreamPort,
-  UploadVideoStreamResult
+  UploadVideoStreamOutputPort
 } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.port';
 import {
   UploadVideoPort,
-  UploadVideoResult
+  UploadVideoOutputPort
 } from '@/modules/media/application/use-cases/upload-video/upload-video.port';
 import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
@@ -139,7 +139,7 @@ export class MediaController extends BaseController implements IMediaController 
 
     const results = await this.uploadImageUC.execute({ files });
 
-    return this.response<UploadImageResult[]>({
+    return this.response<UploadImageOutputPort[]>({
       data: results,
       message: 'Upload successfully'
     });
@@ -151,7 +151,7 @@ export class MediaController extends BaseController implements IMediaController 
 
     const results = await this.uploadVideoUC.execute({ files });
 
-    return this.response<UploadVideoResult[]>({
+    return this.response<UploadVideoOutputPort[]>({
       data: results,
       message: 'Upload successfully'
     });
@@ -163,7 +163,7 @@ export class MediaController extends BaseController implements IMediaController 
 
     const results = await this.uploadVideoStreamUC.execute({ files });
 
-    return this.response<UploadVideoStreamResult[]>({
+    return this.response<UploadVideoStreamOutputPort[]>({
       data: results,
       message: 'Upload successfully'
     });
@@ -178,7 +178,7 @@ export class MediaController extends BaseController implements IMediaController 
       throw VideoNotFoundException;
     }
 
-    return this.response<GetVideoStatusResult>({
+    return this.response<GetVideoStatusOutputPort>({
       data: videoStatus,
       message: 'Get video status successfully'
     });

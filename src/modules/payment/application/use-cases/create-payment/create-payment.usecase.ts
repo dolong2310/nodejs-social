@@ -1,7 +1,7 @@
 import { ConflictException } from '@/modules/core/domain/exceptions/exceptions';
 import { PaymentCheckoutError, PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import {
-  CreatePaymentCommand,
+  CreatePaymentInputPort,
   CreatePaymentPort
 } from '@/modules/payment/application/use-cases/create-payment/create-payment.port';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
@@ -16,11 +16,11 @@ export class CreatePaymentUseCase extends CreatePaymentPort {
     super();
   }
 
-  async execute(command: CreatePaymentCommand): Promise<PaymentSafeProps> {
+  async execute(input: CreatePaymentInputPort): Promise<PaymentSafeProps> {
     const candidate = PaymentEntity.create({
-      userId: command.userId,
-      provider: command.provider,
-      idempotencyKey: command.idempotencyKey
+      userId: input.userId,
+      provider: input.provider,
+      idempotencyKey: input.idempotencyKey
     });
 
     const result = await this.paymentRepository.insertOrFindByIdempotency(candidate);
@@ -33,9 +33,9 @@ export class CreatePaymentUseCase extends CreatePaymentPort {
 
     let checkoutUrl: string;
     try {
-      checkoutUrl = await this.gateways[command.provider].createCheckout(
+      checkoutUrl = await this.gateways[input.provider].createCheckout(
         result.payment.toObject<PaymentFullProps>(),
-        command.clientIp
+        input.clientIp
       );
     } catch (error) {
       if (error instanceof PaymentCheckoutError && error.classification.kind === 'definitive_rejection') {

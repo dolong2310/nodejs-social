@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class UnfriendCommand {
+export class UnfriendInputPort {
   userId: string;
   otherUserId: string;
   constructor(payload: { userId: string; otherUserId: string }) {
@@ -9,6 +9,6 @@ export class UnfriendCommand {
   }
 }
 
-export abstract class UnfriendPort implements UseCase<UnfriendCommand, void> {
-  abstract execute(command: UnfriendCommand): Promise<void>;
+export abstract class UnfriendPort implements UseCase<UnfriendInputPort, void> {
+  abstract execute(input: UnfriendInputPort): Promise<void>;
 }

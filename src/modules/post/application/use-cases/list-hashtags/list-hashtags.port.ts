@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
 
-export class ListHashtagsQuery {
+export class ListHashtagsInputPort {
   page: number;
   limit: number;
   constructor(payload: { page: number; limit: number }) {
@@ -23,7 +23,7 @@ export class HashtagListItem implements HashtagFullProps {
   }
 }
 
-export class ListHashtagsResult {
+export class ListHashtagsOutputPort {
   items: HashtagListItem[];
   total: number;
   constructor(payload: { items: HashtagListItem[]; total: number }) {
@@ -32,6 +32,6 @@ export class ListHashtagsResult {
   }
 }
 
-export abstract class ListHashtagsPort implements UseCase<ListHashtagsQuery, ListHashtagsResult> {
-  abstract execute(query: ListHashtagsQuery): Promise<ListHashtagsResult>;
+export abstract class ListHashtagsPort implements UseCase<ListHashtagsInputPort, ListHashtagsOutputPort> {
+  abstract execute(input: ListHashtagsInputPort): Promise<ListHashtagsOutputPort>;
 }

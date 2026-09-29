@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class BlockUserCommand {
+export class BlockUserInputPort {
   blockerUserId: string;
   blockedUserId: string;
   constructor(payload: { blockerUserId: string; blockedUserId: string }) {
@@ -9,6 +9,6 @@ export class BlockUserCommand {
   }
 }
 
-export abstract class BlockUserPort implements UseCase<BlockUserCommand, void> {
-  abstract execute(command: BlockUserCommand): Promise<void>;
+export abstract class BlockUserPort implements UseCase<BlockUserInputPort, void> {
+  abstract execute(input: BlockUserInputPort): Promise<void>;
 }

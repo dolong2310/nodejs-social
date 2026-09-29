@@ -2,7 +2,7 @@ import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumPostType } from '@/modules/post/domain/entities/post.type';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
-export class GetPostsTypeQuery {
+export class GetPostsTypeInputPort {
   userId?: string;
   postId: string;
   type: EnumPostType;
@@ -17,7 +17,7 @@ export class GetPostsTypeQuery {
   }
 }
 
-export class GetPostsTypeResult<T extends PostDetailWithAuthorOutput> {
+export class GetPostsTypeOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -27,8 +27,10 @@ export class GetPostsTypeResult<T extends PostDetailWithAuthorOutput> {
 }
 
 export abstract class GetPostsTypePort implements UseCase<
-  GetPostsTypeQuery,
-  GetPostsTypeResult<PostDetailWithAuthorOutput>
+  GetPostsTypeInputPort,
+  GetPostsTypeOutputPort<PostDetailWithAuthorOutput>
 > {
-  abstract execute<T extends PostDetailWithAuthorOutput>(query: GetPostsTypeQuery): Promise<GetPostsTypeResult<T>>;
+  abstract execute<T extends PostDetailWithAuthorOutput>(
+    input: GetPostsTypeInputPort
+  ): Promise<GetPostsTypeOutputPort<T>>;
 }

@@ -6,15 +6,15 @@ import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-fe
 import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.type';
 import {
   GetPostDetailPort,
-  GetPostDetailQuery
+  GetPostDetailInputPort
 } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
 import {
   GetPostsByUserPort,
-  GetPostsByUserQuery
+  GetPostsByUserInputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
 import {
   GetPostsByUserInteractionPort,
-  GetPostsByUserInteractionQuery
+  GetPostsByUserInteractionInputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user-interaction/get-posts-by-user-interaction.port';
 import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
 import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
@@ -172,7 +172,7 @@ export class PostController extends BaseController implements IPostController {
     const currentUserId = this.getUserId(req, { optional: true }) || undefined;
 
     const { items, nextCursor } = await this.getPostsByUserUC.execute<PostDetailWithAuthorResponseDTO>(
-      new GetPostsByUserQuery({
+      new GetPostsByUserInputPort({
         targetUserId,
         currentUserId,
         type,
@@ -192,7 +192,9 @@ export class PostController extends BaseController implements IPostController {
   async getPostDetail(req: ExpressRequest<GetPostDetailParamsDTO>) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
-    const postDetail = await this.getPostDetailUC.execute(new GetPostDetailQuery({ postId, currentUserId: userId }));
+    const postDetail = await this.getPostDetailUC.execute(
+      new GetPostDetailInputPort({ postId, currentUserId: userId })
+    );
     const post = new PostDetailWithAuthorResponseDTO(postDetail);
 
     const updatedViews = await this.increaseViewsUC.execute({ postId, userId });
@@ -234,7 +236,7 @@ export class PostController extends BaseController implements IPostController {
     const userId = this.getUserId(req);
     const { cursor, limit } = req.query;
     const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponseDTO>(
-      new GetPostsByUserInteractionQuery({
+      new GetPostsByUserInteractionInputPort({
         userId,
         interaction: 'likes',
         cursor,
@@ -254,7 +256,7 @@ export class PostController extends BaseController implements IPostController {
     const userId = this.getUserId(req);
     const { cursor, limit } = req.query;
     const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponseDTO>(
-      new GetPostsByUserInteractionQuery({
+      new GetPostsByUserInteractionInputPort({
         userId,
         interaction: 'bookmarks',
         cursor,

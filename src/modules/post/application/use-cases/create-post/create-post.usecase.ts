@@ -6,9 +6,9 @@ import {
   StrangerCommentsNotAllowedException
 } from '@/modules/post/application/exceptions/post.exception';
 import {
-  CreatePostCommand,
+  CreatePostInputPort,
   CreatePostPort,
-  CreatePostResult
+  CreatePostOutputPort
 } from '@/modules/post/application/use-cases/create-post/create-post.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
 import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
@@ -31,17 +31,18 @@ export class CreatePostUseCase extends CreatePostPort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute({
-    userId,
-    type,
-    parentId,
-    hashtags: hashtagsPayload,
-    allowStrangerComments,
-    audience,
-    content,
-    media,
-    mentions
-  }: CreatePostCommand): Promise<CreatePostResult> {
+  async execute(input: CreatePostInputPort): Promise<CreatePostOutputPort> {
+    const {
+      userId,
+      type,
+      parentId,
+      hashtags: hashtagsPayload,
+      allowStrangerComments,
+      audience,
+      content,
+      media,
+      mentions
+    } = input;
     // Check interaction permissions on the parent post before allowing comment/repost/quote creation.
     if (type !== EnumPostType.POST) {
       if (!parentId) {
@@ -97,7 +98,7 @@ export class CreatePostUseCase extends CreatePostPort {
       hashtags: hashtagIds
     });
     const post = postEntity.toObject();
-    return new CreatePostResult(post);
+    return new CreatePostOutputPort(post);
   }
 
   private async createHashtags(hashtagsPayload: string[]): Promise<HashtagEntity[]> {

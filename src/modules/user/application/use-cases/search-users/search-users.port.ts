@@ -2,7 +2,7 @@ import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class SearchUsersQuery {
+export class SearchUsersInputPort {
   userId?: string;
   query?: string;
   type?: EnumSearchType;
@@ -26,7 +26,7 @@ export class SearchUsersQuery {
   }
 }
 
-export class SearchUsersResult {
+export class SearchUsersOutputPort {
   items: UserSafeProps[];
   nextCursor: string | null;
   constructor(payload: { items: UserSafeProps[]; nextCursor: string | null }) {
@@ -35,6 +35,6 @@ export class SearchUsersResult {
   }
 }
 
-export abstract class SearchUsersPort implements UseCase<SearchUsersQuery, SearchUsersResult> {
-  abstract execute(query: SearchUsersQuery): Promise<SearchUsersResult>;
+export abstract class SearchUsersPort implements UseCase<SearchUsersInputPort, SearchUsersOutputPort> {
+  abstract execute(input: SearchUsersInputPort): Promise<SearchUsersOutputPort>;
 }

@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class DeletePostCommand {
+export class DeletePostInputPort {
   postId: string;
   userId: string;
   roleId: string;
@@ -12,6 +12,6 @@ export class DeletePostCommand {
   }
 }
 
-export abstract class DeletePostPort implements UseCase<DeletePostCommand, void> {
-  abstract execute(command: DeletePostCommand): Promise<void>;
+export abstract class DeletePostPort implements UseCase<DeletePostInputPort, void> {
+  abstract execute(input: DeletePostInputPort): Promise<void>;
 }

@@ -1,14 +1,14 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class UploadImageCommand {
+export class UploadImageInputPort {
   files: { filepath: string; filename: string; mimetype: string }[];
   constructor(files: { filepath: string; filename: string; mimetype: string }[]) {
     this.files = files;
   }
 }
 
-export class UploadImageResult {
+export class UploadImageOutputPort {
   url: string;
   type: EnumMediaType;
   constructor(payload: { url: string; type: EnumMediaType }) {
@@ -17,6 +17,6 @@ export class UploadImageResult {
   }
 }
 
-export abstract class UploadImagePort implements UseCase<UploadImageCommand, UploadImageResult[]> {
-  abstract execute(command: UploadImageCommand): Promise<UploadImageResult[]>;
+export abstract class UploadImagePort implements UseCase<UploadImageInputPort, UploadImageOutputPort[]> {
+  abstract execute(input: UploadImageInputPort): Promise<UploadImageOutputPort[]>;
 }

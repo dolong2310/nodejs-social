@@ -1,7 +1,7 @@
 import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class UpdateConversationCommand {
+export class UpdateConversationInputPort {
   name?: string;
   avatarMediaId?: string | null;
   userId: string;
@@ -14,7 +14,7 @@ export class UpdateConversationCommand {
   }
 }
 
-export class UpdateConversationResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
+export class UpdateConversationOutputPort implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -44,6 +44,9 @@ export class UpdateConversationResult implements Omit<ConversationFullProps, 'us
   }
 }
 
-export abstract class UpdateConversationPort implements UseCase<UpdateConversationCommand, UpdateConversationResult> {
-  abstract execute(command: UpdateConversationCommand): Promise<UpdateConversationResult>;
+export abstract class UpdateConversationPort implements UseCase<
+  UpdateConversationInputPort,
+  UpdateConversationOutputPort
+> {
+  abstract execute(input: UpdateConversationInputPort): Promise<UpdateConversationOutputPort>;
 }

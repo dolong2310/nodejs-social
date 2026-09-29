@@ -1,21 +1,21 @@
 import {
-  AdminCreateUserCommand,
+  AdminCreateUserInputPort,
   AdminCreateUserPort
 } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import {
-  AdminDeleteUserCommand,
+  AdminDeleteUserInputPort,
   AdminDeleteUserPort
 } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import {
   AdminGetUserPort,
-  AdminGetUserQuery
+  AdminGetUserInputPort
 } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.port';
 import {
   AdminListUsersPort,
-  AdminListUsersQuery
+  AdminListUsersInputPort
 } from '@/modules/user/application/use-cases/admin-list-users/admin-list-users.port';
 import {
-  AdminUpdateUserCommand,
+  AdminUpdateUserInputPort,
   AdminUpdateUserPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
@@ -69,7 +69,7 @@ export class AdminUserController extends BaseController implements IAdminUserCon
   async list(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const { items, total } = await this.listUsersUC.execute(new AdminListUsersQuery({ page, limit }));
+    const { items, total } = await this.listUsersUC.execute(new AdminListUsersInputPort({ page, limit }));
     return this.paginatedResponse({
       data: items.map((item) => new UserResponseDTO(item)),
       pagination: { page, limit, totalItems: total },
@@ -81,7 +81,7 @@ export class AdminUserController extends BaseController implements IAdminUserCon
   async create(req: ExpressRequest<ParamsDictionary, object, AdminCreateUserRequestBody>): Promise<unknown> {
     const dto = new AdminCreateUserRequestDTO(req.body);
     const item = await this.createUserUC.execute(
-      new AdminCreateUserCommand({
+      new AdminCreateUserInputPort({
         actorId: this.getUserId(req),
         name: dto.name,
         email: dto.email,
@@ -108,7 +108,7 @@ export class AdminUserController extends BaseController implements IAdminUserCon
   @AutoBind()
   async getById(req: ExpressRequest<AdminUserIdParamsDTO>): Promise<unknown> {
     const { userId } = req.params;
-    const item = await this.getUserUC.execute(new AdminGetUserQuery(userId));
+    const item = await this.getUserUC.execute(new AdminGetUserInputPort(userId));
     return this.response({ data: new UserResponseDTO(item), message: 'Get user successfully' });
   }
 
@@ -117,7 +117,7 @@ export class AdminUserController extends BaseController implements IAdminUserCon
     const { userId } = req.params;
     const dto = new AdminUpdateUserRequestDTO(req.body);
     const item = await this.updateUserUC.execute(
-      new AdminUpdateUserCommand({
+      new AdminUpdateUserInputPort({
         actorId: this.getUserId(req),
         userId,
         name: dto.name,
@@ -141,7 +141,7 @@ export class AdminUserController extends BaseController implements IAdminUserCon
   @AutoBind()
   async remove(req: ExpressRequest<AdminUserIdParamsDTO>): Promise<unknown> {
     const { userId } = req.params;
-    await this.deleteUserUC.execute(new AdminDeleteUserCommand({ actorId: this.getUserId(req), userId }));
+    await this.deleteUserUC.execute(new AdminDeleteUserInputPort({ actorId: this.getUserId(req), userId }));
     return this.response({ message: 'User deleted successfully' });
   }
 }

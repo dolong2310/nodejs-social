@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
 
-export class UnlikeCommand {
+export class UnlikeInputPort {
   userId: string;
   postId: string;
   constructor(payload: { userId: string; postId: string }) {
@@ -10,7 +10,7 @@ export class UnlikeCommand {
   }
 }
 
-export class UnlikeResult implements LikeFullProps {
+export class UnlikeOutputPort implements LikeFullProps {
   id: string;
   userId: string;
   postId: string;
@@ -25,6 +25,6 @@ export class UnlikeResult implements LikeFullProps {
   }
 }
 
-export abstract class UnlikePort implements UseCase<UnlikeCommand, UnlikeResult> {
-  abstract execute(command: UnlikeCommand): Promise<UnlikeResult>;
+export abstract class UnlikePort implements UseCase<UnlikeInputPort, UnlikeOutputPort> {
+  abstract execute(input: UnlikeInputPort): Promise<UnlikeOutputPort>;
 }

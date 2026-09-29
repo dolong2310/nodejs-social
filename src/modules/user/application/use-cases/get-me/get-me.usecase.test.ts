@@ -1,5 +1,5 @@
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { GetMeQuery } from '@/modules/user/application/use-cases/get-me/get-me.port';
+import { GetMeInputPort } from '@/modules/user/application/use-cases/get-me/get-me.port';
 import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me.usecase';
 import { makeUserSafeProps } from '@test/support/builders/user.builder';
 import { mockPort } from '@test/support/mocks/port.mock';
@@ -14,7 +14,7 @@ describe('GetMeUseCase', () => {
     });
     const useCase = new GetMeUseCase(userService);
 
-    const result = await useCase.execute(new GetMeQuery({ userId: user.id }));
+    const result = await useCase.execute(new GetMeInputPort({ userId: user.id }));
 
     expect(userService.findUserById).toHaveBeenCalledWith(user.id, { querySafe: true });
     expect(result).toMatchObject({ id: user.id, email: user.email, username: user.username });

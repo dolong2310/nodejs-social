@@ -1,7 +1,7 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import {
-  HandlePaymentNotificationCommand,
+  HandlePaymentNotificationInputPort,
   HandlePaymentNotificationPort
 } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.port';
 import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
@@ -18,7 +18,8 @@ export class HandlePaymentNotificationUseCase extends HandlePaymentNotificationP
     super();
   }
 
-  async execute({ provider, payload }: HandlePaymentNotificationCommand): Promise<ApplyVerifiedOutcomeResult> {
+  async execute(input: HandlePaymentNotificationInputPort): Promise<ApplyVerifiedOutcomeResult> {
+    const { provider, payload } = input;
     const gateway = this.gateways[provider];
     if (!gateway) throw new PaymentNotificationVerificationError('invalid_payload');
 

@@ -1,5 +1,5 @@
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { Disable2FACommand } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
+import { Disable2FAInputPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
@@ -26,7 +26,7 @@ describe('Disable2FAUseCase', () => {
     const cache = mockCache() as CacheStrategyPort;
     const useCase = new Disable2FAUseCase(userRepository, userService, otpService, cache);
 
-    const result = await useCase.execute(new Disable2FACommand({ userId: user.id, totpCode: '123456' }));
+    const result = await useCase.execute(new Disable2FAInputPort({ userId: user.id, totpCode: '123456' }));
 
     expect(result).toBe(true);
     expect(otpService.validateTOTPCodeOrEmailOtpCode).toHaveBeenCalledWith({

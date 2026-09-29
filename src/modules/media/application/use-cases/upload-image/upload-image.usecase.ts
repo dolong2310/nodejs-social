@@ -4,9 +4,9 @@ import { FileStoragePort } from '@/modules/media/application/ports/file-storage.
 import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
 import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import {
-  UploadImageCommand,
+  UploadImageInputPort,
   UploadImagePort,
-  UploadImageResult
+  UploadImageOutputPort
 } from '@/modules/media/application/use-cases/upload-image/upload-image.port';
 import path from 'path';
 
@@ -19,7 +19,8 @@ export class UploadImageUseCase extends UploadImagePort {
     super();
   }
 
-  async execute({ files }: UploadImageCommand): Promise<UploadImageResult[]> {
+  async execute(input: UploadImageInputPort): Promise<UploadImageOutputPort[]> {
+    const { files } = input;
     return mapWithConcurrency(files, 2, async (file) => {
       const newName = file.filename;
       const outputPath = path.resolve('uploads/images', `${newName}.jpg`);
@@ -35,7 +36,7 @@ export class UploadImageUseCase extends UploadImagePort {
       await this.fileStorage.delete(file.filepath);
       await this.fileStorage.delete(outputPath);
 
-      return new UploadImageResult({
+      return new UploadImageOutputPort({
         url: result.url,
         type: EnumMediaType.IMAGE
       });

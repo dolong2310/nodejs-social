@@ -6,8 +6,8 @@ import {
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   GetUserProfilePort,
-  GetUserProfileQuery,
-  GetUserProfileResult
+  GetUserProfileInputPort,
+  GetUserProfileOutputPort
 } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
 
 export class GetUserProfileUseCase extends GetUserProfilePort {
@@ -18,7 +18,8 @@ export class GetUserProfileUseCase extends GetUserProfilePort {
     super();
   }
 
-  async execute({ userId, username }: GetUserProfileQuery): Promise<GetUserProfileResult> {
+  async execute(input: GetUserProfileInputPort): Promise<GetUserProfileOutputPort> {
+    const { userId, username } = input;
     const user = await this.userService.findUserByUsername(username, { querySafe: true });
 
     if (!user) {
@@ -32,6 +33,6 @@ export class GetUserProfileUseCase extends GetUserProfilePort {
       }
     }
 
-    return new GetUserProfileResult(user);
+    return new GetUserProfileOutputPort(user);
   }
 }

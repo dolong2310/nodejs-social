@@ -1,9 +1,9 @@
 import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
 import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
-  BookmarkPostCommand,
+  BookmarkPostInputPort,
   BookmarkPostPort,
-  BookmarkPostResult
+  BookmarkPostOutputPort
 } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.port';
 import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -17,7 +17,8 @@ export class BookmarkPostUseCase extends BookmarkPostPort {
     super();
   }
 
-  async execute({ userId, postId }: BookmarkPostCommand): Promise<BookmarkPostResult> {
+  async execute(input: BookmarkPostInputPort): Promise<BookmarkPostOutputPort> {
+    const { userId, postId } = input;
     const post = await this.postQueryRepository.findPostDetailById(postId);
     if (!post) {
       throw new PostNotFoundException();
@@ -28,6 +29,6 @@ export class BookmarkPostUseCase extends BookmarkPostPort {
     if (!bookmarkEntity) {
       throw new PostNotFoundException();
     }
-    return new BookmarkPostResult(bookmarkEntity.toObject());
+    return new BookmarkPostOutputPort(bookmarkEntity.toObject());
   }
 }

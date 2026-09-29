@@ -1,21 +1,21 @@
 import {
-  CreatePermissionCommand,
+  CreatePermissionInputPort,
   CreatePermissionPort
 } from '@/modules/authorization/application/use-cases/create-permission/create-permission.port';
 import {
-  DeletePermissionCommand,
+  DeletePermissionInputPort,
   DeletePermissionPort
 } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.port';
 import {
   GetPermissionPort,
-  GetPermissionQuery
+  GetPermissionInputPort
 } from '@/modules/authorization/application/use-cases/get-permission/get-permission.port';
 import {
   ListPermissionsPort,
-  ListPermissionsQuery
+  ListPermissionsInputPort
 } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
 import {
-  UpdatePermissionCommand,
+  UpdatePermissionInputPort,
   UpdatePermissionPort
 } from '@/modules/authorization/application/use-cases/update-permission/update-permission.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
@@ -66,7 +66,7 @@ export class PermissionController extends BaseController implements IPermissionC
   async list(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const { items, total } = await this.listPermissionsUC.execute(new ListPermissionsQuery({ page, limit }));
+    const { items, total } = await this.listPermissionsUC.execute(new ListPermissionsInputPort({ page, limit }));
     return this.paginatedResponse({
       data: items,
       pagination: { page, limit, totalItems: total },
@@ -78,7 +78,7 @@ export class PermissionController extends BaseController implements IPermissionC
   async create(req: ExpressRequest<ParamsDictionary, object, CreatePermissionBodyDTO>): Promise<unknown> {
     const dto = new CreatePermissionBodyDTO(req.body);
     const item = await this.createPermissionUC.execute(
-      new CreatePermissionCommand({
+      new CreatePermissionInputPort({
         name: dto.name,
         description: dto.description,
         path: dto.path,
@@ -92,7 +92,7 @@ export class PermissionController extends BaseController implements IPermissionC
   @AutoBind()
   async getById(req: ExpressRequest<PermissionIdParamsDTO>): Promise<unknown> {
     const { permissionId } = req.params;
-    const item = await this.getPermissionUC.execute(new GetPermissionQuery(permissionId));
+    const item = await this.getPermissionUC.execute(new GetPermissionInputPort(permissionId));
     return this.response({ data: item, message: 'Get permission successfully' });
   }
 
@@ -101,7 +101,7 @@ export class PermissionController extends BaseController implements IPermissionC
     const { permissionId } = req.params;
     const dto = new UpdatePermissionBodyDTO(req.body);
     const item = await this.updatePermissionUC.execute(
-      new UpdatePermissionCommand({
+      new UpdatePermissionInputPort({
         id: permissionId,
         name: dto.name,
         description: dto.description,
@@ -117,7 +117,7 @@ export class PermissionController extends BaseController implements IPermissionC
   async remove(req: ExpressRequest<PermissionIdParamsDTO>): Promise<unknown> {
     const { permissionId } = req.params;
     await this.deletePermissionUC.execute(
-      new DeletePermissionCommand({ id: permissionId, actorId: this.getUserId(req) })
+      new DeletePermissionInputPort({ id: permissionId, actorId: this.getUserId(req) })
     );
     return this.response({ message: 'Permission deleted successfully' });
   }

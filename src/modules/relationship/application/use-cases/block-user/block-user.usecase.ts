@@ -5,7 +5,7 @@ import {
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  BlockUserCommand,
+  BlockUserInputPort,
   BlockUserPort
 } from '@/modules/relationship/application/use-cases/block-user/block-user.port';
 import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
@@ -26,7 +26,8 @@ export class BlockUserUseCase extends BlockUserPort {
     super();
   }
 
-  async execute({ blockerUserId, blockedUserId }: BlockUserCommand): Promise<void> {
+  async execute(input: BlockUserInputPort): Promise<void> {
+    const { blockerUserId, blockedUserId } = input;
     if (blockerUserId === blockedUserId) {
       throw new CannotBlockYourselfException();
     }

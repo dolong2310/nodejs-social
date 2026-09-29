@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
-export class GetGuestNewFeedsQuery {
+export class GetGuestNewFeedsInputPort {
   limit: number;
   cursor?: string;
   constructor(payload: { limit: string; cursor?: string }) {
@@ -10,7 +10,7 @@ export class GetGuestNewFeedsQuery {
   }
 }
 
-export class GetGuestNewFeedsResult<T extends PostDetailWithAuthorOutput> {
+export class GetGuestNewFeedsOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -20,10 +20,10 @@ export class GetGuestNewFeedsResult<T extends PostDetailWithAuthorOutput> {
 }
 
 export abstract class GetGuestNewFeedsPort implements UseCase<
-  GetGuestNewFeedsQuery,
-  GetGuestNewFeedsResult<PostDetailWithAuthorOutput>
+  GetGuestNewFeedsInputPort,
+  GetGuestNewFeedsOutputPort<PostDetailWithAuthorOutput>
 > {
   abstract execute<T extends PostDetailWithAuthorOutput>(
-    query: GetGuestNewFeedsQuery
-  ): Promise<GetGuestNewFeedsResult<T>>;
+    input: GetGuestNewFeedsInputPort
+  ): Promise<GetGuestNewFeedsOutputPort<T>>;
 }

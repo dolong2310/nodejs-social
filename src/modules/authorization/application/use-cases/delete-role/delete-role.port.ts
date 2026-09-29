@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class DeleteRoleCommand {
+export class DeleteRoleInputPort {
   id: string;
   actorId: string | null;
   constructor(payload: { id: string; actorId?: string | null }) {
@@ -9,6 +9,6 @@ export class DeleteRoleCommand {
   }
 }
 
-export abstract class DeleteRolePort implements UseCase<DeleteRoleCommand, void> {
-  abstract execute(command: DeleteRoleCommand): Promise<void>;
+export abstract class DeleteRolePort implements UseCase<DeleteRoleInputPort, void> {
+  abstract execute(input: DeleteRoleInputPort): Promise<void>;
 }

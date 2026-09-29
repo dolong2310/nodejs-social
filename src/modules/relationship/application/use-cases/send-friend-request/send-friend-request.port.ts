@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.type';
 
-export class SendFriendRequestCommand {
+export class SendFriendRequestInputPort {
   userId: string;
   username: string;
 
@@ -11,7 +11,7 @@ export class SendFriendRequestCommand {
   }
 }
 
-export class SendFriendRequestResult implements FriendRequestFullProps {
+export class SendFriendRequestOutputPort implements FriendRequestFullProps {
   id: string;
   fromUserId: string;
   toUserId: string;
@@ -27,6 +27,9 @@ export class SendFriendRequestResult implements FriendRequestFullProps {
   }
 }
 
-export abstract class SendFriendRequestPort implements UseCase<SendFriendRequestCommand, SendFriendRequestResult> {
-  abstract execute(command: SendFriendRequestCommand): Promise<SendFriendRequestResult>;
+export abstract class SendFriendRequestPort implements UseCase<
+  SendFriendRequestInputPort,
+  SendFriendRequestOutputPort
+> {
+  abstract execute(input: SendFriendRequestInputPort): Promise<SendFriendRequestOutputPort>;
 }

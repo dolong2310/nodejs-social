@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
 
-export class GetBlockedUserQuery {
+export class GetBlockedUserInputPort {
   blockerUserId: string;
   page: string;
   limit: string;
@@ -12,7 +12,7 @@ export class GetBlockedUserQuery {
   }
 }
 
-export class GetBlockedUserResult {
+export class GetBlockedUserOutputPort {
   users: UserRecordProps[];
   total: number;
   constructor(payload: { users: UserRecordProps[]; total: number }) {
@@ -21,6 +21,6 @@ export class GetBlockedUserResult {
   }
 }
 
-export abstract class GetBlockedUserPort implements UseCase<GetBlockedUserQuery, GetBlockedUserResult> {
-  abstract execute(query: GetBlockedUserQuery): Promise<GetBlockedUserResult>;
+export abstract class GetBlockedUserPort implements UseCase<GetBlockedUserInputPort, GetBlockedUserOutputPort> {
+  abstract execute(input: GetBlockedUserInputPort): Promise<GetBlockedUserOutputPort>;
 }

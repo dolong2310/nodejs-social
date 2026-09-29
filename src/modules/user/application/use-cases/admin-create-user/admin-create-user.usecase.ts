@@ -9,9 +9,9 @@ import {
 } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  AdminCreateUserCommand,
+  AdminCreateUserInputPort,
   AdminCreateUserPort,
-  AdminCreateUserResult
+  AdminCreateUserOutputPort
 } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
@@ -28,47 +28,47 @@ export class AdminCreateUserUseCase extends AdminCreateUserPort {
     super();
   }
 
-  async execute(command: AdminCreateUserCommand): Promise<AdminCreateUserResult> {
+  async execute(input: AdminCreateUserInputPort): Promise<AdminCreateUserOutputPort> {
     const adminRoleId = await this.roleService.getAdminRoleId();
-    if (command.roleId === adminRoleId) {
+    if (input.roleId === adminRoleId) {
       throw new CannotAssignAdminRoleException();
     }
 
-    const role = await this.roleRepository.findRoleById(command.roleId);
+    const role = await this.roleRepository.findRoleById(input.roleId);
     if (!role) {
       throw new RoleNotFoundException();
     }
 
-    const existingEmail = await this.userService.findUserByEmail(command.email, { querySafe: true });
+    const existingEmail = await this.userService.findUserByEmail(input.email, { querySafe: true });
     if (existingEmail) {
       throw new UserAlreadyExistsException();
     }
 
-    if (command.username) {
-      const existingUsername = await this.userService.findUserByUsername(command.username, { querySafe: true });
+    if (input.username) {
+      const existingUsername = await this.userService.findUserByUsername(input.username, { querySafe: true });
       if (existingUsername) {
         throw new UsernameAlreadyExistsException();
       }
     }
 
-    const hashedPassword = await this.hashingService.hash(command.password);
+    const hashedPassword = await this.hashingService.hash(input.password);
     const entity = UserEntity.create({
-      name: command.name,
-      email: command.email,
+      name: input.name,
+      email: input.email,
       password: hashedPassword,
-      birthday: command.birthday,
-      roleId: command.roleId,
-      status: command.status,
-      bio: command.bio,
-      location: command.location,
-      website: command.website,
-      username: command.username,
-      avatar: command.avatar,
-      coverPhoto: command.coverPhoto
+      birthday: input.birthday,
+      roleId: input.roleId,
+      status: input.status,
+      bio: input.bio,
+      location: input.location,
+      website: input.website,
+      username: input.username,
+      avatar: input.avatar,
+      coverPhoto: input.coverPhoto
     });
 
-    const created = await this.userRepository.insert(entity, { actorId: command.actorId });
-    return new AdminCreateUserResult(this.toSafeUser(created.toObject()));
+    const created = await this.userRepository.insert(entity, { actorId: input.actorId });
+    return new AdminCreateUserOutputPort(this.toSafeUser(created.toObject()));
   }
 
   private toSafeUser(user: ReturnType<UserEntity['toObject']>): UserSafeProps {

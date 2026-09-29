@@ -1,14 +1,14 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class ChangePasswordCommand {
+export class ChangePasswordInputPort {
   userId: string;
   password: string;
-  constructor(command: { userId: string; password: string }) {
-    this.userId = command.userId;
-    this.password = command.password;
+  constructor(input: { userId: string; password: string }) {
+    this.userId = input.userId;
+    this.password = input.password;
   }
 }
 
-export abstract class ChangePasswordPort implements UseCase<ChangePasswordCommand, boolean> {
-  abstract execute(command: ChangePasswordCommand): Promise<boolean>;
+export abstract class ChangePasswordPort implements UseCase<ChangePasswordInputPort, boolean> {
+  abstract execute(input: ChangePasswordInputPort): Promise<boolean>;
 }

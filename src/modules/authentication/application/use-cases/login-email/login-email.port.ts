@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class LoginEmailCommand {
+export class LoginEmailInputPort {
   email: string;
   password: string;
   totpCode?: string;
@@ -17,7 +17,7 @@ export class LoginEmailCommand {
   }
 }
 
-export class LoginEmailResult {
+export class LoginEmailOutputPort {
   accessToken: string;
   refreshToken: string;
   constructor(payload: { accessToken: string; refreshToken: string }) {
@@ -26,6 +26,6 @@ export class LoginEmailResult {
   }
 }
 
-export abstract class LoginEmailPort implements UseCase<LoginEmailCommand, LoginEmailResult> {
-  abstract execute(command: LoginEmailCommand): Promise<LoginEmailResult>;
+export abstract class LoginEmailPort implements UseCase<LoginEmailInputPort, LoginEmailOutputPort> {
+  abstract execute(input: LoginEmailInputPort): Promise<LoginEmailOutputPort>;
 }

@@ -1,7 +1,7 @@
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { AdminDeleteUserCommand } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
+import { AdminDeleteUserInputPort } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -29,7 +29,7 @@ describe('AdminDeleteUserUseCase', () => {
     const cache = mockCache() as CacheStrategyPort;
     const useCase = new AdminDeleteUserUseCase(userRepository, roleService, cache);
 
-    await useCase.execute(new AdminDeleteUserCommand({ actorId: 'admin_1', userId: user.id }));
+    await useCase.execute(new AdminDeleteUserInputPort({ actorId: 'admin_1', userId: user.id }));
 
     expect(userRepository.deleteById).toHaveBeenCalledWith(user.id, { actorId: 'admin_1' });
     expect(cache.invalidate).toHaveBeenCalledWith(CACHE_KEYS.user(user.id));

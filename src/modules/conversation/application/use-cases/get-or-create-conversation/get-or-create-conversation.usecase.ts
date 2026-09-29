@@ -6,9 +6,9 @@ import {
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  GetOrCreateConversationCommand,
+  GetOrCreateConversationInputPort,
   GetOrCreateConversationPort,
-  GetOrCreateConversationResult
+  GetOrCreateConversationOutputPort
 } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
@@ -30,7 +30,8 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
     super();
   }
 
-  async execute({ userId, peerUserId }: GetOrCreateConversationCommand): Promise<GetOrCreateConversationResult> {
+  async execute(input: GetOrCreateConversationInputPort): Promise<GetOrCreateConversationOutputPort> {
+    const { userId, peerUserId } = input;
     // Prevent sending messages to yourself.
     if (userId === peerUserId) {
       throw new ConversationInvalidPeerException();
@@ -80,7 +81,7 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
       })
     ]);
 
-    return new GetOrCreateConversationResult({
+    return new GetOrCreateConversationOutputPort({
       id: conversationId,
       type: conv.type,
       createdBy: conv.createdBy,
@@ -95,14 +96,14 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
   private async _getExistingConversation(
     userId: string,
     peerUserId: string
-  ): Promise<GetOrCreateConversationResult | null> {
+  ): Promise<GetOrCreateConversationOutputPort | null> {
     // Find an existing direct room.
     const convEntity = await this.conversationRepository.findDirectConversationByUserPair(userId, peerUserId);
     if (!convEntity) return null;
     const conv = convEntity.toObject();
     // isMember ensures the caller is actually a room member.
     await this.conversationService.isMember({ conversationId: conv.id, userId });
-    return new GetOrCreateConversationResult({
+    return new GetOrCreateConversationOutputPort({
       id: conv.id,
       type: conv.type,
       createdBy: conv.createdBy,

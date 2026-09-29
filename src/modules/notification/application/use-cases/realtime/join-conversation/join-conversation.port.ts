@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class JoinConversationCommand {
+export class JoinConversationInputPort {
   userId: string;
   conversationId?: string;
   constructor(payload: { userId: string; conversationId?: string }) {
@@ -9,13 +9,16 @@ export class JoinConversationCommand {
   }
 }
 
-export class JoinConversationResult {
+export class JoinConversationOutputPort {
   conversationId: string;
   constructor(payload: { conversationId: string }) {
     this.conversationId = payload.conversationId;
   }
 }
 
-export abstract class JoinConversationPort implements UseCase<JoinConversationCommand, JoinConversationResult | null> {
-  abstract execute(command: JoinConversationCommand): Promise<JoinConversationResult | null>;
+export abstract class JoinConversationPort implements UseCase<
+  JoinConversationInputPort,
+  JoinConversationOutputPort | null
+> {
+  abstract execute(input: JoinConversationInputPort): Promise<JoinConversationOutputPort | null>;
 }

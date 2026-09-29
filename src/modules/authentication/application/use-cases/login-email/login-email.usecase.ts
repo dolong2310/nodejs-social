@@ -2,9 +2,9 @@ import { InvalidEmailOrPasswordException } from '@/modules/authentication/applic
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  LoginEmailCommand,
+  LoginEmailInputPort,
   LoginEmailPort,
-  LoginEmailResult
+  LoginEmailOutputPort
 } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
@@ -21,7 +21,8 @@ export class LoginEmailUseCase extends LoginEmailPort {
     super();
   }
 
-  async execute({ email, password, totpCode, emailOtpCode }: LoginEmailCommand): Promise<LoginEmailResult> {
+  async execute(input: LoginEmailInputPort): Promise<LoginEmailOutputPort> {
+    const { email, password, totpCode, emailOtpCode } = input;
     // 1. Check email exists in database
     const user = await this.userQueryRepository.findUserByEmailIncludeRole(email);
 
@@ -56,6 +57,6 @@ export class LoginEmailUseCase extends LoginEmailPort {
       { isCreateInDatabase: true }
     );
 
-    return new LoginEmailResult(authSession);
+    return new LoginEmailOutputPort(authSession);
   }
 }

@@ -3,9 +3,9 @@ import {
   ConversationPeerNotFriendException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import {
-  CreateGroupCommand,
+  CreateGroupInputPort,
   CreateGroupPort,
-  CreateGroupResult
+  CreateGroupOutputPort
 } from '@/modules/conversation/application/use-cases/create-group/create-group.port';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
@@ -18,7 +18,8 @@ export class CreateGroupUseCase extends CreateGroupPort {
     super();
   }
 
-  async execute({ userId, name, memberIds: memberIdsPayload }: CreateGroupCommand): Promise<CreateGroupResult> {
+  async execute(input: CreateGroupInputPort): Promise<CreateGroupOutputPort> {
+    const { userId, name, memberIds: memberIdsPayload } = input;
     // Deduplicate memberIds and filter out the creator.
     const memberIds = [...new Set(memberIdsPayload)].filter((id) => id !== userId);
 
@@ -40,14 +41,15 @@ export class CreateGroupUseCase extends CreateGroupPort {
       memberIds
     });
 
-    return new CreateGroupResult(groupEntity.toObject());
+    return new CreateGroupOutputPort(groupEntity.toObject());
   }
 
   /**
    * Count all group members who are friends with the admin and compare that count with the number of group
    * members excluding the admin; both values must be equal.
    */
-  async areAllFriends({ userId, otherUserIds }: { userId: string; otherUserIds: string[] }): Promise<boolean> {
+  async areAllFriends(input: { userId: string; otherUserIds: string[] }): Promise<boolean> {
+    const { userId, otherUserIds } = input;
     if (otherUserIds.length === 0) return true;
     const number = await this.friendshipRepository.countFriendshipsWithUserAmongOthers({
       userId,

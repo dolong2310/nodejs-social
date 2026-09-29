@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
 
-export class GetIncomingRequestsQuery {
+export class GetIncomingRequestsInputPort {
   userId: string;
   limit: number;
   cursor?: string;
@@ -12,7 +12,7 @@ export class GetIncomingRequestsQuery {
   }
 }
 
-export class GetIncomingRequestsResult {
+export class GetIncomingRequestsOutputPort {
   items: UserRecordProps[];
   nextCursor: string | null;
   constructor(items: UserRecordProps[], nextCursor: string | null) {
@@ -21,6 +21,9 @@ export class GetIncomingRequestsResult {
   }
 }
 
-export abstract class GetIncomingRequestsPort implements UseCase<GetIncomingRequestsQuery, GetIncomingRequestsResult> {
-  abstract execute(query: GetIncomingRequestsQuery): Promise<GetIncomingRequestsResult>;
+export abstract class GetIncomingRequestsPort implements UseCase<
+  GetIncomingRequestsInputPort,
+  GetIncomingRequestsOutputPort
+> {
+  abstract execute(input: GetIncomingRequestsInputPort): Promise<GetIncomingRequestsOutputPort>;
 }

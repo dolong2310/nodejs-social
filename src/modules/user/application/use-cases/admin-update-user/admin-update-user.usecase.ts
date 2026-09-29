@@ -13,9 +13,9 @@ import {
 } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  AdminUpdateUserCommand,
+  AdminUpdateUserInputPort,
   AdminUpdateUserPort,
-  AdminUpdateUserResult
+  AdminUpdateUserOutputPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
@@ -33,8 +33,8 @@ export class AdminUpdateUserUseCase extends AdminUpdateUserPort {
     super();
   }
 
-  async execute(command: AdminUpdateUserCommand): Promise<AdminUpdateUserResult> {
-    const current = await this.userRepository.findUserById(command.userId);
+  async execute(input: AdminUpdateUserInputPort): Promise<AdminUpdateUserOutputPort> {
+    const current = await this.userRepository.findUserById(input.userId);
     if (!current) {
       throw new UserNotFoundException();
     }
@@ -45,49 +45,49 @@ export class AdminUpdateUserUseCase extends AdminUpdateUserPort {
       throw new CannotMutateAdminUserException();
     }
 
-    if (command.roleId) {
-      if (command.roleId === adminRoleId) {
+    if (input.roleId) {
+      if (input.roleId === adminRoleId) {
         throw new CannotAssignAdminRoleException();
       }
 
-      const role = await this.roleRepository.findRoleById(command.roleId);
+      const role = await this.roleRepository.findRoleById(input.roleId);
       if (!role) {
         throw new RoleNotFoundException();
       }
     }
 
-    if (command.email && command.email !== currentUser.email) {
-      const existingEmail = await this.userService.findUserByEmail(command.email, { querySafe: true });
-      if (existingEmail && existingEmail.id !== command.userId) {
+    if (input.email && input.email !== currentUser.email) {
+      const existingEmail = await this.userService.findUserByEmail(input.email, { querySafe: true });
+      if (existingEmail && existingEmail.id !== input.userId) {
         throw new UserAlreadyExistsException();
       }
     }
 
-    if (command.username && command.username !== currentUser.username) {
-      const existingUsername = await this.userService.findUserByUsername(command.username, { querySafe: true });
-      if (existingUsername && existingUsername.id !== command.userId) {
+    if (input.username && input.username !== currentUser.username) {
+      const existingUsername = await this.userService.findUserByUsername(input.username, { querySafe: true });
+      if (existingUsername && existingUsername.id !== input.userId) {
         throw new UsernameAlreadyExistsException();
       }
     }
 
-    const password = command.password ? await this.hashingService.hash(command.password) : undefined;
+    const password = input.password ? await this.hashingService.hash(input.password) : undefined;
     const updated = await this.userRepository.update(
-      command.userId,
+      input.userId,
       {
-        name: command.name,
-        email: command.email,
+        name: input.name,
+        email: input.email,
         password,
-        birthday: command.birthday,
-        roleId: command.roleId,
-        status: command.status,
-        bio: command.bio,
-        location: command.location,
-        website: command.website,
-        username: command.username,
-        avatar: command.avatar,
-        coverPhoto: command.coverPhoto
+        birthday: input.birthday,
+        roleId: input.roleId,
+        status: input.status,
+        bio: input.bio,
+        location: input.location,
+        website: input.website,
+        username: input.username,
+        avatar: input.avatar,
+        coverPhoto: input.coverPhoto
       } as Partial<UserEntity>,
-      { actorId: command.actorId }
+      { actorId: input.actorId }
     );
 
     if (!updated) {
@@ -95,9 +95,9 @@ export class AdminUpdateUserUseCase extends AdminUpdateUserPort {
     }
 
     const updatedUser = updated.toObject();
-    await this.invalidateUserCache(command.userId, [currentUser.username, updatedUser.username]);
+    await this.invalidateUserCache(input.userId, [currentUser.username, updatedUser.username]);
 
-    return new AdminUpdateUserResult(this.toSafeUser(updatedUser));
+    return new AdminUpdateUserOutputPort(this.toSafeUser(updatedUser));
   }
 
   private async invalidateUserCache(userId: string, usernames: Array<string | undefined>): Promise<void> {

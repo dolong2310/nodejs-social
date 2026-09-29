@@ -4,8 +4,8 @@ import { ConversationServicePort } from '@/modules/conversation/application/serv
 import {
   ConversationItem,
   GetConversationsPort,
-  GetConversationsQuery,
-  GetConversationsResult
+  GetConversationsInputPort,
+  GetConversationsOutputPort
 } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
@@ -22,7 +22,8 @@ export class GetConversationsUseCase extends GetConversationsPort {
     super();
   }
 
-  async execute({ userId, limit, cursor }: GetConversationsQuery): Promise<GetConversationsResult> {
+  async execute(input: GetConversationsInputPort): Promise<GetConversationsOutputPort> {
+    const { userId, limit, cursor } = input;
     const decoded = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
 
     // Clamp page size to a safe range (1-100) to avoid overly large limits.
@@ -88,6 +89,6 @@ export class GetConversationsUseCase extends GetConversationsPort {
       }
     }
 
-    return new GetConversationsResult(conversations, nextCursor);
+    return new GetConversationsOutputPort(conversations, nextCursor);
   }
 }

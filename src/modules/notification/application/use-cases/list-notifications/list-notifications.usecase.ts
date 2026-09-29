@@ -2,8 +2,8 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import {
   ListNotificationsPort,
-  ListNotificationsQuery,
-  ListNotificationsResult,
+  ListNotificationsInputPort,
+  ListNotificationsOutputPort,
   NotificationSummary
 } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
@@ -23,8 +23,8 @@ export class ListNotificationsUseCase extends ListNotificationsPort {
     super();
   }
 
-  async execute(query: ListNotificationsQuery): Promise<ListNotificationsResult> {
-    const { viewerId, limit, cursor, unreadOnly } = new ListNotificationsQuery(query);
+  async execute(input: ListNotificationsInputPort): Promise<ListNotificationsOutputPort> {
+    const { viewerId, limit, cursor, unreadOnly } = new ListNotificationsInputPort(input);
 
     const ids = await this.blockRepository.listUserIdsBlockedInEitherDirection(viewerId);
     const blockedIds = new Set(ids);
@@ -45,7 +45,7 @@ export class ListNotificationsUseCase extends ListNotificationsPort {
     const slice = results.slice(0, pageSize);
 
     if (slice.length === 0) {
-      return new ListNotificationsResult({ items: [], nextCursor: null });
+      return new ListNotificationsOutputPort({ items: [], nextCursor: null });
     }
 
     const items: NotificationSummary[] = slice.map((entity) => ({
@@ -55,6 +55,6 @@ export class ListNotificationsUseCase extends ListNotificationsPort {
     const last = slice[slice.length - 1].toObject();
     const nextCursor = hasMore ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new ListNotificationsResult({ items, nextCursor });
+    return new ListNotificationsOutputPort({ items, nextCursor });
   }
 }

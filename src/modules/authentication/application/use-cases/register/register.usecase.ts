@@ -1,8 +1,8 @@
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  RegisterCommand,
+  RegisterInputPort,
   RegisterPort,
-  RegisterResult
+  RegisterOutputPort
 } from '@/modules/authentication/application/use-cases/register/register.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
@@ -33,8 +33,8 @@ export class RegisterUseCase extends RegisterPort {
   // 6. Create user
   // 7. Delete OTP code
   // 8. Return user (successfully registered)
-  async execute(command: RegisterCommand): Promise<RegisterResult> {
-    const { name, email, password, birthday, code } = command;
+  async execute(input: RegisterInputPort): Promise<RegisterOutputPort> {
+    const { name, email, password, birthday, code } = input;
 
     // 1. Check OTP code
     const otpEntity = await this.otpService.findAndValidateOtpCode({ email, code, type: EnumOtpType.REGISTER });
@@ -65,6 +65,6 @@ export class RegisterUseCase extends RegisterPort {
     // 5. Delete OTP code
     await this.otpRepository.deleteOtp(otpEntity.id.toString());
 
-    return new RegisterResult(user.toObject());
+    return new RegisterOutputPort(user.toObject());
   }
 }

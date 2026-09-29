@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class AdminListUsersQuery {
+export class AdminListUsersInputPort {
   page: number;
   limit: number;
 
@@ -45,7 +45,7 @@ export class AdminListUsersItem implements UserSafeProps {
   }
 }
 
-export class AdminListUsersResult {
+export class AdminListUsersOutputPort {
   items: AdminListUsersItem[];
   total: number;
 
@@ -55,6 +55,6 @@ export class AdminListUsersResult {
   }
 }
 
-export abstract class AdminListUsersPort implements UseCase<AdminListUsersQuery, AdminListUsersResult> {
-  abstract execute(query: AdminListUsersQuery): Promise<AdminListUsersResult>;
+export abstract class AdminListUsersPort implements UseCase<AdminListUsersInputPort, AdminListUsersOutputPort> {
+  abstract execute(input: AdminListUsersInputPort): Promise<AdminListUsersOutputPort>;
 }

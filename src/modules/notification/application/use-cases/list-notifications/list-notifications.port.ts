@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { NotificationFullProps } from '@/modules/notification/domain/entities/notification.type';
 
-export class ListNotificationsQuery {
+export class ListNotificationsInputPort {
   viewerId: string;
   limit: number;
   cursor?: string;
@@ -19,16 +19,19 @@ export interface NotificationSummary extends NotificationFullProps {
   summary: string;
 }
 
-export class ListNotificationsResult {
+export class ListNotificationsOutputPort {
   items: NotificationSummary[];
   nextCursor: string | null;
 
-  constructor(props: ListNotificationsResult) {
+  constructor(props: ListNotificationsOutputPort) {
     this.items = props.items;
     this.nextCursor = props.nextCursor;
   }
 }
 
-export abstract class ListNotificationsPort implements UseCase<ListNotificationsQuery, ListNotificationsResult> {
-  abstract execute(query: ListNotificationsQuery): Promise<ListNotificationsResult>;
+export abstract class ListNotificationsPort implements UseCase<
+  ListNotificationsInputPort,
+  ListNotificationsOutputPort
+> {
+  abstract execute(input: ListNotificationsInputPort): Promise<ListNotificationsOutputPort>;
 }

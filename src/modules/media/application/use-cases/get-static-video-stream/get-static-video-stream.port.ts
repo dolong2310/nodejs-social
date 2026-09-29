@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class GetStaticVideoStreamQuery {
+export class GetStaticVideoStreamInputPort {
   filename: string;
   rangeHeader?: string;
   constructor(payload: { filename: string; rangeHeader?: string }) {
@@ -9,7 +9,7 @@ export class GetStaticVideoStreamQuery {
   }
 }
 
-export class GetStaticVideoStreamResult {
+export class GetStaticVideoStreamOutputPort {
   videoPath: string;
   videoSize: number;
   start: number;
@@ -34,8 +34,8 @@ export class GetStaticVideoStreamResult {
 }
 
 export abstract class GetStaticVideoStreamPort implements UseCase<
-  GetStaticVideoStreamQuery,
-  GetStaticVideoStreamResult
+  GetStaticVideoStreamInputPort,
+  GetStaticVideoStreamOutputPort
 > {
-  abstract execute(query: GetStaticVideoStreamQuery): Promise<GetStaticVideoStreamResult>;
+  abstract execute(input: GetStaticVideoStreamInputPort): Promise<GetStaticVideoStreamOutputPort>;
 }

@@ -1,7 +1,7 @@
 import {
   GetVideoStatusPort,
-  GetVideoStatusQuery,
-  GetVideoStatusResult
+  GetVideoStatusInputPort,
+  GetVideoStatusOutputPort
 } from '@/modules/media/application/use-cases/get-video-status/get-video-status.port';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 
@@ -10,9 +10,10 @@ export class GetVideoStatusUseCase extends GetVideoStatusPort {
     super();
   }
 
-  async execute({ name }: GetVideoStatusQuery): Promise<GetVideoStatusResult | null> {
+  async execute(input: GetVideoStatusInputPort): Promise<GetVideoStatusOutputPort | null> {
+    const { name } = input;
     const entity = await this.mediaRepository.findVideoStatusByName(name);
     if (!entity) return null;
-    return new GetVideoStatusResult(entity.toObject());
+    return new GetVideoStatusOutputPort(entity.toObject());
   }
 }

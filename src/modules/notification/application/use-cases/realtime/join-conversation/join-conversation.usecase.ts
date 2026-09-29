@@ -1,9 +1,9 @@
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
-  JoinConversationCommand,
+  JoinConversationInputPort,
   JoinConversationPort,
-  JoinConversationResult
+  JoinConversationOutputPort
 } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
 
 export class JoinConversationUseCase extends JoinConversationPort {
@@ -11,12 +11,13 @@ export class JoinConversationUseCase extends JoinConversationPort {
     super();
   }
 
-  async execute({ userId, conversationId }: JoinConversationCommand): Promise<JoinConversationResult | null> {
+  async execute(input: JoinConversationInputPort): Promise<JoinConversationOutputPort | null> {
+    const { userId, conversationId } = input;
     if (!conversationId || !isValidId(conversationId)) return null;
 
     const member = await this.conversationMemberRepository.findMember({ userId, conversationId }).catch(() => null);
     if (!member) return null;
 
-    return new JoinConversationResult({ conversationId });
+    return new JoinConversationOutputPort({ conversationId });
   }
 }

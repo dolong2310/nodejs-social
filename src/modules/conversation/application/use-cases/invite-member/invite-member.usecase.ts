@@ -5,9 +5,9 @@ import {
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  InviteMemberCommand,
+  InviteMemberInputPort,
   InviteMemberPort,
-  InviteMemberResult
+  InviteMemberOutputPort
 } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
@@ -31,7 +31,8 @@ export class InviteMemberUseCase extends InviteMemberPort {
     super();
   }
 
-  async execute({ userId, inviteeUserId, conversationId }: InviteMemberCommand): Promise<InviteMemberResult> {
+  async execute(input: InviteMemberInputPort): Promise<InviteMemberOutputPort> {
+    const { userId, inviteeUserId, conversationId } = input;
     // Check whether the user is a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
@@ -82,7 +83,7 @@ export class InviteMemberUseCase extends InviteMemberPort {
       this.notificationsService.recordAddedToGroup({ inviteeUserId, inviterUserId: userId, conv: convEntity })
     ]);
 
-    return new InviteMemberResult({
+    return new InviteMemberOutputPort({
       id: conv.id,
       type: conv.type,
       createdBy: conv.createdBy,

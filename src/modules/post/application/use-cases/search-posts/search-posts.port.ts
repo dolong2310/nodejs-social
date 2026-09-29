@@ -2,7 +2,7 @@ import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
-export class SearchPostsQuery {
+export class SearchPostsInputPort {
   userId?: string;
   query?: string;
   type?: EnumSearchType;
@@ -26,7 +26,7 @@ export class SearchPostsQuery {
   }
 }
 
-export class SearchPostsResult<T extends PostDetailWithAuthorOutput> {
+export class SearchPostsOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -36,8 +36,10 @@ export class SearchPostsResult<T extends PostDetailWithAuthorOutput> {
 }
 
 export abstract class SearchPostsPort implements UseCase<
-  SearchPostsQuery,
-  SearchPostsResult<PostDetailWithAuthorOutput>
+  SearchPostsInputPort,
+  SearchPostsOutputPort<PostDetailWithAuthorOutput>
 > {
-  abstract execute<T extends PostDetailWithAuthorOutput>(query: SearchPostsQuery): Promise<SearchPostsResult<T>>;
+  abstract execute<T extends PostDetailWithAuthorOutput>(
+    input: SearchPostsInputPort
+  ): Promise<SearchPostsOutputPort<T>>;
 }

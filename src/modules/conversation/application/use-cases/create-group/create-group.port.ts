@@ -4,7 +4,7 @@ import {
 } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class CreateGroupCommand {
+export class CreateGroupInputPort {
   userId: string;
   name?: string;
   memberIds: string[];
@@ -15,7 +15,7 @@ export class CreateGroupCommand {
   }
 }
 
-export class CreateGroupResult implements CreateGroupConversationProps {
+export class CreateGroupOutputPort implements CreateGroupConversationProps {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -42,6 +42,6 @@ export class CreateGroupResult implements CreateGroupConversationProps {
   }
 }
 
-export abstract class CreateGroupPort implements UseCase<CreateGroupCommand, CreateGroupResult> {
-  abstract execute(command: CreateGroupCommand): Promise<CreateGroupResult>;
+export abstract class CreateGroupPort implements UseCase<CreateGroupInputPort, CreateGroupOutputPort> {
+  abstract execute(input: CreateGroupInputPort): Promise<CreateGroupOutputPort>;
 }

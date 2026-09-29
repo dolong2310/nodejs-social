@@ -1,9 +1,9 @@
 import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
 import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
-  CreateLikeCommand,
+  CreateLikeInputPort,
   CreateLikePort,
-  CreateLikeResult
+  CreateLikeOutputPort
 } from '@/modules/post/application/use-cases/like-post/like-post.port';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
@@ -17,7 +17,8 @@ export class LikePostUseCase extends CreateLikePort {
     super();
   }
 
-  async execute({ userId, postId }: CreateLikeCommand): Promise<CreateLikeResult> {
+  async execute(input: CreateLikeInputPort): Promise<CreateLikeOutputPort> {
+    const { userId, postId } = input;
     const post = await this.postQueryRepository.findPostDetailById(postId);
     if (!post) {
       throw new PostNotFoundException();
@@ -29,6 +30,6 @@ export class LikePostUseCase extends CreateLikePort {
     if (!like) {
       throw new PostNotFoundException();
     }
-    return new CreateLikeResult(like);
+    return new CreateLikeOutputPort(like);
   }
 }

@@ -1,18 +1,18 @@
 import {
-  CreateRoleCommand,
+  CreateRoleInputPort,
   CreateRolePort
 } from '@/modules/authorization/application/use-cases/create-role/create-role.port';
 import {
-  DeleteRoleCommand,
+  DeleteRoleInputPort,
   DeleteRolePort
 } from '@/modules/authorization/application/use-cases/delete-role/delete-role.port';
-import { GetRolePort, GetRoleQuery } from '@/modules/authorization/application/use-cases/get-role/get-role.port';
+import { GetRolePort, GetRoleInputPort } from '@/modules/authorization/application/use-cases/get-role/get-role.port';
 import {
   ListRolesPort,
-  ListRolesQuery
+  ListRolesInputPort
 } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
 import {
-  UpdateRoleCommand,
+  UpdateRoleInputPort,
   UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
@@ -63,7 +63,7 @@ export class RoleController extends BaseController implements IRoleController {
   async list(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const { items, total } = await this.listRolesUC.execute(new ListRolesQuery({ page, limit }));
+    const { items, total } = await this.listRolesUC.execute(new ListRolesInputPort({ page, limit }));
     return this.paginatedResponse({
       data: items,
       pagination: { page, limit, totalItems: total },
@@ -75,7 +75,7 @@ export class RoleController extends BaseController implements IRoleController {
   async create(req: ExpressRequest<ParamsDictionary, object, CreateRoleBodyDTO>): Promise<unknown> {
     const dto = new CreateRoleBodyDTO(req.body);
     const item = await this.createRoleUC.execute(
-      new CreateRoleCommand({
+      new CreateRoleInputPort({
         name: dto.name,
         description: dto.description,
         isActive: dto.isActive,
@@ -88,7 +88,7 @@ export class RoleController extends BaseController implements IRoleController {
   @AutoBind()
   async getById(req: ExpressRequest<RoleIdParamsDTO>): Promise<unknown> {
     const { roleId } = req.params;
-    const item = await this.getRoleUC.execute(new GetRoleQuery(roleId));
+    const item = await this.getRoleUC.execute(new GetRoleInputPort(roleId));
     return this.response({ data: item, message: 'Get role successfully' });
   }
 
@@ -97,7 +97,7 @@ export class RoleController extends BaseController implements IRoleController {
     const { roleId } = req.params;
     const dto = new UpdateRoleBodyDTO(req.body);
     const item = await this.updateRoleUC.execute(
-      new UpdateRoleCommand({
+      new UpdateRoleInputPort({
         id: roleId,
         name: dto.name,
         description: dto.description,
@@ -111,7 +111,7 @@ export class RoleController extends BaseController implements IRoleController {
   @AutoBind()
   async remove(req: ExpressRequest<RoleIdParamsDTO>): Promise<unknown> {
     const { roleId } = req.params;
-    await this.deleteRoleUC.execute(new DeleteRoleCommand({ id: roleId, actorId: this.getUserId(req) }));
+    await this.deleteRoleUC.execute(new DeleteRoleInputPort({ id: roleId, actorId: this.getUserId(req) }));
     return this.response({ message: 'Role deleted successfully' });
   }
 }

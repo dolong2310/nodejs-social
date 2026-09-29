@@ -1,7 +1,7 @@
 import { UserNotEnabled2FAException } from '@/modules/authentication/application/exceptions/otp.exception';
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  Disable2FACommand,
+  Disable2FAInputPort,
   Disable2FAPort
 } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
@@ -22,7 +22,8 @@ export class Disable2FAUseCase extends Disable2FAPort {
     super();
   }
 
-  async execute({ userId, totpCode, emailOtpCode }: Disable2FACommand): Promise<boolean> {
+  async execute(input: Disable2FAInputPort): Promise<boolean> {
+    const { userId, totpCode, emailOtpCode } = input;
     // 1. Load user from the database, verify the user exists, and verify 2FA is enabled.
     const user = await this.userService.findUserById(userId);
 

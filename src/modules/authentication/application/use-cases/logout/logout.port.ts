@@ -1,12 +1,12 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class LogoutCommand {
+export class LogoutInputPort {
   refreshToken: string;
   constructor(payload: { refreshToken: string }) {
     this.refreshToken = payload.refreshToken;
   }
 }
 
-export abstract class LogoutPort implements UseCase<LogoutCommand, boolean> {
-  abstract execute(command: LogoutCommand): Promise<boolean>;
+export abstract class LogoutPort implements UseCase<LogoutInputPort, boolean> {
+  abstract execute(input: LogoutInputPort): Promise<boolean>;
 }

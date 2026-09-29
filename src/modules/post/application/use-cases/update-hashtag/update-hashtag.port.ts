@@ -2,7 +2,7 @@ import { UseCase } from '@/modules/core/application/base.usecase';
 import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 import { MarkOptional } from 'ts-essentials';
 
-export class UpdateHashtagCommand implements MarkOptional<{ name: string }, 'name'> {
+export class UpdateHashtagInputPort implements MarkOptional<{ name: string }, 'name'> {
   id: string;
   name?: string;
   constructor(payload: { id: string; name?: string }) {
@@ -11,6 +11,6 @@ export class UpdateHashtagCommand implements MarkOptional<{ name: string }, 'nam
   }
 }
 
-export abstract class UpdateHashtagPort implements UseCase<UpdateHashtagCommand, HashtagListItem> {
-  abstract execute(command: UpdateHashtagCommand): Promise<HashtagListItem>;
+export abstract class UpdateHashtagPort implements UseCase<UpdateHashtagInputPort, HashtagListItem> {
+  abstract execute(input: UpdateHashtagInputPort): Promise<HashtagListItem>;
 }

@@ -1,5 +1,5 @@
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
-import { GetGoogleAuthUrlCommand } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
+import { GetGoogleAuthUrlInputPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
 import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
@@ -11,7 +11,7 @@ describe('GetGoogleAuthUrlUseCase', () => {
     });
     const useCase = new GetGoogleAuthUrlUseCase(googleOAuthService);
 
-    const result = useCase.execute(new GetGoogleAuthUrlCommand({ ip: '127.0.0.1', userAgent: 'vitest' }));
+    const result = useCase.execute(new GetGoogleAuthUrlInputPort({ ip: '127.0.0.1', userAgent: 'vitest' }));
 
     const payload = vi.mocked(googleOAuthService.generateAuthUrl).mock.calls[0]?.[0];
     expect(result).toBe('https://accounts.google.test/oauth');

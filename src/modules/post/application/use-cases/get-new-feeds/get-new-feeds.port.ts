@@ -2,7 +2,7 @@ import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.type';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
 
-export class GetNewFeedsQuery {
+export class GetNewFeedsInputPort {
   userId: string;
   limit: number;
   cursor?: string;
@@ -15,7 +15,7 @@ export class GetNewFeedsQuery {
   }
 }
 
-export class GetNewFeedsResult<T extends PostDetailWithAuthorOutput> {
+export class GetNewFeedsOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
   constructor(payload: { items: T[]; nextCursor: string | null }) {
@@ -25,8 +25,10 @@ export class GetNewFeedsResult<T extends PostDetailWithAuthorOutput> {
 }
 
 export abstract class GetNewFeedsPort implements UseCase<
-  GetNewFeedsQuery,
-  GetNewFeedsResult<PostDetailWithAuthorOutput>
+  GetNewFeedsInputPort,
+  GetNewFeedsOutputPort<PostDetailWithAuthorOutput>
 > {
-  abstract execute<T extends PostDetailWithAuthorOutput>(query: GetNewFeedsQuery): Promise<GetNewFeedsResult<T>>;
+  abstract execute<T extends PostDetailWithAuthorOutput>(
+    input: GetNewFeedsInputPort
+  ): Promise<GetNewFeedsOutputPort<T>>;
 }

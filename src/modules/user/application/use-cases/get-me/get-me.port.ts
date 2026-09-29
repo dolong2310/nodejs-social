@@ -1,14 +1,14 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 
-export class GetMeQuery {
+export class GetMeInputPort {
   userId: string;
   constructor(payload: { userId: string }) {
     this.userId = payload.userId;
   }
 }
 
-export class GetMeResult implements UserSafeProps {
+export class GetMeOutputPort implements UserSafeProps {
   id: string;
   name: string;
   email: string;
@@ -41,6 +41,6 @@ export class GetMeResult implements UserSafeProps {
   }
 }
 
-export abstract class GetMePort implements UseCase<GetMeQuery, GetMeResult> {
-  abstract execute(query: GetMeQuery): Promise<GetMeResult>;
+export abstract class GetMePort implements UseCase<GetMeInputPort, GetMeOutputPort> {
+  abstract execute(input: GetMeInputPort): Promise<GetMeOutputPort>;
 }

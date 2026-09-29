@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class AcceptIncomingRequestCommand {
+export class AcceptIncomingRequestInputPort {
   userId: string;
   fromUserId: string;
   constructor(payload: { userId: string; fromUserId: string }) {
@@ -9,6 +9,6 @@ export class AcceptIncomingRequestCommand {
   }
 }
 
-export abstract class AcceptIncomingRequestPort implements UseCase<AcceptIncomingRequestCommand, void> {
-  abstract execute(command: AcceptIncomingRequestCommand): Promise<void>;
+export abstract class AcceptIncomingRequestPort implements UseCase<AcceptIncomingRequestInputPort, void> {
+  abstract execute(input: AcceptIncomingRequestInputPort): Promise<void>;
 }

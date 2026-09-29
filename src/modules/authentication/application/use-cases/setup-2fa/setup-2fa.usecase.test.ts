@@ -1,5 +1,5 @@
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { Setup2FACommand } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
+import { Setup2FAInputPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
@@ -25,7 +25,7 @@ describe('Setup2FAUseCase', () => {
     const cache = mockCache() as CacheStrategyPort;
     const useCase = new Setup2FAUseCase(userRepository, userService, twoFactorAuthenticationService, cache);
 
-    const result = await useCase.execute(new Setup2FACommand({ userId: user.id }));
+    const result = await useCase.execute(new Setup2FAInputPort({ userId: user.id }));
 
     expect(twoFactorAuthenticationService.generateSecret).toHaveBeenCalledWith(user.email);
     expect(userRepository.updateOne).toHaveBeenCalledWith(user.id, { totpSecret: 'secret' });

@@ -2,9 +2,9 @@ import { GoogleAccountNotVerifiedException } from '@/modules/authentication/appl
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import {
-  LoginGoogleCommand,
+  LoginGoogleInputPort,
   LoginGooglePort,
-  LoginGoogleResult
+  LoginGoogleOutputPort
 } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
@@ -27,7 +27,8 @@ export class LoginGoogleUseCase extends LoginGooglePort {
     super();
   }
 
-  async execute({ code }: LoginGoogleCommand): Promise<LoginGoogleResult> {
+  async execute(input: LoginGoogleInputPort): Promise<LoginGoogleOutputPort> {
+    const { code } = input;
     const { email, name, verifiedEmail } = await this.googleOAuthService.getUserInfoFromCode(code);
 
     if (!verifiedEmail || !email) {
@@ -74,6 +75,6 @@ export class LoginGoogleUseCase extends LoginGooglePort {
       { isCreateInDatabase: true }
     );
 
-    return new LoginGoogleResult(authSession);
+    return new LoginGoogleOutputPort(authSession);
   }
 }

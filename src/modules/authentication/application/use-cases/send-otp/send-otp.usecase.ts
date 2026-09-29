@@ -4,7 +4,7 @@ import {
   FailedToSendOtpCodeException
 } from '@/modules/authentication/application/exceptions/auth.exception';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
-import { SendOtpCommand, SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
+import { SendOtpInputPort, SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -21,7 +21,8 @@ export class SendOtpUseCase extends SendOtpPort {
     super();
   }
 
-  async execute({ email, type }: SendOtpCommand): Promise<void> {
+  async execute(input: SendOtpInputPort): Promise<void> {
+    const { email, type } = input;
     // 1. Check email exists in database and check type
     const user = await this.userRepository.findUserByEmail(email);
 

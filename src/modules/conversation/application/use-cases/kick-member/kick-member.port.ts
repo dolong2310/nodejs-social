@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class KickMemberCommand {
+export class KickMemberInputPort {
   userId: string;
   conversationId: string;
   targetUserId: string;
@@ -11,6 +11,6 @@ export class KickMemberCommand {
   }
 }
 
-export abstract class KickMemberPort implements UseCase<KickMemberCommand, void> {
-  abstract execute(command: KickMemberCommand): Promise<void>;
+export abstract class KickMemberPort implements UseCase<KickMemberInputPort, void> {
+  abstract execute(input: KickMemberInputPort): Promise<void>;
 }

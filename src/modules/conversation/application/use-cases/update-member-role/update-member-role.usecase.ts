@@ -5,9 +5,9 @@ import {
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  UpdateMemberRoleCommand,
+  UpdateMemberRoleInputPort,
   UpdateMemberRolePort,
-  UpdateMemberRoleResult
+  UpdateMemberRoleOutputPort
 } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
@@ -32,12 +32,8 @@ export class UpdateMemberRoleUseCase extends UpdateMemberRolePort {
     super();
   }
 
-  async execute({
-    userId,
-    conversationId,
-    targetUserId,
-    role
-  }: UpdateMemberRoleCommand): Promise<UpdateMemberRoleResult> {
+  async execute(input: UpdateMemberRoleInputPort): Promise<UpdateMemberRoleOutputPort> {
+    const { userId, conversationId, targetUserId, role } = input;
     // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();

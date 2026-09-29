@@ -1,7 +1,7 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { LikeFullProps } from '@/modules/post/domain/entities/like.type';
 
-export class CreateLikeCommand {
+export class CreateLikeInputPort {
   userId: string;
   postId: string;
   constructor(payload: { userId: string; postId: string }) {
@@ -10,7 +10,7 @@ export class CreateLikeCommand {
   }
 }
 
-export class CreateLikeResult implements LikeFullProps {
+export class CreateLikeOutputPort implements LikeFullProps {
   id: string;
   userId: string;
   postId: string;
@@ -25,6 +25,6 @@ export class CreateLikeResult implements LikeFullProps {
   }
 }
 
-export abstract class CreateLikePort implements UseCase<CreateLikeCommand, CreateLikeResult> {
-  abstract execute(command: CreateLikeCommand): Promise<CreateLikeResult>;
+export abstract class CreateLikePort implements UseCase<CreateLikeInputPort, CreateLikeOutputPort> {
+  abstract execute(input: CreateLikeInputPort): Promise<CreateLikeOutputPort>;
 }

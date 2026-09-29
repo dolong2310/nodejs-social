@@ -4,7 +4,7 @@ import {
   PostUserInteractionType
 } from '@/modules/post/domain/repositories/post.query.type';
 
-export class GetPostsByUserInteractionQuery {
+export class GetPostsByUserInteractionInputPort {
   userId: string;
   interaction: PostUserInteractionType;
   limit: number;
@@ -18,7 +18,7 @@ export class GetPostsByUserInteractionQuery {
   }
 }
 
-export class GetPostsByUserInteractionResult<T extends PostDetailWithAuthorOutput> {
+export class GetPostsByUserInteractionOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
 
@@ -29,10 +29,10 @@ export class GetPostsByUserInteractionResult<T extends PostDetailWithAuthorOutpu
 }
 
 export abstract class GetPostsByUserInteractionPort implements UseCase<
-  GetPostsByUserInteractionQuery,
-  GetPostsByUserInteractionResult<PostDetailWithAuthorOutput>
+  GetPostsByUserInteractionInputPort,
+  GetPostsByUserInteractionOutputPort<PostDetailWithAuthorOutput>
 > {
   abstract execute<T extends PostDetailWithAuthorOutput>(
-    query: GetPostsByUserInteractionQuery
-  ): Promise<GetPostsByUserInteractionResult<T>>;
+    input: GetPostsByUserInteractionInputPort
+  ): Promise<GetPostsByUserInteractionOutputPort<T>>;
 }

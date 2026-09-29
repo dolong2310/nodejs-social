@@ -7,7 +7,7 @@ import {
   RoutePermissionCatalogPort
 } from '@/modules/operations/application/ports/route-permission-catalog.port';
 import {
-  RolePermissionSyncResult,
+  RolePermissionSyncOutputPort,
   SyncRolePermissionsPort
 } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.port';
 
@@ -36,7 +36,7 @@ export class SyncRolePermissionsUseCase extends SyncRolePermissionsPort {
     super();
   }
 
-  async execute(): Promise<RolePermissionSyncResult> {
+  async execute(): Promise<RolePermissionSyncOutputPort> {
     const availableRoutes = this.routeCatalog.getAvailableRoutes();
     await this.ensureBaseRoles();
     const syncStats = await this.syncPermissions(availableRoutes);

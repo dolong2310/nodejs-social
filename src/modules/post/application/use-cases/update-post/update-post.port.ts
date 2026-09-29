@@ -2,7 +2,7 @@ import { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 
-export class UpdatePostCommand {
+export class UpdatePostInputPort {
   userId: string;
   postId: string;
   audience?: EnumPostAudience;
@@ -32,7 +32,7 @@ export class UpdatePostCommand {
   }
 }
 
-export class UpdatePostResult implements PostFullProps {
+export class UpdatePostOutputPort implements PostFullProps {
   id: string;
   userId: string;
   type: EnumPostType;
@@ -65,6 +65,6 @@ export class UpdatePostResult implements PostFullProps {
   }
 }
 
-export abstract class UpdatePostPort implements UseCase<UpdatePostCommand, UpdatePostResult> {
-  abstract execute(command: UpdatePostCommand): Promise<UpdatePostResult>;
+export abstract class UpdatePostPort implements UseCase<UpdatePostInputPort, UpdatePostOutputPort> {
+  abstract execute(input: UpdatePostInputPort): Promise<UpdatePostOutputPort>;
 }

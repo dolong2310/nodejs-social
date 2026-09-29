@@ -3,8 +3,8 @@ import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/commo
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetPostsByUserPort,
-  GetPostsByUserQuery,
-  GetPostsByUserResult
+  GetPostsByUserInputPort,
+  GetPostsByUserOutputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
@@ -27,13 +27,10 @@ export class GetPostsByUserUseCase extends GetPostsByUserPort {
     super();
   }
 
-  async execute<T extends PostDetailWithAuthorOutput>({
-    targetUserId,
-    currentUserId,
-    type,
-    cursor,
-    limit
-  }: GetPostsByUserQuery): Promise<GetPostsByUserResult<T>> {
+  async execute<T extends PostDetailWithAuthorOutput>(
+    input: GetPostsByUserInputPort
+  ): Promise<GetPostsByUserOutputPort<T>> {
+    const { targetUserId, currentUserId, type, cursor, limit } = input;
     const targetUser = await this.userService.findUserById(targetUserId, { querySafe: true });
     if (!targetUser) {
       throw new UserNotFoundException();
@@ -74,6 +71,6 @@ export class GetPostsByUserUseCase extends GetPostsByUserPort {
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new GetPostsByUserResult({ items: updatedPosts as T[], nextCursor });
+    return new GetPostsByUserOutputPort({ items: updatedPosts as T[], nextCursor });
   }
 }

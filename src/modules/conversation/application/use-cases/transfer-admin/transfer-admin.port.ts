@@ -2,7 +2,7 @@ import { ConversationMemberFullProps } from '@/modules/conversation/domain/entit
 import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class TransferAdminCommand {
+export class TransferAdminInputPort {
   userId: string;
   newAdminUserId: string;
   conversationId: string;
@@ -13,7 +13,7 @@ export class TransferAdminCommand {
   }
 }
 
-export class TransferAdminResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
+export class TransferAdminOutputPort implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -46,6 +46,6 @@ export class TransferAdminResult implements Omit<ConversationFullProps, 'userIdL
   }
 }
 
-export abstract class TransferAdminPort implements UseCase<TransferAdminCommand, TransferAdminResult> {
-  abstract execute(command: TransferAdminCommand): Promise<TransferAdminResult>;
+export abstract class TransferAdminPort implements UseCase<TransferAdminInputPort, TransferAdminOutputPort> {
+  abstract execute(input: TransferAdminInputPort): Promise<TransferAdminOutputPort>;
 }

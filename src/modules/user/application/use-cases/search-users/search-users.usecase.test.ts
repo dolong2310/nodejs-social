@@ -3,7 +3,7 @@ import { encodeCursor } from '@/modules/common/utils/cursor.util';
 import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
-import { SearchUsersQuery } from '@/modules/user/application/use-cases/search-users/search-users.port';
+import { SearchUsersInputPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { makeUserSafeProps } from '@test/support/builders/user.builder';
@@ -26,7 +26,7 @@ const secondUser = makeUserSafeProps({
 
 describe('SearchUsersUseCase', () => {
   it('loads search results through cache and returns a next cursor when more rows exist', async () => {
-    const query = new SearchUsersQuery({
+    const query = new SearchUsersInputPort({
       userId: 'viewer_1',
       query: 'user',
       people: EnumSearchPeople.FRIENDS,

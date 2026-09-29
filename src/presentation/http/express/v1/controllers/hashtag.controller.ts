@@ -1,18 +1,18 @@
 import {
-  CreateHashtagCommand,
+  CreateHashtagInputPort,
   CreateHashtagPort
 } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.port';
 import {
-  DeleteHashtagCommand,
+  DeleteHashtagInputPort,
   DeleteHashtagPort
 } from '@/modules/post/application/use-cases/delete-hashtag/delete-hashtag.port';
-import { GetHashtagPort, GetHashtagQuery } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.port';
+import { GetHashtagPort, GetHashtagInputPort } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.port';
 import {
   ListHashtagsPort,
-  ListHashtagsQuery
+  ListHashtagsInputPort
 } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 import {
-  UpdateHashtagCommand,
+  UpdateHashtagInputPort,
   UpdateHashtagPort
 } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
@@ -63,7 +63,7 @@ export class HashtagController extends BaseController implements IHashtagControl
   async list(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const { items, total } = await this.listHashtagsUC.execute(new ListHashtagsQuery({ page, limit }));
+    const { items, total } = await this.listHashtagsUC.execute(new ListHashtagsInputPort({ page, limit }));
     return this.paginatedResponse({
       data: items,
       pagination: { page, limit, totalItems: total },
@@ -74,14 +74,14 @@ export class HashtagController extends BaseController implements IHashtagControl
   @AutoBind()
   async create(req: ExpressRequest<ParamsDictionary, object, CreateHashtagBodyDTO>): Promise<unknown> {
     const dto = new CreateHashtagBodyDTO(req.body);
-    const item = await this.createHashtagUC.execute(new CreateHashtagCommand({ name: dto.name }));
+    const item = await this.createHashtagUC.execute(new CreateHashtagInputPort({ name: dto.name }));
     return this.response({ instance: Created, data: item, message: 'Hashtag created successfully' });
   }
 
   @AutoBind()
   async getById(req: ExpressRequest<HashtagIdParamsDTO>): Promise<unknown> {
     const { hashtagId } = req.params;
-    const item = await this.getHashtagUC.execute(new GetHashtagQuery(hashtagId));
+    const item = await this.getHashtagUC.execute(new GetHashtagInputPort(hashtagId));
     return this.response({ data: item, message: 'Get hashtag successfully' });
   }
 
@@ -90,7 +90,7 @@ export class HashtagController extends BaseController implements IHashtagControl
     const { hashtagId } = req.params;
     const dto = new UpdateHashtagBodyDTO(req.body);
     const item = await this.updateHashtagUC.execute(
-      new UpdateHashtagCommand({
+      new UpdateHashtagInputPort({
         id: hashtagId,
         name: dto.name
       })
@@ -101,7 +101,7 @@ export class HashtagController extends BaseController implements IHashtagControl
   @AutoBind()
   async remove(req: ExpressRequest<HashtagIdParamsDTO>): Promise<unknown> {
     const { hashtagId } = req.params;
-    await this.deleteHashtagUC.execute(new DeleteHashtagCommand({ id: hashtagId, actorId: this.getUserId(req) }));
+    await this.deleteHashtagUC.execute(new DeleteHashtagInputPort({ id: hashtagId, actorId: this.getUserId(req) }));
     return this.response({ message: 'Hashtag deleted successfully' });
   }
 }

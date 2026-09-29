@@ -1,9 +1,9 @@
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
-  TypingCommand,
+  TypingInputPort,
   TypingPort,
-  TypingResult
+  TypingOutputPort
 } from '@/modules/notification/application/use-cases/realtime/typing/typing.port';
 
 export class TypingUseCase extends TypingPort {
@@ -14,7 +14,8 @@ export class TypingUseCase extends TypingPort {
     super();
   }
 
-  async execute({ userId, conversationId, typing }: TypingCommand): Promise<TypingResult | null> {
+  async execute(input: TypingInputPort): Promise<TypingOutputPort | null> {
+    const { userId, conversationId, typing } = input;
     if (typeof typing !== 'boolean') return null;
     if (!conversationId || !isValidId(conversationId)) return null;
 
@@ -29,6 +30,6 @@ export class TypingUseCase extends TypingPort {
       this.lastEmit.set(key, now);
     }
 
-    return new TypingResult({ conversationId, userId, typing });
+    return new TypingOutputPort({ conversationId, userId, typing });
   }
 }

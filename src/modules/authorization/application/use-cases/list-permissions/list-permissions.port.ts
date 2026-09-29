@@ -1,7 +1,7 @@
 import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
-export class ListPermissionsQuery {
+export class ListPermissionsInputPort {
   page: number;
   limit: number;
   constructor(payload: { page: number; limit: number }) {
@@ -31,7 +31,7 @@ export class PermissionListItem implements PermissionFullProps {
   }
 }
 
-export class ListPermissionsResult {
+export class ListPermissionsOutputPort {
   items: PermissionListItem[];
   total: number;
   constructor(payload: { items: PermissionListItem[]; total: number }) {
@@ -40,6 +40,6 @@ export class ListPermissionsResult {
   }
 }
 
-export abstract class ListPermissionsPort implements UseCase<ListPermissionsQuery, ListPermissionsResult> {
-  abstract execute(query: ListPermissionsQuery): Promise<ListPermissionsResult>;
+export abstract class ListPermissionsPort implements UseCase<ListPermissionsInputPort, ListPermissionsOutputPort> {
+  abstract execute(input: ListPermissionsInputPort): Promise<ListPermissionsOutputPort>;
 }

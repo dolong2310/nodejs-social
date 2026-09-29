@@ -1,6 +1,6 @@
 import { RoleNameAlreadyExistsException } from '@/modules/authorization/application/exceptions/role.exception';
 import {
-  CreateRoleCommand,
+  CreateRoleInputPort,
   CreateRolePort
 } from '@/modules/authorization/application/use-cases/create-role/create-role.port';
 import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
@@ -11,16 +11,16 @@ export class CreateRoleUseCase extends CreateRolePort {
     super();
   }
 
-  async execute(command: CreateRoleCommand) {
-    const duplicate = await this.roleRepository.findRoleByName(command.name);
+  async execute(input: CreateRoleInputPort) {
+    const duplicate = await this.roleRepository.findRoleByName(input.name);
     if (duplicate) {
       throw new RoleNameAlreadyExistsException();
     }
     const entity = await this.roleRepository.insertRole({
-      name: command.name,
-      description: command.description ?? '',
-      isActive: command.isActive ?? true,
-      permissionIds: command.permissionIds ?? []
+      name: input.name,
+      description: input.description ?? '',
+      isActive: input.isActive ?? true,
+      permissionIds: input.permissionIds ?? []
     });
     return new RoleListItem(entity.toObject());
   }
