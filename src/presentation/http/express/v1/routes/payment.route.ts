@@ -32,13 +32,13 @@ export class PaymentRoute extends BaseRoute {
     const interceptors = [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor];
 
     this.router.post(
-      '/examples',
+      '/',
       this.createRouteHandler({
         middlewares: [throttler],
         guards,
         interceptors,
-        pipes: [this.paymentPipe.createExampleBody, this.paymentPipe.idempotencyKeyHeader],
-        controller: this.paymentController.createExample
+        pipes: [this.paymentPipe.createPaymentPipe, this.paymentPipe.idempotencyKeyHeader],
+        controller: this.paymentController.create
       })
     );
 

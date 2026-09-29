@@ -1,6 +1,6 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentCheckoutError, PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
-import { PaymentRecord, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
 import { Momo } from '@longdoo/node-payment-gateway';
 import type { ReturnQueryFromMomo } from '@longdoo/node-payment-gateway/momo';
 
@@ -42,19 +42,19 @@ export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
     this.redirectUrl = new URL(MOMO_CALLBACK_RETURN_PATH, config.paymentPublicBaseUrl).toString();
   }
 
-  async createCheckout(record: PaymentRecord, clientIp: string): Promise<string> {
+  async createCheckout(payment: PaymentCheckoutProps, clientIp: string): Promise<string> {
     void clientIp;
-    if (record.provider !== 'momo') throw new Error('MoMo adapter cannot create a checkout for another provider');
+    if (payment.provider !== 'momo') throw new Error('MoMo adapter cannot create a checkout for another provider');
 
     let timeoutId: NodeJS.Timeout | undefined;
     try {
       const sdkRequest = this.client.buildPaymentUrl({
         requestType: Momo.RequestType.CAPTURE_WALLET,
         autoCapture: true,
-        amount: record.amountVnd,
-        orderId: record.providerOrderId,
-        requestId: record.providerRequestId,
-        orderInfo: `${record.description} ${record.providerOrderId}`,
+        amount: payment.amountVnd,
+        orderId: payment.providerOrderId,
+        requestId: payment.providerRequestId,
+        orderInfo: `${payment.description} ${payment.providerOrderId}`,
         redirectUrl: this.redirectUrl,
         ipnUrl: this.ipnUrl,
         extraData: '',

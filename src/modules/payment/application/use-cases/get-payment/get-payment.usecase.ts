@@ -3,7 +3,8 @@ import {
   GetPaymentCommand,
   GetPaymentPort
 } from '@/modules/payment/application/use-cases/get-payment/get-payment.port';
-import { PaymentRecord } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import { PaymentFullProps, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.type';
 import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
 export class GetPaymentUseCase extends GetPaymentPort {
@@ -11,9 +12,26 @@ export class GetPaymentUseCase extends GetPaymentPort {
     super();
   }
 
-  async execute({ userId, paymentId }: GetPaymentCommand): Promise<PaymentRecord> {
-    const payment = await this.paymentRepository.findById(paymentId);
-    if (!payment || payment.userId !== userId) throw new NotFoundException('Payment not found');
-    return payment;
+  async execute({ userId, paymentId }: GetPaymentCommand): Promise<PaymentSafeProps> {
+    const payment = await this.paymentRepository.findPaymentById(paymentId);
+    if (!payment || payment.getProps().userId !== userId) throw new NotFoundException('Payment not found');
+    return this.toSafeProps(payment);
+  }
+
+  private toSafeProps(payment: PaymentEntity): PaymentSafeProps {
+    const props = payment.toObject<PaymentFullProps>();
+    return {
+      id: props.id,
+      sourceReference: props.sourceReference,
+      description: props.description,
+      amountVnd: props.amountVnd,
+      currency: props.currency,
+      provider: props.provider,
+      status: props.status,
+      checkoutUrl: props.checkoutUrl,
+      expiresAt: props.expiresAt,
+      createdAt: props.createdAt,
+      updatedAt: props.updatedAt
+    };
   }
 }

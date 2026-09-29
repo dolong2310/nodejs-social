@@ -1,4 +1,4 @@
-import { PaymentRecord } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentSafeProps } from '@/modules/payment/domain/entities/payment.type';
 
 export class PaymentResponseDTO {
   paymentId: string;
@@ -6,14 +6,14 @@ export class PaymentResponseDTO {
   description: string;
   amountVnd: number;
   currency: 'VND';
-  provider: PaymentRecord['provider'];
-  status: PaymentRecord['status'];
+  provider: PaymentSafeProps['provider'];
+  status: PaymentSafeProps['status'];
   checkoutUrl: string | null;
   expiresAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(payment: PaymentRecord) {
+  constructor(payment: PaymentSafeProps) {
     this.paymentId = payment.id;
     this.sourceReference = payment.sourceReference;
     this.description = payment.description;

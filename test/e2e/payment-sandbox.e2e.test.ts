@@ -61,7 +61,7 @@ Object.assign(process.env, {
   MOMO_SECRET_KEY: 'momo-test-secret-key',
   MOMO_STORE_ID: 'MomoTestStore',
   MOMO_STORE_NAME: 'Social Test Store',
-  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.example'
+  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test'
 });
 
 const [{ buildPaymentModule }, { createPaymentConfig }, { HttpRoutePermissionCatalog }] = await Promise.all([
@@ -78,7 +78,7 @@ const paymentConfigValues = {
   MOMO_SECRET_KEY: 'momo-test-secret-key',
   MOMO_STORE_ID: 'MomoTestStore',
   MOMO_STORE_NAME: 'Social Test Store',
-  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.example'
+  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test'
 };
 
 afterEach(() => vi.useRealTimers());
@@ -127,7 +127,7 @@ describe('payment bootstrap wiring', () => {
       .getAvailableRoutes()
       .map((route) => `${route.method} ${route.path}`);
 
-    expect(paths).toContain('POST /api/v1/payments/examples');
+    expect(paths).toContain('POST /api/v1/payments');
     expect(paths).toContain('GET /api/v1/payments/:paymentId');
   });
 });

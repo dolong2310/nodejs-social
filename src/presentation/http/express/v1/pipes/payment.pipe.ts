@@ -4,13 +4,13 @@ import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 
 export interface IPaymentPipe {
-  createExampleBody: ExpressRequestHandler;
+  createPaymentPipe: ExpressRequestHandler;
   idempotencyKeyHeader: ExpressRequestHandler;
   paymentIdParam: ExpressRequestHandler;
 }
 
 export class PaymentsPipe implements IPaymentPipe {
-  createExampleBody = validate(
+  createPaymentPipe = validate(
     checkSchema(
       {
         provider: {

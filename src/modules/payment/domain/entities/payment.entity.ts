@@ -4,22 +4,20 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { PaymentProvider, PaymentRecord, PaymentStatus } from '@/modules/payment/domain/entities/payment.type';
+import {
+  PAYMENT_PROVIDERS,
+  PAYMENT_STATUSES,
+  CreatePaymentProps,
+  PaymentProvider,
+  PaymentProps,
+  PaymentStatus
+} from '@/modules/payment/domain/entities/payment.type';
 
-const EXAMPLE_AMOUNT_VND = 10_000;
+const ORDER_AMOUNT_VND = 10_000;
 const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;
 
-type PaymentEntityProps = Omit<PaymentRecord, 'id' | 'createdAt' | 'updatedAt'>;
-
-interface CreateExamplePaymentInput {
-  userId: string;
-  provider: PaymentProvider;
-  idempotencyKey: string;
-  now?: Date;
-}
-
 export function createPaymentRequestFingerprint(provider: PaymentProvider): string {
-  const request = JSON.stringify({ sourceType: 'example', provider, amountVnd: EXAMPLE_AMOUNT_VND });
+  const request = JSON.stringify({ sourceType: 'order', provider, amountVnd: ORDER_AMOUNT_VND });
   return createHash('sha256').update(request).digest('hex');
 }
 
@@ -38,8 +36,8 @@ function isProviderOutcome(status: PaymentStatus): boolean {
   return status === 'pending' || status === 'succeeded' || status === 'failed' || status === 'cancelled';
 }
 
-export class PaymentEntity extends Entity<PaymentEntityProps> {
-  static createExample(input: CreateExamplePaymentInput): PaymentEntity {
+export class PaymentEntity extends Entity<PaymentProps> {
+  static create(input: CreatePaymentProps): PaymentEntity {
     const now = input.now ?? new Date();
     const entity = new PaymentEntity({
       id: new UniqueEntityID(generatePrefixId('p')),
@@ -47,10 +45,10 @@ export class PaymentEntity extends Entity<PaymentEntityProps> {
       updatedAt: now,
       props: {
         userId: input.userId,
-        sourceType: 'example',
-        sourceReference: generatePrefixId('example'),
-        description: 'Example order',
-        amountVnd: EXAMPLE_AMOUNT_VND,
+        sourceType: 'order',
+        sourceReference: generatePrefixId('order'),
+        description: 'Order payment',
+        amountVnd: ORDER_AMOUNT_VND,
         currency: 'VND',
         provider: input.provider,
         providerOrderId: generatePrefixId('po'),
@@ -100,15 +98,12 @@ export class PaymentEntity extends Entity<PaymentEntityProps> {
       new ArgumentInvalidException('Payment amount must be a positive integer')
     );
     invariant(payment.currency === 'VND', new ArgumentInvalidException('Payment currency must be VND'));
-    invariant(payment.sourceType === 'example', new ArgumentInvalidException('Unsupported payment source type'));
+    invariant(payment.sourceType === 'order', new ArgumentInvalidException('Unsupported payment source type'));
     invariant(
-      ['vnpay', 'momo'].includes(payment.provider),
+      PAYMENT_PROVIDERS.includes(payment.provider),
       new ArgumentInvalidException('Unsupported payment provider')
     );
-    invariant(
-      ['creating', 'pending', 'unknown', 'create_failed', 'succeeded', 'failed', 'cancelled'].includes(payment.status),
-      new ArgumentInvalidException('Invalid payment status')
-    );
+    invariant(PAYMENT_STATUSES.includes(payment.status), new ArgumentInvalidException('Invalid payment status'));
     invariant(
       payment.provider !== 'vnpay' || payment.expiresAt instanceof Date,
       new ArgumentNotProvidedException('VNPay expiry is required')

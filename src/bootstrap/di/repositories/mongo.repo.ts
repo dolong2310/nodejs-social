@@ -21,7 +21,8 @@ import { VideoStatusRepository } from '@/modules/media/infrastructure/persistenc
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/mongo/notification.impl.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/mongo/notification.mapper';
-import { MongoPaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
+import { PaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
+import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
 import { BookmarkRepository } from '@/modules/post/infrastructure/persistence/mongo/bookmark.impl.repository';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/mongo/bookmark.mapper';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository';
@@ -68,6 +69,7 @@ export function createMongoContainerRepositories(
   const otpMapper = new OtpMapper();
   const roleMapper = new RoleMapper();
   const permissionMapper = new PermissionMapper();
+  const paymentMapper = new PaymentMapper();
 
   const repositories = {
     userRepository: new UserRepository(db, dbClient, userMapper, logger),
@@ -93,7 +95,7 @@ export function createMongoContainerRepositories(
     otpRepository: new OtpRepository(db, dbClient, otpMapper, logger),
     roleRepository: new RoleRepository(db, dbClient, roleMapper, logger),
     permissionRepository: new PermissionRepository(db, dbClient, permissionMapper, logger),
-    paymentRepository: new MongoPaymentRepository(db)
+    paymentRepository: new PaymentRepository(db, dbClient, paymentMapper, logger)
   };
 
   const queryRepositories = {

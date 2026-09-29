@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { PaymentRecord } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentSafeProps } from '@/modules/payment/domain/entities/payment.type';
 
 export interface GetPaymentProps {
   userId: string;
@@ -16,6 +16,6 @@ export class GetPaymentCommand implements GetPaymentProps {
   }
 }
 
-export abstract class GetPaymentPort implements UseCase<GetPaymentCommand, PaymentRecord> {
-  abstract execute(command: GetPaymentCommand): Promise<PaymentRecord>;
+export abstract class GetPaymentPort implements UseCase<GetPaymentCommand, PaymentSafeProps> {
+  abstract execute(command: GetPaymentCommand): Promise<PaymentSafeProps>;
 }

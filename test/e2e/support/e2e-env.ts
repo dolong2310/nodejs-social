@@ -41,7 +41,7 @@ const defaults: Record<string, string> = {
   MOMO_SECRET_KEY: 'momo-test-secret-key',
   MOMO_STORE_ID: 'MomoTestStore',
   MOMO_STORE_NAME: 'Social Test Store',
-  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.example',
+  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test',
   RATE_LIMIT_ENABLED: '0',
   RATE_LIMIT_WINDOW_MS: '900000',
   RATE_LIMIT_MAX: '1000'

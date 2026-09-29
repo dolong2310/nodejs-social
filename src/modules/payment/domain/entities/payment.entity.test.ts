@@ -3,12 +3,20 @@ import { PaymentEntity, canTransitionPaymentStatus } from '@/modules/payment/dom
 import { PaymentProvider } from '@/modules/payment/domain/entities/payment.type';
 
 describe('PaymentEntity', () => {
-  it('creates a server-priced VNPay example with a future expiry and unique references', () => {
-    const first = PaymentEntity.createExample({ userId: 'u_user', provider: 'vnpay', idempotencyKey: 'key-1' }).toObject();
-    const second = PaymentEntity.createExample({ userId: 'u_user', provider: 'vnpay', idempotencyKey: 'key-2' }).toObject();
+  it('creates a server-priced VNPay order with a future expiry and unique references', () => {
+    const first = PaymentEntity.create({ userId: 'u_user', provider: 'vnpay', idempotencyKey: 'key-1' }).toObject();
+    const second = PaymentEntity.create({ userId: 'u_user', provider: 'vnpay', idempotencyKey: 'key-2' }).toObject();
 
-    expect(first).toMatchObject({ amountVnd: 10_000, currency: 'VND', status: 'creating', userId: 'u_user' });
+    expect(first).toMatchObject({
+      amountVnd: 10_000,
+      currency: 'VND',
+      status: 'creating',
+      userId: 'u_user',
+      sourceType: 'order',
+      description: 'Order payment'
+    });
     expect(first.id).toMatch(/^p_[0-9a-f-]{36}$/i);
+    expect(first.sourceReference).toMatch(/^order_[0-9a-f-]{36}$/i);
     expect(first.sourceReference).not.toBe(second.sourceReference);
     expect(first.providerOrderId).not.toBe(second.providerOrderId);
     expect(first.providerRequestId).not.toBe(second.providerRequestId);
@@ -16,8 +24,8 @@ describe('PaymentEntity', () => {
     expect(first.expiresAt!.getTime()).toBeGreaterThan(Date.now());
   });
 
-  it('creates a MoMo example without inventing a provider expiry', () => {
-    const payment = PaymentEntity.createExample({ userId: 'u_user', provider: 'momo', idempotencyKey: 'key-1' }).toObject();
+  it('creates a MoMo order without inventing a provider expiry', () => {
+    const payment = PaymentEntity.create({ userId: 'u_user', provider: 'momo', idempotencyKey: 'key-1' }).toObject();
 
     expect(payment.expiresAt).toBeNull();
   });
@@ -27,7 +35,7 @@ describe('PaymentEntity', () => {
     { userId: 'u_user', provider: 'vnpay' as PaymentProvider, idempotencyKey: ' ' },
     { userId: 'u_user', provider: 'unknown' as PaymentProvider, idempotencyKey: 'key-1' }
   ])('rejects invalid creation input %#', (input) => {
-    expect(() => PaymentEntity.createExample(input)).toThrow();
+    expect(() => PaymentEntity.create(input)).toThrow();
   });
 
   it('prevents a terminal success from transitioning to payment failure', () => {

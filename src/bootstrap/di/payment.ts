@@ -1,5 +1,5 @@
 import type { PaymentConfig } from '@/bootstrap/config/payment.config';
-import { CreateExamplePaymentUseCase } from '@/modules/payment/application/use-cases/create-example-payment/create-example-payment.usecase';
+import { CreatePaymentUseCase } from '@/modules/payment/application/use-cases/create-payment/create-payment.usecase';
 import { GetPaymentUseCase } from '@/modules/payment/application/use-cases/get-payment/get-payment.usecase';
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
 import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
@@ -43,10 +43,10 @@ export function buildPaymentModule(dependencies: PaymentModuleDependencies): Bas
       paymentPublicBaseUrl: dependencies.paymentConfig.paymentPublicBaseUrl
     })
   };
-  const createExamplePayment = new CreateExamplePaymentUseCase(dependencies.paymentRepository, gateways);
-  const getPayment = new GetPaymentUseCase(dependencies.paymentRepository);
+  const createPaymentUC = new CreatePaymentUseCase(dependencies.paymentRepository, gateways);
+  const getPaymentUC = new GetPaymentUseCase(dependencies.paymentRepository);
   const handlePaymentNotification = new HandlePaymentNotificationUseCase(dependencies.paymentRepository, gateways);
-  const paymentController = new PaymentController(createExamplePayment, getPayment);
+  const paymentController = new PaymentController(createPaymentUC, getPaymentUC);
   const paymentCallbackController = new PaymentCallbackController(handlePaymentNotification);
   const paymentTimeoutInterceptor = new TimeoutInterceptor({ timeoutMs: PAYMENT_HTTP_TIMEOUT_MS });
 

@@ -105,7 +105,7 @@ Các module chính:
 - `notification`: notification listing, read state, realtime presence và cleanup
 - `media`: image upload, video upload, stream status và static video streaming
 - `operations`: internal admin/maintenance actions như cache clearing và permission sync
-- `payment`: thanh toán example order; use cases phụ thuộc repository/gateway ports, adapter riêng cho MongoDB, PostgreSQL, VNPay và MoMo
+- `payment`: thanh toán order; use cases phụ thuộc repository/gateway ports, adapter riêng cho MongoDB, PostgreSQL, VNPay và MoMo
 - `core`: shared DDD primitives, base use-case contracts, repository bases và app-wide ports
 
 ## Bắt đầu
@@ -164,10 +164,10 @@ Payment routes được mount ở mọi app environment. VNPay và MoMo luôn đ
 
 Điền các biến payment trong `.env.development` bằng sandbox merchant credentials bạn đang dùng trong `nestjs-ecommerce`. Không đưa merchant secrets vào Postman collection hoặc git. `VNPAY_HOST` phải là `https://sandbox.vnpayment.vn`. `PAYMENT_PUBLIC_BASE_URL` phải là HTTPS origin có thể truy cập từ Internet, ví dụ domain HTTPS do tunnel cấp; server local không thể nhận callback từ provider nếu không được expose.
 
-API tạo một example order cố định 10.000 VND:
+API tạo một order thanh toán sandbox cố định 10.000 VND:
 
 ```http
-POST /api/v1/payments/examples
+POST /api/v1/payments
 Authorization: Bearer <access-token>
 Idempotency-Key: <unique-key>
 Content-Type: application/json

@@ -1,4 +1,5 @@
-import { PaymentProvider, PaymentRecord, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
 
 export type ApplyVerifiedOutcomeResult =
   | 'applied'
@@ -9,11 +10,11 @@ export type ApplyVerifiedOutcomeResult =
   | 'state_conflict';
 
 export interface PaymentRepositoryPort {
-  insertOrFindByIdempotency(record: PaymentRecord): Promise<{ record: PaymentRecord; inserted: boolean }>;
-  findById(id: string): Promise<PaymentRecord | null>;
-  findByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentRecord | null>;
-  attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentRecord>;
-  setUnknownIfCreating(id: string): Promise<PaymentRecord>;
-  setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentRecord>;
+  insertOrFindByIdempotency(payment: PaymentEntity): Promise<{ payment: PaymentEntity; inserted: boolean }>;
+  findPaymentById(id: string): Promise<PaymentEntity | null>;
+  findPaymentByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentEntity | null>;
+  attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity>;
+  setUnknownIfCreating(id: string): Promise<PaymentEntity>;
+  setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity>;
   applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult>;
 }

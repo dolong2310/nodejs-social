@@ -20,7 +20,7 @@ tags:
   - name: notifications
     description: In-app notifications with cursor listing and read-state updates.
   - name: payments
-    description: Example-order payments through VNPay and MoMo sandbox. All configured app environments remain sandbox-only.
+    description: Fixed order payments through VNPay and MoMo sandbox. All configured app environments remain sandbox-only.
   - name: roles
     description: System roles (ADMIN, USER). Admin-only list and permissionId management.
   - name: permissions

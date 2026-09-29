@@ -1,6 +1,6 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
-import { PaymentRecord, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
 import { VNPay } from '@longdoo/node-payment-gateway';
 import type { ReturnQueryFromVNPay } from '@longdoo/node-payment-gateway/vnpay';
 
@@ -30,20 +30,20 @@ export class VnpayPaymentGatewayAdapter implements PaymentGatewayPort {
     this.returnUrl = new URL(VNPAY_CALLBACK_RETURN_PATH, config.paymentPublicBaseUrl).toString();
   }
 
-  async createCheckout(record: PaymentRecord, clientIp: string): Promise<string> {
-    if (record.provider !== 'vnpay') throw new Error('VNPay adapter cannot create a checkout for another provider');
-    if (!record.expiresAt) throw new Error('VNPay payment expiry is required');
+  async createCheckout(payment: PaymentCheckoutProps, clientIp: string): Promise<string> {
+    if (payment.provider !== 'vnpay') throw new Error('VNPay adapter cannot create a checkout for another provider');
+    if (!payment.expiresAt) throw new Error('VNPay payment expiry is required');
 
     return this.client.buildPaymentUrl({
-      vnp_Amount: record.amountVnd,
+      vnp_Amount: payment.amountVnd,
       vnp_IpAddr: clientIp,
-      vnp_TxnRef: record.providerOrderId,
-      vnp_OrderInfo: `${record.description} ${record.providerOrderId}`,
+      vnp_TxnRef: payment.providerOrderId,
+      vnp_OrderInfo: `${payment.description} ${payment.providerOrderId}`,
       vnp_OrderType: VNPay.ProductCode.Other,
       vnp_ReturnUrl: this.returnUrl,
       vnp_Locale: VNPay.VnpLocale.VN,
-      vnp_CreateDate: VNPay.dateFormat(record.createdAt),
-      vnp_ExpireDate: VNPay.dateFormat(record.expiresAt)
+      vnp_CreateDate: VNPay.dateFormat(payment.createdAt),
+      vnp_ExpireDate: VNPay.dateFormat(payment.expiresAt)
     });
   }
 

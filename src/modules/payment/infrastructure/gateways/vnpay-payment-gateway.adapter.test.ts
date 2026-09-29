@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentRecord } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.type';
 import { VNPay } from '@longdoo/node-payment-gateway';
 import type { ReturnQueryFromVNPay } from '@longdoo/node-payment-gateway/vnpay';
 import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
@@ -20,13 +20,22 @@ function createAdapter(overrides: Partial<{ tmnCode: string; secureSecret: strin
   });
 }
 
-function createRecord(): PaymentRecord {
-  return PaymentEntity.createExample({
+function createPayment(): PaymentCheckoutProps {
+  const payment = PaymentEntity.create({
     userId: 'u_payment_test',
     provider: 'vnpay',
     idempotencyKey: 'vnpay-adapter-key',
     now: new Date('2026-09-25T00:00:00.000Z')
-  }).toObject() as PaymentRecord;
+  }).toObject<PaymentFullProps>();
+  return {
+    provider: payment.provider,
+    description: payment.description,
+    amountVnd: payment.amountVnd,
+    providerOrderId: payment.providerOrderId,
+    providerRequestId: payment.providerRequestId,
+    createdAt: payment.createdAt,
+    expiresAt: payment.expiresAt
+  };
 }
 
 function signIpn(overrides: Record<string, string> = {}, merchantCode = tmnCode): ReturnQueryFromVNPay {
@@ -57,9 +66,9 @@ function signIpn(overrides: Record<string, string> = {}, merchantCode = tmnCode)
 describe('VnpayPaymentGatewayAdapter', () => {
   it('builds a sandbox URL with the provider-scaled VND amount and required GMT+7 expiry', async () => {
     const adapter = createAdapter({ vnpayHost: 'https://payment.vnpay.vn' });
-    const record = createRecord();
+    const payment = createPayment();
 
-    const checkoutUrl = await adapter.createCheckout(record, '203.0.113.10');
+    const checkoutUrl = await adapter.createCheckout(payment, '203.0.113.10');
     const url = new URL(checkoutUrl);
     const query = Object.fromEntries(url.searchParams) as unknown as ReturnQueryFromVNPay;
     const verified = new VNPay.VNPay({ tmnCode, secureSecret, testMode: true, enableLog: false }).verifyReturnUrl(
@@ -68,7 +77,7 @@ describe('VnpayPaymentGatewayAdapter', () => {
 
     expect(url.origin).toBe('https://sandbox.vnpayment.vn');
     expect(url.searchParams.get('vnp_Amount')).toBe('1000000');
-    expect(url.searchParams.get('vnp_TxnRef')).toBe(record.providerOrderId);
+    expect(url.searchParams.get('vnp_TxnRef')).toBe(payment.providerOrderId);
     expect(url.searchParams.get('vnp_IpAddr')).toBe('203.0.113.10');
     expect(url.searchParams.get('vnp_ExpireDate')).toBe('20260925071500');
     expect(url.searchParams.get('vnp_ReturnUrl')).toBe('https://social.example/api/v1/payments/callbacks/vnpay/return');

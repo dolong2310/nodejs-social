@@ -21,7 +21,8 @@ import { VideoStatusRepository } from '@/modules/media/infrastructure/persistenc
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/postgres/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/postgres/notification.impl.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/postgres/notification.mapper';
-import { PostgresPaymentRepository } from '@/modules/payment/infrastructure/persistence/postgres/payment.impl.repository';
+import { PaymentRepository } from '@/modules/payment/infrastructure/persistence/postgres/payment.impl.repository';
+import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
 import { BookmarkRepository } from '@/modules/post/infrastructure/persistence/postgres/bookmark.impl.repository';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/postgres/bookmark.mapper';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
@@ -66,6 +67,7 @@ export function createPostgresContainerRepositories(
   const conversationMemberMapper = new ConversationMemberMapper();
   const chatMessageMapper = new ChatMessageMapper();
   const videoStatusMapper = new VideoStatusMapper();
+  const paymentMapper = new PaymentMapper();
 
   const repositories = {
     userRepository: new UserRepository(pool, userMapper, logger),
@@ -85,7 +87,7 @@ export function createPostgresContainerRepositories(
     conversationMemberRepository: new ConversationMemberRepository(pool, conversationMemberMapper, logger),
     chatMessageRepository: new ChatMessageRepository(pool, chatMessageMapper, logger),
     videoStatusRepository: new VideoStatusRepository(pool, videoStatusMapper, logger),
-    paymentRepository: new PostgresPaymentRepository(pool)
+    paymentRepository: new PaymentRepository(pool, paymentMapper, logger)
   };
 
   const queryRepositories = {

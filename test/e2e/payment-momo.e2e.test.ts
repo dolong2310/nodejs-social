@@ -1,10 +1,12 @@
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
+import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import type {
   PaymentProvider,
-  PaymentRecord,
+  PaymentFullProps,
+  PaymentProps,
   VerifiedNotification
 } from '@/modules/payment/domain/entities/payment.type';
 import type {
@@ -28,11 +30,11 @@ describe('MoMo payment HTTP e2e', () => {
 
     const first = await request(fixture.app).post('/api/v1/payments/callbacks/momo/ipn').send(payload).expect(204);
     expect(first.text).toBe('');
-    expect((await fixture.repository.findById(fixture.payment.id))?.status).toBe('succeeded');
+    expect((await fixture.repository.findPaymentById(fixture.payment.id))?.getProps().status).toBe('succeeded');
 
     const duplicate = await request(fixture.app).post('/api/v1/payments/callbacks/momo/ipn').send(payload).expect(204);
     expect(duplicate.text).toBe('');
-    expect((await fixture.repository.findById(fixture.payment.id))?.status).toBe('succeeded');
+    expect((await fixture.repository.findPaymentById(fixture.payment.id))?.getProps().status).toBe('succeeded');
   });
 
   it('does not acknowledge invalid signature, wrong partner, amount or request reference', async () => {
@@ -57,7 +59,7 @@ describe('MoMo payment HTTP e2e', () => {
       .send(signIpn(fixture.payment, { requestId: 'another-request' }))
       .expect(400);
 
-    expect((await fixture.repository.findById(fixture.payment.id))?.status).toBe('pending');
+    expect((await fixture.repository.findPaymentById(fixture.payment.id))?.getProps().status).toBe('pending');
   });
 
   it('does not acknowledge storage or state conflicts', async () => {
@@ -73,18 +75,18 @@ describe('MoMo payment HTTP e2e', () => {
   it('keeps the MoMo return endpoint read-only', async () => {
     const fixture = createFixture();
     await request(fixture.app).get('/api/v1/payments/callbacks/momo/return').expect(200);
-    expect((await fixture.repository.findById(fixture.payment.id))?.status).toBe('pending');
+    expect((await fixture.repository.findPaymentById(fixture.payment.id))?.getProps().status).toBe('pending');
   });
 });
 
 function createFixture() {
   const repository = new InMemoryPaymentRepository();
-  const payment = PaymentEntity.createExample({
+  const payment = PaymentEntity.create({
     userId: 'u_momo_test',
     provider: 'momo',
     idempotencyKey: 'momo-http-e2e',
     now: new Date('2026-09-25T00:00:00.000Z')
-  }).toObject() as PaymentRecord;
+  }).toObject<PaymentFullProps>();
   repository.addRecord(payment);
 
   const momo = new MomoPaymentGatewayAdapter({
@@ -93,7 +95,7 @@ function createFixture() {
     secretKey,
     storeId: 'MomoTestStore',
     storeName: 'Social Test Store',
-    paymentPublicBaseUrl: 'https://social.example'
+    paymentPublicBaseUrl: 'https://social.test'
   });
   const vnpay = {
     createCheckout: async () => '',
@@ -112,7 +114,7 @@ function createFixture() {
 }
 
 function signIpn(
-  payment: PaymentRecord,
+  payment: PaymentFullProps,
   overrides: Partial<Record<'amount' | 'partnerCode' | 'requestId', string | number>> = {}
 ) {
   const payload = {
@@ -149,49 +151,55 @@ function signIpn(
 }
 
 class InMemoryPaymentRepository implements PaymentRepositoryPort {
-  private readonly records = new Map<string, PaymentRecord>();
+  private readonly records = new Map<string, PaymentFullProps>();
   failApply = false;
   returnStateConflict = false;
 
-  addRecord(payment: PaymentRecord): void {
+  addRecord(payment: PaymentFullProps): void {
     this.records.set(payment.id, { ...payment, status: 'pending' });
   }
 
-  async insertOrFindByIdempotency(record: PaymentRecord) {
+  async insertOrFindByIdempotency(payment: PaymentEntity) {
+    const record = payment.toObject<PaymentFullProps>();
     const existing = [...this.records.values()].find(
       (candidate) => candidate.userId === record.userId && candidate.idempotencyKey === record.idempotencyKey
     );
-    if (existing) return { record: existing, inserted: false };
+    if (existing) return { payment: this.toEntity(existing), inserted: false };
     this.records.set(record.id, record);
-    return { record, inserted: true };
+    return { payment: this.toEntity(record), inserted: true };
   }
 
-  async findById(id: string): Promise<PaymentRecord | null> {
-    return this.records.get(id) ?? null;
+  async findPaymentById(id: string): Promise<PaymentEntity | null> {
+    const payment = this.records.get(id);
+    return payment ? this.toEntity(payment) : null;
   }
 
-  async findByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentRecord | null> {
-    return (
-      [...this.records.values()].find((record) => record.provider === provider && record.providerOrderId === orderId) ??
-      null
+  async findPaymentByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentEntity | null> {
+    const payment = [...this.records.values()].find(
+      (record) => record.provider === provider && record.providerOrderId === orderId
     );
+    return payment ? this.toEntity(payment) : null;
   }
 
-  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentRecord> {
+  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity> {
     const record = this.requireRecord(id);
-    const updated = { ...record, checkoutUrl: url, status: record.status === 'creating' ? 'pending' : record.status };
+    const updated: PaymentFullProps = {
+      ...record,
+      checkoutUrl: url,
+      status: record.status === 'creating' ? 'pending' : record.status
+    };
     this.records.set(id, updated);
-    return updated;
+    return this.toEntity(updated);
   }
 
-  async setUnknownIfCreating(id: string): Promise<PaymentRecord> {
+  async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
     const record = this.requireRecord(id);
-    const updated = { ...record, status: record.status === 'creating' ? 'unknown' : record.status };
+    const updated: PaymentFullProps = { ...record, status: record.status === 'creating' ? 'unknown' : record.status };
     this.records.set(id, updated);
-    return updated;
+    return this.toEntity(updated);
   }
 
-  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentRecord> {
+  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity> {
     const record = this.requireRecord(id);
     const updated = {
       ...record,
@@ -199,21 +207,22 @@ class InMemoryPaymentRepository implements PaymentRepositoryPort {
       providerResultCode: record.status === 'creating' ? resultCode : record.providerResultCode
     };
     this.records.set(id, updated);
-    return updated;
+    return this.toEntity(updated);
   }
 
   async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
     if (this.failApply) throw new Error('database unavailable');
     if (this.returnStateConflict) return 'state_conflict';
-    const record = await this.findByProviderOrderId(input.provider, input.providerOrderId);
+    const record = await this.findPaymentByProviderOrderId(input.provider, input.providerOrderId);
     if (!record) return 'not_found';
-    if (record.amountVnd !== input.amountVnd) return 'amount_mismatch';
-    if (record.providerRequestId !== input.providerRequestId) return 'reference_mismatch';
-    if (record.status === input.outcome && record.providerTransactionId === input.providerTransactionId)
+    const props = record.getProps();
+    if (props.amountVnd !== input.amountVnd) return 'amount_mismatch';
+    if (props.providerRequestId !== input.providerRequestId) return 'reference_mismatch';
+    if (props.status === input.outcome && props.providerTransactionId === input.providerTransactionId)
       return 'duplicate';
-    if (['succeeded', 'failed', 'cancelled'].includes(record.status)) return 'state_conflict';
-    this.records.set(record.id, {
-      ...record,
+    if (['succeeded', 'failed', 'cancelled'].includes(props.status)) return 'state_conflict';
+    this.records.set(record.id.toString(), {
+      ...record.toObject<PaymentFullProps>(),
       status: input.outcome,
       providerTransactionId: input.providerTransactionId,
       providerResultCode: input.resultCode
@@ -221,9 +230,23 @@ class InMemoryPaymentRepository implements PaymentRepositoryPort {
     return 'applied';
   }
 
-  private requireRecord(id: string): PaymentRecord {
+  private requireRecord(id: string): PaymentFullProps {
     const record = this.records.get(id);
     if (!record) throw new Error(`Missing test payment ${id}`);
     return record;
+  }
+
+  private toEntity(payment: PaymentFullProps): PaymentEntity {
+    const { id, createdAt, createdById, updatedAt, updatedById, deletedAt, deletedById, ...props } = payment;
+    return new PaymentEntity({
+      id: new UniqueEntityID(id),
+      createdAt,
+      createdById,
+      updatedAt,
+      updatedById,
+      deletedAt,
+      deletedById,
+      props: props as PaymentProps
+    });
   }
 }

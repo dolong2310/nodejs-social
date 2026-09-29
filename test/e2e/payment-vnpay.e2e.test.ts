@@ -2,9 +2,12 @@ import express, { NextFunction, Request } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
+import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
+import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import type {
   PaymentProvider,
-  PaymentRecord,
+  PaymentFullProps,
+  PaymentProps,
   VerifiedNotification
 } from '@/modules/payment/domain/entities/payment.type';
 import type {
@@ -38,7 +41,7 @@ const [
   { PaymentCallbackController },
   { PaymentsPipe },
   { VnpayPaymentGatewayAdapter },
-  { CreateExamplePaymentUseCase },
+  { CreatePaymentUseCase },
   { GetPaymentUseCase },
   { HandlePaymentNotificationUseCase },
   { LoggingInterceptor },
@@ -54,7 +57,7 @@ const [
   import('@/presentation/http/express/v1/controllers/payment-callback.controller'),
   import('@/presentation/http/express/v1/pipes/payment.pipe'),
   import('@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter'),
-  import('@/modules/payment/application/use-cases/create-example-payment/create-example-payment.usecase'),
+  import('@/modules/payment/application/use-cases/create-payment/create-payment.usecase'),
   import('@/modules/payment/application/use-cases/get-payment/get-payment.usecase'),
   import('@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase'),
   import('@/presentation/http/express/interceptors/logging.interceptor'),
@@ -76,12 +79,12 @@ describe('VNPay payment HTTP e2e', () => {
     fixtures.length = 0;
   });
 
-  it('creates an authenticated example payment and returns it only to its owner', async () => {
+  it('creates an authenticated order payment and returns it only to its owner', async () => {
     const fixture = createFixture();
     fixtures.push(fixture);
 
     const created = await request(fixture.app)
-      .post('/api/v1/payments/examples')
+      .post('/api/v1/payments')
       .set('Authorization', bearer('user-1'))
       .set('Idempotency-Key', 'create-vnpay-1')
       .send({ provider: 'vnpay' })
@@ -115,13 +118,13 @@ describe('VNPay payment HTTP e2e', () => {
     fixtures.push(fixture);
 
     await request(fixture.app)
-      .post('/api/v1/payments/examples')
+      .post('/api/v1/payments')
       .set('Authorization', bearer('user-1'))
       .send({ provider: 'vnpay' })
       .expect(422);
 
     await request(fixture.app)
-      .post('/api/v1/payments/examples')
+      .post('/api/v1/payments')
       .set('Authorization', bearer('user-1'))
       .set('Idempotency-Key', 'unsupported-provider-1')
       .send({ provider: 'bank-transfer' })
@@ -200,14 +203,14 @@ describe('VNPay payment HTTP e2e', () => {
 
     await request(fixture.app).get('/api/v1/payments/callbacks/vnpay/return').query(signIpn(payment)).expect(200);
 
-    expect((await fixture.repository.findById(payment.id))?.status).toBe('pending');
+    expect((await fixture.repository.findPaymentById(payment.id))?.getProps().status).toBe('pending');
   });
 });
 
 interface PaymentFixture {
   app: express.Express;
   repository: InMemoryPaymentRepository;
-  createPayment(idempotencyKey: string): Promise<PaymentRecord>;
+  createPayment(idempotencyKey: string): Promise<PaymentFullProps>;
   expirePayment(paymentId: string): void;
 }
 
@@ -217,16 +220,16 @@ function createFixture(): PaymentFixture {
     tmnCode: merchantCode,
     secureSecret,
     vnpayHost: 'https://sandbox.vnpayment.vn',
-    paymentPublicBaseUrl: 'https://social.example'
+    paymentPublicBaseUrl: 'https://social.test'
   });
   const momo = {
-    createCheckout: async () => 'https://momo.example/unused',
+    createCheckout: async () => 'https://momo.test/unused',
     verifyNotification: () => {
       throw new Error('MoMo is not used in VNPay tests');
     }
   };
   const gateways = { vnpay, momo };
-  const createPaymentUseCase = new CreateExamplePaymentUseCase(repository, gateways);
+  const createPaymentUseCase = new CreatePaymentUseCase(repository, gateways);
   const getPaymentUseCase = new GetPaymentUseCase(repository);
   const notificationUseCase = new HandlePaymentNotificationUseCase(repository, gateways);
   const paymentController = new PaymentController(createPaymentUseCase, getPaymentUseCase);
@@ -276,7 +279,9 @@ function createFixture(): PaymentFixture {
         idempotencyKey,
         clientIp: '203.0.113.10'
       });
-      return result;
+      const payment = await repository.findPaymentById(result.id);
+      if (!payment) throw new Error('created payment not found');
+      return payment.toObject<PaymentFullProps>();
     },
     expirePayment(paymentId) {
       repository.expireCheckout(paymentId);
@@ -288,13 +293,13 @@ function bearer(userId: string): string {
   return `Bearer ${jwt.sign({ userId, roleId: 'role-payment-test' }, tokenSecret)}`;
 }
 
-function signIpn(payment: PaymentRecord, overrides: Record<string, string> = {}): Record<string, string> {
+function signIpn(payment: PaymentFullProps, overrides: Record<string, string> = {}): Record<string, string> {
   const payload: Record<string, string> = {
     vnp_Amount: String(payment.amountVnd * 100),
     vnp_BankCode: 'NCB',
     vnp_BankTranNo: 'NCB202609250001',
     vnp_CardType: 'ATM',
-    vnp_OrderInfo: `Example order ${payment.providerOrderId}`,
+    vnp_OrderInfo: `Order payment ${payment.providerOrderId}`,
     vnp_PayDate: '20260925070000',
     vnp_ResponseCode: '00',
     vnp_TmnCode: merchantCode,
@@ -314,22 +319,24 @@ function signIpn(payment: PaymentRecord, overrides: Record<string, string> = {})
 }
 
 class InMemoryPaymentRepository implements PaymentRepositoryPort {
-  private readonly records = new Map<string, PaymentRecord>();
+  private readonly records = new Map<string, PaymentFullProps>();
   failApply = false;
   returnStateConflict = false;
 
-  async insertOrFindByIdempotency(record: PaymentRecord): Promise<{ record: PaymentRecord; inserted: boolean }> {
+  async insertOrFindByIdempotency(payment: PaymentEntity): Promise<{ payment: PaymentEntity; inserted: boolean }> {
+    const record = payment.toObject<PaymentFullProps>();
     const existing = [...this.records.values()].find(
       (candidate) => candidate.userId === record.userId && candidate.idempotencyKey === record.idempotencyKey
     );
-    if (existing) return { record: existing, inserted: false };
+    if (existing) return { payment: this.toEntity(existing), inserted: false };
     const stored = { ...record };
     this.records.set(stored.id, stored);
-    return { record: stored, inserted: true };
+    return { payment: this.toEntity(stored), inserted: true };
   }
 
-  async findById(id: string): Promise<PaymentRecord | null> {
-    return this.records.get(id) ?? null;
+  async findPaymentById(id: string): Promise<PaymentEntity | null> {
+    const payment = this.records.get(id);
+    return payment ? this.toEntity(payment) : null;
   }
 
   expireCheckout(id: string): void {
@@ -337,65 +344,80 @@ class InMemoryPaymentRepository implements PaymentRepositoryPort {
     this.records.set(id, { ...record, expiresAt: new Date(Date.now() - 1000) });
   }
 
-  async findByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentRecord | null> {
-    return (
-      [...this.records.values()].find((record) => record.provider === provider && record.providerOrderId === orderId) ??
-      null
+  async findPaymentByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentEntity | null> {
+    const payment = [...this.records.values()].find(
+      (record) => record.provider === provider && record.providerOrderId === orderId
     );
+    return payment ? this.toEntity(payment) : null;
   }
 
-  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentRecord> {
+  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity> {
     const record = this.requireRecord(id);
     if (!record.checkoutUrl) {
-      const updated: PaymentRecord = {
+      const updated: PaymentFullProps = {
         ...record,
         checkoutUrl: url,
         status: record.status === 'creating' ? 'pending' : record.status
       };
       this.records.set(id, updated);
-      return updated;
+      return this.toEntity(updated);
     }
-    return record;
+    return this.toEntity(record);
   }
 
-  async setUnknownIfCreating(id: string): Promise<PaymentRecord> {
+  async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
     const record = this.requireRecord(id);
-    if (record.status !== 'creating') return record;
-    const updated: PaymentRecord = { ...record, status: 'unknown' };
+    if (record.status !== 'creating') return this.toEntity(record);
+    const updated: PaymentFullProps = { ...record, status: 'unknown' };
     this.records.set(id, updated);
-    return updated;
+    return this.toEntity(updated);
   }
 
-  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentRecord> {
+  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity> {
     const record = this.requireRecord(id);
-    if (record.status !== 'creating') return record;
-    const updated: PaymentRecord = { ...record, status: 'create_failed', providerResultCode: resultCode };
+    if (record.status !== 'creating') return this.toEntity(record);
+    const updated: PaymentFullProps = { ...record, status: 'create_failed', providerResultCode: resultCode };
     this.records.set(id, updated);
-    return updated;
+    return this.toEntity(updated);
   }
 
   async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
     if (this.failApply) throw new Error('database unavailable');
     if (this.returnStateConflict) return 'state_conflict';
-    const record = await this.findByProviderOrderId(input.provider, input.providerOrderId);
+    const record = await this.findPaymentByProviderOrderId(input.provider, input.providerOrderId);
     if (!record) return 'not_found';
-    if (record.amountVnd !== input.amountVnd) return 'amount_mismatch';
-    if (record.status === input.outcome && record.providerTransactionId === input.providerTransactionId)
+    const props = record.getProps();
+    if (props.amountVnd !== input.amountVnd) return 'amount_mismatch';
+    if (props.status === input.outcome && props.providerTransactionId === input.providerTransactionId)
       return 'duplicate';
-    if (['succeeded', 'failed', 'cancelled'].includes(record.status)) return 'state_conflict';
-    const updated: PaymentRecord = {
-      ...record,
+    if (['succeeded', 'failed', 'cancelled'].includes(props.status)) return 'state_conflict';
+    const updated: PaymentFullProps = {
+      ...record.toObject<PaymentFullProps>(),
       status: input.outcome,
       providerTransactionId: input.providerTransactionId,
       providerResultCode: input.resultCode
     };
-    this.records.set(record.id, updated);
+    this.records.set(record.id.toString(), updated);
     return 'applied';
   }
 
-  private requireRecord(id: string): PaymentRecord {
+  private requireRecord(id: string): PaymentFullProps {
     const record = this.records.get(id);
     if (!record) throw new Error(`Missing test payment ${id}`);
     return record;
+  }
+
+  private toEntity(payment: PaymentFullProps): PaymentEntity {
+    const { id, createdAt, createdById, updatedAt, updatedById, deletedAt, deletedById, ...props } = payment;
+    return new PaymentEntity({
+      id: new UniqueEntityID(id),
+      createdAt,
+      createdById,
+      updatedAt,
+      updatedById,
+      deletedAt,
+      deletedById,
+      props: props as PaymentProps
+    });
   }
 }

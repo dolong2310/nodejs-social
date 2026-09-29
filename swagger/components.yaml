@@ -1130,7 +1130,7 @@ components:
       properties:
         conversationId: { $ref: '#/components/schemas/MongoId' }
         chatName: { type: string }
-    CreateExamplePaymentRequest:
+    CreatePaymentRequest:
       type: object
       required: [provider]
       properties:
@@ -1157,8 +1157,8 @@ components:
         ]
       properties:
         paymentId: { $ref: '#/components/schemas/MongoId' }
-        sourceReference: { type: string, example: example_0191130a-8c2a-7234-bc1a-9f3e6a1b2c3f }
-        description: { type: string, example: Example order }
+        sourceReference: { type: string, example: order_0191130a-8c2a-7234-bc1a-9f3e6a1b2c3f }
+        description: { type: string, example: Order payment }
         amountVnd: { type: integer, example: 10000 }
         currency: { type: string, enum: [VND] }
         provider: { type: string, enum: [vnpay, momo] }

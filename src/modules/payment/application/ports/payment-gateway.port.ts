@@ -1,11 +1,11 @@
-import { PaymentRecord, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
 
 export type CheckoutCreationError =
   | { kind: 'definitive_rejection'; resultCode: string }
   | { kind: 'uncertain'; reason: 'timeout' | 'network' | 'unclassified' };
 
 export interface PaymentGatewayPort {
-  createCheckout(record: PaymentRecord, clientIp: string): Promise<string>;
+  createCheckout(payment: PaymentCheckoutProps, clientIp: string): Promise<string>;
   verifyNotification(payload: unknown): VerifiedNotification;
 }
 

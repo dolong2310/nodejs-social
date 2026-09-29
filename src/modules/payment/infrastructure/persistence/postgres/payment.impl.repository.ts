@@ -1,35 +1,47 @@
-import type { Pool } from 'pg';
+import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import {
-  PaymentProvider,
-  PaymentRecord,
-  PaymentStatus,
-  VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.type';
+  classifyExistingPaymentNotification,
+  MUTABLE_PAYMENT_STATUSES,
+  normalizeProviderTransactionId,
+  URL_ATTACHABLE_PAYMENT_STATUSES
+} from '@/modules/payment/domain/entities/payment.policy';
+import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
 import {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
-import { PostgresPaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
+import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
 import { PaymentModel } from '@/modules/payment/infrastructure/persistence/postgres/payment.model';
+import type { Pool } from 'pg';
 
-const MUTABLE_STATUSES: PaymentStatus[] = ['creating', 'pending', 'unknown'];
-const URL_ATTACHABLE_STATUSES: PaymentStatus[] = [...MUTABLE_STATUSES, 'succeeded', 'failed', 'cancelled'];
+export class PaymentRepository
+  extends PostgresRepositoryBase<PaymentEntity, PaymentModel>
+  implements PaymentRepositoryPort
+{
+  protected tableName = 'payments';
 
-export class PostgresPaymentRepository implements PaymentRepositoryPort {
-  private readonly mapper = new PostgresPaymentMapper();
+  constructor(
+    protected readonly pool: Pool,
+    protected readonly mapper: PaymentMapper,
+    protected readonly logger: LoggerPort
+  ) {
+    super(pool, mapper);
+  }
 
-  constructor(private readonly pool: Pool) {}
-
-  async insertOrFindByIdempotency(record: PaymentRecord): Promise<{ record: PaymentRecord; inserted: boolean }> {
-    const model = this.mapper.toPersistence(record);
-    const inserted = await this.pool.query<PaymentModel>(
+  async insertOrFindByIdempotency(payment: PaymentEntity): Promise<{ payment: PaymentEntity; inserted: boolean }> {
+    const model = this.mapper.toPersistence(payment);
+    const inserted = await this.query<PaymentModel>(
       `
         INSERT INTO payments (
           id, user_id, source_type, source_reference, description, amount_vnd, currency, provider,
           provider_order_id, provider_request_id, idempotency_key, request_fingerprint, status,
-          checkout_url, expires_at, provider_transaction_id, provider_result_code, created_at, updated_at, version
+          checkout_url, expires_at, provider_transaction_id, provider_result_code, created_at,
+          created_by_id, updated_at, updated_by_id, deleted_at, deleted_by_id, version
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+          $18, $19, $20, $21, $22, $23, $24
         )
         ON CONFLICT (user_id, idempotency_key) DO NOTHING
         RETURNING *
@@ -53,95 +65,96 @@ export class PostgresPaymentRepository implements PaymentRepositoryPort {
         model.provider_transaction_id,
         model.provider_result_code,
         model.created_at,
+        model.created_by_id,
         model.updated_at,
+        model.updated_by_id,
+        model.deleted_at,
+        model.deleted_by_id,
         model.version
       ]
     );
-    if (inserted.rows[0]) return { record: this.mapper.toDomain(inserted.rows[0]), inserted: true };
+    if (inserted.rows[0]) return { payment: this.mapper.toDomain(inserted.rows[0]), inserted: true };
 
-    const existing = await this.pool.query<PaymentModel>(
-      'SELECT * FROM payments WHERE user_id = $1 AND idempotency_key = $2 LIMIT 1',
-      [record.userId, record.idempotencyKey]
-    );
-    const existingRecord = existing.rows[0];
-    if (!existingRecord) throw new Error('Idempotent payment insert conflicted without an existing payment');
-    return { record: this.mapper.toDomain(existingRecord), inserted: false };
+    const existingPayment = await this.findOne({
+      userId: payment.getProps().userId,
+      idempotencyKey: payment.getProps().idempotencyKey
+    } as Partial<PaymentEntity>);
+    if (!existingPayment) throw new Error('Idempotent payment insert conflicted without an existing payment');
+    return { payment: existingPayment, inserted: false };
   }
 
-  async findById(id: string): Promise<PaymentRecord | null> {
-    const result = await this.pool.query<PaymentModel>('SELECT * FROM payments WHERE id = $1 LIMIT 1', [id]);
-    return result.rows[0] ? this.mapper.toDomain(result.rows[0]) : null;
+  async findPaymentById(id: string): Promise<PaymentEntity | null> {
+    return this.findById(id);
   }
 
-  async findByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentRecord | null> {
-    const result = await this.pool.query<PaymentModel>(
-      'SELECT * FROM payments WHERE provider = $1 AND provider_order_id = $2 LIMIT 1',
-      [provider, orderId]
-    );
-    return result.rows[0] ? this.mapper.toDomain(result.rows[0]) : null;
+  async findPaymentByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentEntity | null> {
+    return this.findOne({ provider, providerOrderId: orderId } as Partial<PaymentEntity>);
   }
 
-  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentRecord> {
-    await this.pool.query(
+  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity> {
+    await this.query(
       `
         UPDATE payments
         SET checkout_url = $2,
             status = CASE WHEN status = 'creating' THEN 'pending' ELSE status END,
             updated_at = NOW(),
+            updated_by_id = NULL,
             version = version + 1
-        WHERE id = $1 AND checkout_url IS NULL AND status = ANY($3::text[])
+        WHERE id = $1 AND checkout_url IS NULL AND status = ANY($3::text[]) AND deleted_at IS NULL
       `,
-      [id, url, URL_ATTACHABLE_STATUSES]
+      [id, url, URL_ATTACHABLE_PAYMENT_STATUSES.filter((status) => status !== 'creating')]
     );
     return this.requirePayment(id);
   }
 
-  async setUnknownIfCreating(id: string): Promise<PaymentRecord> {
-    await this.pool.query(
-      "UPDATE payments SET status = 'unknown', updated_at = NOW(), version = version + 1 WHERE id = $1 AND status = 'creating'",
+  async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
+    await this.query(
+      "UPDATE payments SET status = 'unknown', updated_at = NOW(), updated_by_id = NULL, version = version + 1 WHERE id = $1 AND status = 'creating' AND deleted_at IS NULL",
       [id]
     );
     return this.requirePayment(id);
   }
 
-  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentRecord> {
-    await this.pool.query(
-      "UPDATE payments SET status = 'create_failed', provider_result_code = $2, updated_at = NOW(), version = version + 1 WHERE id = $1 AND status = 'creating'",
+  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity> {
+    await this.query(
+      "UPDATE payments SET status = 'create_failed', provider_result_code = $2, updated_at = NOW(), updated_by_id = NULL, version = version + 1 WHERE id = $1 AND status = 'creating' AND deleted_at IS NULL",
       [id, resultCode]
     );
     return this.requirePayment(id);
   }
 
   async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
-    const current = await this.findByProviderOrderId(input.provider, input.providerOrderId);
-    if (!current) return 'not_found';
+    const currentPayment = await this.findPaymentByProviderOrderId(input.provider, input.providerOrderId);
+    if (!currentPayment) return 'not_found';
+    const current = currentPayment.getProps();
     if (current.amountVnd !== input.amountVnd) return 'amount_mismatch';
     if (input.providerRequestId !== undefined && current.providerRequestId !== input.providerRequestId) {
       return 'reference_mismatch';
     }
 
-    const alreadyApplied = this.classifyExisting(current, input);
-    if (alreadyApplied) return alreadyApplied;
+    const existingResult = classifyExistingPaymentNotification(current, input);
+    if (existingResult) return existingResult;
 
     try {
-      const result = await this.pool.query<PaymentModel>(
+      const result = await this.query<PaymentModel>(
         `
           UPDATE payments
           SET status = $1,
               provider_transaction_id = $2,
               provider_result_code = $3,
               updated_at = NOW(),
+              updated_by_id = NULL,
               version = version + 1
-          WHERE id = $4 AND version = $5 AND status = ANY($6::text[])
+          WHERE id = $4 AND version = $5 AND status = ANY($6::text[]) AND deleted_at IS NULL
           RETURNING *
         `,
         [
           input.outcome,
-          this.mapper.normalizeTransactionId(input.providerTransactionId),
+          normalizeProviderTransactionId(input.providerTransactionId),
           input.resultCode,
-          current.id,
+          current.id.toString(),
           current.version,
-          MUTABLE_STATUSES
+          MUTABLE_PAYMENT_STATUSES
         ]
       );
       if (result.rows[0]) return 'applied';
@@ -150,41 +163,16 @@ export class PostgresPaymentRepository implements PaymentRepositoryPort {
       throw error;
     }
 
-    const latest = await this.findById(current.id);
-    if (!latest) return 'not_found';
-    return this.classifyExisting(latest, input) ?? 'state_conflict';
+    const latestPayment = await this.findById(current.id.toString());
+    if (!latestPayment) return 'not_found';
+    return classifyExistingPaymentNotification(latestPayment.getProps(), input) ?? 'state_conflict';
   }
 
-  private async requirePayment(id: string): Promise<PaymentRecord> {
-    const record = await this.findById(id);
-    if (!record) throw new Error(`Payment record ${id} was not found`);
-    return record;
+  private async requirePayment(id: string): Promise<PaymentEntity> {
+    const payment = await this.findPaymentById(id);
+    if (!payment) throw new Error(`Payment ${id} was not found`);
+    return payment;
   }
-
-  private classifyExisting(current: PaymentRecord, input: VerifiedNotification): 'duplicate' | 'state_conflict' | null {
-    if (current.status === 'create_failed') return 'state_conflict';
-    if (isFinalStatus(current.status)) {
-      if (input.outcome === 'pending') return 'duplicate';
-      return this.isSameProviderResult(current, input) ? 'duplicate' : 'state_conflict';
-    }
-    if (current.status === 'pending' && input.outcome === 'pending' && this.isSameProviderResult(current, input)) {
-      return 'duplicate';
-    }
-    if (!MUTABLE_STATUSES.includes(current.status)) return 'state_conflict';
-    return null;
-  }
-
-  private isSameProviderResult(current: PaymentRecord, input: VerifiedNotification): boolean {
-    return (
-      current.status === input.outcome &&
-      current.providerResultCode === input.resultCode &&
-      current.providerTransactionId === this.mapper.normalizeTransactionId(input.providerTransactionId)
-    );
-  }
-}
-
-function isFinalStatus(status: PaymentStatus): status is 'succeeded' | 'failed' | 'cancelled' {
-  return status === 'succeeded' || status === 'failed' || status === 'cancelled';
 }
 
 function isProviderTransactionUniqueViolation(error: unknown): boolean {

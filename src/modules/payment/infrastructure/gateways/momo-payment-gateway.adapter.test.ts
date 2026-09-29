@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PaymentCheckoutError } from '@/modules/payment/application/ports/payment-gateway.port';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentRecord } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.type';
 import { Momo } from '@longdoo/node-payment-gateway';
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 
@@ -22,17 +22,26 @@ function createAdapter() {
   });
 }
 
-function createRecord(): PaymentRecord {
-  return PaymentEntity.createExample({
+function createPayment(): PaymentCheckoutProps {
+  const payment = PaymentEntity.create({
     userId: 'u_payment_test',
     provider: 'momo',
     idempotencyKey: 'momo-adapter-key',
     now: new Date('2026-09-25T00:00:00.000Z')
-  }).toObject() as PaymentRecord;
+  }).toObject<PaymentFullProps>();
+  return {
+    provider: payment.provider,
+    description: payment.description,
+    amountVnd: payment.amountVnd,
+    providerOrderId: payment.providerOrderId,
+    providerRequestId: payment.providerRequestId,
+    createdAt: payment.createdAt,
+    expiresAt: payment.expiresAt
+  };
 }
 
 function signIpn(
-  record: PaymentRecord,
+  payment: PaymentCheckoutProps,
   overrides: Partial<
     Record<
       | 'orderType'
@@ -53,17 +62,17 @@ function signIpn(
 ) {
   const payload = {
     orderType: 'momo_wallet',
-    amount: record.amountVnd,
+    amount: payment.amountVnd,
     partnerCode,
-    orderId: record.providerOrderId,
+    orderId: payment.providerOrderId,
     extraData: '',
     transId: 4088878653,
     responseTime: 1790294400000,
     resultCode: 0,
     message: 'Successful.',
     payType: 'qr',
-    requestId: record.providerRequestId,
-    orderInfo: `${record.description} ${record.providerOrderId}`,
+    requestId: payment.providerRequestId,
+    orderInfo: `${payment.description} ${payment.providerOrderId}`,
     ...overrides
   };
   const rawSignature = [
@@ -94,7 +103,7 @@ afterEach(() => {
 
 describe('MomoPaymentGatewayAdapter', () => {
   it('builds a one-step sandbox checkout using the stored order and request references', async () => {
-    const record = createRecord();
+    const payment = createPayment();
     let targetUrl = '';
     let body: Record<string, unknown> | undefined;
     vi.stubGlobal(
@@ -106,7 +115,7 @@ describe('MomoPaymentGatewayAdapter', () => {
       })
     );
 
-    const checkoutUrl = await createAdapter().createCheckout(record, '203.0.113.10');
+    const checkoutUrl = await createAdapter().createCheckout(payment, '203.0.113.10');
 
     expect(targetUrl).toBe('https://test-payment.momo.vn/v2/gateway/api/create');
     expect(body).toMatchObject({
@@ -116,8 +125,8 @@ describe('MomoPaymentGatewayAdapter', () => {
       requestType: 'captureWallet',
       autoCapture: true,
       amount: 10_000,
-      orderId: record.providerOrderId,
-      requestId: record.providerRequestId,
+      orderId: payment.providerOrderId,
+      requestId: payment.providerRequestId,
       extraData: '',
       ipnUrl: 'https://social.example/api/v1/payments/callbacks/momo/ipn',
       redirectUrl: 'https://social.example/api/v1/payments/callbacks/momo/return'
@@ -139,13 +148,13 @@ describe('MomoPaymentGatewayAdapter', () => {
     [1017, 'cancelled'],
     [5555, 'pending']
   ] as const)('maps resultCode %s to %s for the one-step wallet flow', (resultCode, outcome) => {
-    const record = createRecord();
-    const notification = createAdapter().verifyNotification(signIpn(record, { resultCode }));
+    const payment = createPayment();
+    const notification = createAdapter().verifyNotification(signIpn(payment, { resultCode }));
 
     expect(notification).toMatchObject({
       provider: 'momo',
-      providerOrderId: record.providerOrderId,
-      providerRequestId: record.providerRequestId,
+      providerOrderId: payment.providerOrderId,
+      providerRequestId: payment.providerRequestId,
       amountVnd: 10_000,
       providerTransactionId: '4088878653',
       resultCode: String(resultCode),
@@ -154,16 +163,16 @@ describe('MomoPaymentGatewayAdapter', () => {
   });
 
   it('verifies the signature and accepts responseTime in epoch milliseconds', () => {
-    const record = createRecord();
-    const payload = signIpn(record, { responseTime: 1790294400123 });
+    const payment = createPayment();
+    const payload = signIpn(payment, { responseTime: 1790294400123 });
 
-    expect(createAdapter().verifyNotification(payload).providerRequestId).toBe(record.providerRequestId);
+    expect(createAdapter().verifyNotification(payload).providerRequestId).toBe(payment.providerRequestId);
   });
 
   it('rejects a tampered signature', () => {
-    const record = createRecord();
-    const payload = signIpn(record);
-    payload.amount = record.amountVnd + 1;
+    const payment = createPayment();
+    const payload = signIpn(payment);
+    payload.amount = payment.amountVnd + 1;
 
     expect(() => createAdapter().verifyNotification(payload)).toThrowError(
       expect.objectContaining({ reason: 'invalid_signature' })
@@ -171,8 +180,8 @@ describe('MomoPaymentGatewayAdapter', () => {
   });
 
   it('rejects a correctly signed notification for another partner', () => {
-    const record = createRecord();
-    const payload = signIpn(record, { partnerCode: 'OTHERPARTNER' });
+    const payment = createPayment();
+    const payload = signIpn(payment, { partnerCode: 'OTHERPARTNER' });
 
     expect(() => createAdapter().verifyNotification(payload)).toThrowError(
       expect.objectContaining({ reason: 'merchant_mismatch' })
@@ -180,13 +189,13 @@ describe('MomoPaymentGatewayAdapter', () => {
   });
 
   it('treats an absent or non-sandbox payUrl as an uncertain create result', async () => {
-    const record = createRecord();
+    const payment = createPayment();
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => Response.json({ resultCode: 13, message: 'Rejected' }))
     );
 
-    await expect(createAdapter().createCheckout(record, '203.0.113.10')).rejects.toMatchObject({
+    await expect(createAdapter().createCheckout(payment, '203.0.113.10')).rejects.toMatchObject({
       classification: { kind: 'uncertain', reason: 'unclassified' }
     });
 
@@ -194,17 +203,17 @@ describe('MomoPaymentGatewayAdapter', () => {
       'fetch',
       vi.fn(async () => Response.json({ payUrl: 'https://payment.momo.vn/pay?token=not-sandbox', resultCode: 0 }))
     );
-    await expect(createAdapter().createCheckout(record, '203.0.113.10')).rejects.toThrow(PaymentCheckoutError);
+    await expect(createAdapter().createCheckout(payment, '203.0.113.10')).rejects.toThrow(PaymentCheckoutError);
   });
 
   it('keeps a checkout timeout uncertain and does not retry it', async () => {
-    const record = createRecord();
+    const payment = createPayment();
     vi.stubGlobal(
       'fetch',
       vi.fn(() => new Promise<Response>(() => undefined))
     );
     vi.useFakeTimers();
-    const request = createAdapter().createCheckout(record, '203.0.113.10');
+    const request = createAdapter().createCheckout(payment, '203.0.113.10');
     const rejection = expect(request).rejects.toMatchObject({
       classification: { kind: 'uncertain', reason: 'timeout' }
     });
