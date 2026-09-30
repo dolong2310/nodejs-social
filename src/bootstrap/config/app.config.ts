@@ -81,7 +81,9 @@ export const appConfig: IAppConfig = {
   },
 
   email: {
-    fromAddress: envConfig.SES_FROM_ADDRESS
+    apiKey: envConfig.RESEND_API_KEY,
+    fromAddress: envConfig.RESEND_FROM_ADDRESS
+    // fromAddress: envConfig.SES_FROM_ADDRESS
   },
 
   systemHealth: {

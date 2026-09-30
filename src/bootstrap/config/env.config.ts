@@ -65,7 +65,11 @@ const ENV_KEYS = [
   'AWS_SECRET_ACCESS_KEY',
   'AWS_REGION',
   'AWS_S3_BUCKET_NAME',
-  'SES_FROM_ADDRESS',
+  // 'SES_FROM_ADDRESS',
+
+  // Email (Resend)
+  'RESEND_API_KEY',
+  'RESEND_FROM_ADDRESS',
 
   // Cloudinary
   'CLOUDINARY_CLOUD_NAME',

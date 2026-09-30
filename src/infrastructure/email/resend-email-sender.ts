@@ -27,12 +27,17 @@ export class ResendEmailSender implements EmailSenderPort {
   }
 
   async sendEmail(payload: SendEmailPayload): Promise<void> {
+    const to = this.normalizeAddresses(payload.toAddresses);
+    if (!to) {
+      throw new Error('Email recipient is required');
+    }
+
     try {
       const { error } = await this.resend.emails.send({
         from: this.config.fromAddress,
-        to: payload.toAddresses,
-        cc: payload.ccAddresses,
-        replyTo: payload.replyToAddresses,
+        to,
+        cc: this.normalizeAddresses(payload.ccAddresses) ?? [],
+        replyTo: this.normalizeAddresses(payload.replyToAddresses) ?? [],
         subject: payload.subject,
         html: await this.renderTemplate(payload.template)
       });
@@ -44,6 +49,15 @@ export class ResendEmailSender implements EmailSenderPort {
       this.log.error({ err: error, toAddresses: payload.toAddresses }, 'email:::failed-to-send-email');
       throw error;
     }
+  }
+
+  private normalizeAddresses(value: string | string[] | undefined): string[] | undefined {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const recipients = (Array.isArray(value) ? value : [value]).map((address) => address.trim()).filter(Boolean);
+    return recipients.length > 0 ? recipients : undefined;
   }
 
   private async renderTemplate(template: EmailTemplatePayload): Promise<string> {

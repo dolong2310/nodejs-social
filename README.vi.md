@@ -150,7 +150,7 @@ Các biến quan trọng:
 | `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`                                                 | JWT secrets                                                          |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                             | Google OAuth config                                                  |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME`              | S3 storage config                                                    |
-| `SES_FROM_ADDRESS`                                                                            | Email người gửi cho luồng OTP/email                                  |
+| `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`                                                       | API key Resend và email người gửi cho luồng OTP/email                |
 | `VNPAY_TMN_CODE`, `VNPAY_SECURE_SECRET`, `VNPAY_HOST`                                         | Thông tin VNPay sandbox; host phải là `https://sandbox.vnpayment.vn` |
 | `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_STORE_ID`, `MOMO_STORE_NAME` | Thông tin MoMo sandbox                                               |
 | `PAYMENT_PUBLIC_BASE_URL`                                                                     | HTTPS origin công khai để provider gọi callback; không thêm path     |
@@ -265,7 +265,7 @@ Swagger UI có tại:
 
 ### Build và chạy bằng Docker
 
-Repository có production `Dockerfile` dựa trên `node:22-alpine`. Image cài dependencies bằng pnpm, build TypeScript app và start bằng:
+Repository có production `Dockerfile` dựa trên `node:24-alpine`. Image cài dependencies bằng pnpm, build TypeScript app và start bằng:
 
 ```bash
 pnpm start:prod

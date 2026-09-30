@@ -5,7 +5,8 @@ import { createContainerRepositories } from '@/bootstrap/di/repositories';
 import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
 import { CacheStrategy } from '@/infrastructure/cache/cache.strategy';
-import { SesEmailSender } from '@/infrastructure/email/ses-email-sender';
+// import { SesEmailSender } from '@/infrastructure/email/ses-email-sender';
+import { ResendEmailSender } from '@/infrastructure/email/resend-email-sender';
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
@@ -220,10 +221,14 @@ export class Container implements IContainer {
       apiKey: appConfig.cloudinary.apiKey,
       apiSecret: appConfig.cloudinary.apiSecret
     });
-    this.emailSender = new SesEmailSender(this.logger, {
-      region: appConfig.s3.region,
-      accessKeyId: appConfig.s3.accessKeyId,
-      secretAccessKey: appConfig.s3.secretAccessKey,
+    // this.emailSender = new SesEmailSender(this.logger, {
+    //   region: appConfig.s3.region,
+    //   accessKeyId: appConfig.s3.accessKeyId,
+    //   secretAccessKey: appConfig.s3.secretAccessKey,
+    //   fromAddress: appConfig.email.fromAddress
+    // });
+    this.emailSender = new ResendEmailSender(this.logger, {
+      apiKey: appConfig.email.apiKey,
       fromAddress: appConfig.email.fromAddress
     });
 

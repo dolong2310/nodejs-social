@@ -27,6 +27,7 @@ export interface IAppConfig {
   cors: CorsOptions;
   rateLimit: Partial<RateLimitOptions> & { enabled: boolean };
   email: {
+    apiKey: string;
     fromAddress: string;
   };
   systemHealth: {
