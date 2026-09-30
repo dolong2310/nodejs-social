@@ -87,11 +87,18 @@ describe('VNPay payment HTTP e2e', () => {
       .post('/api/v1/payments')
       .set('Authorization', bearer('user-1'))
       .set('Idempotency-Key', 'create-vnpay-1')
-      .send({ provider: 'vnpay' })
+      .send({
+        provider: 'vnpay',
+        sourceReference: 'order_client_vnpay_1',
+        description: 'Thanh toan don hang VNPay 1',
+        amountVnd: 150_000
+      })
       .expect(201);
 
     expect(created.body.data).toMatchObject({
-      amountVnd: 10_000,
+      sourceReference: 'order_client_vnpay_1',
+      description: 'Thanh toan don hang VNPay 1',
+      amountVnd: 150_000,
       currency: 'VND',
       provider: 'vnpay',
       status: 'pending'
@@ -104,7 +111,7 @@ describe('VNPay payment HTTP e2e', () => {
       .get(`/api/v1/payments/${paymentId}`)
       .set('Authorization', bearer('user-1'))
       .expect(200);
-    expect(read.body.data).toMatchObject({ paymentId, status: 'pending', amountVnd: 10_000 });
+    expect(read.body.data).toMatchObject({ paymentId, status: 'pending', amountVnd: 150_000 });
 
     await request(fixture.app).get(`/api/v1/payments/${paymentId}`).expect(401);
     await request(fixture.app)
@@ -113,21 +120,50 @@ describe('VNPay payment HTTP e2e', () => {
       .expect(404);
   });
 
-  it('requires an idempotency key and a supported provider', async () => {
+  it('requires an idempotency key and valid client-supplied payment details', async () => {
     const fixture = createFixture();
     fixtures.push(fixture);
 
     await request(fixture.app)
       .post('/api/v1/payments')
       .set('Authorization', bearer('user-1'))
-      .send({ provider: 'vnpay' })
+      .send({
+        provider: 'vnpay',
+        sourceReference: 'order_without_key',
+        description: 'Order without idempotency key',
+        amountVnd: 10_000
+      })
       .expect(422);
 
     await request(fixture.app)
       .post('/api/v1/payments')
       .set('Authorization', bearer('user-1'))
       .set('Idempotency-Key', 'unsupported-provider-1')
-      .send({ provider: 'bank-transfer' })
+      .send({
+        provider: 'bank-transfer',
+        sourceReference: 'order_unsupported_provider',
+        description: 'Order with unsupported provider',
+        amountVnd: 10_000
+      })
+      .expect(422);
+
+    await request(fixture.app)
+      .post('/api/v1/payments')
+      .set('Authorization', bearer('user-1'))
+      .set('Idempotency-Key', 'missing-payment-details-1')
+      .send({ provider: 'vnpay' })
+      .expect(422);
+
+    await request(fixture.app)
+      .post('/api/v1/payments')
+      .set('Authorization', bearer('user-1'))
+      .set('Idempotency-Key', 'invalid-payment-amount-1')
+      .send({
+        provider: 'vnpay',
+        sourceReference: 'order_invalid_amount',
+        description: 'Order with invalid amount',
+        amountVnd: 9_999
+      })
       .expect(422);
   });
 
@@ -276,6 +312,9 @@ function createFixture(): PaymentFixture {
       const result = await createPaymentUseCase.execute({
         userId: 'user-1',
         provider: 'vnpay',
+        sourceReference: `order_${idempotencyKey}`,
+        description: `Order ${idempotencyKey}`,
+        amountVnd: 10_000,
         idempotencyKey,
         clientIp: '203.0.113.10'
       });

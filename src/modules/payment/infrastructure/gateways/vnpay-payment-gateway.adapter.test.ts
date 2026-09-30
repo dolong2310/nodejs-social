@@ -24,6 +24,9 @@ function createPayment(): PaymentCheckoutProps {
   const payment = PaymentEntity.create({
     userId: 'u_payment_test',
     provider: 'vnpay',
+    sourceReference: 'order_vnpay_adapter',
+    description: 'VNPay adapter order',
+    amountVnd: 10_000,
     idempotencyKey: 'vnpay-adapter-key',
     now: new Date('2026-09-25T00:00:00.000Z')
   }).toObject<PaymentFullProps>();

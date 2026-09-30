@@ -8,16 +8,29 @@ import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
   CreatePaymentProps,
-  PaymentProvider,
+  MAX_PAYMENT_AMOUNT_VND,
+  MAX_PAYMENT_DESCRIPTION_LENGTH,
+  MAX_PAYMENT_SOURCE_REFERENCE_LENGTH,
+  MIN_PAYMENT_AMOUNT_VND,
   PaymentProps,
   PaymentStatus
 } from '@/modules/payment/domain/entities/payment.type';
 
-const ORDER_AMOUNT_VND = 10_000;
 const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;
 
-export function createPaymentRequestFingerprint(provider: PaymentProvider): string {
-  const request = JSON.stringify({ sourceType: 'order', provider, amountVnd: ORDER_AMOUNT_VND });
+type PaymentRequestFingerprintProps = Pick<
+  CreatePaymentProps,
+  'provider' | 'sourceReference' | 'description' | 'amountVnd'
+>;
+
+export function createPaymentRequestFingerprint(input: PaymentRequestFingerprintProps): string {
+  const request = JSON.stringify({
+    sourceType: 'order',
+    provider: input.provider,
+    sourceReference: input.sourceReference,
+    description: input.description,
+    amountVnd: input.amountVnd
+  });
   return createHash('sha256').update(request).digest('hex');
 }
 
@@ -46,15 +59,15 @@ export class PaymentEntity extends Entity<PaymentProps> {
       props: {
         userId: input.userId,
         sourceType: 'order',
-        sourceReference: generatePrefixId('order'),
-        description: 'Order payment',
-        amountVnd: ORDER_AMOUNT_VND,
+        sourceReference: input.sourceReference,
+        description: input.description,
+        amountVnd: input.amountVnd,
         currency: 'VND',
         provider: input.provider,
         providerOrderId: generatePrefixId('po'),
         providerRequestId: generatePrefixId('pr'),
         idempotencyKey: input.idempotencyKey,
-        requestFingerprint: createPaymentRequestFingerprint(input.provider),
+        requestFingerprint: createPaymentRequestFingerprint(input),
         status: 'creating',
         checkoutUrl: null,
         expiresAt: input.provider === 'vnpay' ? new Date(now.getTime() + VNPAY_CHECKOUT_TTL_MS) : null,
@@ -74,12 +87,17 @@ export class PaymentEntity extends Entity<PaymentProps> {
       new ArgumentNotProvidedException('Idempotency key is required')
     );
     invariant(
-      payment.sourceReference.trim().length > 0,
-      new ArgumentNotProvidedException('Source reference is required')
+      payment.sourceReference.trim().length > 0 &&
+        payment.sourceReference.trim().length <= MAX_PAYMENT_SOURCE_REFERENCE_LENGTH,
+      new ArgumentInvalidException(
+        `Source reference must contain between 1 and ${MAX_PAYMENT_SOURCE_REFERENCE_LENGTH} characters`
+      )
     );
     invariant(
-      payment.description.trim().length > 0,
-      new ArgumentNotProvidedException('Payment description is required')
+      payment.description.trim().length > 0 && payment.description.trim().length <= MAX_PAYMENT_DESCRIPTION_LENGTH,
+      new ArgumentInvalidException(
+        `Payment description must contain between 1 and ${MAX_PAYMENT_DESCRIPTION_LENGTH} characters`
+      )
     );
     invariant(
       payment.providerOrderId.trim().length > 0,
@@ -94,8 +112,12 @@ export class PaymentEntity extends Entity<PaymentProps> {
       new ArgumentNotProvidedException('Request fingerprint is required')
     );
     invariant(
-      Number.isInteger(payment.amountVnd) && payment.amountVnd > 0,
-      new ArgumentInvalidException('Payment amount must be a positive integer')
+      Number.isInteger(payment.amountVnd) &&
+        payment.amountVnd >= MIN_PAYMENT_AMOUNT_VND &&
+        payment.amountVnd <= MAX_PAYMENT_AMOUNT_VND,
+      new ArgumentInvalidException(
+        `Payment amount must be an integer between ${MIN_PAYMENT_AMOUNT_VND} and ${MAX_PAYMENT_AMOUNT_VND} VND`
+      )
     );
     invariant(payment.currency === 'VND', new ArgumentInvalidException('Payment currency must be VND'));
     invariant(payment.sourceType === 'order', new ArgumentInvalidException('Unsupported payment source type'));

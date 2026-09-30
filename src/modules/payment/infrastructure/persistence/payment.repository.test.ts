@@ -32,7 +32,14 @@ function newPayment(
   provider: PaymentProvider = 'vnpay',
   key: string = randomUUID()
 ): PaymentEntity {
-  return PaymentEntity.create({ userId, provider, idempotencyKey: key });
+  return PaymentEntity.create({
+    userId,
+    provider,
+    sourceReference: `order_${key}`,
+    description: 'Repository payment order',
+    amountVnd: 10_000,
+    idempotencyKey: key
+  });
 }
 
 function withPaymentProps(payment: PaymentEntity, changes: Partial<PaymentFullProps>): PaymentEntity {
@@ -213,6 +220,18 @@ async function runRepositoryContract(
 
       expect(await repository.applyVerifiedOutcome(notification(record, 'pending'))).toBe('duplicate');
       expect((await repository.findPaymentById(record.id.toString()))?.getProps().status).toBe('succeeded');
+    });
+
+    it('attaches the checkout URL and transitions a creating payment to pending', async () => {
+      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
+
+      const updated = await repository.attachCheckoutUrlIfAbsent(
+        record.id.toString(),
+        'https://sandbox.example/checkout'
+      );
+
+      expect(updated.getProps().status).toBe('pending');
+      expect(updated.getProps().checkoutUrl).toBe('https://sandbox.example/checkout');
     });
 
     it('stores the checkout URL when pending IPN arrives before create returns', async () => {

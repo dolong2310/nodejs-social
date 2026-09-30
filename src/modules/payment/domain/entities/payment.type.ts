@@ -5,6 +5,14 @@ export type PaymentProvider = 'vnpay' | 'momo';
 
 export const PAYMENT_PROVIDERS = ['vnpay', 'momo'] as const;
 
+export const MIN_PAYMENT_AMOUNT_VND = 10_000;
+
+export const MAX_PAYMENT_AMOUNT_VND = 50_000_000;
+
+export const MAX_PAYMENT_SOURCE_REFERENCE_LENGTH = 128;
+
+export const MAX_PAYMENT_DESCRIPTION_LENGTH = 200;
+
 export const PAYMENT_STATUSES = [
   'creating',
   'pending',
@@ -64,6 +72,9 @@ export type PaymentCheckoutProps = Pick<
 export interface CreatePaymentProps {
   userId: string;
   provider: PaymentProvider;
+  sourceReference: string;
+  description: string;
+  amountVnd: number;
   idempotencyKey: string;
   now?: Date;
 }

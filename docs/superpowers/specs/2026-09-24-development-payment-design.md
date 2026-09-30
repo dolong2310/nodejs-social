@@ -6,7 +6,7 @@ Trạng thái: thiết kế đã được review và đang được triển khai
 
 Tái sử dụng `@longdoo/node-payment-gateway` để thanh toán VNPay và MoMo sandbox ở mọi môi trường chạy của `nodejs-social`, kể cả khi ứng dụng được chạy với cấu hình production. Người dùng đã đăng nhập tạo checkout cho một order mẫu do backend cung cấp, mở URL thanh toán, hoàn thành trên sandbox và xem trạng thái được lưu trong database qua IPN. `succeeded` ở đây chỉ có nghĩa thanh toán sandbox thành công, không có tiền thật được thu.
 
-Nghiệp vụ mua hàng chưa được xác định. Bản đầu dùng một order cố định giá 10.000 VND; mỗi lần tạo hợp lệ sinh reference riêng và lưu snapshot tên, số tiền, tiền tệ. Client chỉ chọn provider; không được quyết định số tiền, người sở hữu hay callback URL.
+Nghiệp vụ mua hàng chưa được xác định. Bản sandbox đầu nhận `sourceReference`, `description` và `amountVnd` từ client để tạo snapshot order mẫu; số tiền phải là số nguyên từ 10.000 đến 50.000.000 VND. Server vẫn quyết định người sở hữu từ JWT, tiền tệ VND, provider references, trạng thái và callback URL. Khi có module order thật, server phải đọc reference và giá từ order thay vì tin số tiền do client gửi.
 
 Ngoài phạm vi bản đầu: kết nối merchant/provider production để thu tiền thật, giỏ hàng, tồn kho, subscription, hoàn tiền, nhiều lần thử thanh toán trên cùng một business order, realtime notification và job đối soát tự động. Có thể thêm các phần này khi xuất hiện nghiệp vụ cụ thể. Không dùng kết quả thanh toán sandbox để cấp sản phẩm hoặc quyền lợi có giá trị thật.
 
@@ -24,7 +24,7 @@ GitNexus CLI được dùng vì phiên này không có GitNexus MCP callable. In
 
 ## Các cách tích hợp
 
-1. **Đề xuất: module payment + adapter bọc thư viện hiện có.** Tận dụng thư viện, giữ nghiệp vụ và HTTP độc lập với SDK. Một payment aggregate lưu snapshot order cố định đủ cho bản đầu.
+1. **Đề xuất: module payment + adapter bọc thư viện hiện có.** Tận dụng thư viện, giữ nghiệp vụ và HTTP độc lập với SDK. Một payment aggregate lưu snapshot order mẫu đủ cho bản đầu.
 2. Gọi thư viện trực tiếp trong controller: nhanh để demo nhưng gắn xử lý trạng thái và persistence vào HTTP, lệch cấu trúc hiện tại.
 3. Tạo order subsystem đầy đủ hoặc payment microservice: phù hợp khi đã có nghiệp vụ/vòng đời triển khai riêng; hiện chưa có yêu cầu đủ để quyết định các ranh giới này.
 
@@ -65,7 +65,7 @@ Domain quản lý invariants và chuyển trạng thái. Application phụ thu�
 
 ## Dữ liệu và trạng thái
 
-Payment gồm: id, userId, sourceType (`order`), sourceReference, description snapshot, amountVnd (số nguyên dương), currency (`VND`), provider, providerOrderId, providerRequestId, status, checkoutUrl, expiresAt, providerTransactionId dạng string, providerResultCode, idempotencyKey, request fingerprint, timestamps, audit fields và version. `expiresAt` được ấn định trước khi gọi VNPay và lưu dạng UTC; adapter chuyển sang GMT+7 `yyyyMMddHHmmss` để gửi `vnp_ExpireDate` bắt buộc. Với MoMo, `expiresAt` có thể null nếu API checkout được dùng không cung cấp hạn dùng được xác nhận.
+Payment gồm: id, userId, sourceType (`order`), sourceReference, description snapshot, amountVnd (số nguyên từ 10.000 đến 50.000.000), currency (`VND`), provider, providerOrderId, providerRequestId, status, checkoutUrl, expiresAt, providerTransactionId dạng string, providerResultCode, idempotencyKey, request fingerprint, timestamps, audit fields và version. `sourceReference`, `description` và `amountVnd` do client cung cấp trong bản sandbox hiện tại. `expiresAt` được ấn định trước khi gọi VNPay và lưu dạng UTC; adapter chuyển sang GMT+7 `yyyyMMddHHmmss` để gửi `vnp_ExpireDate` bắt buộc. Với MoMo, `expiresAt` có thể null nếu API checkout được dùng không cung cấp hạn dùng được xác nhận.
 
 Migration riêng chuyển các payment cũ có `source_type='example'` sang `order` ở MongoDB và PostgreSQL; giữ nguyên migration khởi tạo đã có thể được áp dụng ở môi trường khác.
 
@@ -90,22 +90,22 @@ Domain types theo convention của các module khác: `PaymentProps` chứa dữ
 
 ## API và luồng
 
-| API                                           | Mục đích                                                            | Quyền truy cập                              |
-| --------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------- |
-| `POST /api/v1/payments`                       | Tạo payment cho order mẫu, body `{ "provider": "vnpay" }` hoặc momo | JWT, active user; bắt buộc Idempotency-Key  |
-| `GET /api/v1/payments/:paymentId`             | Đọc trạng thái được lưu                                             | Chủ payment                                 |
-| `GET /api/v1/payments/callbacks/vnpay/ipn`    | Nhận IPN VNPay                                                      | Xác minh chữ ký provider                    |
-| `POST /api/v1/payments/callbacks/momo/ipn`    | Nhận IPN MoMo                                                       | Xác minh chữ ký provider                    |
-| `GET /api/v1/payments/callbacks/vnpay/return` | Điểm trở về từ VNPay                                                | Chỉ thông báo chung, không cập nhật payment |
-| `GET /api/v1/payments/callbacks/momo/return`  | Điểm trở về từ MoMo                                                 | Chỉ thông báo chung, không cập nhật payment |
+| API                                           | Mục đích                                                                               | Quyền truy cập                              |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `POST /api/v1/payments`                       | Tạo payment cho order mẫu từ `provider`, `sourceReference`, `description`, `amountVnd` | JWT, active user; bắt buộc Idempotency-Key  |
+| `GET /api/v1/payments/:paymentId`             | Đọc trạng thái được lưu                                                                | Chủ payment                                 |
+| `GET /api/v1/payments/callbacks/vnpay/ipn`    | Nhận IPN VNPay                                                                         | Xác minh chữ ký provider                    |
+| `POST /api/v1/payments/callbacks/momo/ipn`    | Nhận IPN MoMo                                                                          | Xác minh chữ ký provider                    |
+| `GET /api/v1/payments/callbacks/vnpay/return` | Điểm trở về từ VNPay                                                                   | Chỉ thông báo chung, không cập nhật payment |
+| `GET /api/v1/payments/callbacks/momo/return`  | Điểm trở về từ MoMo                                                                    | Chỉ thông báo chung, không cập nhật payment |
 
-Create response gồm paymentId, order reference, amountVnd, currency, status và checkoutUrl nếu đã sẵn sàng. Cùng key và payload trả lại cùng payment; key đã dùng với provider khác trả conflict. Payment đang creating/unknown/create_failed được trả trạng thái hiện tại, không gọi create thêm lần nữa. URL quá hạn không được trình bày như checkout còn dùng được; hết hạn theo đồng hồ local không tự kết luận provider đã từ chối thanh toán. Redis có thể tăng tốc nhưng database quyết định tính duy nhất.
+Create response gồm paymentId, order reference, description, amountVnd, currency, status và checkoutUrl nếu đã sẵn sàng. Cùng key và payload trả lại cùng payment; key đã dùng với provider, sourceReference, description hoặc amountVnd khác trả conflict. Payment đang creating/unknown/create_failed được trả trạng thái hiện tại, không gọi create thêm lần nữa. URL quá hạn không được trình bày như checkout còn dùng được; hết hạn theo đồng hồ local không tự kết luận provider đã từ chối thanh toán. Redis có thể tăng tốc nhưng database quyết định tính duy nhất.
 
 Client giữ paymentId trước khi mở checkout. Sau redirect, client đọc GET có JWT để lấy trạng thái thật; return page không công khai chi tiết payment bằng reference nhận từ query. Có thể dùng trang thông báo tối giản và Postman ở bản API đầu tiên.
 
 IPN không dùng JWT user. Adapter xác minh signature và merchant identity, chuẩn hóa provider, order/request reference, amount, transaction ID và mã trạng thái; repository đối chiếu những trường này với bản ghi trước khi cập nhật. VNPay amount nhân/chia 100 chỉ trong adapter. VNPay thành công yêu cầu cả ResponseCode và TransactionStatus là `00`; trạng thái `01` (chưa hoàn tất) giữ `pending`, mã hủy rõ ràng thành `cancelled`, chỉ mã thất bại cuối rõ ràng mới thành `failed`. Mã chưa biết hoặc cần điều tra không được tự coi là thất bại cuối.
 
-MoMo bản đầu dùng thanh toán ví một bước với `requestType='captureWallet'` và `autoCapture=true` được ấn định rõ trong adapter. Theo bảng result code chính thức cho flow này, IPN đã xác minh có `0` hoặc `9000` là `succeeded`; `1000`, `7000`, `7002` là chưa cuối và giữ `pending`. Chỉ mã thất bại cuối đã được tài liệu xác nhận mới thành `failed`/`cancelled`; mã chưa biết giữ trạng thái chưa cuối và ghi nhận để điều tra. Nếu đổi sang flow hai bước (`autoCapture=false`) hoặc phương thức thanh toán khác, phải xem lại bảng trạng thái trước khi dùng `9000`.
+MoMo dùng `requestType='payWithMethod'` và `autoCapture=true` để checkout sandbox hiển thị các phương thức thanh toán được merchant sandbox cho phép. IPN đã xác minh có `0` hoặc `9000` là `succeeded`; `1000`, `7000`, `7002` là chưa cuối và giữ `pending`. Chỉ mã thất bại cuối đã được tài liệu xác nhận mới thành `failed`/`cancelled`; mã chưa biết giữ trạng thái chưa cuối và ghi nhận để điều tra. Nếu đổi sang flow hai bước (`autoCapture=false`), phải xem lại bảng trạng thái trước khi dùng `9000`.
 
 VNPay nhận `{ RspCode, Message }` đúng protocol: `00` sau khi ghi bền vững, `02` cho thông báo lặp hợp lệ, `01` khi không tìm thấy order, `04` khi lệch amount, `97` khi chữ ký/merchant không hợp lệ, `99` cho lỗi lưu trữ hoặc mâu thuẫn trạng thái cần điều tra. Không trả `00/02` khi chưa xác nhận được dữ liệu. MoMo nhận HTTP 204 sau khi ghi bền vững hoặc nhận diện lặp hợp lệ; mismatch, chữ ký sai và lỗi database không nhận 204. Callback controller bắt và map lỗi ngay tại route, không để BaseRoute/HttpExceptionFilter bọc response theo API chung. Không log dữ liệu nhạy cảm; ghi sự kiện mâu thuẫn đủ để đối soát.
 

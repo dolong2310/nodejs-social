@@ -39,6 +39,9 @@ export class PaymentController extends BaseController implements IPaymentControl
     const payment = await this.createPaymentUC.execute({
       userId: this.getUserId(req),
       provider: req.body.provider,
+      sourceReference: req.body.sourceReference,
+      description: req.body.description,
+      amountVnd: req.body.amountVnd,
       idempotencyKey: idempotencyKey ?? '',
       clientIp: req.ip || '127.0.0.1'
     });

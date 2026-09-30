@@ -4,6 +4,9 @@ import { PaymentProvider, PaymentSafeProps } from '@/modules/payment/domain/enti
 export interface CreatePaymentProps {
   userId: string;
   provider: PaymentProvider;
+  sourceReference: string;
+  description: string;
+  amountVnd: number;
   idempotencyKey: string;
   clientIp: string;
 }
@@ -11,12 +14,18 @@ export interface CreatePaymentProps {
 export class CreatePaymentInputPort implements CreatePaymentProps {
   userId: string;
   provider: PaymentProvider;
+  sourceReference: string;
+  description: string;
+  amountVnd: number;
   idempotencyKey: string;
   clientIp: string;
 
   constructor(payload: CreatePaymentProps) {
     this.userId = payload.userId;
     this.provider = payload.provider;
+    this.sourceReference = payload.sourceReference;
+    this.description = payload.description;
+    this.amountVnd = payload.amountVnd;
     this.idempotencyKey = payload.idempotencyKey;
     this.clientIp = payload.clientIp;
   }

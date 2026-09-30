@@ -84,6 +84,9 @@ function createFixture() {
   const payment = PaymentEntity.create({
     userId: 'u_momo_test',
     provider: 'momo',
+    sourceReference: 'order_momo_http_e2e',
+    description: 'MoMo HTTP e2e order',
+    amountVnd: 10_000,
     idempotencyKey: 'momo-http-e2e',
     now: new Date('2026-09-25T00:00:00.000Z')
   }).toObject<PaymentFullProps>();

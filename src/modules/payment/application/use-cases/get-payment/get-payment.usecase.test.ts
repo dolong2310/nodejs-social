@@ -8,6 +8,9 @@ describe('GetPaymentUseCase', () => {
   const payment = PaymentEntity.create({
     userId: 'user-a',
     provider: 'vnpay',
+    sourceReference: 'order_get_payment',
+    description: 'Get payment use case order',
+    amountVnd: 10_000,
     idempotencyKey: 'key-a'
   });
 

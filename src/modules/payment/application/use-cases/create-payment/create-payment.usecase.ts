@@ -20,6 +20,9 @@ export class CreatePaymentUseCase extends CreatePaymentPort {
     const candidate = PaymentEntity.create({
       userId: input.userId,
       provider: input.provider,
+      sourceReference: input.sourceReference,
+      description: input.description,
+      amountVnd: input.amountVnd,
       idempotencyKey: input.idempotencyKey
     });
 

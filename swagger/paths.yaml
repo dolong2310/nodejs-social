@@ -129,7 +129,7 @@ paths:
       tags: [payments]
       summary: Create a sandbox order payment
       operationId: createPayment
-      description: Creates a fixed 10,000 VND order payment and returns a provider checkout URL. VNPay and MoMo are sandbox-only in every app environment.
+      description: Creates an order payment from the supplied reference, description and VND amount, then returns a provider checkout URL. VNPay and MoMo are sandbox-only in every app environment.
       security: [{ bearerAuth: [] }]
       parameters:
         - name: Idempotency-Key
@@ -150,8 +150,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaymentSuccessResponse'
-        '400':
-          description: Invalid provider or missing Idempotency-Key
+        '422':
+          description: Invalid payment details or missing Idempotency-Key
           content:
             application/json:
               schema:

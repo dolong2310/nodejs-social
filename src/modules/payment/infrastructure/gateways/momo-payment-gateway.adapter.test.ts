@@ -26,6 +26,9 @@ function createPayment(): PaymentCheckoutProps {
   const payment = PaymentEntity.create({
     userId: 'u_payment_test',
     provider: 'momo',
+    sourceReference: 'order_momo_adapter',
+    description: 'MoMo adapter order',
+    amountVnd: 10_000,
     idempotencyKey: 'momo-adapter-key',
     now: new Date('2026-09-25T00:00:00.000Z')
   }).toObject<PaymentFullProps>();
@@ -102,7 +105,7 @@ afterEach(() => {
 });
 
 describe('MomoPaymentGatewayAdapter', () => {
-  it('builds a one-step sandbox checkout using the stored order and request references', async () => {
+  it('builds a multi-method sandbox checkout using the stored order and request references', async () => {
     const payment = createPayment();
     let targetUrl = '';
     let body: Record<string, unknown> | undefined;
@@ -122,7 +125,7 @@ describe('MomoPaymentGatewayAdapter', () => {
       partnerCode,
       storeId: 'MomoTestStore',
       storeName: 'Social Test Store',
-      requestType: 'captureWallet',
+      requestType: 'payWithMethod',
       autoCapture: true,
       amount: 10_000,
       orderId: payment.providerOrderId,
@@ -147,7 +150,7 @@ describe('MomoPaymentGatewayAdapter', () => {
     [1006, 'cancelled'],
     [1017, 'cancelled'],
     [5555, 'pending']
-  ] as const)('maps resultCode %s to %s for the one-step wallet flow', (resultCode, outcome) => {
+  ] as const)('maps resultCode %s to %s for the multi-method flow', (resultCode, outcome) => {
     const payment = createPayment();
     const notification = createAdapter().verifyNotification(signIpn(payment, { resultCode }));
 

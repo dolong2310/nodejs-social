@@ -2226,7 +2226,7 @@
     },
     {
       "name": "Payment Sandbox",
-      "description": "Create fixed 10,000 VND order payments against sandbox providers. After creating one, open the returned checkoutUrl in a browser. Provider callbacks must be sent by VNPay or MoMo because they require valid signatures.",
+      "description": "Create order payments against sandbox providers using payment details supplied in the request body. After creating one, open the returned checkoutUrl in a browser. Provider callbacks must be sent by VNPay or MoMo because they require valid signatures.",
       "item": [
         {
           "name": "Create VNPay Order Payment",
@@ -2252,7 +2252,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"provider\": \"vnpay\"\n}",
+              "raw": "{\n  \"provider\": \"vnpay\",\n  \"sourceReference\": \"order_vnpay_{{$timestamp}}\",\n  \"description\": \"Thanh toan don hang VNPay\",\n  \"amountVnd\": 150000\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -2287,7 +2287,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"provider\": \"momo\"\n}",
+              "raw": "{\n  \"provider\": \"momo\",\n  \"sourceReference\": \"order_momo_{{$timestamp}}\",\n  \"description\": \"Thanh toan don hang MoMo\",\n  \"amountVnd\": 150000\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {

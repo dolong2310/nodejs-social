@@ -102,7 +102,7 @@ export class PaymentRepository
             version = version + 1
         WHERE id = $1 AND checkout_url IS NULL AND status = ANY($3::text[]) AND deleted_at IS NULL
       `,
-      [id, url, URL_ATTACHABLE_PAYMENT_STATUSES.filter((status) => status !== 'creating')]
+      [id, url, URL_ATTACHABLE_PAYMENT_STATUSES]
     );
     return this.requirePayment(id);
   }

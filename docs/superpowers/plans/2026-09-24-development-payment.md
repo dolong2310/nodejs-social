@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Thanh toán order cố định 10.000 VND qua VNPay và MoMo sandbox, nhận IPN hợp lệ, lưu kết quả và cho chủ payment đọc trạng thái.
+**Goal:** Thanh toán order mẫu với thông tin client cung cấp qua VNPay và MoMo sandbox, nhận IPN hợp lệ, lưu kết quả và cho chủ payment đọc trạng thái.
 
 **Architecture:** Payment là một module clean architecture; use cases chỉ phụ thuộc repository và gateway ports. Hai gateway adapters bọc `@longdoo/node-payment-gateway`; MongoDB và PostgreSQL triển khai cùng repository contract. Composition root mount routes và adapters ở mọi môi trường ứng dụng; provider luôn dùng sandbox.
 
@@ -141,9 +141,9 @@ Repository adapters dùng primary DB để đọc trạng thái payment. `attach
 - Create: `src/modules/payment/application/ports/payment-gateway.port.ts`
 - Test: `src/modules/payment/domain/entities/payment.entity.test.ts`
 
-**Interfaces:** Produces `PaymentEntity`, `PaymentProps`, `PaymentFullProps`, `PaymentSafeProps`, `PaymentCheckoutProps`, `PaymentProvider`, `PaymentStatus`, `VerifiedNotification`, `PaymentRepositoryPort`, `PaymentGatewayPort` as above. Domain factory produces `p_<uuidv7>` ID and server-priced order snapshot.
+**Interfaces:** Produces `PaymentEntity`, `PaymentProps`, `PaymentFullProps`, `PaymentSafeProps`, `PaymentCheckoutProps`, `PaymentProvider`, `PaymentStatus`, `VerifiedNotification`, `PaymentRepositoryPort`, `PaymentGatewayPort` as above. Domain factory produces `p_<uuidv7>` ID and an order snapshot from validated client input.
 
-- [ ] **Step 1: Write failing domain tests.** Assert `PaymentEntity.create({userId:'u_...', provider:'vnpay', idempotencyKey:'k1'})` yields `amountVnd===10000`, `currency==='VND'`, `status==='creating'`, an order reference and a future UTC `expiresAt`; MoMo may use null expiry. Reject blank user/key and unsupported provider. Assert `succeeded` cannot become `failed` through the state transition method; `create_failed` is distinct from provider payment `failed`.
+- [ ] **Step 1: Write failing domain tests.** Assert `PaymentEntity.create` retains the supplied `sourceReference`, `description` and `amountVnd`, sets `currency==='VND'`, `status==='creating'` and a future UTC `expiresAt` for VNPay; MoMo may use null expiry. Reject blank user/key/reference/description, unsupported provider and amount outside 10.000–50.000.000 VND. Assert `succeeded` cannot become `failed` through the state transition method; `create_failed` is distinct from provider payment `failed`.
 - [ ] **Step 2: Run** `pnpm exec vitest run src/modules/payment/domain/entities/payment.entity.test.ts`; expect failing import/assertion.
 - [ ] **Step 3: Implement entity/state rules and the exact contracts above.** Use current `generatePrefixId('p')`; generate provider order/request reference once and store before any SDK call. Give the order snapshot a stable description such as `Order payment`.
 - [ ] **Step 4: Run test and** `pnpm typecheck`; expect pass. Leave changes for user review; do not stage or commit.
@@ -175,11 +175,11 @@ Repository adapters dùng primary DB để đọc trạng thái payment. `attach
 - Test: `src/modules/payment/application/use-cases/create-payment/create-payment.usecase.test.ts`
 - Test: `src/modules/payment/application/use-cases/get-payment/get-payment.usecase.test.ts`
 
-**Interfaces:** Consumes Task 1 ports. `execute({userId,provider,idempotencyKey,clientIp}): Promise<PaymentEntity>`; `get.execute({userId,paymentId}): Promise<PaymentEntity>` with ownership check.
+**Interfaces:** Consumes Task 1 ports. `execute({userId,provider,sourceReference,description,amountVnd,idempotencyKey,clientIp}): Promise<PaymentSafeProps>`; `get.execute({userId,paymentId}): Promise<PaymentSafeProps>` with ownership check.
 
 - [ ] **Step 1: Write failing tests** using in-memory fake repository/gateway: first call persists `creating` before calling SDK and returns URL; same key/payload returns same payment and SDK call count remains 1; changed provider under same key is conflict; uncertain network/timeout error yields `unknown`; definitive provider rejection yields `create_failed` with result code; retry with either status does not call SDK again. Simulated IPN `pending` inside `createCheckout` retains checkout URL, and early success remains success after SDK returns. User B cannot read user A's payment.
 - [ ] **Step 2: Run** `pnpm exec vitest run src/modules/payment/application/use-cases`; expect failure.
-- [ ] **Step 3: Implement fingerprint** as SHA-256 of canonical `{sourceType:'order',provider,amountVnd:10000}`; persist first, create URL only for newly inserted row, check `inserted` and fingerprint; call `attachCheckoutUrlIfAbsent`; on uncertain SDK error call `setUnknownIfCreating`, on proven definitive rejection call `setCreateFailedIfCreating`. Both writes are conditional so early IPN cannot be overwritten. Map missing/foreign ID to same not-found response. Do not use Redis idempotency as correctness source.
+- [ ] **Step 3: Implement fingerprint** as SHA-256 of canonical `{sourceType:'order',provider,sourceReference,description,amountVnd}`; persist first, create URL only for newly inserted row, check `inserted` and fingerprint; call `attachCheckoutUrlIfAbsent`; on uncertain SDK error call `setUnknownIfCreating`, on proven definitive rejection call `setCreateFailedIfCreating`. Both writes are conditional so early IPN cannot be overwritten. Map missing/foreign ID to same not-found response. Do not use Redis idempotency as correctness source.
 - [ ] **Step 4: Run use-case tests and** `pnpm typecheck`; expect pass. Leave changes for user review; do not stage or commit.
 
 ## Task 4: IPN use case và callback semantics
@@ -224,7 +224,7 @@ Repository adapters dùng primary DB để đọc trạng thái payment. `attach
 - Test: `src/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter.test.ts`
 - Test: `test/e2e/payment-momo.e2e.test.ts`
 
-**Interfaces:** MoMo adapter implements Task 1 port; uses same use cases and repository. Chốt thanh toán ví một bước: truyền rõ `requestType='captureWallet'`, `autoCapture=true`, `orderId`, `requestId`, `extraData`. Với IPN hợp lệ của flow này, `resultCode=0/9000` là `succeeded`; `1000/7000/7002` là `pending`. Không dùng bảng này cho flow hai bước chưa có capture/cancel hoặc phương thức thanh toán khác.
+**Interfaces:** MoMo adapter implements Task 1 port; uses same use cases and repository. Dùng `requestType='payWithMethod'`, `autoCapture=true`, `orderId`, `requestId`, `extraData` để hiển thị các phương thức được merchant sandbox cho phép. Với IPN hợp lệ của flow này, `resultCode=0/9000` là `succeeded`; `1000/7000/7002` là `pending`. Không dùng bảng này cho flow hai bước chưa có capture/cancel.
 
 - [ ] **Step 1: Write failing tests** for explicit `requestType/autoCapture/orderId/requestId/extraData`, configured partnerCode, signed IPN `0/9000` success, `1000/7000/7002` pending, documented terminal failure/cancellation, unknown code remaining nonterminal, wrong merchant, absent/invalid `payUrl`, and `responseTime` as epoch milliseconds if exposed. Validate signed amount/reference against the saved record in use case/repository tests, not in adapter-only tests. Simulate timeout and verify use case retains `unknown`/same reference; simulate proven provider rejection and verify `create_failed`.
 - [ ] **Step 2: Run** `pnpm exec vitest run src/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter.test.ts`; expect failure. Inspect SDK create behavior first. If the installed library exposes only `payUrl` or an undifferentiated exception, extend `node-payment-gateway` with a tested result/error contract that preserves HTTP status and MoMo `resultCode`, then consume that version/package in social. Until it exists, classify exceptions as uncertain; do not infer definitive rejection. Implement adapter with `testMode:true`, explicit one-step options and strict URL host `test-payment.momo.vn`. Set adapter deadline to at least 30 seconds (proposed 35 seconds); timeout remains `unknown` and must not be described as request cancellation.

@@ -33,7 +33,7 @@ export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
       secretKey: config.secretKey,
       storeId: config.storeId,
       storeName: config.storeName,
-      requestType: Momo.RequestType.CAPTURE_WALLET,
+      requestType: Momo.RequestType.PAY_WITH_METHOD,
       lang: Momo.MomoLocale.VI,
       testMode: true,
       enableLog: false
@@ -49,7 +49,7 @@ export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
     let timeoutId: NodeJS.Timeout | undefined;
     try {
       const sdkRequest = this.client.buildPaymentUrl({
-        requestType: Momo.RequestType.CAPTURE_WALLET,
+        requestType: Momo.RequestType.PAY_WITH_METHOD,
         autoCapture: true,
         amount: payment.amountVnd,
         orderId: payment.providerOrderId,

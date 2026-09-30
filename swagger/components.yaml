@@ -1132,13 +1132,28 @@ components:
         chatName: { type: string }
     CreatePaymentRequest:
       type: object
-      required: [provider]
+      required: [provider, sourceReference, description, amountVnd]
       properties:
         provider:
           type: string
           enum: [vnpay, momo]
+        sourceReference:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          minLength: 1
+          maxLength: 200
+        amountVnd:
+          type: integer
+          minimum: 10000
+          maximum: 50000000
       example:
         provider: vnpay
+        sourceReference: order_123456
+        description: Thanh toan don hang 123456
+        amountVnd: 150000
     PaymentData:
       type: object
       required:
@@ -1157,9 +1172,9 @@ components:
         ]
       properties:
         paymentId: { $ref: '#/components/schemas/MongoId' }
-        sourceReference: { type: string, example: order_0191130a-8c2a-7234-bc1a-9f3e6a1b2c3f }
-        description: { type: string, example: Order payment }
-        amountVnd: { type: integer, example: 10000 }
+        sourceReference: { type: string, example: order_123456 }
+        description: { type: string, example: Thanh toan don hang 123456 }
+        amountVnd: { type: integer, example: 150000 }
         currency: { type: string, enum: [VND] }
         provider: { type: string, enum: [vnpay, momo] }
         status:
