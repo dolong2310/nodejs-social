@@ -1,4 +1,4 @@
-import {
+import type {
   SystemHealthProbePort,
   SystemHealthSnapshot
 } from '@/modules/operations/application/ports/system-health-probe.port';
@@ -63,7 +63,10 @@ export class NodeSystemHealthProbe implements SystemHealthProbePort {
 
   private selectDisk(disks: Awaited<ReturnType<typeof fsSize>>): Awaited<ReturnType<typeof fsSize>>[number] {
     const exactMount = disks.find((disk) => disk.mount === this.config.diskPath);
-    return exactMount ?? disks[0] ?? { mount: this.config.diskPath, size: 0, used: 0, use: 0 };
+    return (
+      exactMount ??
+      disks[0] ?? { fs: '', type: '', mount: this.config.diskPath, size: 0, used: 0, available: 0, use: 0, rw: null }
+    );
   }
 
   private bytesToMb(value: number): number {

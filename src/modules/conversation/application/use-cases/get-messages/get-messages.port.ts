@@ -1,5 +1,5 @@
-import { ChatMessageFullProps } from '@/modules/conversation/domain/entities/chat-message.types';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { ChatMessageFullProps } from '@/modules/conversation/domain/entities/chat-message.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class GetMessagesInputPort {
   userId: string;

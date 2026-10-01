@@ -9,6 +9,7 @@ function stripAppArgs(argv: string[]): string[] {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
+    if (arg === undefined) continue;
     if (arg === '--') continue;
     if (arg === '--env') {
       index += 1;

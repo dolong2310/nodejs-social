@@ -1,5 +1,5 @@
-import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
-import {
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import type {
   CacheManagerPort,
   ReadThroughOptions,
   WriteThroughOptions

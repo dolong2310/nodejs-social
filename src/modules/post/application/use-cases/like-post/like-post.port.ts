@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { LikeFullProps } from '@/modules/post/domain/entities/like.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { LikeFullProps } from '@/modules/post/domain/entities/like.types';
 
 export class CreateLikeInputPort {
   userId: string;

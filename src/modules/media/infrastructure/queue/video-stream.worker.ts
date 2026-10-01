@@ -1,14 +1,14 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
 import { encodeStreamWithMultipleVideoStreams } from '@/modules/common/utils/video.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
-import { VideoStreamJobData, VideoStreamJobResult } from '@/modules/media/application/ports/video-stream-job.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { VideoStreamJobData, VideoStreamJobResult } from '@/modules/media/application/ports/video-stream-job.port';
 import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.types';
-import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { VIDEO_STREAM_QUEUE_NAME } from '@/modules/media/infrastructure/queue/video-stream.queue';
-import { type ConnectionOptions, type Job } from 'bullmq';
+import type { ConnectionOptions, Job } from 'bullmq';
 import { get } from 'lodash-es';
 import path from 'path';
 

@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   EmptyPostUpdateException,
   OnlyOwnerCanUpdatePostSettingsException,
@@ -6,14 +6,14 @@ import {
   RepostCannotBeUpdatedException
 } from '@/modules/post/application/exceptions/post.exception';
 import {
-  UpdatePostInputPort,
+  type UpdatePostInputPort,
   UpdatePostPort,
   UpdatePostOutputPort
 } from '@/modules/post/application/use-cases/update-post/update-post.port';
-import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
+import type { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
 import { EnumPostType } from '@/modules/post/domain/entities/post.types';
-import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 
 export class UpdatePostUseCase extends UpdatePostPort {
   private readonly log: LoggerPort;

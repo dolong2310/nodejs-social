@@ -2,28 +2,28 @@ import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
 } from '@/modules/authorization/application/constants/cache.constants';
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
-import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import {
+import type { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type {
   CacheWarmupJobData,
   CacheWarmupJobResult,
   CacheWarmupTarget
 } from '@/modules/operations/application/ports/cache-warmup-job.port';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import {
   CACHE_KEYS as RELATIONSHIP_CACHE_KEYS,
   CACHE_TTL as RELATIONSHIP_CACHE_TTL
 } from '@/modules/relationship/application/constants/cache.constants';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import {
   CACHE_KEYS as USER_CACHE_KEYS,
   CACHE_TTL as USER_CACHE_TTL
 } from '@/modules/user/application/constants/cache.constants';
-import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import { EnumUserStatus, type UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { keyBy } from 'lodash-es';
 
 type CacheHit<T> = {

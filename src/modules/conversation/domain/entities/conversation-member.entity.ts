@@ -1,6 +1,6 @@
 import {
-  ConversationMemberProps,
-  CreateConversationMemberProps,
+  type ConversationMemberProps,
+  type CreateConversationMemberProps,
   EnumConversationMemberRole
 } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { Entity } from '@/modules/core/domain/entities/base.entity';

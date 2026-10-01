@@ -1,17 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ConflictException } from '@/modules/core/domain/exceptions/exceptions';
-import { PaymentCheckoutError, PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import { PaymentCheckoutError, type PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import { CreatePaymentUseCase } from '@/modules/payment/application/use-cases/create-payment/create-payment.usecase';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import {
-  PaymentCheckoutProps,
-  PaymentFullProps,
-  PaymentProps,
-  PaymentProvider,
-  VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.types';
-import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentCheckoutProps, PaymentFullProps, PaymentProps, PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
 function toPaymentEntity(payment: PaymentFullProps): PaymentEntity {
   const { id, createdAt, createdById, updatedAt, updatedById, deletedAt, deletedById, ...props } = payment;

@@ -1,4 +1,4 @@
-import express, { NextFunction, Request } from 'express';
+import express, { type NextFunction, type Request } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';

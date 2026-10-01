@@ -1,5 +1,5 @@
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 
 export interface IFriendPipe {
   sendRequestToUsernamePipe: ExpressRequestHandler;

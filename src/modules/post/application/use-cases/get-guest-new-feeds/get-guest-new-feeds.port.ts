@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetGuestNewFeedsInputPort {
   limit: number;

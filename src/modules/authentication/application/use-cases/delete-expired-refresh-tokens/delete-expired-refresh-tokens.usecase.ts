@@ -1,9 +1,9 @@
 import {
-  DeleteExpiredRefreshTokensInputPort,
+  type DeleteExpiredRefreshTokensInputPort,
   DeleteExpiredRefreshTokensPort,
   DeleteExpiredRefreshTokensOutputPort
 } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 
 export class DeleteExpiredRefreshTokensUseCase extends DeleteExpiredRefreshTokensPort {
   constructor(private readonly refreshTokenRepository: RefreshTokenRepositoryPort) {

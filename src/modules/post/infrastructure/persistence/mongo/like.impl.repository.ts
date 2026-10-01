@@ -1,11 +1,11 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { LikeEntity } from '@/modules/post/domain/entities/like.entity';
-import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.types';
-import { LikeMapper } from '@/modules/post/infrastructure/persistence/mongo/like.mapper';
-import { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
-import { Db, MongoClient } from 'mongodb';
+import type { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
+import type { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.types';
+import type { LikeMapper } from '@/modules/post/infrastructure/persistence/mongo/like.mapper';
+import type { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
+import type { Db, MongoClient } from 'mongodb';
 
 export class LikeRepository extends MongoRepositoryBase<LikeEntity, LikeModel> implements LikeRepositoryPort {
   protected collectionName = 'likes';

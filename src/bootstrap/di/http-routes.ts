@@ -1,11 +1,11 @@
 import { appConfig } from '@/bootstrap/config/app.config';
-import { ContainerRepositories } from '@/bootstrap/di/repositories';
-import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
-import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { ContainerRepositories } from '@/bootstrap/di/repositories';
+import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
+import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
@@ -16,7 +16,7 @@ import { RefreshTokenUseCase } from '@/modules/authentication/application/use-ca
 import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
 import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { CreatePermissionUseCase } from '@/modules/authorization/application/use-cases/create-permission/create-permission.usecase';
 import { CreateRoleUseCase } from '@/modules/authorization/application/use-cases/create-role/create-role.usecase';
 import { DeletePermissionUseCase } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.usecase';
@@ -27,7 +27,7 @@ import { ListPermissionsUseCase } from '@/modules/authorization/application/use-
 import { ListRolesUseCase } from '@/modules/authorization/application/use-cases/list-roles/list-roles.usecase';
 import { UpdatePermissionUseCase } from '@/modules/authorization/application/use-cases/update-permission/update-permission.usecase';
 import { UpdateRoleUseCase } from '@/modules/authorization/application/use-cases/update-role/update-role.usecase';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import { CreateGroupUseCase } from '@/modules/conversation/application/use-cases/create-group/create-group.usecase';
 import { GetConversationDetailUseCase } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.usecase';
 import { GetConversationsUseCase } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.usecase';
@@ -41,21 +41,21 @@ import { SendMessageUseCase } from '@/modules/conversation/application/use-cases
 import { TransferAdminUseCase } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.usecase';
 import { UpdateConversationUseCase } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.usecase';
 import { UpdateMemberRoleUseCase } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.usecase';
-import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
-import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { GetStaticVideoStreamUseCase } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.usecase';
 import { GetVideoStatusUseCase } from '@/modules/media/application/use-cases/get-video-status/get-video-status.usecase';
 import { UploadImageUseCase } from '@/modules/media/application/use-cases/upload-image/upload-image.usecase';
 import { UploadVideoStreamUseCase } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.usecase';
 import { UploadVideoUseCase } from '@/modules/media/application/use-cases/upload-video/upload-video.usecase';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { ListNotificationsUseCase } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.usecase';
 import { MarkNotificationReadUseCase } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.usecase';
 import { MarkNotificationsReadUseCase } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.usecase';
@@ -70,7 +70,7 @@ import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
-import { PostServicePort } from '@/modules/post/application/services/post.service';
+import type { PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
 import { CreateHashtagUseCase } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.usecase';
 import { CreatePostUseCase } from '@/modules/post/application/use-cases/create-post/create-post.usecase';
@@ -91,8 +91,8 @@ import { UnbookmarkPostUseCase } from '@/modules/post/application/use-cases/unbo
 import { UnlikePostUseCase } from '@/modules/post/application/use-cases/unlike-post/unlike-post.usecase';
 import { UpdateHashtagUseCase } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.usecase';
 import { UpdatePostUseCase } from '@/modules/post/application/use-cases/update-post/update-post.usecase';
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { AcceptIncomingRequestUseCase } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.usecase';
 import { BlockUserUseCase } from '@/modules/relationship/application/use-cases/block-user/block-user.usecase';
 import { DeclineIncomingRequestUseCase } from '@/modules/relationship/application/use-cases/decline-incoming-request/decline-incoming-request.usecase';
@@ -104,7 +104,7 @@ import { RevokeOutgoingRequestUseCase } from '@/modules/relationship/application
 import { SendFriendRequestUseCase } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.usecase';
 import { UnblockUserUseCase } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.usecase';
 import { UnfriendUseCase } from '@/modules/relationship/application/use-cases/unfriend/unfriend.usecase';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { AdminCreateUserUseCase } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.usecase';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
 import { AdminGetUserUseCase } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.usecase';
@@ -115,7 +115,7 @@ import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import type { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
@@ -128,58 +128,64 @@ import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/tim
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import {
   AdminUserController,
-  IAdminUserController
+  type IAdminUserController
 } from '@/presentation/http/express/v1/controllers/admin-user.controller';
-import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
-import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
+import { AuthController, type IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
+import { BlockController, type IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
   ChatMessageController,
-  IChatMessageController
+  type IChatMessageController
 } from '@/presentation/http/express/v1/controllers/chat-message.controller';
 import {
   ConversationController,
-  IConversationController
+  type IConversationController
 } from '@/presentation/http/express/v1/controllers/conversation.controller';
-import { FriendController, IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
-import { HashtagController, IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
-import { IMediaController, MediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { FriendController, type IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import {
-  INotificationController,
+  HashtagController,
+  type IHashtagController
+} from '@/presentation/http/express/v1/controllers/hashtag.controller';
+import { type IMediaController, MediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import {
+  type INotificationController,
   NotificationsController
 } from '@/presentation/http/express/v1/controllers/notifications.controller';
-import { IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
+import { type IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 import {
-  IOperationsController,
+  type IOperationsController,
   OperationsController
 } from '@/presentation/http/express/v1/controllers/operations.controller';
 import {
-  IPaymentCallbackController,
+  type IPaymentCallbackController,
   PaymentCallbackController
 } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
-import { IPaymentController, PaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
 import {
-  IPermissionController,
+  type IPaymentController,
+  PaymentController
+} from '@/presentation/http/express/v1/controllers/payment.controller';
+import {
+  type IPermissionController,
   PermissionController
 } from '@/presentation/http/express/v1/controllers/permission.controller';
-import { IPostController, PostController } from '@/presentation/http/express/v1/controllers/post.controller';
-import { IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
-import { ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
-import { IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import { AdminUsersPipe, IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import { AuthPipe, IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { BlocksPipe, IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
-import { ChatMessagesPipe, IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
-import { ConversationsPipe, IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import { FriendsPipe, IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import { HashtagsPipe, IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import { INotificationPipe, NotificationsPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import { IPaginationPipe, PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IPaymentPipe, PaymentsPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
-import { IPermissionsPipe, PermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
-import { IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
-import { IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
-import { ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
-import { IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import { type IPostController, PostController } from '@/presentation/http/express/v1/controllers/post.controller';
+import { type IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
+import { type ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
+import { type IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
+import { AdminUsersPipe, type IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
+import { AuthPipe, type IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
+import { BlocksPipe, type IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
+import { ChatMessagesPipe, type IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
+import { ConversationsPipe, type IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
+import { FriendsPipe, type IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
+import { HashtagsPipe, type IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
+import { type INotificationPipe, NotificationsPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
+import { type IPaginationPipe, PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { type IPaymentPipe, PaymentsPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
+import { type IPermissionsPipe, PermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
+import { type IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import { type IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
+import { type ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import { type IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';

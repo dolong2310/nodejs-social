@@ -1,11 +1,11 @@
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
-import { RefreshTokenFullProps } from '@/modules/authentication/domain/entities/refresh-token.types';
+import type { RefreshTokenFullProps } from '@/modules/authentication/domain/entities/refresh-token.types';
 import {
-  RefreshTokenModel,
+  type RefreshTokenModel,
   refreshTokenSchema
 } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';
 
 export class RefreshTokenMapper implements Mapper<RefreshTokenEntity, RefreshTokenModel, RefreshTokenFullProps> {

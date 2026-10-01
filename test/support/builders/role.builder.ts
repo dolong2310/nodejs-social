@@ -1,5 +1,5 @@
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
-import { RoleFullProps } from '@/modules/user/domain/repositories/user.query.types';
+import type { RoleFullProps } from '@/modules/user/domain/repositories/user.query.types';
 
 export function makeRoleFullProps(overrides: Partial<RoleFullProps> = {}): RoleFullProps {
   const now = new Date('2026-01-01T00:00:00.000Z');

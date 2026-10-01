@@ -1,12 +1,12 @@
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import {
   AdminGetUserPort,
-  AdminGetUserInputPort,
+  type AdminGetUserInputPort,
   AdminGetUserOutputPort
 } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.port';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminGetUserUseCase extends AdminGetUserPort {
   constructor(private readonly userRepository: UserRepositoryPort) {

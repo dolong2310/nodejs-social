@@ -1,12 +1,12 @@
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
-import {
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type {
   CreateRefreshTokenInput,
   RotateRefreshTokenInput
 } from '@/modules/authentication/domain/repositories/refresh-token.repository.types';
-import { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.mapper';
-import { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.mapper';
+import type { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 

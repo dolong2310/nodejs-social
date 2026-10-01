@@ -1,10 +1,10 @@
-import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import {
+import type { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
+import type {
   CreateRoleInput,
   ListRolesInput,
   UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.types';
-import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface RoleRepositoryPort extends RepositoryPort<RoleEntity> {
   findRoleById(id: string): Promise<RoleEntity | null>;

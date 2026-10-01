@@ -1,4 +1,4 @@
-import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
+import type { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
 import {
   SOCKET_CLIENT_CHAT_SUBSCRIBE,
   SOCKET_CLIENT_CHAT_TYPING,
@@ -7,12 +7,12 @@ import {
   SOCKET_SERVER_PRESENCE_CHAT,
   chatRoom
 } from '@/modules/common/constants/socket.constants';
-import { GetConversationPresencePort } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.port';
-import { JoinConversationPort } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
-import { LeaveConversationPort } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
-import { TypingPort } from '@/modules/notification/application/use-cases/realtime/typing/typing.port';
-import { ISocketFeature } from '@/presentation/socket/socket.types';
-import { Server, Socket } from 'socket.io';
+import type { GetConversationPresencePort } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.port';
+import type { JoinConversationPort } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
+import type { LeaveConversationPort } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
+import type { TypingPort } from '@/modules/notification/application/use-cases/realtime/typing/typing.port';
+import type { ISocketFeature } from '@/presentation/socket/socket.types';
+import type { Server, Socket } from 'socket.io';
 
 export class ChatFeature implements ISocketFeature {
   constructor(

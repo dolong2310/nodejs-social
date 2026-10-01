@@ -1,4 +1,4 @@
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
+import type { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 
 export type AvailableRoute = {
   name: string;

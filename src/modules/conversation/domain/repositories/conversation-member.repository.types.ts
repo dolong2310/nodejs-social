@@ -1,4 +1,4 @@
-import {
+import type {
   ConversationMemberProps,
   CreateConversationMemberProps
 } from '@/modules/conversation/domain/entities/conversation-member.types';

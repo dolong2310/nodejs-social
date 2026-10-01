@@ -1,9 +1,9 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
+import type { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import {
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type {
   FindGuestPostsInput,
   FindPostIdsWhereUserInteractedWithAuthorsInput,
   FindPostsByUserIdInput,
@@ -14,11 +14,11 @@ import {
   IsUserInteractedWithPostInput,
   PostDetailWithAuthorOutput
 } from '@/modules/post/domain/repositories/post.query.types';
-import { BookmarkModel } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
-import { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
-import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
-import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import type { BookmarkModel } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
+import type { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
+import type { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
+import type { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
+import type { Collection, Db, Document, MongoClient } from 'mongodb';
 
 export class PostQueryRepository implements PostQueryRepositoryPort {
   constructor(
@@ -69,7 +69,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
     });
     const [post] = await this.dbCollection.aggregate<PostDetailWithAuthorOutput>(pipelineGetDetailPost).toArray();
 
-    return post;
+    return post as PostDetailWithAuthorOutput;
   }
 
   async findPostIdsWhereUserInteractedWithAuthors(

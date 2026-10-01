@@ -1,14 +1,14 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constants';
-import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
-import {
+import type { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
+import type {
   GetBlockedPostIdsPayload,
   IsUserInteractedWithPostPayload,
   UpdatePostsViewsPayload
 } from '@/modules/post/application/services/post.service.types';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export interface PostServicePort {
   updatePostsViews<T extends PostDetailOutput | PostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];

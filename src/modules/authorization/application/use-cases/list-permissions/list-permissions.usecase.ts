@@ -1,10 +1,10 @@
 import {
   ListPermissionsPort,
-  ListPermissionsInputPort,
+  type ListPermissionsInputPort,
   ListPermissionsOutputPort,
   PermissionListItem
 } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 
 export class ListPermissionsUseCase extends ListPermissionsPort {
   constructor(private readonly permissionRepository: PermissionRepositoryPort) {

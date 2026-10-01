@@ -1,11 +1,11 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.types';
+import type { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.types';
 import {
-  ConversationMemberModel,
+  type ConversationMemberModel,
   conversationMemberSchema
 } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';
 
 export class ConversationMemberMapper implements Mapper<

@@ -1,10 +1,10 @@
 import { BaseSchedule } from '@/infrastructure/queue/bullmq/base.schedule';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import {
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
   SystemHealthJobData,
   SystemHealthJobResult
 } from '@/modules/operations/application/ports/system-health-job.port';
-import { type ConnectionOptions } from 'bullmq';
+import type { ConnectionOptions } from 'bullmq';
 
 export const SYSTEM_HEALTH_SCHEDULE_QUEUE_NAME = 'system-health-schedule';
 

@@ -1,17 +1,17 @@
 import { CONVERSATION_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/conversation.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IChatMessageController } from '@/presentation/http/express/v1/controllers/chat-message.controller';
-import { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
-import { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
-import { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IChatMessageController } from '@/presentation/http/express/v1/controllers/chat-message.controller';
+import type { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
+import type { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
+import type { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
+import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
 
 export class ConversationRoute extends BaseRoute {
   protected override readonly version = 'v1';

@@ -1,10 +1,10 @@
 import {
   ListRolesPort,
-  ListRolesInputPort,
+  type ListRolesInputPort,
   ListRolesOutputPort,
   RoleListItem
 } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 
 export class ListRolesUseCase extends ListRolesPort {
   constructor(private readonly roleRepository: RoleRepositoryPort) {

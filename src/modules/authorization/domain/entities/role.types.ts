@@ -1,5 +1,5 @@
-import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
-import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
+import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
+import type { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import type { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface RoleProps {

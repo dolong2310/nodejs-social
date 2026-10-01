@@ -3,11 +3,14 @@ import {
   EmailNotFoundException,
   FailedToSendOtpCodeException
 } from '@/modules/authentication/application/exceptions/auth.exception';
-import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
-import { SendOtpInputPort, SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
+import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import {
+  type SendOtpInputPort,
+  SendOtpPort
+} from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { randomInt } from 'crypto';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';

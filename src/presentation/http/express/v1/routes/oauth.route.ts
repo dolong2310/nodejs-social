@@ -1,10 +1,10 @@
 import { OAUTH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/oauth.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IOAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IOAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 
 export class OAuthRoute extends BaseRoute {
   protected override readonly version = 'v1';

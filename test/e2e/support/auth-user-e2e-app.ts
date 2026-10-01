@@ -1,4 +1,4 @@
-import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createExpressApp } from '@/presentation/http/express/app';
 import type { IContainer } from '@/bootstrap/container';
 import type { IAppConfig } from '@/bootstrap/types/app.types';

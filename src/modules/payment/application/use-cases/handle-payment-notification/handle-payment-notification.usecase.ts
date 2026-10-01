@@ -1,11 +1,11 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
-import { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import {
-  HandlePaymentNotificationInputPort,
+  type HandlePaymentNotificationInputPort,
   HandlePaymentNotificationPort
 } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.port';
-import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import {
+import type { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';

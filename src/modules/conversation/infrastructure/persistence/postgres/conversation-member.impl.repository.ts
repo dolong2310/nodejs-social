@@ -1,7 +1,7 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import {
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type {
   CreateMemberInput,
   DeleteMemberInput,
   FindMemberInput,
@@ -11,9 +11,9 @@ import {
   UpdateReadStateInput,
   UpdateRoleInput
 } from '@/modules/conversation/domain/repositories/conversation-member.repository.types';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
+import type { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 

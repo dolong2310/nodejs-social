@@ -1,16 +1,19 @@
-import { BlockUserPort } from '@/modules/relationship/application/use-cases/block-user/block-user.port';
-import { GetBlockedUserPort } from '@/modules/relationship/application/use-cases/get-blocked-user/get-blocked-user.port';
-import { UnblockUserPort } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.port';
+import type { BlockUserPort } from '@/modules/relationship/application/use-cases/block-user/block-user.port';
+import type { GetBlockedUserPort } from '@/modules/relationship/application/use-cases/get-blocked-user/get-blocked-user.port';
+import type { UnblockUserPort } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { Created, SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { BlockUserBodyDTO, UnblockUserParamsDTO } from '@/presentation/http/express/v1/dtos/block/block.request.dto';
+import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import {
+  BlockUserBodyDTO,
+  type UnblockUserParamsDTO
+} from '@/presentation/http/express/v1/dtos/block/block.request.dto';
 import { BlockCreatedResponseDTO } from '@/presentation/http/express/v1/dtos/block/block.response.dto';
-import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import { FriendUserResponseDTO } from '@/presentation/http/express/v1/dtos/friend/friend.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IBlockController {
   blockUser(

@@ -1,4 +1,7 @@
-import { ChatMessageProps, CreateChatMessageProps } from '@/modules/conversation/domain/entities/chat-message.types';
+import type {
+  ChatMessageProps,
+  CreateChatMessageProps
+} from '@/modules/conversation/domain/entities/chat-message.types';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';

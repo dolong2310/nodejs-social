@@ -1,8 +1,8 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { LikeEntity } from '@/modules/post/domain/entities/like.entity';
-import { LikeFullProps } from '@/modules/post/domain/entities/like.types';
-import { LikeModel, likeSchema } from '@/modules/post/infrastructure/persistence/mongo/like.model';
+import type { LikeFullProps } from '@/modules/post/domain/entities/like.types';
+import { type LikeModel, likeSchema } from '@/modules/post/infrastructure/persistence/mongo/like.model';
 import { parse } from 'valibot';
 
 export class LikeMapper implements Mapper<LikeEntity, LikeModel, LikeFullProps> {

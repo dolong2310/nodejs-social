@@ -1,11 +1,11 @@
-import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
-import {
+import type { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
+import type {
   CreatePermissionInput,
   FindPermissionByPathAndMethodInput,
   ListPermissionsInput,
   UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.types';
-import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface PermissionRepositoryPort extends RepositoryPort<PermissionEntity> {
   findPermissions(data: ListPermissionsInput): Promise<PermissionEntity[]>;

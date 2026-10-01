@@ -4,21 +4,21 @@ import {
   MessageEmptyException,
   MessageForbiddenException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  SendMessageInputPort,
+  type SendMessageInputPort,
   SendMessagePort,
   SendMessageOutputPort
 } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
-import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import type { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Overall workflow:

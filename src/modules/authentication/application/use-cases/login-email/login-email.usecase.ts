@@ -1,15 +1,15 @@
 import { InvalidEmailOrPasswordException } from '@/modules/authentication/application/exceptions/auth.exception';
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  LoginEmailInputPort,
+  type LoginEmailInputPort,
   LoginEmailPort,
   LoginEmailOutputPort
 } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
 export class LoginEmailUseCase extends LoginEmailPort {
   constructor(

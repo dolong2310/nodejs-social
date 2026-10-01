@@ -1,8 +1,8 @@
-import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
+import type { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
   EnumNewMessagePreviewKind,
   EnumNotificationType,
-  INewMessageNotificationPayload
+  type INewMessageNotificationPayload
 } from '@/modules/notification/domain/entities/notification.types';
 
 export function notificationSummary(entity: NotificationEntity): string {

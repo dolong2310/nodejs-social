@@ -1,4 +1,4 @@
-import {
+import type {
   ListConversationsForUserInput,
   ListConversationsForUserOutput
 } from '@/modules/conversation/domain/repositories/conversation-member.query.types';

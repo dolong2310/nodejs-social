@@ -1,6 +1,6 @@
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
-import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
-import { Server as HttpServer } from 'http';
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import type { Server as HttpServer } from 'http';
 import logger from '@/infrastructure/logger/create-logger';
 
 /**

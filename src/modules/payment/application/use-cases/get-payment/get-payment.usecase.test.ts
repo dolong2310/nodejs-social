@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { NotFoundException } from '@/modules/core/domain/exceptions/exceptions';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 import { GetPaymentUseCase } from '@/modules/payment/application/use-cases/get-payment/get-payment.usecase';
 
 describe('GetPaymentUseCase', () => {

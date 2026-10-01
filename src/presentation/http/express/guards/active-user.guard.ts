@@ -1,14 +1,14 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
-import { BaseGuard } from '@/presentation/http/express/core/base.guard';
+import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   MissingAuthTokenPayloadException,
   UserIsBannedException,
   UserIsInactiveException,
   UserNotFoundException
 } from '@/presentation/http/express/exceptions/user.exception';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 export class ActiveUserGuard implements BaseGuard {
   constructor(private readonly userService: UserServicePort) {}

@@ -4,11 +4,11 @@ import {
 } from '@/modules/post/application/exceptions/hashtag.exception';
 import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 import {
-  UpdateHashtagInputPort,
+  type UpdateHashtagInputPort,
   UpdateHashtagPort
 } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 
 export class UpdateHashtagUseCase extends UpdateHashtagPort {
   constructor(private readonly hashtagRepository: HashtagRepositoryPort) {

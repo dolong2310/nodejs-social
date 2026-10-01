@@ -1,9 +1,9 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
+import type { RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
-import { RoleModel, roleSchema } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
+import { type RoleModel, roleSchema } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';
 
 export class RoleMapper implements Mapper<RoleEntity, RoleModel, RoleFullProps> {

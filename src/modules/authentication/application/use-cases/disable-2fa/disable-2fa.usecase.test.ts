@@ -1,10 +1,10 @@
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import { Disable2FAInputPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';

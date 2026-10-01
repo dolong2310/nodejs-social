@@ -1,32 +1,35 @@
 import {
   CreateHashtagInputPort,
-  CreateHashtagPort
+  type CreateHashtagPort
 } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.port';
 import {
   DeleteHashtagInputPort,
-  DeleteHashtagPort
+  type DeleteHashtagPort
 } from '@/modules/post/application/use-cases/delete-hashtag/delete-hashtag.port';
-import { GetHashtagPort, GetHashtagInputPort } from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.port';
 import {
-  ListHashtagsPort,
+  type GetHashtagPort,
+  GetHashtagInputPort
+} from '@/modules/post/application/use-cases/get-hashtag/get-hashtag.port';
+import {
+  type ListHashtagsPort,
   ListHashtagsInputPort
 } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 import {
   UpdateHashtagInputPort,
-  UpdateHashtagPort
+  type UpdateHashtagPort
 } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   CreateHashtagBodyDTO,
-  HashtagIdParamsDTO,
+  type HashtagIdParamsDTO,
   UpdateHashtagBodyDTO
 } from '@/presentation/http/express/v1/dtos/hashtag/hashtag.request.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IHashtagController {
   list(

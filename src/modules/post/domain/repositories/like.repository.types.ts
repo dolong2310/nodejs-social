@@ -1,4 +1,4 @@
-import { CreateLikeProps } from '@/modules/post/domain/entities/like.types';
+import type { CreateLikeProps } from '@/modules/post/domain/entities/like.types';
 
 export interface CreateLikeInput extends CreateLikeProps {}
 

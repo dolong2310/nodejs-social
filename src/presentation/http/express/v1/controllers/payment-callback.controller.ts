@@ -1,7 +1,7 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
-import { HandlePaymentNotificationPort } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.port';
+import type { HandlePaymentNotificationPort } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.port';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 export interface IPaymentCallbackController {
   vnpayIpn(req: Request, res: Response): Promise<void>;

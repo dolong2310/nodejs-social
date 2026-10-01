@@ -1,5 +1,5 @@
-import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import type { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
 
 export interface RecordFriendRequestPayload {
   recipientUserId: string;

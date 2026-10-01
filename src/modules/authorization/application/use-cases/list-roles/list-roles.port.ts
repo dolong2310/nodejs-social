@@ -1,5 +1,5 @@
-import { RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class ListRolesInputPort {
   page: number;

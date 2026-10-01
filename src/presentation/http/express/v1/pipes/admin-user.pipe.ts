@@ -8,11 +8,11 @@ import {
   InvalidUserIdException,
   UsernameFormatInvalidException
 } from '@/presentation/http/express/exceptions/user.exception';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { confirmPasswordSchema, passwordSchema } from '@/presentation/http/express/v1/pipes/auth.pipe';
 import { birthdaySchema, imageSchema, nameSchema } from '@/presentation/http/express/v1/pipes/user.pipe';
-import { checkSchema, ParamSchema } from 'express-validator';
+import { checkSchema, type ParamSchema } from 'express-validator';
 
 const emailSchema: ParamSchema = {
   notEmpty: {

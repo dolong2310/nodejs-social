@@ -1,6 +1,6 @@
-import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
+import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
 
-import { Prettify } from 'ts-essentials';
+import type { Prettify } from 'ts-essentials';
 
 export interface BookmarkProps {
   userId: string;

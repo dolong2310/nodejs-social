@@ -1,12 +1,12 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import {
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
   NotificationTrimJobData,
   NotificationTrimJobResult
 } from '@/modules/notification/application/ports/notification-trim-job.port';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { NOTIFICATION_TRIM_QUEUE_NAME } from '@/modules/notification/infrastructure/queue/notification-trim.queue';
-import { type ConnectionOptions, type Job } from 'bullmq';
+import type { ConnectionOptions, Job } from 'bullmq';
 
 export class NotificationTrimWorker extends BaseWorker<NotificationTrimJobData, NotificationTrimJobResult> {
   private readonly log: LoggerPort;

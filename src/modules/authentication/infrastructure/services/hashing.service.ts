@@ -1,4 +1,4 @@
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import bcrypt from 'bcrypt';
 
 const BCRYPT_SALT_ROUNDS = 10;

@@ -1,18 +1,18 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import {
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type {
   CreateRoleInput,
   ListRolesInput,
   UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
-import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
-import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
+import type { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
+import type { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
 import { convertObjectToSnakeCase } from '@/modules/common/utils/object-case.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { Options } from '@/modules/core/domain/repositories/port.repository';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { Options } from '@/modules/core/domain/repositories/port.repository';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient } from 'mongodb';
+import type { Db, MongoClient } from 'mongodb';
 
 export class RoleRepository extends MongoRepositoryBase<RoleEntity, RoleModel> implements RoleRepositoryPort {
   protected collectionName = 'roles';

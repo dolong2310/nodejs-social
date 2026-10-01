@@ -1,6 +1,6 @@
-import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { MarkOptional } from 'ts-essentials';
+import type { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
+import type { ParamsDictionary } from 'express-serve-static-core';
+import type { MarkOptional } from 'ts-essentials';
 
 export class CreateRoleBodyDTO implements CreateRoleProps {
   name: string;

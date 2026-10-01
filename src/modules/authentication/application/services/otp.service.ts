@@ -2,10 +2,10 @@ import {
   ExpiredOtpCodeException,
   InvalidOtpCodeException
 } from '@/modules/authentication/application/exceptions/otp.exception';
-import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import type { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
+import type { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { OtpCode } from '@/modules/authentication/domain/value-objects/otp-code.value-object';
 
 export interface OtpServicePort {

@@ -1,10 +1,10 @@
 import { PermissionNotFoundException } from '@/modules/authorization/application/exceptions/permission.exception';
 import {
   GetPermissionPort,
-  GetPermissionInputPort
+  type GetPermissionInputPort
 } from '@/modules/authorization/application/use-cases/get-permission/get-permission.port';
 import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 
 export class GetPermissionUseCase extends GetPermissionPort {
   constructor(private readonly permissionRepository: PermissionRepositoryPort) {

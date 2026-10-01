@@ -1,6 +1,6 @@
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
-import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
+import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
 import type { Pool } from 'pg';
 
 type RolePermissionJoinModel = {

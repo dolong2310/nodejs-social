@@ -1,28 +1,28 @@
-import { AcceptIncomingRequestPort } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.port';
-import { DeclineIncomingRequestPort } from '@/modules/relationship/application/use-cases/decline-incoming-request/decline-incoming-request.port';
-import { GetFriendsPort } from '@/modules/relationship/application/use-cases/get-friends/get-friends.port';
-import { GetIncomingRequestsPort } from '@/modules/relationship/application/use-cases/get-incoming-requests/get-incoming-requests.port';
-import { GetOutgoingRequestsPort } from '@/modules/relationship/application/use-cases/get-outgoing-requests/get-outgoing-requests.port';
-import { RevokeOutgoingRequestPort } from '@/modules/relationship/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.port';
-import { SendFriendRequestPort } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.port';
-import { UnfriendPort } from '@/modules/relationship/application/use-cases/unfriend/unfriend.port';
+import type { AcceptIncomingRequestPort } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.port';
+import type { DeclineIncomingRequestPort } from '@/modules/relationship/application/use-cases/decline-incoming-request/decline-incoming-request.port';
+import type { GetFriendsPort } from '@/modules/relationship/application/use-cases/get-friends/get-friends.port';
+import type { GetIncomingRequestsPort } from '@/modules/relationship/application/use-cases/get-incoming-requests/get-incoming-requests.port';
+import type { GetOutgoingRequestsPort } from '@/modules/relationship/application/use-cases/get-outgoing-requests/get-outgoing-requests.port';
+import type { RevokeOutgoingRequestPort } from '@/modules/relationship/application/use-cases/revoke-outgoing-request/revoke-outgoing-request.port';
+import type { SendFriendRequestPort } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.port';
+import type { UnfriendPort } from '@/modules/relationship/application/use-cases/unfriend/unfriend.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
-  AcceptDeclineRequestParamsDTO,
-  RevokeOutgoingRequestParamsDTO,
+  type AcceptDeclineRequestParamsDTO,
+  type RevokeOutgoingRequestParamsDTO,
   SendFriendRequestBodyDTO,
-  UnfriendParamsDTO
+  type UnfriendParamsDTO
 } from '@/presentation/http/express/v1/dtos/friend/friend.request.dto';
 import {
   FriendRequestResponseDTO,
-  FriendUserResponseDTO
+  type FriendUserResponseDTO
 } from '@/presentation/http/express/v1/dtos/friend/friend.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IFriendController {
   listFriends(

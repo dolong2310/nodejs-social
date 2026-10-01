@@ -1,16 +1,16 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   UsernameAlreadyExistsException,
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  UpdateMeInputPort,
+  type UpdateMeInputPort,
   UpdateMeOutputPort,
   UpdateMePort
 } from '@/modules/user/application/use-cases/update-me/update-me.port';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class UpdateMeUseCase extends UpdateMePort {
   constructor(

@@ -1,14 +1,14 @@
 import { EnumSearchType } from '@/modules/common/domain/enums/search.enum';
-import { SearchPostsPort } from '@/modules/post/application/use-cases/search-posts/search-posts.port';
-import { SearchUsersPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
+import type { SearchPostsPort } from '@/modules/post/application/use-cases/search-posts/search-posts.port';
+import type { SearchUsersPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { PostDetailWithAuthorResponseDTO } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
-import { SearchCursorQueryDTO } from '@/presentation/http/express/v1/dtos/search/search.request.dto';
-import { UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { PostDetailWithAuthorResponseDTO } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
+import type { SearchCursorQueryDTO } from '@/presentation/http/express/v1/dtos/search/search.request.dto';
+import type { UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ISearchController {
   search(

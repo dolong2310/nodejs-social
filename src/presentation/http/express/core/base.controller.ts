@@ -1,14 +1,14 @@
 import { isProduction } from '@/bootstrap/config/env.config';
 import { UserNotFoundException } from '@/presentation/http/express/exceptions/user.exception';
 import {
-  Created,
+  type Created,
   OK,
-  SuccessResponse,
-  SuccessResponseParams
+  type SuccessResponse,
+  type SuccessResponseParams
 } from '@/presentation/http/express/responses/success.response';
-import { PaginationResponseDTO } from '@/presentation/http/express/v1/dtos/common/common.response.dto';
+import type { PaginationResponseDTO } from '@/presentation/http/express/v1/dtos/common/common.response.dto';
 import type { CookieOptions } from 'express';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 export abstract class BaseController {
   protected response<T>({

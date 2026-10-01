@@ -1,5 +1,5 @@
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { GetUserProfileInputPort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { makeUserSafeProps } from '@test/support/builders/user.builder';

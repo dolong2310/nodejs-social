@@ -1,5 +1,5 @@
-import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class GetRoleInputPort {
   id: string;

@@ -1,9 +1,9 @@
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UpdateMeInputPort } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps, makeUserSafeProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';

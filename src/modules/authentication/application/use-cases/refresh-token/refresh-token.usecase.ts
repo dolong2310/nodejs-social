@@ -1,17 +1,17 @@
 import { InvalidTokenException } from '@/modules/authentication/application/exceptions/auth.exception';
 import { RefreshTokenExpiredException } from '@/modules/authentication/application/exceptions/refresh-token.exception';
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import {
-  RefreshTokenInputPort,
+  type RefreshTokenInputPort,
   RefreshTokenPort,
   RefreshTokenOutputPort
 } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import jwt from 'jsonwebtoken';
 
 export class RefreshTokenUseCase extends RefreshTokenPort {

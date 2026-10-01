@@ -1,8 +1,8 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import {
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type {
   CountOutgoingRequestsCreatedOnUtcDayInput,
   CreatePendingRequestInput,
   DeleteAllRequestsBetweenUsersInput,
@@ -11,9 +11,9 @@ import {
   ListIncomingForUserInput,
   ListOutgoingForUserInput
 } from '@/modules/relationship/domain/repositories/friend-request.repository.types';
-import { FriendRequestMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friend-request.mapper';
-import { FriendRequestModel } from '@/modules/relationship/infrastructure/persistence/mongo/friend-request.model';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+import type { FriendRequestMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friend-request.mapper';
+import type { FriendRequestModel } from '@/modules/relationship/infrastructure/persistence/mongo/friend-request.model';
+import { type Db, type MongoClient, MongoServerError } from 'mongodb';
 
 export class FriendRequestRepository
   extends MongoRepositoryBase<FriendRequestEntity, FriendRequestModel>

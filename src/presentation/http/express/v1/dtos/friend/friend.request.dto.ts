@@ -1,5 +1,5 @@
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export class SendFriendRequestBodyDTO {
   username: string;

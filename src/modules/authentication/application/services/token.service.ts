@@ -1,5 +1,5 @@
-import { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
-import {
+import type { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
+import type {
   AccessTokenPayload,
   AccessTokenPayloadCreate,
   RefreshTokenPayload,

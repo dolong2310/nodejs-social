@@ -1,6 +1,6 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
-import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
+import type { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class UpdatePostInputPort {
   userId: string;

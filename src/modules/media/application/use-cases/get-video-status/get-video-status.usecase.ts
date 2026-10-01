@@ -1,9 +1,9 @@
 import {
   GetVideoStatusPort,
-  GetVideoStatusInputPort,
+  type GetVideoStatusInputPort,
   GetVideoStatusOutputPort
 } from '@/modules/media/application/use-cases/get-video-status/get-video-status.port';
-import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 
 export class GetVideoStatusUseCase extends GetVideoStatusPort {
   constructor(private readonly mediaRepository: VideoStatusRepositoryPort) {

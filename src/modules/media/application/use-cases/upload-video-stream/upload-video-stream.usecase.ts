@@ -1,14 +1,14 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
+import type { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import {
-  UploadVideoStreamInputPort,
+  type UploadVideoStreamInputPort,
   UploadVideoStreamPort,
   UploadVideoStreamOutputPort
 } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.port';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
 import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.types';
-import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 
 type UploadVideoStreamConfig = {
   clientUrl: string;

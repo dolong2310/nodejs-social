@@ -1,8 +1,8 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
-import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { BaseRoute } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import type { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import type { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
 import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';

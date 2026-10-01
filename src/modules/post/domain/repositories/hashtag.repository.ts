@@ -1,6 +1,6 @@
-import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import {
+import type { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
+import type {
   CreateHashtagInput,
   ListHashtagsInput,
   UpdateHashtagInput

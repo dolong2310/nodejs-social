@@ -1,6 +1,6 @@
-import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
-import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
-import { MarkOptional, Prettify } from 'ts-essentials';
+import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
+import type { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
+import type { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface PostProps {
   userId: string;

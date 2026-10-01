@@ -1,4 +1,4 @@
-import {
+import type {
   CreateRefreshTokenProps,
   RefreshTokenProps
 } from '@/modules/authentication/domain/entities/refresh-token.types';

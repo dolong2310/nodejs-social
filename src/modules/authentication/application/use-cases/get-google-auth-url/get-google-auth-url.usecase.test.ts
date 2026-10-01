@@ -1,4 +1,4 @@
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
+import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { GetGoogleAuthUrlInputPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
 import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
 import { mockPort } from '@test/support/mocks/port.mock';

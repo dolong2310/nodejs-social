@@ -1,10 +1,13 @@
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import {
   OnlyOwnerOrAdminCanDeletePostException,
   PostNotFoundException
 } from '@/modules/post/application/exceptions/post.exception';
-import { DeletePostInputPort, DeletePostPort } from '@/modules/post/application/use-cases/delete-post/delete-post.port';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import {
+  type DeletePostInputPort,
+  DeletePostPort
+} from '@/modules/post/application/use-cases/delete-post/delete-post.port';
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 
 export class DeletePostUseCase extends DeletePostPort {
   constructor(

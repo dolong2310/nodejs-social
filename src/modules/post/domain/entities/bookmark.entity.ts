@@ -3,7 +3,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { BookmarkProps, CreateBookmarkProps } from '@/modules/post/domain/entities/bookmark.types';
+import type { BookmarkProps, CreateBookmarkProps } from '@/modules/post/domain/entities/bookmark.types';
 
 export class BookmarkEntity extends Entity<BookmarkProps> {
   static create(createProps: CreateBookmarkProps) {

@@ -1,4 +1,4 @@
-import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
+import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
 import type { Prettify } from 'ts-essentials';
 
 export type PaymentProvider = 'vnpay' | 'momo';

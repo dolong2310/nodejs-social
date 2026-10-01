@@ -1,20 +1,20 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { PostServicePort } from '@/modules/post/application/services/post.service';
+import type { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetPostsByUserPort,
-  GetPostsByUserInputPort,
+  type GetPostsByUserInputPort,
   GetPostsByUserOutputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
   CannotViewUserProfileBlockedException,
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 
 export class GetPostsByUserUseCase extends GetPostsByUserPort {
   constructor(

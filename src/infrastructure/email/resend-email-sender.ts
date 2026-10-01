@@ -1,9 +1,9 @@
-import {
+import type {
   EmailSenderPort,
   EmailTemplatePayload,
   SendEmailPayload
 } from '@/modules/core/application/ports/email-sender.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

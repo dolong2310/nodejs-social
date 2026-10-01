@@ -4,9 +4,9 @@ import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/module
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
-  CreateVideoStatusProps,
+  type CreateVideoStatusProps,
   EnumEncodingVideoStatus,
-  VideoStatusProps
+  type VideoStatusProps
 } from '@/modules/media/domain/entities/video-status.types';
 
 export class VideoStatusEntity extends Entity<VideoStatusProps> {

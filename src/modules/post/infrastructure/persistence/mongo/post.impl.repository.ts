@@ -1,15 +1,15 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import {
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import type {
   CreatePostInput,
   DeletePostTreeInput,
   UpdatePostInput
 } from '@/modules/post/domain/repositories/post.repository.types';
-import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
-import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
-import { Db, MongoClient } from 'mongodb';
+import type { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
+import type { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
+import type { Db, MongoClient } from 'mongodb';
 
 export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> implements PostRepositoryPort {
   protected collectionName = 'posts';

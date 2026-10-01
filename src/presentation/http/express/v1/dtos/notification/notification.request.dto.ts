@@ -1,5 +1,5 @@
-import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export class MarkNotificationsReadBodyDTO {
   ids?: string[];

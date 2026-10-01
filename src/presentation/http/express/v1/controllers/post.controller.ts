@@ -1,43 +1,43 @@
-import { BookmarkPostPort } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.port';
-import { CreatePostPort } from '@/modules/post/application/use-cases/create-post/create-post.port';
-import { DeletePostPort } from '@/modules/post/application/use-cases/delete-post/delete-post.port';
-import { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
-import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
+import type { BookmarkPostPort } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.port';
+import type { CreatePostPort } from '@/modules/post/application/use-cases/create-post/create-post.port';
+import type { DeletePostPort } from '@/modules/post/application/use-cases/delete-post/delete-post.port';
+import type { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
+import type { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
 import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.types';
 import {
-  GetPostDetailPort,
+  type GetPostDetailPort,
   GetPostDetailInputPort
 } from '@/modules/post/application/use-cases/get-post-detail/get-post-detail.port';
 import {
-  GetPostsByUserPort,
+  type GetPostsByUserPort,
   GetPostsByUserInputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
 import {
-  GetPostsByUserInteractionPort,
+  type GetPostsByUserInteractionPort,
   GetPostsByUserInteractionInputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user-interaction/get-posts-by-user-interaction.port';
-import { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
-import { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
-import { CreateLikePort } from '@/modules/post/application/use-cases/like-post/like-post.port';
-import { UnbookmarkPostPort } from '@/modules/post/application/use-cases/unbookmark-post/unbookmark-post.port';
-import { UnlikePort } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
-import { UpdatePostPort } from '@/modules/post/application/use-cases/update-post/update-post.port';
+import type { GetPostsTypePort } from '@/modules/post/application/use-cases/get-posts-type/get-posts-type.port';
+import type { IncreaseViewsPort } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
+import type { CreateLikePort } from '@/modules/post/application/use-cases/like-post/like-post.port';
+import type { UnbookmarkPostPort } from '@/modules/post/application/use-cases/unbookmark-post/unbookmark-post.port';
+import type { UnlikePort } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
+import type { UpdatePostPort } from '@/modules/post/application/use-cases/update-post/update-post.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   CreateBookmarkRequestDTO,
   CreateLikeRequestDTO,
   CreatePostRequestDTO,
-  DeleteBookmarkParamsDTO,
-  DeleteLikeParamsDTO,
-  GetNewFeedsQueryDTO,
-  GetPostDetailParamsDTO,
-  GetPostsByUserParamsDTO,
-  GetPostsByUserQueryDTO,
-  GetPostsParamsDTO,
+  type DeleteBookmarkParamsDTO,
+  type DeleteLikeParamsDTO,
+  type GetNewFeedsQueryDTO,
+  type GetPostDetailParamsDTO,
+  type GetPostsByUserParamsDTO,
+  type GetPostsByUserQueryDTO,
+  type GetPostsParamsDTO,
   PatchPostRequestDTO
 } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
 import {
@@ -47,8 +47,8 @@ import {
   PostDetailWithAuthorResponseDTO,
   PostResponseDTO
 } from '@/presentation/http/express/v1/dtos/post/post.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPostController {
   getNewFeeds(

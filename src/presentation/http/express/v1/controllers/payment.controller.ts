@@ -1,16 +1,16 @@
-import { CreatePaymentPort } from '@/modules/payment/application/use-cases/create-payment/create-payment.port';
-import { GetPaymentPort } from '@/modules/payment/application/use-cases/get-payment/get-payment.port';
+import type { CreatePaymentPort } from '@/modules/payment/application/use-cases/create-payment/create-payment.port';
+import type { GetPaymentPort } from '@/modules/payment/application/use-cases/get-payment/get-payment.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import {
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type {
   CreatePaymentBodyDTO,
   PaymentIdParamsDTO
 } from '@/presentation/http/express/v1/dtos/payment/payment.request.dto';
 import { PaymentResponseDTO } from '@/presentation/http/express/v1/dtos/payment/payment.response.dto';
-import { Created, SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPaymentController {
   create(

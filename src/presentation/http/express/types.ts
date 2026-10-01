@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { NextFunction, Request, RequestHandler, Response } from 'express';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import type { ParamsDictionary, Query } from 'express-serve-static-core';
+import type { ParsedQs } from 'qs';
 
 export type ExpressRequestHandler = RequestHandler<ParamsDictionary, unknown, unknown, Query, Record<string, unknown>>;
 

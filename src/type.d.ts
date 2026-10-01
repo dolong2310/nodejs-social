@@ -1,7 +1,7 @@
-import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { REFRESH_TOKEN_COOKIE_NAME } from '@/presentation/http/express/constants/auth.constants';
+import type { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { REFRESH_TOKEN_COOKIE_NAME } from '@/presentation/http/express/constants/auth.constants';
 import 'express';
 import type { Logger } from 'pino';
 

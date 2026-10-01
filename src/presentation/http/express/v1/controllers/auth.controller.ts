@@ -1,11 +1,11 @@
-import { Disable2FAPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
-import { ForgotPasswordPort } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
-import { LoginEmailPort } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
-import { LogoutPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
-import { RefreshTokenPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
-import { RegisterPort } from '@/modules/authentication/application/use-cases/register/register.port';
-import { SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
-import { Setup2FAPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
+import type { Disable2FAPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
+import type { ForgotPasswordPort } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
+import type { LoginEmailPort } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
+import type { LogoutPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
+import type { RefreshTokenPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
+import type { RegisterPort } from '@/modules/authentication/application/use-cases/register/register.port';
+import type { SendOtpPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
+import type { Setup2FAPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
@@ -13,8 +13,8 @@ import {
 } from '@/presentation/http/express/constants/auth.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { Created, SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   Disable2faRequestDTO,
   ForgotPasswordRequestDTO,
@@ -25,17 +25,17 @@ import {
   SendOtpRequestDTO
 } from '@/presentation/http/express/v1/dtos/auth/auth.request.dto';
 import {
-  Disable2faResponseDTO,
+  type Disable2faResponseDTO,
   Enable2faResponseDTO,
-  ForgotPasswordResponseDTO,
-  LoginResponseDTO,
-  LogoutResponseDTO,
-  RefreshTokenResponseDTO,
-  RegisterResponseDTO,
-  SendOtpResponseDTO
+  type ForgotPasswordResponseDTO,
+  type LoginResponseDTO,
+  type LogoutResponseDTO,
+  type RefreshTokenResponseDTO,
+  type RegisterResponseDTO,
+  type SendOtpResponseDTO
 } from '@/presentation/http/express/v1/dtos/auth/auth.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IAuthController {
   register(

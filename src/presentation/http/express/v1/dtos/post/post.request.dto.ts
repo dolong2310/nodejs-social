@@ -1,11 +1,11 @@
-import {
+import type {
   CreatePostProps,
   EnumNewFeedFilter,
   EnumPostAudience,
   EnumPostType
 } from '@/modules/post/domain/entities/post.types';
-import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
-import { ParamsDictionary, Query } from 'express-serve-static-core';
+import { type IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
+import type { ParamsDictionary, Query } from 'express-serve-static-core';
 
 function toMedia(item: Media | IMedia): Media {
   return item instanceof Media ? item : new Media(item);

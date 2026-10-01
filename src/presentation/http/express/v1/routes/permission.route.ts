@@ -1,16 +1,16 @@
 import { PERMISSION_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/permission.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
+import type { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
+import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import type { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
 
 export class PermissionRoute extends BaseRoute {
   protected override readonly version = 'v1';

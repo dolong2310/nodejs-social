@@ -1,10 +1,10 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import {
-  UploadImageInputPort,
+  type UploadImageInputPort,
   UploadImagePort,
   UploadImageOutputPort
 } from '@/modules/media/application/use-cases/upload-image/upload-image.port';

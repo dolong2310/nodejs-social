@@ -1,6 +1,6 @@
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import {
-  GetConversationPresenceInputPort,
+  type GetConversationPresenceInputPort,
   GetConversationPresencePort
 } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.port';
 

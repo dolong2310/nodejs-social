@@ -1,5 +1,5 @@
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { IPaymentCallbackController } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
+import type { IPaymentCallbackController } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
 
 export class PaymentCallbackRoute extends BaseRoute {
   protected override readonly version = 'v1';

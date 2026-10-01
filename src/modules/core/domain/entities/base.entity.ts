@@ -1,4 +1,4 @@
-import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
+import type { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import {
   ArgumentInvalidException,
   ArgumentNotProvidedException,

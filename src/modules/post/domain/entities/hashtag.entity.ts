@@ -8,7 +8,7 @@ import {
 } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { CreateHashtagProps, HashtagProps } from '@/modules/post/domain/entities/hashtag.types';
+import type { CreateHashtagProps, HashtagProps } from '@/modules/post/domain/entities/hashtag.types';
 
 export class HashtagEntity extends Entity<HashtagProps> {
   static create(createProps: CreateHashtagProps) {

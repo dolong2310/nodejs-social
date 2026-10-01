@@ -24,12 +24,7 @@ import {
 } from '@/infrastructure/persistence/postgres/migrations/20260929000000-payments-audit';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import {
-  PaymentFullProps,
-  PaymentProps,
-  PaymentProvider,
-  VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentFullProps, PaymentProps, PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import { PaymentRepository as MongoPaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
 import { PaymentMapper as MongoPaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
 import type { PaymentModel as MongoPaymentModel } from '@/modules/payment/infrastructure/persistence/mongo/payment.model';

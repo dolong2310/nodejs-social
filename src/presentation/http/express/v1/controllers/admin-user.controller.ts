@@ -1,38 +1,38 @@
 import {
   AdminCreateUserInputPort,
-  AdminCreateUserPort
+  type AdminCreateUserPort
 } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import {
   AdminDeleteUserInputPort,
-  AdminDeleteUserPort
+  type AdminDeleteUserPort
 } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import {
-  AdminGetUserPort,
+  type AdminGetUserPort,
   AdminGetUserInputPort
 } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.port';
 import {
-  AdminListUsersPort,
+  type AdminListUsersPort,
   AdminListUsersInputPort
 } from '@/modules/user/application/use-cases/admin-list-users/admin-list-users.port';
 import {
   AdminUpdateUserInputPort,
-  AdminUpdateUserPort
+  type AdminUpdateUserPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
-  AdminCreateUserRequestBody,
+  type AdminCreateUserRequestBody,
   AdminCreateUserRequestDTO,
-  AdminUpdateUserRequestBody,
+  type AdminUpdateUserRequestBody,
   AdminUpdateUserRequestDTO,
-  AdminUserIdParamsDTO
+  type AdminUserIdParamsDTO
 } from '@/presentation/http/express/v1/dtos/user/admin-user.request.dto';
 import { UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IAdminUserController {
   list(

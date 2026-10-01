@@ -1,13 +1,13 @@
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import {
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type {
   AvailableRoute,
   RoutePermissionCatalogPort
 } from '@/modules/operations/application/ports/route-permission-catalog.port';
 import {
-  RolePermissionSyncOutputPort,
+  type RolePermissionSyncOutputPort,
   SyncRolePermissionsPort
 } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.port';
 

@@ -1,13 +1,13 @@
 import { convertObjectToSnakeCase } from '@/modules/common/utils/object-case.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { Entity as DomainEntity } from '@/modules/core/domain/entities/base.entity';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { Entity as DomainEntity } from '@/modules/core/domain/entities/base.entity';
 import {
-  Options,
+  type Options,
   Paginated,
-  PaginatedQueryParams,
-  RepositoryPort
+  type PaginatedQueryParams,
+  type RepositoryPort
 } from '@/modules/core/domain/repositories/port.repository';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import type { ClientSession, Collection, Db, Filter, MongoClient, OptionalUnlessRequiredId } from 'mongodb';
 
 export abstract class MongoRepositoryBase<

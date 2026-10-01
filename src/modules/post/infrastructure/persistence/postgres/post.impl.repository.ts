@@ -1,14 +1,14 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import {
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import type {
   CreatePostInput,
   DeletePostTreeInput,
   UpdatePostInput
 } from '@/modules/post/domain/repositories/post.repository.types';
-import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
-import { PostModel } from '@/modules/post/infrastructure/persistence/postgres/post.model';
+import type { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
+import type { PostModel } from '@/modules/post/infrastructure/persistence/postgres/post.model';
 import type { Pool } from 'pg';
 
 export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel> implements PostRepositoryPort {

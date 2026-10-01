@@ -1,10 +1,10 @@
 import {
-  GetSecretKeyResult,
-  JwtModuleOptions,
-  JwtPort,
+  type GetSecretKeyResult,
+  type JwtModuleOptions,
+  type JwtPort,
   JwtSecretRequestType,
-  JwtSignOptions,
-  JwtVerifyOptions
+  type JwtSignOptions,
+  type JwtVerifyOptions
 } from '@/modules/authentication/application/ports/jwt.port';
 import jwt from 'jsonwebtoken';
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
 import { VNPay } from '@longdoo/node-payment-gateway';
 import type { ReturnQueryFromVNPay } from '@longdoo/node-payment-gateway/vnpay';
 import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';

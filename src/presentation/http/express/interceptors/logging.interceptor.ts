@@ -1,6 +1,6 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
-import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
+import type { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { HttpException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
 import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';

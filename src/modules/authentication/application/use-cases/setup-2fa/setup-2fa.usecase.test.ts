@@ -1,9 +1,9 @@
-import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { Setup2FAInputPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';

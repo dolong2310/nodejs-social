@@ -2,17 +2,17 @@ import {
   BlockAlreadyExistsException,
   CannotBlockYourselfException
 } from '@/modules/relationship/application/exceptions/block.exception';
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  BlockUserInputPort,
+  type BlockUserInputPort,
   BlockUserPort
 } from '@/modules/relationship/application/use-cases/block-user/block-user.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class BlockUserUseCase extends BlockUserPort {
   constructor(

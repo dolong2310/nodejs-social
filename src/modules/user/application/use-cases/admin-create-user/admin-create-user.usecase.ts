@@ -1,21 +1,21 @@
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import {
   CannotAssignAdminRoleException,
   UserAlreadyExistsException,
   UsernameAlreadyExistsException
 } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  AdminCreateUserInputPort,
+  type AdminCreateUserInputPort,
   AdminCreateUserPort,
   AdminCreateUserOutputPort
 } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminCreateUserUseCase extends AdminCreateUserPort {
   constructor(

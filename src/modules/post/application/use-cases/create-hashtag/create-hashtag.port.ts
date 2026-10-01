@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
 
 export class CreateHashtagInputPort {
   name: string;

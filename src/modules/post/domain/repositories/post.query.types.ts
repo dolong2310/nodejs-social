@@ -1,8 +1,8 @@
-import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
-import { EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
-import { Prettify } from 'ts-essentials';
+import type { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
+import type { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
+import type { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
+import type { EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
+import type { Prettify } from 'ts-essentials';
 
 export interface IsUserInteractedWithPostInput {
   postId: string;

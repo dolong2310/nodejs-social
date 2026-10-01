@@ -1,9 +1,9 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
-import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
+import type { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
 import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import {
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type {
   FindGuestPostsInput,
   FindPostIdsWhereUserInteractedWithAuthorsInput,
   FindPostsByUserIdInput,
@@ -696,8 +696,7 @@ export class PostQueryRepository implements PostQueryRepositoryPort {
             id: String(author.id),
             name: String(author.name),
             email: String(author.email),
-            username:
-              author.username === null || author.username === undefined ? undefined : String(author.username),
+            username: author.username === null || author.username === undefined ? undefined : String(author.username),
             avatar: author.avatar === null || author.avatar === undefined ? undefined : String(author.avatar)
           }
         : (undefined as unknown as PostDetailWithAuthorOutput['author'])

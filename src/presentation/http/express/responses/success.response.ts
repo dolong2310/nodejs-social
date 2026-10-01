@@ -1,6 +1,6 @@
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 export interface SuccessResponseParams<T> {
   message?: string;

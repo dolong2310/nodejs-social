@@ -1,12 +1,12 @@
-import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
-import {
+import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import type {
   IncreasePostsViewsInput,
   IncreasePostViewsInput,
   IncreasePostViewsOutput
 } from '@/modules/post/domain/repositories/post.command.types';
-import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
-import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
-import { Collection, Db, MongoClient } from 'mongodb';
+import type { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
+import type { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
+import type { Collection, Db, MongoClient } from 'mongodb';
 
 export class PostCommandRepository implements PostCommandRepositoryPort {
   constructor(

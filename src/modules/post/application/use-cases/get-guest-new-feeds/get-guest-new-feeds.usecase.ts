@@ -1,14 +1,14 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { PostServicePort } from '@/modules/post/application/services/post.service';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetGuestNewFeedsPort,
-  GetGuestNewFeedsInputPort,
+  type GetGuestNewFeedsInputPort,
   GetGuestNewFeedsOutputPort
 } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
   private readonly log: LoggerPort;

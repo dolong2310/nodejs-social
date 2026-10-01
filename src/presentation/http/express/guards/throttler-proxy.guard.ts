@@ -1,10 +1,10 @@
-import { IAppConfig } from '@/bootstrap/types/app.types';
-import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import type { IAppConfig } from '@/bootstrap/types/app.types';
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createRateLimitStore } from '@/infrastructure/persistence/redis/rate-limit-store';
 import { RATE_LIMIT_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
-import { Request, type RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 export type ThrottlePolicy = Readonly<{

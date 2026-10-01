@@ -1,9 +1,9 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
-import { VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.types';
+import type { VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.types';
 import {
-  VideoStatusModel,
+  type VideoStatusModel,
   videoStatusSchema
 } from '@/modules/media/infrastructure/persistence/postgres/video-status.model';
 import { parse } from 'valibot';

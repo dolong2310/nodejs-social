@@ -1,5 +1,5 @@
-import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class GetPermissionInputPort {
   id: string;

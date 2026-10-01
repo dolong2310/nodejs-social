@@ -1,10 +1,10 @@
 import { NoActiveBlockException } from '@/modules/relationship/application/exceptions/block.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  UnblockUserInputPort,
+  type UnblockUserInputPort,
   UnblockUserPort
 } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 export class UnblockUserUseCase extends UnblockUserPort {
   constructor(

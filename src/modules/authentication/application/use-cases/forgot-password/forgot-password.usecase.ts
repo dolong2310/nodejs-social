@@ -1,16 +1,16 @@
 import { EmailNotFoundException } from '@/modules/authentication/application/exceptions/auth.exception';
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  ForgotPasswordInputPort,
+  type ForgotPasswordInputPort,
   ForgotPasswordPort
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class ForgotPasswordUseCase extends ForgotPasswordPort {
   constructor(

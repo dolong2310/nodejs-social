@@ -1,11 +1,11 @@
 import { OPERATIONS_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/operations.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IOperationsController } from '@/presentation/http/express/v1/controllers/operations.controller';
+import type { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IOperationsController } from '@/presentation/http/express/v1/controllers/operations.controller';
 
 export class OperationsRoute extends BaseRoute {
   protected override readonly version = 'v1';

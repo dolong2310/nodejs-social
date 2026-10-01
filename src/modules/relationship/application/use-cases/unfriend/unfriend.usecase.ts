@@ -1,7 +1,10 @@
 import { NoFriendshipWithUserException } from '@/modules/relationship/application/exceptions/friend.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
-import { UnfriendInputPort, UnfriendPort } from '@/modules/relationship/application/use-cases/unfriend/unfriend.port';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import {
+  type UnfriendInputPort,
+  UnfriendPort
+} from '@/modules/relationship/application/use-cases/unfriend/unfriend.port';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export class UnfriendUseCase extends UnfriendPort {
   constructor(

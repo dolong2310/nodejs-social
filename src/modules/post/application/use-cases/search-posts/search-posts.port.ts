@@ -1,6 +1,6 @@
-import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class SearchPostsInputPort {
   userId?: string;

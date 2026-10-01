@@ -4,17 +4,17 @@ import {
   ConversationPeerBlockedException,
   ConversationPeerNotFriendException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  GetOrCreateConversationInputPort,
+  type GetOrCreateConversationInputPort,
   GetOrCreateConversationPort,
   GetOrCreateConversationOutputPort
 } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Create a direct room when it does not exist; otherwise return the existing room.

@@ -1,6 +1,6 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { GetGoogleAuthUrlPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
-import { LoginGooglePort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
+import type { GetGoogleAuthUrlPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
+import type { LoginGooglePort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
@@ -8,13 +8,13 @@ import {
 } from '@/presentation/http/express/constants/auth.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import {
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type {
   GetGoogleAuthUrlQueryDTO,
   OAuthGoogleLoginQueryDTO
 } from '@/presentation/http/express/v1/dtos/oauth/oauth.request.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IOAuthController {
   getGoogleAuthUrl(

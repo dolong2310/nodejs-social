@@ -1,5 +1,5 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { EnumDatabaseDriver } from '@/infrastructure/persistence/database.port';
+import type { EnumDatabaseDriver } from '@/infrastructure/persistence/database.port';
 
 export const dbConfig = {
   driver: envConfig.DATABASE_ADAPTER as EnumDatabaseDriver,

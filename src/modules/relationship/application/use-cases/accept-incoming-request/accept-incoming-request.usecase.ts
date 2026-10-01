@@ -1,16 +1,16 @@
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import {
   FriendActionBlockedException,
   NoPendingFriendRequestException
 } from '@/modules/relationship/application/exceptions/friend.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  AcceptIncomingRequestInputPort,
+  type AcceptIncomingRequestInputPort,
   AcceptIncomingRequestPort
 } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
   constructor(

@@ -3,12 +3,12 @@ import {
   ConversationPeerNotFriendException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
 import {
-  CreateGroupInputPort,
+  type CreateGroupInputPort,
   CreateGroupPort,
   CreateGroupOutputPort
 } from '@/modules/conversation/application/use-cases/create-group/create-group.port';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export class CreateGroupUseCase extends CreateGroupPort {
   constructor(

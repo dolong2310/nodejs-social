@@ -1,6 +1,6 @@
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
+import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import {
-  GetGoogleAuthUrlInputPort,
+  type GetGoogleAuthUrlInputPort,
   GetGoogleAuthUrlPort
 } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
 

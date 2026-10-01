@@ -1,6 +1,6 @@
-import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
+import type { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class CreatePermissionInputPort implements CreatePermissionProps {
   name: string;

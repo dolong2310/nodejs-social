@@ -2,17 +2,17 @@ import {
   ConversationNotFoundException,
   ConversationNotMemberException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import {
+import type {
   AssertMemberPayload,
   ConversationDetailResult,
   GetDirectPeerIdPayload,
   MapConversationDetailPayload
 } from '@/modules/conversation/application/services/conversation.service.types';
-import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import type { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
 export interface ConversationServicePort {
   getDirectPeerId(payload: GetDirectPeerIdPayload): string;

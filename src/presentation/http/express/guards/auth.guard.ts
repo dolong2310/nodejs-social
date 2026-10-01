@@ -1,14 +1,14 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import {
+import type {
   AccessTokenPayload,
   TokenServicePort
 } from '@/modules/authentication/application/services/token.service.types';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constants';
-import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
-import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { BaseGuard } from '@/presentation/http/express/core/base.guard';
+import type { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   NoTokenProvidedException,
   TokenHasExpiredException
@@ -17,10 +17,10 @@ import { TokenInvalidException } from '@/presentation/http/express/exceptions/to
 import { ForbiddenException, UnauthorizedException } from '@/presentation/http/express/responses/error.response';
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { resolveUrlPath } from '@/presentation/http/express/utils/url.util';
-import { Request } from 'express';
+import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { keyBy, omit } from 'lodash-es';
-import { Dictionary, Prettify } from 'ts-essentials';
+import type { Dictionary, Prettify } from 'ts-essentials';
 
 type CachedRole = Prettify<RoleWithPermissions & { permissionsMap: Dictionary<PermissionFullProps> }>;
 

@@ -1,10 +1,10 @@
 import {
   HashtagListItem,
   ListHashtagsPort,
-  ListHashtagsInputPort,
+  type ListHashtagsInputPort,
   ListHashtagsOutputPort
 } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
-import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 
 export class ListHashtagsUseCase extends ListHashtagsPort {
   constructor(private readonly hashtagRepository: HashtagRepositoryPort) {

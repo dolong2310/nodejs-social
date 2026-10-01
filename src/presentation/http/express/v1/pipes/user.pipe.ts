@@ -6,11 +6,11 @@ import {
   InvalidUserIdException,
   UsernameFormatInvalidException
 } from '@/presentation/http/express/exceptions/user.exception';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { confirmPasswordSchema, passwordSchema } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { Request } from 'express';
-import { Location, ParamSchema, checkSchema } from 'express-validator';
+import type { Request } from 'express';
+import { type Location, type ParamSchema, checkSchema } from 'express-validator';
 
 export const nameSchema: ParamSchema = {
   notEmpty: {

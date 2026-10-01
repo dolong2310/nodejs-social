@@ -1,5 +1,8 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { ObjectStoragePort, ObjectStorageUploadResult } from '@/modules/media/application/ports/object-storage.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
+  ObjectStoragePort,
+  ObjectStorageUploadResult
+} from '@/modules/media/application/ports/object-storage.port';
 import { v2 as cloudinary } from 'cloudinary';
 import path from 'node:path';
 import { Readable, type Writable } from 'node:stream';

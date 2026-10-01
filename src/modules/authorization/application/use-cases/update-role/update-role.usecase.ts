@@ -7,14 +7,14 @@ import {
 } from '@/modules/authorization/application/exceptions/role.exception';
 import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
 import {
-  UpdateRoleInputPort,
+  type UpdateRoleInputPort,
   UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.types';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class UpdateRoleUseCase extends UpdateRolePort {
   constructor(

@@ -3,7 +3,7 @@ import { MODULE_TAG_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 

@@ -1,7 +1,7 @@
 import { EMAIL_REGEX } from '@/modules/common/constants/regex.constants';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { DomainPrimitive, ValueObject } from '@/modules/core/domain/value-objects/value-object.base';
+import { type DomainPrimitive, ValueObject } from '@/modules/core/domain/value-objects/value-object.base';
 
 export class EmailAddress extends ValueObject<string> {
   constructor(value: string) {

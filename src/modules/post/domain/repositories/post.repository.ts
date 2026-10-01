@@ -1,6 +1,6 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { PostEntity } from '@/modules/post/domain/entities/post.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { PostEntity } from '@/modules/post/domain/entities/post.entity';
+import type {
   CreatePostInput,
   DeletePostTreeInput,
   UpdatePostInput

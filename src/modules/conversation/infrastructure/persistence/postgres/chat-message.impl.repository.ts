@@ -1,12 +1,12 @@
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import {
+import type { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import type {
   CreateMessageInput,
   FindMessagesInput
 } from '@/modules/conversation/domain/repositories/chat-message.repository.types';
-import { ChatMessageMapper } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.mapper';
-import { ChatMessageModel } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ChatMessageMapper } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.mapper';
+import type { ChatMessageModel } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 

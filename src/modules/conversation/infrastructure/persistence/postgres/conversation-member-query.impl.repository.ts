@@ -1,5 +1,5 @@
-import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
-import {
+import type { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
+import type {
   ListConversationsForUserInput,
   ListConversationsForUserOutput
 } from '@/modules/conversation/domain/repositories/conversation-member.query.types';

@@ -1,5 +1,5 @@
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 
 export interface AuthServicePort {
   createAuthSession(

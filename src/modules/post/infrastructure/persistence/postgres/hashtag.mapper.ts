@@ -1,8 +1,8 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
-import { HashtagModel, hashtagSchema } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
+import type { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
+import { type HashtagModel, hashtagSchema } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
 import { parse } from 'valibot';
 
 export class HashtagMapper implements Mapper<HashtagEntity, HashtagModel, HashtagFullProps> {

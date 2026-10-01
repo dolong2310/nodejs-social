@@ -8,7 +8,7 @@ import type {
   ExpressResponse
 } from '@/presentation/http/express/types';
 import { runRequestHandler } from '@/presentation/http/express/utils/request-handler.util';
-import express, { NextFunction, Router } from 'express';
+import express, { type NextFunction, type Router } from 'express';
 
 export interface RouterConfig {
   path: string;

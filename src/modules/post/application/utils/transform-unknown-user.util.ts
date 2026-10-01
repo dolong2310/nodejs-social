@@ -2,7 +2,7 @@
  * consistent "unknown user" payloads when a user must not see a blocked author's PII but may still see post content they previously engaged with (like, bookmark, or comment on that post).
  */
 
-import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 
 /** Sentinel id — not a real user; clients must not link to profile. */

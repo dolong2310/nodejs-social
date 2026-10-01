@@ -1,6 +1,6 @@
 import { DeleteExpiredOtpsInputPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredOtpsUseCase } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.usecase';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
 

@@ -1,12 +1,12 @@
 import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
-import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
+import type { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
-  UnlikeInputPort,
+  type UnlikeInputPort,
   UnlikePort,
   UnlikeOutputPort
 } from '@/modules/post/application/use-cases/unlike-post/unlike-post.port';
-import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 
 export class UnlikePostUseCase extends UnlikePort {
   constructor(

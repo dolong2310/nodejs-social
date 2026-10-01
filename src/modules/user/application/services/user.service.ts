@@ -1,10 +1,10 @@
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constants';
-import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export interface UserServicePort {
   findUserById(userId: string, options: { querySafe: true }): Promise<UserSafeProps | null>;

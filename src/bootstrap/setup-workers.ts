@@ -1,5 +1,5 @@
 import { appConfig } from '@/bootstrap/config/app.config';
-import { IContainer } from '@/bootstrap/container';
+import type { IContainer } from '@/bootstrap/container';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import { OtpEmailWorker } from '@/modules/authentication/infrastructure/queue/otp-email.worker';

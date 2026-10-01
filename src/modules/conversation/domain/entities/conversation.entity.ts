@@ -1,7 +1,7 @@
 import {
-  ConversationProps,
-  CreateDirectConversationProps,
-  CreateGroupConversationProps,
+  type ConversationProps,
+  type CreateDirectConversationProps,
+  type CreateGroupConversationProps,
   EnumConversationType
 } from '@/modules/conversation/domain/entities/conversation.types';
 import { Entity } from '@/modules/core/domain/entities/base.entity';

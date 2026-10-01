@@ -1,13 +1,13 @@
 import { ConversationNotFoundException } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  MarkReadInputPort,
+  type MarkReadInputPort,
   MarkReadPort
 } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.port';
-import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
+import type { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 
 export class MarkReadUseCase extends MarkReadPort {
   constructor(
@@ -39,8 +39,9 @@ export class MarkReadUseCase extends MarkReadPort {
     } else {
       // Load the latest message in the conversation.
       const entities = await this.chatMessageRepository.findMessages(conversationId, { limit: 1, before: undefined });
-      if (!entities.length) return;
-      messageEntity = entities[0];
+      const [latest] = entities;
+      if (!latest) return;
+      messageEntity = latest;
       messageId = messageEntity.id.toString();
       // Check whether messageId is valid.
       // messageId must exist and belong to conversationId, avoiding deleted messages or messages from another conversation.

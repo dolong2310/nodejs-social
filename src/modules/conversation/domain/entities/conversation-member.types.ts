@@ -1,5 +1,5 @@
-import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
-import { MarkOptional, Prettify } from 'ts-essentials';
+import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
+import type { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface ConversationMemberProps {
   conversationId: string;

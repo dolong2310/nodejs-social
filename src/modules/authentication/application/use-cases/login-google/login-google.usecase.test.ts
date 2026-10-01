@@ -1,11 +1,11 @@
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { LoginGoogleInputPort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import { LoginGoogleUseCase } from '@/modules/authentication/application/use-cases/login-google/login-google.usecase';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';

@@ -1,8 +1,8 @@
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   CannotAssignAdminRoleException,
@@ -11,15 +11,15 @@ import {
   UserNotFoundException,
   UsernameAlreadyExistsException
 } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  AdminUpdateUserInputPort,
+  type AdminUpdateUserInputPort,
   AdminUpdateUserOutputPort,
   AdminUpdateUserPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminUpdateUserUseCase extends AdminUpdateUserPort {
   constructor(

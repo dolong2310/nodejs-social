@@ -1,15 +1,15 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
-import {
+import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import type {
   CreateHashtagInput,
   ListHashtagsInput,
   UpdateHashtagInput
 } from '@/modules/post/domain/repositories/hashtag.repository.types';
-import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
-import { HashtagModel } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
-import { Options } from '@/modules/core/domain/repositories/port.repository';
+import type { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
+import type { HashtagModel } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
+import type { Options } from '@/modules/core/domain/repositories/port.repository';
 import type { Pool } from 'pg';
 
 export class HashtagRepository

@@ -1,5 +1,5 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { SuccessResponse } from '@/presentation/http/express/responses/success.response';
 import type { ControllerResult, ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 

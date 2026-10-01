@@ -1,11 +1,11 @@
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { ChatMessageFullProps } from '@/modules/conversation/domain/entities/chat-message.types';
+import type { ChatMessageFullProps } from '@/modules/conversation/domain/entities/chat-message.types';
 import {
-  ChatMessageModel,
+  type ChatMessageModel,
   chatMessageSchema
 } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';
 
 export class ChatMessageMapper implements Mapper<ChatMessageEntity, ChatMessageModel, ChatMessageFullProps> {

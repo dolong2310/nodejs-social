@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import {
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type {
   PostDetailWithAuthorOutput,
   PostUserInteractionType
 } from '@/modules/post/domain/repositories/post.query.types';

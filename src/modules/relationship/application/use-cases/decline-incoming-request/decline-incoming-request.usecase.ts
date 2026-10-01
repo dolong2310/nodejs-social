@@ -1,10 +1,10 @@
 import { NoPendingFriendRequestException } from '@/modules/relationship/application/exceptions/friend.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  DeclineIncomingRequestInputPort,
+  type DeclineIncomingRequestInputPort,
   DeclineIncomingRequestPort
 } from '@/modules/relationship/application/use-cases/decline-incoming-request/decline-incoming-request.port';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
 
 export class DeclineIncomingRequestUseCase extends DeclineIncomingRequestPort {
   constructor(

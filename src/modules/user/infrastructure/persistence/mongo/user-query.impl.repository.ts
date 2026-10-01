@@ -1,14 +1,14 @@
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
-import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import {
+import type { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type {
   FindUsersForSearchInput,
   RoleFullProps,
   UserWithRole
 } from '@/modules/user/domain/repositories/user.query.types';
-import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
-import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import type { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
+import type { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
+import type { Collection, Db, Document, MongoClient } from 'mongodb';
 
 type RoleModel = {
   _id: string;

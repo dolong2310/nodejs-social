@@ -4,14 +4,14 @@ import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/module
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
-  CreatePaymentProps,
+  type CreatePaymentProps,
   MAX_PAYMENT_AMOUNT_VND,
   MAX_PAYMENT_DESCRIPTION_LENGTH,
   MAX_PAYMENT_SOURCE_REFERENCE_LENGTH,
   MIN_PAYMENT_AMOUNT_VND,
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
-  PaymentProps
+  type PaymentProps
 } from '@/modules/payment/domain/entities/payment.types';
 import { createHash } from 'node:crypto';
 

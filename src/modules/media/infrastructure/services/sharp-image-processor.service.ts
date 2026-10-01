@@ -1,4 +1,4 @@
-import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import type { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
 import sharp from 'sharp';
 
 export class SharpImageProcessor implements ImageProcessorPort {

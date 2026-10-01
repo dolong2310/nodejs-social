@@ -1,4 +1,4 @@
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { GetMeInputPort } from '@/modules/user/application/use-cases/get-me/get-me.port';
 import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me.usecase';
 import { makeUserSafeProps } from '@test/support/builders/user.builder';

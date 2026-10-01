@@ -1,4 +1,4 @@
-import { type Algorithm, type Secret } from 'jsonwebtoken';
+import type { Algorithm, Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 
 // Access Token

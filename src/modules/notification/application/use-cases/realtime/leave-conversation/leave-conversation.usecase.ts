@@ -1,9 +1,9 @@
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
-  LeaveConversationInputPort,
+  type LeaveConversationInputPort,
   LeaveConversationPort,
-  LeaveConversationOutputPort
+  type LeaveConversationOutputPort
 } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
 
 export class LeaveConversationUseCase extends LeaveConversationPort {

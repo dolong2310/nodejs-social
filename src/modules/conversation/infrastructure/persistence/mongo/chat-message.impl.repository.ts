@@ -1,14 +1,14 @@
 import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import {
+import type { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import type {
   CreateMessageInput,
   FindMessagesInput
 } from '@/modules/conversation/domain/repositories/chat-message.repository.types';
-import { ChatMessageMapper } from '@/modules/conversation/infrastructure/persistence/mongo/chat-message.mapper';
-import { ChatMessageModel } from '@/modules/conversation/infrastructure/persistence/mongo/chat-message.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ChatMessageMapper } from '@/modules/conversation/infrastructure/persistence/mongo/chat-message.mapper';
+import type { ChatMessageModel } from '@/modules/conversation/infrastructure/persistence/mongo/chat-message.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, Filter, MongoClient } from 'mongodb';
+import type { Db, Filter, MongoClient } from 'mongodb';
 
 export class ChatMessageRepository
   extends MongoRepositoryBase<ChatMessageEntity, ChatMessageModel>

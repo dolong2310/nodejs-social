@@ -1,10 +1,10 @@
 import { HashtagNameAlreadyExistsException } from '@/modules/post/application/exceptions/hashtag.exception';
 import {
-  CreateHashtagInputPort,
+  type CreateHashtagInputPort,
   CreateHashtagPort
 } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.port';
 import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
-import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 
 export class CreateHashtagUseCase extends CreateHashtagPort {
   constructor(private readonly hashtagRepository: HashtagRepositoryPort) {

@@ -1,7 +1,7 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { EnumNewFeedFilter, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
-import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
+import { type IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import {
   HashtagsCountMustBeBetween0To20Exception,
@@ -19,10 +19,10 @@ import {
   RepostMentionsMustBeEmptyException
 } from '@/presentation/http/express/exceptions/post.exception';
 import { InvalidUserIdException } from '@/presentation/http/express/exceptions/user.exception';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
-import { CreatePostRequestDTO } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
-import { checkSchema, Location } from 'express-validator';
+import type { CreatePostRequestDTO } from '@/presentation/http/express/v1/dtos/post/post.request.dto';
+import { checkSchema, type Location } from 'express-validator';
 
 export interface IPostPipe {
   postIdPipe: (key: string, location: Location) => ExpressRequestHandler;

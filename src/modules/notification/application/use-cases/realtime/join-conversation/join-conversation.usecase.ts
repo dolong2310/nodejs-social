@@ -1,7 +1,7 @@
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import {
-  JoinConversationInputPort,
+  type JoinConversationInputPort,
   JoinConversationPort,
   JoinConversationOutputPort
 } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';

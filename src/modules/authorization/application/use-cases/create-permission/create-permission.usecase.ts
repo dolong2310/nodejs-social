@@ -3,11 +3,11 @@ import {
   PermissionPathMethodConflictException
 } from '@/modules/authorization/application/exceptions/permission.exception';
 import {
-  CreatePermissionInputPort,
+  type CreatePermissionInputPort,
   CreatePermissionPort
 } from '@/modules/authorization/application/use-cases/create-permission/create-permission.port';
 import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 
 export class CreatePermissionUseCase extends CreatePermissionPort {
   constructor(private readonly permissionRepository: PermissionRepositoryPort) {

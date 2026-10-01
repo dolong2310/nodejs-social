@@ -1,12 +1,12 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import {
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
   SystemHealthBreach,
   SystemHealthJobResult,
   SystemHealthSeverity
 } from '@/modules/operations/application/ports/system-health-job.port';
-import { SystemHealthProbePort } from '@/modules/operations/application/ports/system-health-probe.port';
+import type { SystemHealthProbePort } from '@/modules/operations/application/ports/system-health-probe.port';
 import { CheckSystemHealthPort } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.port';
 
 type SystemHealthThresholds = {

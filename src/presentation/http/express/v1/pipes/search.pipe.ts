@@ -1,6 +1,6 @@
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 

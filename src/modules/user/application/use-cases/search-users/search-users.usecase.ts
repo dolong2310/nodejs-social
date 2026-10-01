@@ -1,14 +1,14 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constants';
 import {
-  SearchUsersInputPort,
+  type SearchUsersInputPort,
   SearchUsersOutputPort,
   SearchUsersPort
 } from '@/modules/user/application/use-cases/search-users/search-users.port';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
 export class SearchUsersUseCase extends SearchUsersPort {
   constructor(

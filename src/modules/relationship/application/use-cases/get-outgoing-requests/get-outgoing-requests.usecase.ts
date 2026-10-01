@@ -2,12 +2,12 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import {
   GetOutgoingRequestsPort,
-  GetOutgoingRequestsInputPort,
+  type GetOutgoingRequestsInputPort,
   GetOutgoingRequestsOutputPort
 } from '@/modules/relationship/application/use-cases/get-outgoing-requests/get-outgoing-requests.port';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.types';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { UserRecordProps } from '@/modules/user/domain/entities/user.types';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
 export class GetOutgoingRequestsUseCase extends GetOutgoingRequestsPort {
   constructor(

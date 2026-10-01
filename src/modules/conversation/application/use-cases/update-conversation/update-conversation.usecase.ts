@@ -1,14 +1,14 @@
 import { ConversationRoleForbiddenException } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  UpdateConversationInputPort,
+  type UpdateConversationInputPort,
   UpdateConversationPort,
-  UpdateConversationOutputPort
+  type UpdateConversationOutputPort
 } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
 /**
  * Update conversation information.

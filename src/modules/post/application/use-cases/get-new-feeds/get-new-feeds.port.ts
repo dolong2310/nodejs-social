@@ -1,6 +1,6 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.types';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetNewFeedsInputPort {
   userId: string;

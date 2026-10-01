@@ -1,7 +1,7 @@
-import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
+import type { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
+import type { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface OtpRepositoryPort extends RepositoryPort<OtpEntity> {
   findUniqueOtpCode(data: { email: string; type: EnumOtpType }): Promise<OtpEntity | null>;

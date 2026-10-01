@@ -1,4 +1,4 @@
-import { CreateHashtagProps } from '@/modules/post/domain/entities/hashtag.types';
+import type { CreateHashtagProps } from '@/modules/post/domain/entities/hashtag.types';
 
 export interface CreateHashtagInput extends CreateHashtagProps {}
 

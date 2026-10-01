@@ -1,15 +1,15 @@
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
-import {
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
 } from '@/modules/relationship/domain/repositories/friendship.repository.types';
-import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper';
-import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.model';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+import type { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper';
+import type { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.model';
+import { type Db, type MongoClient, MongoServerError } from 'mongodb';
 
 export class FriendshipRepository
   extends MongoRepositoryBase<FriendshipEntity, FriendshipModel>

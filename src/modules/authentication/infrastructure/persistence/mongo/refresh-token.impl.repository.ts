@@ -1,14 +1,14 @@
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
-import {
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type {
   CreateRefreshTokenInput,
   RotateRefreshTokenInput
 } from '@/modules/authentication/domain/repositories/refresh-token.repository.types';
-import { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/mongo/refresh-token.mapper';
-import { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/mongo/refresh-token.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/mongo/refresh-token.mapper';
+import type { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/mongo/refresh-token.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient } from 'mongodb';
+import type { Db, MongoClient } from 'mongodb';
 
 export class RefreshTokenRepository
   extends MongoRepositoryBase<RefreshTokenEntity, RefreshTokenModel>

@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { UserRecordProps } from '@/modules/user/domain/entities/user.types';
 
 export class GetOutgoingRequestsInputPort {
   userId: string;

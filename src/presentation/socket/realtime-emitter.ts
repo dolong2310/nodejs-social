@@ -8,7 +8,7 @@ import type {
   RealtimeEmitterPort,
   RealtimeMessagePayload
 } from '@/modules/core/application/ports/realtime-emitter.port';
-import { type Server as SocketServer } from 'socket.io';
+import type { Server as SocketServer } from 'socket.io';
 
 export class RealtimeEmitter implements RealtimeEmitterPort {
   constructor(private readonly io: SocketServer) {}

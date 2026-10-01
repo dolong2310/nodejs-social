@@ -1,16 +1,16 @@
 import { UserNotEnabled2FAException } from '@/modules/authentication/application/exceptions/otp.exception';
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  Disable2FAInputPort,
+  type Disable2FAInputPort,
   Disable2FAPort
 } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class Disable2FAUseCase extends Disable2FAPort {
   constructor(

@@ -1,9 +1,9 @@
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { AdminDeleteUserInputPort } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';

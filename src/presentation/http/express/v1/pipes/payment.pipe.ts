@@ -5,7 +5,7 @@ import {
   MAX_PAYMENT_SOURCE_REFERENCE_LENGTH,
   MIN_PAYMENT_AMOUNT_VND
 } from '@/modules/payment/domain/entities/payment.types';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { checkSchema } from 'express-validator';
 

@@ -1,18 +1,18 @@
 import { appConfig } from '@/bootstrap/config/app.config';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
-import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { OtpEmailQueue } from '@/modules/authentication/infrastructure/queue/otp-email.queue';
 import { OtpCleanupSchedule } from '@/modules/authentication/infrastructure/schedule/otp-cleanup.schedule';
 import { RefreshTokenCleanupSchedule } from '@/modules/authentication/infrastructure/schedule/refresh-token-cleanup.schedule';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { VideoStreamQueue } from '@/modules/media/infrastructure/queue/video-stream.queue';
-import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
+import type { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import { NotificationTrimQueue } from '@/modules/notification/infrastructure/queue/notification-trim.queue';
 import { CacheWarmupSchedule } from '@/modules/operations/infrastructure/schedule/cache-warmup.schedule';
 import { SystemHealthSchedule } from '@/modules/operations/infrastructure/schedule/system-health.schedule';
-import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
+import type { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import { PostViewsQueue } from '@/modules/post/infrastructure/queue/post-views.queue';
 
 export type ContainerQueues = {

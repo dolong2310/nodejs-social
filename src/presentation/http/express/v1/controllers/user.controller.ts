@@ -1,20 +1,23 @@
-import { ChangePasswordPort } from '@/modules/user/application/use-cases/change-password/change-password.port';
-import { GetMePort } from '@/modules/user/application/use-cases/get-me/get-me.port';
-import { GetUserProfilePort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
-import { UpdateMePort } from '@/modules/user/application/use-cases/update-me/update-me.port';
+import type { ChangePasswordPort } from '@/modules/user/application/use-cases/change-password/change-password.port';
+import type { GetMePort } from '@/modules/user/application/use-cases/get-me/get-me.port';
+import type { GetUserProfilePort } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
+import type { UpdateMePort } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   ChangePasswordRequestDTO,
-  GetUserProfileParamsDTO,
-  UpdateMeRequestBody,
+  type GetUserProfileParamsDTO,
+  type UpdateMeRequestBody,
   UpdateMeRequestDTO
 } from '@/presentation/http/express/v1/dtos/user/user.request.dto';
-import { ChangePasswordResponseDTO, UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import {
+  type ChangePasswordResponseDTO,
+  UserResponseDTO
+} from '@/presentation/http/express/v1/dtos/user/user.response.dto';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IUserController {
   getMe(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<SuccessResponse<UserResponseDTO>>;

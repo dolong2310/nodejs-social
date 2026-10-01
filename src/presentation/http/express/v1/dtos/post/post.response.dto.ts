@@ -1,14 +1,14 @@
-import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
-import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
-import { LikeFullProps } from '@/modules/post/domain/entities/like.types';
-import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
-import {
+import type { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
+import type { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
+import type { LikeFullProps } from '@/modules/post/domain/entities/like.types';
+import type { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
+import type {
   PostAuthorPreview,
   PostDetailOutput,
   PostDetailWithAuthorOutput,
   PostMentionPreview
 } from '@/modules/post/domain/repositories/post.query.types';
-import { IMedia } from '@/modules/post/domain/value-objects/media.value-object';
+import type { IMedia } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class PostResponseDTO implements PostFullProps {
   id: string;

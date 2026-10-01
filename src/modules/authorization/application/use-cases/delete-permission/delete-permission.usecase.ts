@@ -3,11 +3,11 @@ import {
   PermissionNotFoundException
 } from '@/modules/authorization/application/exceptions/permission.exception';
 import {
-  DeletePermissionInputPort,
+  type DeletePermissionInputPort,
   DeletePermissionPort
 } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.port';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 
 export class DeletePermissionUseCase extends DeletePermissionPort {
   constructor(

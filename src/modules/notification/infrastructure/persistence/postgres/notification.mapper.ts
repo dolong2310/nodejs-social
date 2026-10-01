@@ -1,16 +1,16 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
   EnumNotificationType,
-  IAddedToGroupNotificationPayload,
-  IFriendAcceptedNotificationPayload,
-  IFriendRequestNotificationPayload,
-  INewMessageNotificationPayload,
-  NotificationFullProps
+  type IAddedToGroupNotificationPayload,
+  type IFriendAcceptedNotificationPayload,
+  type IFriendRequestNotificationPayload,
+  type INewMessageNotificationPayload,
+  type NotificationFullProps
 } from '@/modules/notification/domain/entities/notification.types';
 import {
-  NotificationModel,
+  type NotificationModel,
   notificationSchema
 } from '@/modules/notification/infrastructure/persistence/postgres/notification.model';
 import { parse } from 'valibot';

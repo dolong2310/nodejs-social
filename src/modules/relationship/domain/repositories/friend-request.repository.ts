@@ -1,6 +1,6 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
+import type {
   CountOutgoingRequestsCreatedOnUtcDayInput,
   CreatePendingRequestInput,
   DeleteAllRequestsBetweenUsersInput,

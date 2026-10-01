@@ -1,4 +1,4 @@
-import { CreateBookmarkProps } from '@/modules/post/domain/entities/bookmark.types';
+import type { CreateBookmarkProps } from '@/modules/post/domain/entities/bookmark.types';
 
 export interface CreateBookmarkInput extends CreateBookmarkProps {}
 

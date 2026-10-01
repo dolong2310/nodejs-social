@@ -2,7 +2,7 @@ import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
 import { HttpException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 export class HttpExceptionFilter {
   static catch(error: Error, request: Request, response: Response, next: NextFunction): void {

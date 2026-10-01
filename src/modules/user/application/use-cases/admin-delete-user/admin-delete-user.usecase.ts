@@ -1,15 +1,15 @@
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   CannotMutateAdminUserException,
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
 import {
-  AdminDeleteUserInputPort,
+  type AdminDeleteUserInputPort,
   AdminDeleteUserPort
 } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminDeleteUserUseCase extends AdminDeleteUserPort {
   constructor(

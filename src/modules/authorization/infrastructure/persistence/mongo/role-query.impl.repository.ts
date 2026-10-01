@@ -1,8 +1,8 @@
-import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
-import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
-import { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
+import type { RoleModel } from '@/modules/authorization/infrastructure/persistence/mongo/role.model';
+import type { Collection, Db, Document, MongoClient } from 'mongodb';
 
 export class RoleQueryRepository implements RoleQueryRepositoryPort {
   constructor(

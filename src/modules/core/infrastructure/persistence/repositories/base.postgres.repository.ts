@@ -1,11 +1,11 @@
-import { Entity as DomainEntity } from '@/modules/core/domain/entities/base.entity';
+import type { Entity as DomainEntity } from '@/modules/core/domain/entities/base.entity';
 import {
-  Options,
+  type Options,
   Paginated,
-  PaginatedQueryParams,
-  RepositoryPort
+  type PaginatedQueryParams,
+  type RepositoryPort
 } from '@/modules/core/domain/repositories/port.repository';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 

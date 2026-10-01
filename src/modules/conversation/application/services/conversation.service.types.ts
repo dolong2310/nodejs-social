@@ -1,7 +1,7 @@
-import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.types';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { ConversationFullProps } from '@/modules/conversation/domain/entities/conversation.types';
+import type { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
+import type { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.types';
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import type { ConversationFullProps } from '@/modules/conversation/domain/entities/conversation.types';
 
 export interface GetDirectPeerIdPayload {
   conv: ConversationEntity;

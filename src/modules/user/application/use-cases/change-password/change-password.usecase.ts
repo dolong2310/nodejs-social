@@ -1,11 +1,11 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
-  ChangePasswordInputPort,
+  type ChangePasswordInputPort,
   ChangePasswordPort
 } from '@/modules/user/application/use-cases/change-password/change-password.port';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class ChangePasswordUseCase extends ChangePasswordPort {
   constructor(

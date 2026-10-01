@@ -1,15 +1,15 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import {
+import type {
   RefreshTokenCleanupJobData,
   RefreshTokenCleanupJobResult
 } from '@/modules/authentication/application/ports/refresh-token-cleanup-job.port';
 import {
   DeleteExpiredRefreshTokensInputPort,
-  DeleteExpiredRefreshTokensPort
+  type DeleteExpiredRefreshTokensPort
 } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME } from '@/modules/authentication/infrastructure/schedule/refresh-token-cleanup.schedule';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { type ConnectionOptions, type Job } from 'bullmq';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ConnectionOptions, Job } from 'bullmq';
 
 export class RefreshTokenCleanupWorker extends BaseWorker<RefreshTokenCleanupJobData, RefreshTokenCleanupJobResult> {
   private readonly log: LoggerPort;

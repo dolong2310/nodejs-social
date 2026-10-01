@@ -4,11 +4,11 @@ import {
   ListNotificationsPort,
   ListNotificationsInputPort,
   ListNotificationsOutputPort,
-  NotificationSummary
+  type NotificationSummary
 } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
-import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Fetch notifications for the viewing user, with support for:
@@ -52,7 +52,7 @@ export class ListNotificationsUseCase extends ListNotificationsPort {
       ...entity.toObject(),
       summary: notificationSummary(entity)
     }));
-    const last = slice[slice.length - 1].toObject();
+    const last = slice[slice.length - 1]!.toObject();
     const nextCursor = hasMore ? encodeCursor(last.createdAt, last.id) : null;
 
     return new ListNotificationsOutputPort({ items, nextCursor });

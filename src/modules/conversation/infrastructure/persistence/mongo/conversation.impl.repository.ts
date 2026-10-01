@@ -3,19 +3,19 @@ import { ConversationMemberEntity } from '@/modules/conversation/domain/entities
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import {
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type {
   CreateGroupConversationInput,
   TouchUpdatedAtInput,
   UpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.types';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
-import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
-import { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
+import type { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
+import type { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
+import type { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+import { type Db, type MongoClient, MongoServerError } from 'mongodb';
 
 export class ConversationRepository
   extends MongoRepositoryBase<ConversationEntity, ConversationModel>

@@ -1,12 +1,12 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   GetMessagesPort,
-  GetMessagesInputPort,
+  type GetMessagesInputPort,
   GetMessagesOutputPort
 } from '@/modules/conversation/application/use-cases/get-messages/get-messages.port';
-import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import type { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
 
 /**
  * Overall workflow:
@@ -40,7 +40,7 @@ export class GetMessagesUseCase extends GetMessagesPort {
     // If hasMore and messages is not empty, encode from the last message in the page; with DESC sort, this is the oldest item in the current batch.
     // On the next call, the client sends nextCursor and the server loads the next older block with findPageBeforeCursor(..., before).
     const last = items[items.length - 1];
-    const nextCursor = hasMore && items.length > 0 ? encodeCursor(last.createdAt, last.id) : null;
+    const nextCursor = hasMore && last && items.length > 0 ? encodeCursor(last.createdAt, last.id) : null;
 
     return new GetMessagesOutputPort(items, nextCursor);
   }

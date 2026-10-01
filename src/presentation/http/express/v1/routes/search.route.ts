@@ -1,14 +1,14 @@
 import { SEARCH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/search.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
+import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
 
 export class SearchRoute extends BaseRoute {
   protected override readonly version = 'v1';

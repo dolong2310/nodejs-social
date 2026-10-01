@@ -1,21 +1,21 @@
-import { CreateGroupPort } from '@/modules/conversation/application/use-cases/create-group/create-group.port';
-import { GetConversationDetailPort } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.port';
-import { GetConversationsPort } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
-import { GetOrCreateConversationPort } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
-import { InviteMemberPort } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
-import { KickMemberPort } from '@/modules/conversation/application/use-cases/kick-member/kick-member.port';
-import { LeaveConversationPort } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
-import { TransferAdminPort } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
-import { UpdateConversationPort } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
-import { UpdateMemberRolePort } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.port';
+import type { CreateGroupPort } from '@/modules/conversation/application/use-cases/create-group/create-group.port';
+import type { GetConversationDetailPort } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.port';
+import type { GetConversationsPort } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
+import type { GetOrCreateConversationPort } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
+import type { InviteMemberPort } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
+import type { KickMemberPort } from '@/modules/conversation/application/use-cases/kick-member/kick-member.port';
+import type { LeaveConversationPort } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
+import type { TransferAdminPort } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
+import type { UpdateConversationPort } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
+import type { UpdateMemberRolePort } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
-  ConversationIdParams,
-  ConversationMemberParams,
+  type ConversationIdParams,
+  type ConversationMemberParams,
   CreateDirectConversationBodyDTO,
   CreateGroupConversationBodyDTO,
   InviteConversationMemberBodyDTO,
@@ -27,8 +27,8 @@ import {
   ConversationDetailResponseDTO,
   ConversationResponseDTO
 } from '@/presentation/http/express/v1/dtos/conversation/conversation.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IConversationController {
   createDirect(

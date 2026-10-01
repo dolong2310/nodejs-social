@@ -1,4 +1,4 @@
-import { ContainerRepositories } from '@/bootstrap/di/repositories';
+import type { ContainerRepositories } from '@/bootstrap/di/repositories';
 import type { MongoDatabasePort } from '@/infrastructure/persistence/mongodb/database';
 import { OtpRepository } from '@/modules/authentication/infrastructure/persistence/mongo/otp.impl.repository';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/mongo/otp.mapper';
@@ -16,7 +16,7 @@ import { ConversationMemberRepository } from '@/modules/conversation/infrastruct
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
 import { ConversationRepository } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.impl.repository';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { VideoStatusRepository } from '@/modules/media/infrastructure/persistence/mongo/video-status.impl.repository';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/mongo/notification.impl.repository';

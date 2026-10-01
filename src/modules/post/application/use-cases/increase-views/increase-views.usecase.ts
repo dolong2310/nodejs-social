@@ -1,9 +1,9 @@
 import {
-  IncreaseViewsInputPort,
+  type IncreaseViewsInputPort,
   IncreaseViewsPort,
   IncreaseViewsOutputPort
 } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
-import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 
 export class IncreaseViewsUseCase extends IncreaseViewsPort {
   constructor(private readonly postCommandRepository: PostCommandRepositoryPort) {

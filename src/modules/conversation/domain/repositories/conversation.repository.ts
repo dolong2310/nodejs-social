@@ -1,10 +1,10 @@
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import {
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import type {
   CreateGroupConversationInput,
   TouchUpdatedAtInput,
   UpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.types';
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface ConversationRepositoryPort extends RepositoryPort<ConversationEntity> {
   findConversationById(id: string): Promise<ConversationEntity | null>;

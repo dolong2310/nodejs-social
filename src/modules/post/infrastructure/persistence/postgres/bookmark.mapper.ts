@@ -1,8 +1,8 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { BookmarkEntity } from '@/modules/post/domain/entities/bookmark.entity';
-import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
-import { BookmarkModel, bookmarkSchema } from '@/modules/post/infrastructure/persistence/postgres/bookmark.model';
+import type { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
+import { type BookmarkModel, bookmarkSchema } from '@/modules/post/infrastructure/persistence/postgres/bookmark.model';
 import { parse } from 'valibot';
 
 export class BookmarkMapper implements Mapper<BookmarkEntity, BookmarkModel, BookmarkFullProps> {

@@ -1,17 +1,17 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
-import {
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
 } from '@/modules/user/domain/repositories/user.repository.types';
-import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
-import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
-import { Db, MongoClient } from 'mongodb';
+import type { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
+import type { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
+import type { Db, MongoClient } from 'mongodb';
 
 export class UserRepository extends MongoRepositoryBase<UserEntity, UserModel> implements UserRepositoryPort {
   protected collectionName = 'users';

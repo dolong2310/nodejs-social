@@ -1,5 +1,5 @@
-import { CreatePostProps, EnumPostAudience } from '@/modules/post/domain/entities/post.types';
-import { Media } from '@/modules/post/domain/value-objects/media.value-object';
+import type { CreatePostProps, EnumPostAudience } from '@/modules/post/domain/entities/post.types';
+import type { Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export interface CreatePostInput extends CreatePostProps {}
 

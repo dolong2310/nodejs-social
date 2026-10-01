@@ -1,5 +1,5 @@
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export class CreatePermissionBodyDTO {
   name: string;

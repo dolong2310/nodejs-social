@@ -1,12 +1,12 @@
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import {
   CannotViewUserProfileBlockedException,
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   GetUserProfilePort,
-  GetUserProfileInputPort,
+  type GetUserProfileInputPort,
   GetUserProfileOutputPort
 } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.port';
 

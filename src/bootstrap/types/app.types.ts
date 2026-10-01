@@ -1,6 +1,6 @@
-import { CorsOptions } from 'cors';
-import { Options as RateLimitOptions } from 'express-rate-limit';
-import { type Algorithm, type Secret } from 'jsonwebtoken';
+import type { CorsOptions } from 'cors';
+import type { Options as RateLimitOptions } from 'express-rate-limit';
+import type { Algorithm, Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 
 export interface IAppConfig {

@@ -1,17 +1,17 @@
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  RegisterInputPort,
+  type RegisterInputPort,
   RegisterPort,
   RegisterOutputPort
 } from '@/modules/authentication/application/use-cases/register/register.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { UserAlreadyExistsException } from '@/modules/user/application/exceptions/user.exception';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class RegisterUseCase extends RegisterPort {
   constructor(

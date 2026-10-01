@@ -1,6 +1,6 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/relationship/application/constants/cache.constants';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 export interface BlockServicePort {
   isBlockedEitherWay(userIdA: string, userIdB: string): Promise<boolean>;

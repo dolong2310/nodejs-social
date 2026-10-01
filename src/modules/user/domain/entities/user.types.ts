@@ -1,6 +1,6 @@
-import { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
-import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
-import { Username } from '@/modules/common/domain/value-objects/username.value-object';
+import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
+import type { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
+import type { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import type { MarkOptional, Prettify } from 'ts-essentials';
 
 export interface UserProps {

@@ -1,9 +1,15 @@
 import { UnprocessableEntityException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
-import { NextFunction, Request, Response } from 'express';
-import { Location, matchedData, ValidationChain, ValidationError, validationResult } from 'express-validator';
-import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';
+import type { NextFunction, Request, Response } from 'express';
+import {
+  type Location,
+  matchedData,
+  type ValidationChain,
+  type ValidationError,
+  validationResult
+} from 'express-validator';
+import type { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';
 
 export type ValidateOptions = {
   assignMatchedBody?: boolean;
@@ -26,7 +32,7 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>, 
       };
 
       for (const key in errorMapped) {
-        const error: ValidationError = errorMapped[key];
+        const error = errorMapped[key] as ValidationError;
         errorObject.errors[key] = error;
       }
 

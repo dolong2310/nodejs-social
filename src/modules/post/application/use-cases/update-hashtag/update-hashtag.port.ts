@@ -1,6 +1,6 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
-import { MarkOptional } from 'ts-essentials';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { HashtagListItem } from '@/modules/post/application/use-cases/list-hashtags/list-hashtags.port';
+import type { MarkOptional } from 'ts-essentials';
 
 export class UpdateHashtagInputPort implements MarkOptional<{ name: string }, 'name'> {
   id: string;

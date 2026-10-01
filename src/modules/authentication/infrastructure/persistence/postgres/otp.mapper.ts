@@ -1,10 +1,10 @@
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { OtpFullProps } from '@/modules/authentication/domain/entities/otp.types';
+import type { OtpFullProps } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpCode } from '@/modules/authentication/domain/value-objects/otp-code.value-object';
-import { OtpModel, otpSchema } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
+import { type OtpModel, otpSchema } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';
 
 export class OtpMapper implements Mapper<OtpEntity, OtpModel, OtpFullProps> {

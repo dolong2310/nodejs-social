@@ -2,7 +2,7 @@ import {
   MarkNotificationsReadInputPort,
   MarkNotificationsReadPort
 } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.port';
-import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 
 /**
  * Called when the user has read one or more notifications.

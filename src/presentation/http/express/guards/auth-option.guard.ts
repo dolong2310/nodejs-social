@@ -1,8 +1,8 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
-import { BaseGuard } from '@/presentation/http/express/core/base.guard';
+import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 export class AuthOptionGuard implements BaseGuard {
   constructor(private readonly tokenService: TokenServicePort) {}

@@ -1,9 +1,9 @@
 import {
-  DeleteExpiredOtpsInputPort,
+  type DeleteExpiredOtpsInputPort,
   DeleteExpiredOtpsPort,
   DeleteExpiredOtpsOutputPort
 } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 
 export class DeleteExpiredOtpsUseCase extends DeleteExpiredOtpsPort {
   constructor(private readonly otpRepository: OtpRepositoryPort) {

@@ -4,11 +4,11 @@ import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/module
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
-  CreatePostProps,
+  type CreatePostProps,
   EnumPostAudience,
   EnumPostType,
-  PostFullProps,
-  PostProps
+  type PostFullProps,
+  type PostProps
 } from '@/modules/post/domain/entities/post.types';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 

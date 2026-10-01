@@ -1,35 +1,35 @@
 import {
   CreatePermissionInputPort,
-  CreatePermissionPort
+  type CreatePermissionPort
 } from '@/modules/authorization/application/use-cases/create-permission/create-permission.port';
 import {
   DeletePermissionInputPort,
-  DeletePermissionPort
+  type DeletePermissionPort
 } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.port';
 import {
-  GetPermissionPort,
+  type GetPermissionPort,
   GetPermissionInputPort
 } from '@/modules/authorization/application/use-cases/get-permission/get-permission.port';
 import {
-  ListPermissionsPort,
+  type ListPermissionsPort,
   ListPermissionsInputPort
 } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
 import {
   UpdatePermissionInputPort,
-  UpdatePermissionPort
+  type UpdatePermissionPort
 } from '@/modules/authorization/application/use-cases/update-permission/update-permission.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   CreatePermissionBodyDTO,
-  PermissionIdParamsDTO,
+  type PermissionIdParamsDTO,
   UpdatePermissionBodyDTO
 } from '@/presentation/http/express/v1/dtos/permission/permission.request.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IPermissionController {
   list(

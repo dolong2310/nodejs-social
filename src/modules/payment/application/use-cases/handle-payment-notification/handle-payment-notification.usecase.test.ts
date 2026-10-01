@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   PaymentNotificationVerificationError,
-  PaymentNotificationVerificationReason
+  type PaymentNotificationVerificationReason
 } from '@/modules/payment/application/exceptions/payment-notification.exception';
-import { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
-import { VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import type { VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
 
 class FakePaymentGateway implements PaymentGatewayPort {

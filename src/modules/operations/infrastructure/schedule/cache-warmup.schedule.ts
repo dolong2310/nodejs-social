@@ -1,7 +1,10 @@
 import { BaseSchedule } from '@/infrastructure/queue/bullmq/base.schedule';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { CacheWarmupJobData, CacheWarmupJobResult } from '@/modules/operations/application/ports/cache-warmup-job.port';
-import { type ConnectionOptions } from 'bullmq';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
+  CacheWarmupJobData,
+  CacheWarmupJobResult
+} from '@/modules/operations/application/ports/cache-warmup-job.port';
+import type { ConnectionOptions } from 'bullmq';
 
 export const CACHE_WARMUP_SCHEDULE_QUEUE_NAME = 'cache-warmup-schedule';
 

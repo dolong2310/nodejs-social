@@ -4,11 +4,11 @@ import {
   SystemRoleCannotBeDeletedException
 } from '@/modules/authorization/application/exceptions/role.exception';
 import {
-  DeleteRoleInputPort,
+  type DeleteRoleInputPort,
   DeleteRolePort
 } from '@/modules/authorization/application/use-cases/delete-role/delete-role.port';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class DeleteRoleUseCase extends DeleteRolePort {
   constructor(

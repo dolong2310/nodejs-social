@@ -1,15 +1,15 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
-import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
-import {
+import type { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
+import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import type {
   FindNotificationsInput,
   FindOldestNotificationIdsForTrimInput,
   UpdateReadByIdsInput
 } from '@/modules/notification/domain/repositories/notification.repository.types';
-import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/mongo/notification.mapper';
-import { NotificationModel } from '@/modules/notification/infrastructure/persistence/mongo/notification.model';
-import { Db, Filter, MongoClient } from 'mongodb';
+import type { NotificationMapper } from '@/modules/notification/infrastructure/persistence/mongo/notification.mapper';
+import type { NotificationModel } from '@/modules/notification/infrastructure/persistence/mongo/notification.model';
+import type { Db, Filter, MongoClient } from 'mongodb';
 
 export class NotificationRepository
   extends MongoRepositoryBase<NotificationEntity, NotificationModel>

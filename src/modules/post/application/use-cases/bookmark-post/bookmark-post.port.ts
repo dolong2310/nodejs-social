@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
 
 export class BookmarkPostInputPort {
   postId: string;

@@ -8,7 +8,7 @@ import { createExpressApp } from '@/presentation/http/express/app';
 import { initUploadsFolder } from '@/presentation/http/express/utils/file.util';
 import { createSocketApp } from '@/presentation/socket/socket.app';
 import { createServer } from 'http';
-import { type Server as SocketServer } from 'socket.io';
+import type { Server as SocketServer } from 'socket.io';
 
 initUploadsFolder();
 

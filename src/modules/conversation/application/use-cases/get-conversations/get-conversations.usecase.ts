@@ -1,16 +1,16 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  ConversationItem,
+  type ConversationItem,
   GetConversationsPort,
-  GetConversationsInputPort,
+  type GetConversationsInputPort,
   GetConversationsOutputPort
 } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
 export class GetConversationsUseCase extends GetConversationsPort {
   constructor(
@@ -39,7 +39,7 @@ export class GetConversationsUseCase extends GetConversationsPort {
     const last = slice[slice.length - 1];
     const nextCursor =
       // If more data exists, encode updatedAt and conversationId of the last item in the slice as the next-page cursor.
-      hasMore && slice.length > 0 ? encodeCursor(last.updatedAt, last.conversationId) : null;
+      hasMore && last && slice.length > 0 ? encodeCursor(last.updatedAt, last.conversationId) : null;
 
     const ids = slice.map((r) => r.conversationId);
     const uniqueIds = Array.from(new Set(ids));

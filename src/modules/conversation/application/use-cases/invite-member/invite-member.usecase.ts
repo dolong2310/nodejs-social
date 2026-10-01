@@ -3,18 +3,18 @@ import {
   ConversationNotFoundException,
   ConversationUserAlreadyMemberException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  InviteMemberInputPort,
+  type InviteMemberInputPort,
   InviteMemberPort,
   InviteMemberOutputPort
 } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
 /**
  * Invite a member to a group.

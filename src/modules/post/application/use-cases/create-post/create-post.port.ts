@@ -1,11 +1,11 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import {
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type {
   CreatePostProps,
   EnumPostAudience,
   EnumPostType,
   PostFullProps
 } from '@/modules/post/domain/entities/post.types';
-import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
+import type { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class CreatePostInputPort implements CreatePostProps {
   userId: string;

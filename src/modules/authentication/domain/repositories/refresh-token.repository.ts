@@ -1,9 +1,9 @@
-import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
-import {
+import type { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
+import type {
   CreateRefreshTokenInput,
   RotateRefreshTokenInput
 } from '@/modules/authentication/domain/repositories/refresh-token.repository.types';
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface RefreshTokenRepositoryPort extends RepositoryPort<RefreshTokenEntity> {
   findRefreshToken(token: string): Promise<RefreshTokenEntity | null>;

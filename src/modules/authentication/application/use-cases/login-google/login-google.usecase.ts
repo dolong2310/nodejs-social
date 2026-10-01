@@ -1,19 +1,19 @@
 import { GoogleAccountNotVerifiedException } from '@/modules/authentication/application/exceptions/auth.exception';
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import {
-  LoginGoogleInputPort,
+  type LoginGoogleInputPort,
   LoginGooglePort,
   LoginGoogleOutputPort
 } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { generateId } from '@/modules/core/domain/helpers/ids';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class LoginGoogleUseCase extends LoginGooglePort {
   constructor(

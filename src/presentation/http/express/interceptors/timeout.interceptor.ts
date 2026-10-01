@@ -1,4 +1,4 @@
-import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
+import type { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { RequestTimeoutException } from '@/presentation/http/express/responses/error.response';
 import type { ControllerResult, ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 

@@ -4,13 +4,13 @@ import {
 } from '@/modules/authorization/application/exceptions/permission.exception';
 import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
 import {
-  UpdatePermissionInputPort,
+  type UpdatePermissionInputPort,
   UpdatePermissionPort
 } from '@/modules/authorization/application/use-cases/update-permission/update-permission.port';
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { UpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.types';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { UpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.types';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class UpdatePermissionUseCase extends UpdatePermissionPort {
   constructor(

@@ -1,10 +1,10 @@
-import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
-import {
+import type { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
+import type {
   ListConversationsForUserInput,
   ListConversationsForUserOutput
 } from '@/modules/conversation/domain/repositories/conversation-member.query.types';
-import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import type { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
+import type { Collection, Db, Document, MongoClient } from 'mongodb';
 
 export class ConversationMemberQueryRepository implements ConversationMemberQueryRepositoryPort {
   constructor(

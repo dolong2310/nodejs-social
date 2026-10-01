@@ -1,4 +1,4 @@
-import { PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
 
 export class PaymentResponseDTO {
   paymentId: string;

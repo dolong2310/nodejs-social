@@ -2,25 +2,25 @@ import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
 } from '@/modules/authorization/application/constants/cache.constants';
-import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
-import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { Paginated } from '@/modules/core/domain/repositories/port.repository';
 import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
 import {
   CACHE_KEYS as RELATIONSHIP_CACHE_KEYS,
   CACHE_TTL as RELATIONSHIP_CACHE_TTL
 } from '@/modules/relationship/application/constants/cache.constants';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import {
   CACHE_KEYS as USER_CACHE_KEYS,
   CACHE_TTL as USER_CACHE_TTL
 } from '@/modules/user/application/constants/cache.constants';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
-import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
 import { makeRoleFullProps } from '@test/support/builders/role.builder';
 import { makeUserFullProps, makeUserSafeProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';

@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import type * as jwt from 'jsonwebtoken';
 
 export enum JwtSecretRequestType {
   SIGN,

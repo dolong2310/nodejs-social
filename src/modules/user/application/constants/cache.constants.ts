@@ -1,4 +1,4 @@
-import { SearchUsersInputPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
+import type { SearchUsersInputPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { createHash } from 'crypto';
 
 export const CACHE_KEYS = {

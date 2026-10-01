@@ -3,15 +3,15 @@ import {
   ConversationNotMemberException,
   ConversationRoleForbiddenException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  TransferAdminInputPort,
+  type TransferAdminInputPort,
   TransferAdminPort,
-  TransferAdminOutputPort
+  type TransferAdminOutputPort
 } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**

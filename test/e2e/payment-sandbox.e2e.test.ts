@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IContainer } from '@/bootstrap/container';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 
 vi.mock('@/infrastructure/persistence/redis/rate-limit-store', async () => {
   const { MemoryStore } = await import('express-rate-limit');

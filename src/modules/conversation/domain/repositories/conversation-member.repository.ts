@@ -1,5 +1,5 @@
-import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import {
+import type { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
+import type {
   CreateMemberInput,
   DeleteMemberInput,
   FindMemberInput,
@@ -9,7 +9,7 @@ import {
   UpdateReadStateInput,
   UpdateRoleInput
 } from '@/modules/conversation/domain/repositories/conversation-member.repository.types';
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface ConversationMemberRepositoryPort extends RepositoryPort<ConversationMemberEntity> {
   findMember(data: FindMemberInput): Promise<ConversationMemberEntity | null>;

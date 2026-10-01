@@ -1,7 +1,7 @@
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface AdminUserIdParamsDTO extends ParamsDictionary {
   userId: string;

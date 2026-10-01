@@ -1,6 +1,6 @@
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.types';
 
 export class UpdateMeInputPort {
   userId: string;

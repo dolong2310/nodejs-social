@@ -1,32 +1,35 @@
 import {
   CreateRoleInputPort,
-  CreateRolePort
+  type CreateRolePort
 } from '@/modules/authorization/application/use-cases/create-role/create-role.port';
 import {
   DeleteRoleInputPort,
-  DeleteRolePort
+  type DeleteRolePort
 } from '@/modules/authorization/application/use-cases/delete-role/delete-role.port';
-import { GetRolePort, GetRoleInputPort } from '@/modules/authorization/application/use-cases/get-role/get-role.port';
 import {
-  ListRolesPort,
+  type GetRolePort,
+  GetRoleInputPort
+} from '@/modules/authorization/application/use-cases/get-role/get-role.port';
+import {
+  type ListRolesPort,
   ListRolesInputPort
 } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
 import {
   UpdateRoleInputPort,
-  UpdateRolePort
+  type UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
 import {
   CreateRoleBodyDTO,
-  RoleIdParamsDTO,
+  type RoleIdParamsDTO,
   UpdateRoleBodyDTO
 } from '@/presentation/http/express/v1/dtos/role/role.request.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface IRoleController {
   list(

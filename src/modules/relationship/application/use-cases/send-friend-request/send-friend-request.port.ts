@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.types';
 
 export class SendFriendRequestInputPort {
   userId: string;

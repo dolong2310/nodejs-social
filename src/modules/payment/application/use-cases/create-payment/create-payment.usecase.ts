@@ -1,12 +1,19 @@
 import { ConflictException } from '@/modules/core/domain/exceptions/exceptions';
-import { PaymentCheckoutError, PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import {
-  CreatePaymentInputPort,
+  PaymentCheckoutError,
+  type PaymentGatewayPort
+} from '@/modules/payment/application/ports/payment-gateway.port';
+import {
+  type CreatePaymentInputPort,
   CreatePaymentPort
 } from '@/modules/payment/application/use-cases/create-payment/create-payment.port';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentFullProps, PaymentProvider, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
-import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
+import type {
+  PaymentFullProps,
+  PaymentProvider,
+  PaymentSafeProps
+} from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
 export class CreatePaymentUseCase extends CreatePaymentPort {
   constructor(

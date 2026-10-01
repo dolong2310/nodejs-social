@@ -1,10 +1,10 @@
-import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { SendOtpInputPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
 import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
-import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
+import type { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { idDouble } from '@test/support/doubles/entity.double';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';

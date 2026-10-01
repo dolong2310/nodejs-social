@@ -1,6 +1,6 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput

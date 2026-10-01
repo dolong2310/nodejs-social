@@ -1,5 +1,5 @@
 import { appConfig } from '@/bootstrap/config/app.config';
-import { IContainer } from '@/bootstrap/container';
+import type { IContainer } from '@/bootstrap/container';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { createRateLimitStore } from '@/infrastructure/persistence/redis/rate-limit-store';
 import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constants';
@@ -12,7 +12,7 @@ import { getSwaggerDefinition } from '@/presentation/http/express/utils/file.uti
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Express, Router } from 'express';
+import express, { type Express, Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import swaggerJsdoc from 'swagger-jsdoc';

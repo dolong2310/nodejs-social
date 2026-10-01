@@ -1,8 +1,8 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { BlockEntity } from '@/modules/relationship/domain/entities/block.entity';
-import { BlockFullProps } from '@/modules/relationship/domain/entities/block.types';
-import { BlockModel, blockSchema } from '@/modules/relationship/infrastructure/persistence/postgres/block.model';
+import type { BlockFullProps } from '@/modules/relationship/domain/entities/block.types';
+import { type BlockModel, blockSchema } from '@/modules/relationship/infrastructure/persistence/postgres/block.model';
 import { parse } from 'valibot';
 
 export class BlockMapper implements Mapper<BlockEntity, BlockModel, BlockFullProps> {

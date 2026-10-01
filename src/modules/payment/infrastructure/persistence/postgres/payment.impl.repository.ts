@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import {
   classifyExistingPaymentNotification,
@@ -6,14 +6,14 @@ import {
   normalizeProviderTransactionId,
   URL_ATTACHABLE_PAYMENT_STATUSES
 } from '@/modules/payment/domain/helpers/payment.policy';
-import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import {
+import type { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import type { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
-import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
-import { PaymentModel } from '@/modules/payment/infrastructure/persistence/postgres/payment.model';
+import type { PaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
+import type { PaymentModel } from '@/modules/payment/infrastructure/persistence/postgres/payment.model';
 import type { Pool } from 'pg';
 
 export class PaymentRepository

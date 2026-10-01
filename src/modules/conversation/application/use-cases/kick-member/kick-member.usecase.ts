@@ -3,15 +3,15 @@ import {
   ConversationDirectNoKickException,
   ConversationNotMemberException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  KickMemberInputPort,
+  type KickMemberInputPort,
   KickMemberPort
 } from '@/modules/conversation/application/use-cases/kick-member/kick-member.port';
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**

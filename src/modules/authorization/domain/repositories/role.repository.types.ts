@@ -1,5 +1,5 @@
-import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
-import { MarkOptional } from 'ts-essentials';
+import type { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
+import type { MarkOptional } from 'ts-essentials';
 
 export interface CreateRoleInput extends CreateRoleProps {}
 

@@ -1,14 +1,14 @@
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
-import {
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
 } from '@/modules/relationship/domain/repositories/friendship.repository.types';
-import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
-import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.model';
+import type { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
+import type { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.model';
 import type { Pool } from 'pg';
 
 const UNIQUE_VIOLATION = '23505';

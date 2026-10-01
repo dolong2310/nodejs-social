@@ -1,11 +1,11 @@
-import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
+import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
 import {
   NOTIFICATION_MAX_PER_USER,
   NOTIFICATION_SOCKET_EVENT
 } from '@/modules/notification/application/constants/notification.constants';
-import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
-import {
+import type { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
+import type {
   RecordAddedToGroupPayload,
   RecordFriendAcceptedPayload,
   RecordFriendRequestPayload,
@@ -16,15 +16,15 @@ import { NotificationEntity } from '@/modules/notification/domain/entities/notif
 import {
   EnumNewMessagePreviewKind,
   EnumNotificationType,
-  IAddedToGroupNotificationPayload,
-  IFriendAcceptedNotificationPayload,
-  IFriendRequestNotificationPayload,
-  INewMessageNotificationPayload,
-  NotificationFullProps
+  type IAddedToGroupNotificationPayload,
+  type IFriendAcceptedNotificationPayload,
+  type IFriendRequestNotificationPayload,
+  type INewMessageNotificationPayload,
+  type NotificationFullProps
 } from '@/modules/notification/domain/entities/notification.types';
-import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 
 export interface NotificationServicePort {
   trimRecipientIfNeeded(recipientUserId: string): Promise<void>;

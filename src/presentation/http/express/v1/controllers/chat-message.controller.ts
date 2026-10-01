@@ -1,18 +1,18 @@
-import { GetMessagesPort } from '@/modules/conversation/application/use-cases/get-messages/get-messages.port';
-import { MarkReadPort } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.port';
-import { SendMessagePort } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
+import type { GetMessagesPort } from '@/modules/conversation/application/use-cases/get-messages/get-messages.port';
+import type { MarkReadPort } from '@/modules/conversation/application/use-cases/mark-read-message/mark-read-message.port';
+import type { SendMessagePort } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { Created, SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   MarkChatReadBodyDTO,
   SendChatMessageBodyDTO
 } from '@/presentation/http/express/v1/dtos/chat-message/chat-message.request.dto';
 import { ChatMessageResponseDTO } from '@/presentation/http/express/v1/dtos/chat-message/chat-message.response.dto';
-import { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
-import { ConversationIdParams } from '@/presentation/http/express/v1/dtos/conversation/conversation.request.dto';
-import { NextFunction } from 'express';
+import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
+import type { ConversationIdParams } from '@/presentation/http/express/v1/dtos/conversation/conversation.request.dto';
+import type { NextFunction } from 'express';
 
 export interface IChatMessageController {
   sendMessage(

@@ -1,9 +1,9 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import {
-  UploadVideoInputPort,
+  type UploadVideoInputPort,
   UploadVideoPort,
   UploadVideoOutputPort
 } from '@/modules/media/application/use-cases/upload-video/upload-video.port';

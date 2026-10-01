@@ -3,17 +3,17 @@ import { ConversationMemberEntity } from '@/modules/conversation/domain/entities
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
 import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import {
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type {
   CreateGroupConversationInput,
   TouchUpdatedAtInput,
   UpdateConversationInput
 } from '@/modules/conversation/domain/repositories/conversation.repository.types';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
-import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.mapper';
-import { ConversationModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
+import type { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
+import type { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.mapper';
+import type { ConversationModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 

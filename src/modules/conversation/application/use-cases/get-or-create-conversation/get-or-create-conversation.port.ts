@@ -1,5 +1,8 @@
-import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type {
+  ConversationFullProps,
+  EnumConversationType
+} from '@/modules/conversation/domain/entities/conversation.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class GetOrCreateConversationInputPort {
   userId: string;

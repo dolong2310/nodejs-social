@@ -1,5 +1,5 @@
-import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
-import {
+import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import type {
   IncreasePostsViewsInput,
   IncreasePostViewsInput,
   IncreasePostViewsOutput

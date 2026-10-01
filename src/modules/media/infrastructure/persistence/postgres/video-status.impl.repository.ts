@@ -1,10 +1,10 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
-import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
-import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
-import { UpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.types';
-import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/postgres/video-status.mapper';
-import { VideoStatusModel } from '@/modules/media/infrastructure/persistence/postgres/video-status.model';
+import type { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
+import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
+import type { UpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.types';
+import type { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/postgres/video-status.mapper';
+import type { VideoStatusModel } from '@/modules/media/infrastructure/persistence/postgres/video-status.model';
 import type { Pool } from 'pg';
 
 export class VideoStatusRepository

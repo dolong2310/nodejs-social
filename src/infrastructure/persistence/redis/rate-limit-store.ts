@@ -1,7 +1,7 @@
 import { type RedisReply, RedisStore } from 'rate-limit-redis';
 
 import { envConfig } from '@/bootstrap/config/env.config';
-import { RedisClientPort } from './redis-client';
+import type { RedisClientPort } from './redis-client';
 
 export const GLOBAL_RATE_LIMIT_KEY = 'global';
 const RATE_LIMIT_PREFIX = `rate-limit:${envConfig.APP_NAME}:${envConfig.NODE_ENV}`;

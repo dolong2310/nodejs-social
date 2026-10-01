@@ -1,6 +1,6 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
+import type {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
 } from '@/modules/relationship/domain/repositories/friendship.repository.types';

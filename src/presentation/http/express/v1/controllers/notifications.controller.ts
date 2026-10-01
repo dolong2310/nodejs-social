@@ -1,17 +1,17 @@
-import { ListNotificationsPort } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
-import { MarkNotificationReadPort } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.port';
-import { MarkNotificationsReadPort } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.port';
+import type { ListNotificationsPort } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.port';
+import type { MarkNotificationReadPort } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.port';
+import type { MarkNotificationsReadPort } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import {
   MarkNotificationsReadBodyDTO,
-  NotificationIdParams,
-  NotificationListQueryDTO
+  type NotificationIdParams,
+  type NotificationListQueryDTO
 } from '@/presentation/http/express/v1/dtos/notification/notification.request.dto';
-import { NotificationResponseDTO } from '@/presentation/http/express/v1/dtos/notification/notification.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { NotificationResponseDTO } from '@/presentation/http/express/v1/dtos/notification/notification.response.dto';
+import type { NextFunction } from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface INotificationController {
   list(

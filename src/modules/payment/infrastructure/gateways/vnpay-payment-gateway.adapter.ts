@@ -1,6 +1,6 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
-import { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
-import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import type { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import { VNPay } from '@longdoo/node-payment-gateway';
 import type { ReturnQueryFromVNPay } from '@longdoo/node-payment-gateway/vnpay';
 

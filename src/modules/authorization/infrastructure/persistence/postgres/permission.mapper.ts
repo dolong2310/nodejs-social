@@ -1,12 +1,12 @@
 import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import {
-  PermissionModel,
+  type PermissionModel,
   permissionSchema
 } from '@/modules/authorization/infrastructure/persistence/postgres/permission.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { parse } from 'valibot';
 
 export class PermissionMapper implements Mapper<PermissionEntity, PermissionModel, PermissionFullProps> {

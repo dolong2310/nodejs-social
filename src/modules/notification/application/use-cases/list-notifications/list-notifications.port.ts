@@ -1,5 +1,5 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { NotificationFullProps } from '@/modules/notification/domain/entities/notification.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { NotificationFullProps } from '@/modules/notification/domain/entities/notification.types';
 
 export class ListNotificationsInputPort {
   viewerId: string;

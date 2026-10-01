@@ -1,18 +1,18 @@
 import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import {
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type {
   CreatePermissionInput,
   FindPermissionByPathAndMethodInput,
   ListPermissionsInput,
   UpdatePermissionInput
 } from '@/modules/authorization/domain/repositories/permission.repository.types';
 import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
-import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
-import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/mongo/permission.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { Options } from '@/modules/core/domain/repositories/port.repository';
+import type { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
+import type { PermissionModel } from '@/modules/authorization/infrastructure/persistence/mongo/permission.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { Options } from '@/modules/core/domain/repositories/port.repository';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient } from 'mongodb';
+import type { Db, MongoClient } from 'mongodb';
 
 export class PermissionRepository
   extends MongoRepositoryBase<PermissionEntity, PermissionModel>

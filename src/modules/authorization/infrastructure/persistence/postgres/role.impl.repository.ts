@@ -1,15 +1,15 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import {
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type {
   CreateRoleInput,
   ListRolesInput,
   UpdateRoleInput
 } from '@/modules/authorization/domain/repositories/role.repository.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
-import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
-import { RoleModel } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { Options } from '@/modules/core/domain/repositories/port.repository';
+import type { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
+import type { RoleModel } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { Options } from '@/modules/core/domain/repositories/port.repository';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 

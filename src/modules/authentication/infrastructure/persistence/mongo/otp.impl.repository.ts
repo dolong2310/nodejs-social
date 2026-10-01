@@ -1,13 +1,13 @@
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
-import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/mongo/otp.mapper';
-import { OtpModel } from '@/modules/authentication/infrastructure/persistence/mongo/otp.model';
+import type { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
+import type { OtpMapper } from '@/modules/authentication/infrastructure/persistence/mongo/otp.mapper';
+import type { OtpModel } from '@/modules/authentication/infrastructure/persistence/mongo/otp.model';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient } from 'mongodb';
+import type { Db, MongoClient } from 'mongodb';
 
 export class OtpRepository extends MongoRepositoryBase<OtpEntity, OtpModel> implements OtpRepositoryPort {
   protected collectionName = 'otps';

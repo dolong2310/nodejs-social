@@ -1,15 +1,15 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import {
+import type {
   OtpCleanupJobData,
   OtpCleanupJobResult
 } from '@/modules/authentication/application/ports/otp-cleanup-job.port';
 import {
   DeleteExpiredOtpsInputPort,
-  DeleteExpiredOtpsPort
+  type DeleteExpiredOtpsPort
 } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { OTP_CLEANUP_SCHEDULE_QUEUE_NAME } from '@/modules/authentication/infrastructure/schedule/otp-cleanup.schedule';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { type ConnectionOptions, type Job } from 'bullmq';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { ConnectionOptions, Job } from 'bullmq';
 
 export class OtpCleanupWorker extends BaseWorker<OtpCleanupJobData, OtpCleanupJobResult> {
   private readonly log: LoggerPort;

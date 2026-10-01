@@ -1,4 +1,4 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class LoginEmailInputPort {
   email: string;

@@ -1,13 +1,13 @@
 import { PAYMENT_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/payment.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IPaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
-import { IPaymentPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IPaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
+import type { IPaymentPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
 
 export class PaymentRoute extends BaseRoute {
   protected override readonly version = 'v1';

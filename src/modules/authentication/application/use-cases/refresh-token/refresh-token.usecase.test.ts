@@ -1,9 +1,9 @@
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { RefreshTokenInputPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
 import { RefreshTokenUseCase } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.usecase';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { makeUserWithRole } from '@test/support/builders/user.builder';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';

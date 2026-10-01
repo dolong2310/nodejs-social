@@ -1,10 +1,10 @@
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { ConfirmPasswordMustMatchException } from '@/presentation/http/express/exceptions/auth.exception';
-import { ExpressRequestHandler } from '@/presentation/http/express/types';
+import type { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';
 import { birthdaySchema, nameSchema } from '@/presentation/http/express/v1/pipes/user.pipe';
-import { checkSchema, ParamSchema } from 'express-validator';
+import { checkSchema, type ParamSchema } from 'express-validator';
 
 const emailSchema: ParamSchema = {
   notEmpty: {

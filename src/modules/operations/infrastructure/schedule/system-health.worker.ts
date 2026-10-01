@@ -1,12 +1,12 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import {
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
   SystemHealthJobData,
   SystemHealthJobResult
 } from '@/modules/operations/application/ports/system-health-job.port';
-import { CheckSystemHealthPort } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.port';
+import type { CheckSystemHealthPort } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.port';
 import { SYSTEM_HEALTH_SCHEDULE_QUEUE_NAME } from '@/modules/operations/infrastructure/schedule/system-health.schedule';
-import { type ConnectionOptions, type Job } from 'bullmq';
+import type { ConnectionOptions, Job } from 'bullmq';
 
 export class SystemHealthWorker extends BaseWorker<SystemHealthJobData, SystemHealthJobResult> {
   private readonly log: LoggerPort;

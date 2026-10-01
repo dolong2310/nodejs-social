@@ -1,5 +1,5 @@
-import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UploadImageInputPort {
   files: { filepath: string; filename: string; mimetype: string }[];

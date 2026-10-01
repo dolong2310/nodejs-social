@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import {
   classifyExistingPaymentNotification,
@@ -6,15 +6,15 @@ import {
   normalizeProviderTransactionId,
   URL_ATTACHABLE_PAYMENT_STATUSES
 } from '@/modules/payment/domain/helpers/payment.policy';
-import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import {
+import type { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import type { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
-import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
-import { PaymentModel } from '@/modules/payment/infrastructure/persistence/mongo/payment.model';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+import type { PaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
+import type { PaymentModel } from '@/modules/payment/infrastructure/persistence/mongo/payment.model';
+import type { Db, MongoClient, MongoServerError } from 'mongodb';
 
 export class PaymentRepository
   extends MongoRepositoryBase<PaymentEntity, PaymentModel>

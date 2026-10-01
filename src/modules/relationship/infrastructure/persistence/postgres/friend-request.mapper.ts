@@ -1,9 +1,9 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { Mapper } from '@/modules/core/infrastructure/base.mapper';
+import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
-import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.types';
+import type { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.types';
 import {
-  FriendRequestModel,
+  type FriendRequestModel,
   friendRequestSchema
 } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.model';
 import { parse } from 'valibot';

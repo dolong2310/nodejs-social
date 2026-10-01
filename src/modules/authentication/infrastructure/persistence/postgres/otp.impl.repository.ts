@@ -1,11 +1,11 @@
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
-import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/postgres/otp.mapper';
-import { OtpModel } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
+import type { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
+import type { OtpMapper } from '@/modules/authentication/infrastructure/persistence/postgres/otp.mapper';
+import type { OtpModel } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 

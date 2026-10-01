@@ -1,19 +1,19 @@
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
-import { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
-import {
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
+import type {
   GetVideoStatusPort,
   GetVideoStatusOutputPort
 } from '@/modules/media/application/use-cases/get-video-status/get-video-status.port';
-import {
+import type {
   UploadImagePort,
   UploadImageOutputPort
 } from '@/modules/media/application/use-cases/upload-image/upload-image.port';
-import {
+import type {
   UploadVideoStreamPort,
   UploadVideoStreamOutputPort
 } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.port';
-import {
+import type {
   UploadVideoPort,
   UploadVideoOutputPort
 } from '@/modules/media/application/use-cases/upload-video/upload-video.port';
@@ -26,10 +26,13 @@ import {
   VideoNotFoundException
 } from '@/presentation/http/express/exceptions/media.exception';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { parseUploadedFiles } from '@/presentation/http/express/utils/parse-uploaded-files.util';
-import { FilenameParamsDTO, VideoStreamParamsDTO } from '@/presentation/http/express/v1/dtos/media/media.request.dto';
-import { NextFunction } from 'express';
+import type {
+  FilenameParamsDTO,
+  VideoStreamParamsDTO
+} from '@/presentation/http/express/v1/dtos/media/media.request.dto';
+import type { NextFunction } from 'express';
 import path from 'path';
 
 export interface IMediaController {

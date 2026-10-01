@@ -1,11 +1,11 @@
 import { NotFoundException } from '@/modules/core/domain/exceptions/exceptions';
 import {
-  GetPaymentInputPort,
+  type GetPaymentInputPort,
   GetPaymentPort
 } from '@/modules/payment/application/use-cases/get-payment/get-payment.port';
-import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentFullProps, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
-import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import type { PaymentFullProps, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
+import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
 export class GetPaymentUseCase extends GetPaymentPort {
   constructor(private readonly paymentRepository: PaymentRepositoryPort) {

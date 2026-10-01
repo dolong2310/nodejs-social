@@ -1,12 +1,12 @@
 import { AUTH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/auth.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
-import { IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
+import type { IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
 
 export class AuthRoute extends BaseRoute {
   protected override readonly version = 'v1';
