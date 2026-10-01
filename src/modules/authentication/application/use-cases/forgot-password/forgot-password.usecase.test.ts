@@ -4,7 +4,6 @@ import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -34,7 +33,7 @@ describe('ForgotPasswordUseCase', () => {
     const otpService = mockPort<OtpServicePort>({
       findAndValidateOtpCode: vi.fn().mockResolvedValue(otpEntity)
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new ForgotPasswordUseCase(
       userRepository,
       otpRepository,

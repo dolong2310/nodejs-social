@@ -4,7 +4,7 @@ import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/const
 import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   NoTokenProvidedException,
@@ -25,7 +25,7 @@ export class AuthGuard implements BaseGuard {
   constructor(
     private readonly roleQueryRepository: RoleQueryRepositoryPort,
     private readonly tokenService: TokenServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {}
 
   async canActivate(request: Request): Promise<boolean> {
@@ -72,7 +72,7 @@ export class AuthGuard implements BaseGuard {
     });
     const roleId = decoded.roleId;
 
-    const cachedRole = await this.cache.get<CachedRole>(
+    const cachedRole = await this.cache.read<CachedRole>(
       CACHE_KEYS.role(roleId),
       async () => {
         const rolePermissions = await this.roleQueryRepository.findRoleWithPermissionsById(roleId);

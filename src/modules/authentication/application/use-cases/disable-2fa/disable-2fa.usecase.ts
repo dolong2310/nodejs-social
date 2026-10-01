@@ -5,7 +5,7 @@ import {
   Disable2FAPort
 } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -17,7 +17,7 @@ export class Disable2FAUseCase extends Disable2FAPort {
     private readonly userRepository: UserRepositoryPort,
     private readonly userService: UserServicePort,
     private readonly otpService: OtpServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

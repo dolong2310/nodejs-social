@@ -2,10 +2,10 @@ import { UserAlreadyHas2FAException } from '@/modules/authentication/application
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import {
   Setup2FAInputPort,
-  Setup2FAPort,
-  Setup2FAOutputPort
+  Setup2FAOutputPort,
+  Setup2FAPort
 } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -17,7 +17,7 @@ export class Setup2FAUseCase extends Setup2FAPort {
     private readonly userRepository: UserRepositoryPort,
     private readonly userService: UserServicePort,
     private readonly twoFactorAuthenticationService: TwoFactorAuthPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

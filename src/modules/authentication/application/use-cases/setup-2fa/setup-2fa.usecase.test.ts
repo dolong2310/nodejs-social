@@ -1,7 +1,6 @@
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { Setup2FAInputPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -22,7 +21,7 @@ describe('Setup2FAUseCase', () => {
     const twoFactorAuthenticationService = mockPort<TwoFactorAuthPort>({
       generateSecret: vi.fn().mockReturnValue({ secret: 'secret', uri: 'otpauth://totp/social' })
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new Setup2FAUseCase(userRepository, userService, twoFactorAuthenticationService, cache);
 
     const result = await useCase.execute(new Setup2FAInputPort({ userId: user.id }));

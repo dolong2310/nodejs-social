@@ -1,6 +1,6 @@
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
@@ -27,13 +27,13 @@ export class UserService implements UserServicePort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly userQueryRepository: UserQueryRepositoryPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {}
 
   async findUserById(userId: string, options: { querySafe: true }): Promise<UserSafeProps | null>;
   async findUserById(userId: string, options?: { querySafe: false }): Promise<UserFullProps | null>;
   async findUserById(userId: string, options?: { querySafe?: boolean }): Promise<UserSafeProps | UserFullProps | null> {
-    const user = await this.cache.get(
+    const user = await this.cache.read(
       CACHE_KEYS.user(userId),
       () =>
         options?.querySafe
@@ -56,7 +56,7 @@ export class UserService implements UserServicePort {
     const normalizedUsername = Username.normalize(username);
     if (!normalizedUsername) return null;
 
-    const user = await this.cache.get(
+    const user = await this.cache.read(
       CACHE_KEYS.userByUsername(normalizedUsername),
       () =>
         options?.querySafe

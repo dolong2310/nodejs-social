@@ -3,15 +3,15 @@ import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/a
 import { userRoom } from '@/modules/common/constants/socket.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
-import { ExtendedError, Server, Socket } from 'socket.io';
+import { ExtendedError, Server as SocketServer, Socket } from 'socket.io';
 
-export const createSocketApp = (io: Server, container: IContainer): Server => {
+export const createSocketApp = (socketServer: SocketServer, container: IContainer): SocketServer => {
   const { tokenService, userService, features } = container.getSocketDeps();
 
   // Middleware used when a socket starts connecting.
-  io.use((socket, next) => socketAuthMiddleware(socket, next, tokenService, userService));
+  socketServer.use((socket, next) => socketAuthMiddleware(socket, next, tokenService, userService));
 
-  io.on('connection', async (socket: Socket) => {
+  socketServer.on('connection', async (socket: Socket) => {
     const decoded = socket.handshake.auth.decoded as AccessTokenPayload | undefined;
     if (!decoded?.userId) {
       socket.disconnect(true);
@@ -30,11 +30,11 @@ export const createSocketApp = (io: Server, container: IContainer): Server => {
     });
 
     for (const feature of features) {
-      feature.mount(io, socket, decoded);
+      feature.mount(socketServer, socket, decoded);
     }
   });
 
-  return io;
+  return socketServer;
 };
 
 async function eventSocketMiddleware(

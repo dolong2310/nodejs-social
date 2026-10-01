@@ -1,3 +1,5 @@
+import { DatabasePort } from '@/infrastructure/persistence/database.port';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
 import { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
@@ -14,9 +16,15 @@ import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/po
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ISocketFeature } from '@/presentation/socket/socket.type';
+import { type Server as SocketServer } from 'socket.io';
 
 export interface IContainer {
   getRouters(): BaseRoute[];
+  getContext(): {
+    database: DatabasePort;
+    redis: RedisClientPort;
+    socket: SocketServer;
+  };
   getSocketDeps(): {
     tokenService: TokenServicePort;
     userService: UserServicePort;

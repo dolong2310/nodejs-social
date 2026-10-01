@@ -1,7 +1,6 @@
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -40,7 +39,7 @@ describe('AdminUpdateUserUseCase', () => {
     const hashingService = mockPort<HashingPort>({
       hash: vi.fn().mockResolvedValue('new-hash')
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new AdminUpdateUserUseCase(
       userRepository,
       userService,

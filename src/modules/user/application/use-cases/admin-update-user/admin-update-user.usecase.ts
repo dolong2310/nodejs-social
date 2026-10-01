@@ -1,7 +1,7 @@
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
@@ -14,8 +14,8 @@ import {
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   AdminUpdateUserInputPort,
-  AdminUpdateUserPort,
-  AdminUpdateUserOutputPort
+  AdminUpdateUserOutputPort,
+  AdminUpdateUserPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
@@ -28,7 +28,7 @@ export class AdminUpdateUserUseCase extends AdminUpdateUserPort {
     private readonly roleRepository: RoleRepositoryPort,
     private readonly roleService: RoleServicePort,
     private readonly hashingService: HashingPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

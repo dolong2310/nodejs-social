@@ -64,6 +64,7 @@ const httpsOriginString = pipe(
 const envSchema = object({
   // App
   NODE_ENV: picklist(['development', 'staging', 'production']),
+  APP_NAME: requiredString,
   PORT: optional(pipe(positiveInteger, maxValue(65_535, 'Must not exceed 65535')), '3000'),
   LOG_LEVEL: optional(picklist(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']), 'info'),
   FRONTEND_URL: urlString,

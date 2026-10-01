@@ -1,4 +1,3 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UpdateMeInputPort } from '@/modules/user/application/use-cases/update-me/update-me.port';
@@ -23,7 +22,7 @@ describe('UpdateMeUseCase', () => {
       findUserById: vi.fn().mockResolvedValue(currentUser),
       findUserByUsername: vi.fn().mockResolvedValue(existingUsernameOwner)
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new UpdateMeUseCase(userRepository, userService, cache);
 
     const result = await useCase.execute(

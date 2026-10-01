@@ -1,4 +1,3 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { ChangePasswordInputPort } from '@/modules/user/application/use-cases/change-password/change-password.port';
@@ -15,7 +14,7 @@ describe('ChangePasswordUseCase', () => {
     const hashingService = mockPort<HashingPort>({
       hash: vi.fn().mockResolvedValue('new-hash')
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new ChangePasswordUseCase(userRepository, hashingService, cache);
 
     const result = await useCase.execute(new ChangePasswordInputPort({ userId: 'user_1', password: 'new-password' }));

@@ -1,12 +1,12 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import {
-  SearchUsersPort,
   SearchUsersInputPort,
-  SearchUsersOutputPort
+  SearchUsersOutputPort,
+  SearchUsersPort
 } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
@@ -14,7 +14,7 @@ export class SearchUsersUseCase extends SearchUsersPort {
   constructor(
     private readonly userQueryRepository: UserQueryRepositoryPort,
     private readonly friendService: FriendServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
@@ -52,7 +52,7 @@ export class SearchUsersUseCase extends SearchUsersPort {
       limit
     });
 
-    const result = await this.cache.get(key, load, { ttlSeconds: CACHE_TTL.SEARCH_USERS });
+    const result = await this.cache.read(key, load, { ttlSeconds: CACHE_TTL.SEARCH_USERS });
     return result ?? load();
   }
 }

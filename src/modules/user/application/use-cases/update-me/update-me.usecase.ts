@@ -1,4 +1,4 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
   UsernameAlreadyExistsException,
@@ -7,8 +7,8 @@ import {
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
   UpdateMeInputPort,
-  UpdateMePort,
-  UpdateMeOutputPort
+  UpdateMeOutputPort,
+  UpdateMePort
 } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
@@ -16,7 +16,7 @@ export class UpdateMeUseCase extends UpdateMePort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly userService: UserServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

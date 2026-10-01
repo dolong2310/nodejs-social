@@ -1,5 +1,5 @@
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
-import { Redis } from '@/infrastructure/persistence/redis/redis';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { Server as HttpServer } from 'http';
 import logger from '@/infrastructure/logger/create-logger';
 
@@ -11,7 +11,7 @@ import logger from '@/infrastructure/logger/create-logger';
  * -> Close connection
  * -> Exit
  */
-export function setupGracefulShutdown(httpServer: HttpServer, database: DatabasePort, redis: Redis): void {
+export function setupGracefulShutdown(httpServer: HttpServer, database: DatabasePort, redis: RedisClientPort): void {
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'shutting down gracefully');
 

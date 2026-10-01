@@ -1,10 +1,10 @@
 import { appConfig } from '@/bootstrap/config/app.config';
-import { Server } from 'socket.io';
+import { Server as SocketServer } from 'socket.io';
 
-export async function createSocketServer() {
-  const io = new Server({
+export function createSocketServer(): SocketServer {
+  const socketServer = new SocketServer({
     cors: appConfig.cors
   });
 
-  return { io };
+  return socketServer;
 }

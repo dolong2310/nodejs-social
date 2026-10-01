@@ -42,7 +42,6 @@ import { TransferAdminUseCase } from '@/modules/conversation/application/use-cas
 import { UpdateConversationUseCase } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.usecase';
 import { UpdateMemberRoleUseCase } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.usecase';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
@@ -202,7 +201,6 @@ import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
 export type HttpContext = ContainerRepositories & {
   logger: LoggerPort;
   cacheManager: CacheManagerPort;
-  cacheStrategy: CacheStrategyPort;
   realtimeEmitter: RealtimeEmitterPort;
   fileStorage: FileStoragePort;
   imageProcessor: ImageProcessorPort;
@@ -251,7 +249,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     conversationMemberQueryRepository,
     logger,
     cacheManager,
-    cacheStrategy,
     realtimeEmitter,
     fileStorage,
     imageProcessor,
@@ -273,7 +270,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     twoFactorService
   } = ctx;
 
-  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
+  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
@@ -312,11 +309,11 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     hashingService,
     userService,
     otpService,
-    cacheStrategy
+    cacheManager
   );
   const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, otpEmailQueue);
-  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheStrategy);
-  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheStrategy);
+  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheManager);
+  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheManager);
 
   const getGoogleAuthUrlUC = new GetGoogleAuthUrlUseCase(googleOAuthService);
   const loginGoogleUC = new LoginGoogleUseCase(
@@ -329,9 +326,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   );
 
   const getMeUC = new GetMeUseCase(userService);
-  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheStrategy);
+  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheManager);
   const getUserProfileUC = new GetUserProfileUseCase(userService, blockService);
-  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheStrategy);
+  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheManager);
   const adminListUsersUC = new AdminListUsersUseCase(userRepository);
   const adminGetUserUC = new AdminGetUserUseCase(userRepository);
   const adminCreateUserUC = new AdminCreateUserUseCase(
@@ -347,9 +344,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     roleRepository,
     roleService,
     hashingService,
-    cacheStrategy
+    cacheManager
   );
-  const adminDeleteUserUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheStrategy);
+  const adminDeleteUserUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheManager);
 
   const blockUserUC = new BlockUserUseCase(
     blockRepository,
@@ -416,7 +413,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const deletePostUC = new DeletePostUseCase(postRepository, roleService);
 
   const searchPostsUC = new SearchPostsUseCase(postQueryRepository, friendService, postService, blockService);
-  const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, cacheStrategy);
+  const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, cacheManager);
 
   const listFriendsUC = new GetFriendsUseCase(friendshipRepository, userRepository);
   const listIncomingRequestsUC = new GetIncomingRequestsUseCase(friendRequestRepository, userQueryRepository);
@@ -589,13 +586,13 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const listRolesUC = new ListRolesUseCase(roleRepository);
   const getRoleUC = new GetRoleUseCase(roleRepository);
   const createRoleUC = new CreateRoleUseCase(roleRepository);
-  const updateRoleUC = new UpdateRoleUseCase(roleRepository, cacheStrategy);
-  const deleteRoleUC = new DeleteRoleUseCase(roleRepository, cacheStrategy);
+  const updateRoleUC = new UpdateRoleUseCase(roleRepository, cacheManager);
+  const deleteRoleUC = new DeleteRoleUseCase(roleRepository, cacheManager);
   const listPermissionsUC = new ListPermissionsUseCase(permissionRepository);
 
   const getPermissionUC = new GetPermissionUseCase(permissionRepository);
   const createPermissionUC = new CreatePermissionUseCase(permissionRepository);
-  const updatePermissionUC = new UpdatePermissionUseCase(permissionRepository, cacheStrategy);
+  const updatePermissionUC = new UpdatePermissionUseCase(permissionRepository, cacheManager);
   const deletePermissionUC = new DeletePermissionUseCase(permissionRepository, roleRepository);
   const roleController: IRoleController = new RoleController(
     listRolesUC,

@@ -1,5 +1,6 @@
 const defaults: Record<string, string> = {
   NODE_ENV: 'development',
+  APP_NAME: 'nodejs-social-test',
   PORT: '3000',
   LOG_LEVEL: 'silent',
   FRONTEND_URL: 'http://localhost:3000',

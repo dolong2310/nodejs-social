@@ -1,5 +1,4 @@
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { AdminDeleteUserInputPort } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
@@ -26,7 +25,7 @@ describe('AdminDeleteUserUseCase', () => {
     const roleService = mockPort<RoleServicePort>({
       getAdminRoleId: vi.fn().mockResolvedValue('role_admin')
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new AdminDeleteUserUseCase(userRepository, roleService, cache);
 
     await useCase.execute(new AdminDeleteUserInputPort({ actorId: 'admin_1', userId: user.id }));

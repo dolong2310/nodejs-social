@@ -1,9 +1,10 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import {
-  CacheStrategyPort,
+  CacheManagerPort,
   ReadThroughOptions,
   WriteThroughOptions
-} from '@/modules/core/application/ports/cache-strategy.port';
+} from '@/modules/core/application/ports/cache-manager.port';
+import { randomUUID } from 'node:crypto';
 
 type CacheValue<T> =
   | {
@@ -14,11 +15,64 @@ type CacheValue<T> =
       type: 'null';
     };
 
-export class CacheStrategy implements CacheStrategyPort {
-  constructor(private readonly cache: CacheManagerPort) {}
+export class CacheManager implements CacheManagerPort {
+  constructor(private readonly redis: RedisClientPort) {}
 
-  async get<T>(key: string, loader: () => Promise<T | null>, options: ReadThroughOptions): Promise<T | null> {
-    const cached = await this.cache.get<CacheValue<T>>(key);
+  async get<T>(key: string): Promise<T | null> {
+    const raw = await this.redis.client.get(key);
+    if (raw === null) return null;
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      return raw as T;
+    }
+  }
+
+  async set<T>(key: string, value: T, options?: { ttlSeconds?: number }): Promise<void> {
+    const raw = JSON.stringify(value);
+    if (options?.ttlSeconds) {
+      await this.redis.client.set(key, raw, 'EX', options.ttlSeconds);
+    } else {
+      await this.redis.client.set(key, raw);
+    }
+  }
+
+  async del(...keys: string[]): Promise<void> {
+    if (keys.length > 0) {
+      await this.redis.client.del(...keys);
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.redis.client.flushall();
+  }
+
+  async acquireLock(key: string, ttlMs: number): Promise<{ token: string } | null> {
+    const token = randomUUID();
+
+    const result = await this.redis.client.set(key, token, 'PX', ttlMs, 'NX');
+
+    if (result !== 'OK') return null;
+
+    return { token };
+  }
+
+  async releaseLock(key: string, token: string): Promise<void> {
+    const script = `
+      if redis.call("GET", KEYS[1]) == ARGV[1] then
+        return redis.call("DEL", KEYS[1])
+      else
+        return 0
+      end
+    `;
+
+    await this.redis.client.eval(script, 1, key, token);
+  }
+
+  // Advanced methods
+
+  async read<T>(key: string, loader: () => Promise<T | null>, options: ReadThroughOptions): Promise<T | null> {
+    const cached = await this.get<CacheValue<T>>(key);
 
     if (cached) {
       if (cached.type === 'hit') return cached.value;
@@ -26,14 +80,14 @@ export class CacheStrategy implements CacheStrategyPort {
     }
 
     const lockKey = `lock:${key}`;
-    const lock = await this.cache.acquireLock(lockKey, options.lockTtlMs ?? 5000);
+    const lock = await this.acquireLock(lockKey, options.lockTtlMs ?? 5000);
 
     if (!lock) {
       return this.waitAndRetry(key, loader, options);
     }
 
     try {
-      const cachedAgain = await this.cache.get<CacheValue<T>>(key);
+      const cachedAgain = await this.get<CacheValue<T>>(key);
 
       if (cachedAgain) {
         if (cachedAgain.type === 'hit') return cachedAgain.value;
@@ -43,7 +97,7 @@ export class CacheStrategy implements CacheStrategyPort {
       const data = await loader();
 
       if (data === null) {
-        await this.cache.set<CacheValue<T>>(
+        await this.set<CacheValue<T>>(
           key,
           { type: 'null' },
           {
@@ -54,7 +108,7 @@ export class CacheStrategy implements CacheStrategyPort {
         return null;
       }
 
-      await this.cache.set<CacheValue<T>>(
+      await this.set<CacheValue<T>>(
         key,
         {
           type: 'hit',
@@ -67,7 +121,7 @@ export class CacheStrategy implements CacheStrategyPort {
 
       return data;
     } finally {
-      await this.cache.releaseLock(lockKey, lock.token);
+      await this.releaseLock(lockKey, lock.token);
     }
   }
 
@@ -75,7 +129,7 @@ export class CacheStrategy implements CacheStrategyPort {
     const data = await writer();
 
     try {
-      await this.cache.set(
+      await this.set(
         key,
         {
           type: 'hit',
@@ -87,7 +141,7 @@ export class CacheStrategy implements CacheStrategyPort {
       );
     } catch {
       if (options.rollbackCacheOnError) {
-        await this.cache.del(key);
+        await this.del(key);
       }
 
       // The DB write succeeded but Redis failed.
@@ -100,11 +154,11 @@ export class CacheStrategy implements CacheStrategyPort {
 
   async delete(key: string, deleter: () => Promise<void>): Promise<void> {
     await deleter();
-    await this.cache.del(key);
+    await this.del(key);
   }
 
   async invalidate(key: string): Promise<void> {
-    await this.cache.del(key);
+    await this.del(key);
   }
 
   private async waitAndRetry<T>(
@@ -118,7 +172,7 @@ export class CacheStrategy implements CacheStrategyPort {
     for (let i = 0; i < maxAttempts; i++) {
       await sleep(waitMs);
 
-      const cached = await this.cache.get<CacheValue<T>>(key);
+      const cached = await this.get<CacheValue<T>>(key);
 
       if (cached) {
         if (cached.type === 'hit') return cached.value;
@@ -129,7 +183,7 @@ export class CacheStrategy implements CacheStrategyPort {
     // Important:
     // Do not call the DB directly here.
     // Compete for the lock again so each key has only one loader running.
-    return this.get(key, loader, options);
+    return this.read(key, loader, options);
   }
 
   // Add a small random amount to the TTL so keys do not expire at the same time.

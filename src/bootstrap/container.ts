@@ -4,11 +4,12 @@ import { createContainerQueues } from '@/bootstrap/di/queues';
 import { createContainerRepositories } from '@/bootstrap/di/repositories';
 import { buildSocketFeatures } from '@/bootstrap/di/socket-features';
 import type { IContainer } from '@/bootstrap/di/types';
-import { CacheStrategy } from '@/infrastructure/cache/cache.strategy';
 // import { SesEmailSender } from '@/infrastructure/email/ses-email-sender';
 import { ResendEmailSender } from '@/infrastructure/email/resend-email-sender';
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
+import { CacheManager } from '@/infrastructure/persistence/redis/cache-manager';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
@@ -39,7 +40,6 @@ import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/do
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -84,7 +84,7 @@ import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ChatFeature } from '@/presentation/socket/features/chat.feature';
 import { PresenceFeature } from '@/presentation/socket/features/presence.feature';
 import { RealtimeEmitter } from '@/presentation/socket/realtime-emitter';
-import { type Server as SocketIOServer } from 'socket.io';
+import { type Server as SocketServer } from 'socket.io';
 export type { IContainer } from '@/bootstrap/di/types';
 
 export class Container implements IContainer {
@@ -93,8 +93,9 @@ export class Container implements IContainer {
   private readonly routers: BaseRoute[];
 
   private readonly database: DatabasePort;
-  private readonly redis: CacheManagerPort;
-  private readonly cacheStrategy: CacheStrategyPort;
+  private readonly redis: RedisClientPort;
+  private readonly socket: SocketServer;
+  private readonly cacheManager: CacheManagerPort;
   private readonly logger: LoggerPort = logger;
 
   private readonly realtimeEmitter: RealtimeEmitterPort;
@@ -156,11 +157,12 @@ export class Container implements IContainer {
   private readonly presenceFeature: PresenceFeature;
   private readonly chatFeature: ChatFeature;
 
-  private constructor(database: DatabasePort, redis: CacheManagerPort, socket: SocketIOServer) {
+  private constructor(database: DatabasePort, redis: RedisClientPort, socket: SocketServer) {
     this.database = database;
     this.redis = redis;
+    this.socket = socket;
 
-    this.cacheStrategy = new CacheStrategy(this.redis);
+    this.cacheManager = new CacheManager(this.redis);
     this.jwtService = new JwtService();
     this.hashingService = new HashingService();
     this.twoFactorService = new TwoFactorAuthService();
@@ -233,10 +235,10 @@ export class Container implements IContainer {
     });
 
     this.authService = new AuthService(this.refreshTokenRepository, this.tokenService);
-    this.userService = new UserService(this.userRepository, this.userQueryRepository, this.cacheStrategy);
-    this.friendService = new FriendService(this.friendshipRepository, this.cacheStrategy);
-    this.blockService = new BlockService(this.blockRepository, this.cacheStrategy);
-    this.postService = new PostService(this.postQueryRepository, this.postViewsQueue, this.cacheStrategy, this.logger);
+    this.userService = new UserService(this.userRepository, this.userQueryRepository, this.cacheManager);
+    this.friendService = new FriendService(this.friendshipRepository, this.cacheManager);
+    this.blockService = new BlockService(this.blockRepository, this.cacheManager);
+    this.postService = new PostService(this.postQueryRepository, this.postViewsQueue, this.cacheManager, this.logger);
     this.conversationService = new ConversationService(this.conversationRepository, this.conversationMemberRepository);
     this.otpService = new OtpService(this.otpRepository, this.twoFactorService);
     this.roleService = new RoleService(this.roleRepository);
@@ -251,7 +253,7 @@ export class Container implements IContainer {
     );
 
     this.warmRedisCacheUC = new WarmRedisCacheUseCase(
-      this.redis,
+      this.cacheManager,
       this.roleRepository,
       this.roleQueryRepository,
       this.userRepository,
@@ -260,7 +262,7 @@ export class Container implements IContainer {
     );
     this.checkSystemHealthUC = new CheckSystemHealthUseCase(
       new NodeSystemHealthProbe({ diskPath: appConfig.systemHealth.diskPath }),
-      this.redis,
+      this.cacheManager,
       this.emailSender,
       this.logger,
       {
@@ -273,8 +275,7 @@ export class Container implements IContainer {
     this.routers = buildHttpRouters({
       ...repos,
       logger: this.logger,
-      cacheManager: this.redis,
-      cacheStrategy: this.cacheStrategy,
+      cacheManager: this.cacheManager,
       realtimeEmitter: this.realtimeEmitter,
       fileStorage: this.fileStorage,
       imageProcessor: this.imageProcessor,
@@ -304,7 +305,7 @@ export class Container implements IContainer {
     this.chatFeature = socketFeatures.chatFeature;
   }
 
-  public static getOrSet(database: DatabasePort, redis: CacheManagerPort, socket: SocketIOServer): Container {
+  public static getOrSet(database: DatabasePort, redis: RedisClientPort, socket: SocketServer): Container {
     if (!Container.instance) {
       Container.instance = new Container(database, redis, socket);
     }
@@ -324,6 +325,14 @@ export class Container implements IContainer {
 
   public getRouters(): BaseRoute[] {
     return this.routers;
+  }
+
+  public getContext() {
+    return {
+      database: this.database,
+      redis: this.redis,
+      socket: this.socket
+    };
   }
 
   public getLogger(): LoggerPort {

@@ -1,6 +1,5 @@
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { encodeCursor } from '@/modules/common/utils/cursor.util';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
 import { SearchUsersInputPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
@@ -38,12 +37,12 @@ describe('SearchUsersUseCase', () => {
     const friendService = mockPort<FriendServicePort>({
       findFriendUserIds: vi.fn().mockResolvedValue(['user_1'])
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new SearchUsersUseCase(userQueryRepository, friendService, cache);
 
     const result = await useCase.execute(query);
 
-    expect(cache.get).toHaveBeenCalledWith(CACHE_KEYS.searchUsers(query), expect.any(Function), {
+    expect(cache.read).toHaveBeenCalledWith(CACHE_KEYS.searchUsers(query), expect.any(Function), {
       ttlSeconds: CACHE_TTL.SEARCH_USERS
     });
     expect(result.items).toEqual([firstUser]);

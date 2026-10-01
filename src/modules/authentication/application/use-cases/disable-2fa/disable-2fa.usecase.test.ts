@@ -2,7 +2,6 @@ import { OtpServicePort } from '@/modules/authentication/application/services/ot
 import { Disable2FAInputPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
@@ -23,7 +22,7 @@ describe('Disable2FAUseCase', () => {
     const otpService = mockPort<OtpServicePort>({
       validateTOTPCodeOrEmailOtpCode: vi.fn().mockResolvedValue(undefined)
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new Disable2FAUseCase(userRepository, userService, otpService, cache);
 
     const result = await useCase.execute(new Disable2FAInputPort({ userId: user.id, totpCode: '123456' }));

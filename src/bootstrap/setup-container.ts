@@ -1,9 +1,9 @@
 import Container from '@/bootstrap/container';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { type Server as SocketIOServer } from 'socket.io';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import { type Server as SocketServer } from 'socket.io';
 
-export function setupContainer(database: DatabasePort, redis: CacheManagerPort, io: SocketIOServer) {
-  const container = Container.getOrSet(database, redis, io);
+export function setupContainer(database: DatabasePort, redis: RedisClientPort, socketServer: SocketServer) {
+  const container = Container.getOrSet(database, redis, socketServer);
   return container;
 }

@@ -230,6 +230,20 @@ describe('authentication and user HTTP e2e', () => {
     await request(fixture.app).get('/api/v1/users/me').expect(403);
     await request(fixture.app).get('/api/v1/admin/users?page=1&limit=10').expect(403);
   });
+
+  it('returns the API error envelope for an unknown route', async () => {
+    const fixture = createAuthUserE2eApp();
+
+    await request(fixture.app)
+      .get('/api/v1/unknown')
+      .expect(404, {
+        message: 'Not Found',
+        errors: {
+          method: 'GET',
+          path: '/api/v1/unknown'
+        }
+      });
+  });
 });
 
 async function register(

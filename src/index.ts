@@ -5,11 +5,12 @@ import { createSocketServer } from '@/bootstrap/create-socket-server';
 import logger from '@/infrastructure/logger/create-logger';
 
 async function bootstrap() {
-  const { io } = await createSocketServer();
-  const { server, port, appUrl } = await createHttpServer(io);
-  server.listen(port, () => {
+  const socketServer = createSocketServer();
+  const { httpServer, port, appUrl } = await createHttpServer(socketServer);
+
+  httpServer.listen(port, () => {
     logger.info({ port, appUrl }, 'server:::running');
   });
 }
 
-bootstrap();
+void bootstrap();

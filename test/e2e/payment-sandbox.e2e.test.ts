@@ -1,8 +1,19 @@
+import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { IContainer } from '@/bootstrap/container';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+
+vi.mock('@/infrastructure/persistence/redis/rate-limit-store', async () => {
+  const { MemoryStore } = await import('express-rate-limit');
+
+  return {
+    createRateLimitStore: () => new MemoryStore()
+  };
+});
 
 Object.assign(process.env, {
   NODE_ENV: 'development',
+  APP_NAME: 'nodejs-social-test',
   PORT: '3000',
   LOG_LEVEL: 'silent',
   FRONTEND_URL: 'http://localhost:3000',
@@ -38,9 +49,9 @@ Object.assign(process.env, {
   CLOUDINARY_CLOUD_NAME: 'test-cloud-name',
   CLOUDINARY_API_KEY: 'test-cloudinary-api-key',
   CLOUDINARY_API_SECRET: 'test-cloudinary-api-secret',
-  RATE_LIMIT_ENABLED: '0',
+  RATE_LIMIT_ENABLED: '1',
   RATE_LIMIT_WINDOW_MS: '900000',
-  RATE_LIMIT_MAX: '1000',
+  RATE_LIMIT_MAX: '1',
   SYSTEM_HEALTH_MONITOR_ENABLED: '0',
   SYSTEM_HEALTH_CRON: '*/5 * * * *',
   SYSTEM_HEALTH_TIMEZONE: 'UTC',
@@ -66,9 +77,10 @@ Object.assign(process.env, {
   PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test'
 });
 
-const [{ buildHttpRouters }, { HttpRoutePermissionCatalog }] = await Promise.all([
+const [{ buildHttpRouters }, { HttpRoutePermissionCatalog }, { createExpressApp }] = await Promise.all([
   import('@/bootstrap/di/http-routes'),
-  import('@/modules/operations/presentation/http-route-permission-catalog')
+  import('@/modules/operations/presentation/http-route-permission-catalog'),
+  import('@/presentation/http/express/app')
 ]);
 
 afterEach(() => vi.useRealTimers());
@@ -88,6 +100,24 @@ function buildRoutes() {
 }
 
 describe('payment bootstrap wiring', () => {
+  it('returns the API rate-limit response contract when the global limit is exceeded', async () => {
+    const app = createExpressApp({
+      getRouters: () => [],
+      getContext: () => ({ redis: {} })
+    } as unknown as IContainer);
+
+    await request(app).get('/unknown').expect(404);
+
+    const response = await request(app).get('/unknown').expect(429);
+
+    expect(response.headers['content-type']).toMatch(/json/);
+    expect(response.body).toEqual({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: 'Too many requests, please try again later.'
+    });
+  });
+
   it('mounts checkout and callback routes independent of app environment', () => {
     const previousEnvironment = process.env.NODE_ENV;
     try {

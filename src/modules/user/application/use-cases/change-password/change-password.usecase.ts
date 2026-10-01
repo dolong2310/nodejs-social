@@ -1,4 +1,4 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
@@ -11,7 +11,7 @@ export class ChangePasswordUseCase extends ChangePasswordPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly hashingService: HashingPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

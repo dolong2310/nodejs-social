@@ -31,7 +31,6 @@ import type { RoleRepositoryPort } from '@/modules/authorization/domain/reposito
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import type { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Paginated, type PaginatedQueryParams } from '@/modules/core/domain/repositories/port.repository';
@@ -121,29 +120,28 @@ class MemoryCacheManager implements CacheManagerPort {
   async releaseLock(key: string, token: string): Promise<void> {
     if (this.locks.get(key) === token) this.locks.delete(key);
   }
-}
 
-class PassthroughCacheStrategy implements CacheStrategyPort {
-  constructor(private readonly cacheManager: CacheManagerPort) {}
-
-  async get<T>(key: string, loader: () => Promise<T | null>): Promise<T | null> {
-    const cached = await this.cacheManager.get<T>(key);
+  async read<T>(key: string, loader: () => Promise<T | null>): Promise<T | null> {
+    const cached = await this.get<T>(key);
     if (cached !== null) return cached;
     const value = await loader();
-    if (value !== null) await this.cacheManager.set(key, value);
+    if (value !== null) await this.set(key, value);
     return value;
   }
 
-  async write<T>(_key: string, writer: () => Promise<T>): Promise<T> {
-    return writer();
+  async write<T>(key: string, writer: () => Promise<T>): Promise<T> {
+    const value = await writer();
+    await this.set(key, value);
+    return value;
   }
 
-  async delete(_key: string, deleter: () => Promise<void>): Promise<void> {
+  async delete(key: string, deleter: () => Promise<void>): Promise<void> {
     await deleter();
+    await this.del(key);
   }
 
   async invalidate(key: string): Promise<void> {
-    await this.cacheManager.del(key);
+    await this.del(key);
   }
 }
 
@@ -740,7 +738,6 @@ export type AuthUserE2eApp = {
 
 export function createAuthUserE2eApp(): AuthUserE2eApp {
   const cacheManager = new MemoryCacheManager();
-  const cacheStrategy = new PassthroughCacheStrategy(cacheManager);
   const roleRepository = new MemoryRoleRepository();
   const roleQueryRepository = new MemoryRoleQueryRepository(roleRepository);
   const userRepository = new MemoryUserRepository();
@@ -756,7 +753,7 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     refreshTokenExpiresIn: '7d'
   });
   const roleService = new RoleService(roleRepository);
-  const userService = new UserService(userRepository, userQueryRepository, cacheStrategy);
+  const userService = new UserService(userRepository, userQueryRepository, cacheManager);
   const otpService = new OtpService(otpRepository, twoFactorService);
   const authService = new AuthService(refreshTokenRepository, tokenService);
   const otpEmailQueue = new CapturingOtpEmailQueue();
@@ -771,15 +768,15 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     hashingService,
     userService,
     otpService,
-    cacheStrategy
+    cacheManager
   );
   const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, otpEmailQueue);
-  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheStrategy);
-  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheStrategy);
+  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheManager);
+  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheManager);
   const getMeUC = new GetMeUseCase(userService);
-  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheStrategy);
+  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheManager);
   const getProfileUC = new GetUserProfileUseCase(userService, blockService);
-  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheStrategy);
+  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheManager);
   const adminListUC = new AdminListUsersUseCase(userRepository);
   const adminGetUC = new AdminGetUserUseCase(userRepository);
   const adminCreateUC = new AdminCreateUserUseCase(
@@ -795,9 +792,9 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     roleRepository,
     roleService,
     hashingService,
-    cacheStrategy
+    cacheManager
   );
-  const adminDeleteUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheStrategy);
+  const adminDeleteUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheManager);
 
   const authController = new AuthController(
     registerUC,
@@ -818,7 +815,7 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     adminDeleteUC
   );
 
-  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
+  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(apiKey);

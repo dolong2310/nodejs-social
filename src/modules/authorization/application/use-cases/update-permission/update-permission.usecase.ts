@@ -10,12 +10,12 @@ import {
 import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 import { UpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.type';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class UpdatePermissionUseCase extends UpdatePermissionPort {
   constructor(
     private readonly permissionRepository: PermissionRepositoryPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

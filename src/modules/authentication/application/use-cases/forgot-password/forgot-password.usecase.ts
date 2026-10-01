@@ -6,7 +6,7 @@ import {
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
@@ -19,7 +19,7 @@ export class ForgotPasswordUseCase extends ForgotPasswordPort {
     private readonly hashingService: HashingPort,
     private readonly userService: UserServicePort,
     private readonly otpService: OtpServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

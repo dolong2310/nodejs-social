@@ -14,12 +14,12 @@ import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type'
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class UpdateRoleUseCase extends UpdateRolePort {
   constructor(
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }

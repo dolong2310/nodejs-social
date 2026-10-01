@@ -1,5 +1,5 @@
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
 import {
   CannotMutateAdminUserException,
@@ -15,7 +15,7 @@ export class AdminDeleteUserUseCase extends AdminDeleteUserPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly roleService: RoleServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
