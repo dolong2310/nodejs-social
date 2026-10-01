@@ -1,5 +1,5 @@
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
-import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
+import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { ConfirmPasswordMustMatchException } from '@/presentation/http/express/exceptions/auth.exception';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';
 import { validate } from '@/presentation/http/express/utils/validation.util';

@@ -53,7 +53,7 @@ describe.concurrent('Application boundaries', () => {
     );
     expectFilesMatch(
       applicationFiles.filter((file) => file.includes('/application/constants/')),
-      (file) => /\.constant\.ts$/.test(file)
+      (file) => /\.constants\.ts$/.test(file)
     );
     expectFilesMatch(
       applicationFiles.filter((file) => file.includes('/application/utils/')),

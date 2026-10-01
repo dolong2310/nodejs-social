@@ -21,7 +21,7 @@
 **Functions and variables:**
 
 - **camelCase** for methods, functions, and variables (e.g. `listFriends`, `getUserId`).
-- **UPPER_SNAKE** for module-level constants and some config (e.g. `HTTP_STATUS` in `src/presentation/http/express/responses/http-status.constant.ts`).
+- **UPPER_SNAKE** for module-level constants and some config (e.g. `HTTP_STATUS` in `src/presentation/http/express/responses/http-status.constants.ts`).
 
 **Prefix conventions:**
 

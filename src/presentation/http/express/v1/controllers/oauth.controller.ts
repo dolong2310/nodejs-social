@@ -5,7 +5,7 @@ import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
   refreshTokenMaxAgeMs
-} from '@/presentation/http/express/constants/auth.constant';
+} from '@/presentation/http/express/constants/auth.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';

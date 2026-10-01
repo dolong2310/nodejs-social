@@ -6,7 +6,7 @@ import {
 } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';

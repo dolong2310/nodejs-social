@@ -1,3 +1,4 @@
+import { ADMIN_USER_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/admin-user.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -31,13 +32,11 @@ export class AdminUserRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.paginationQuery],
@@ -46,7 +45,7 @@ export class AdminUserRoute extends BaseRoute {
       {
         path: '/',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.CREATE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -60,7 +59,7 @@ export class AdminUserRoute extends BaseRoute {
       {
         path: '/:userId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.GET_BY_ID)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.adminUsersPipe.userIdParam()],
@@ -69,7 +68,7 @@ export class AdminUserRoute extends BaseRoute {
       {
         path: '/:userId',
         method: 'put',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.UPDATE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -83,7 +82,7 @@ export class AdminUserRoute extends BaseRoute {
       {
         path: '/:userId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.REMOVE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,

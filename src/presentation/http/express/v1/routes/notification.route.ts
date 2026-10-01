@@ -1,3 +1,4 @@
+import { NOTIFICATION_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/notification.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -31,13 +32,11 @@ export class NotificationRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.notificationPipe.listQuery],
@@ -46,7 +45,7 @@ export class NotificationRoute extends BaseRoute {
       {
         path: '/read',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.MARK_READ)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -60,7 +59,7 @@ export class NotificationRoute extends BaseRoute {
       {
         path: '/:notificationId/read',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.MARK_ONE_READ)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,

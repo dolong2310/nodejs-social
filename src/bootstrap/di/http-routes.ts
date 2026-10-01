@@ -41,6 +41,7 @@ import { SendMessageUseCase } from '@/modules/conversation/application/use-cases
 import { TransferAdminUseCase } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.usecase';
 import { UpdateConversationUseCase } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.usecase';
 import { UpdateMemberRoleUseCase } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.usecase';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -200,6 +201,7 @@ import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
 
 export type HttpContext = ContainerRepositories & {
   logger: LoggerPort;
+  redis: RedisClientPort;
   cacheManager: CacheManagerPort;
   realtimeEmitter: RealtimeEmitterPort;
   fileStorage: FileStoragePort;
@@ -248,6 +250,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userQueryRepository,
     conversationMemberQueryRepository,
     logger,
+    redis,
     cacheManager,
     realtimeEmitter,
     fileStorage,
@@ -275,7 +278,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
 
-  const throttlerGuard = new ThrottlerProxyGuard(appConfig);
+  const throttlerGuard = new ThrottlerProxyGuard(appConfig, redis);
 
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();

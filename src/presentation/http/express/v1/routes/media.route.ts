@@ -1,3 +1,4 @@
+import { MEDIA_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/media.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -25,13 +26,11 @@ export class MediaRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/upload-image',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_IMAGE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -40,7 +39,7 @@ export class MediaRoute extends BaseRoute {
       {
         path: '/upload-video',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_VIDEO)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -49,7 +48,7 @@ export class MediaRoute extends BaseRoute {
       {
         path: '/upload-video-stream',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_VIDEO_STREAM)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -58,7 +57,7 @@ export class MediaRoute extends BaseRoute {
       {
         path: '/video-status/:id',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.GET_VIDEO_STATUS)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],

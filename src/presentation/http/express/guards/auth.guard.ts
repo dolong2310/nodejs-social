@@ -1,6 +1,6 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constant';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constants';
 import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';

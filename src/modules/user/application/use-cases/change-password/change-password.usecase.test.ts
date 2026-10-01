@@ -1,5 +1,5 @@
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { ChangePasswordInputPort } from '@/modules/user/application/use-cases/change-password/change-password.port';
 import { ChangePasswordUseCase } from '@/modules/user/application/use-cases/change-password/change-password.usecase';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';

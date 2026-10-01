@@ -1,5 +1,5 @@
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { AdminDeleteUserInputPort } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';

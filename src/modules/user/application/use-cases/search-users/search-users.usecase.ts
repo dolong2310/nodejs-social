@@ -2,7 +2,7 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constants';
 import {
   SearchUsersInputPort,
   SearchUsersOutputPort,

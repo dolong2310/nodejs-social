@@ -1,3 +1,4 @@
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createExpressApp } from '@/presentation/http/express/app';
 import type { IContainer } from '@/bootstrap/container';
 import type { IAppConfig } from '@/bootstrap/types/app.type';
@@ -819,7 +820,7 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(apiKey);
-  const throttlerGuard = new ThrottlerProxyGuard(testAppConfig());
+  const throttlerGuard = new ThrottlerProxyGuard(testAppConfig(), {} as RedisClientPort); // rate limit is disabled in e2e, so redis is never touched;
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
   const timeoutInterceptor = new TimeoutInterceptor();

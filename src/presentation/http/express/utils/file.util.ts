@@ -1,4 +1,4 @@
-import { UPLOAD_DIR_IMAGE_TEMP, UPLOAD_DIR_VIDEO_TEMP } from '@/presentation/http/express/constants/file.constant';
+import { UPLOAD_DIR_IMAGE_TEMP, UPLOAD_DIR_VIDEO_TEMP } from '@/presentation/http/express/constants/file.constants';
 import fs from 'fs';
 import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';

@@ -1,4 +1,4 @@
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UpdateMeInputPort } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';

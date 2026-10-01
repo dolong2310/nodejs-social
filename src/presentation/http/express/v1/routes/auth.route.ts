@@ -1,4 +1,4 @@
-import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { AUTH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/auth.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -26,13 +26,11 @@ export class AuthRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
-
     const configs: RouterConfig[] = [
       {
         path: '/register',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.REGISTER)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.registerPipe],
@@ -41,7 +39,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/login',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.LOGIN)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.loginPipe],
@@ -50,7 +48,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/logout',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.LOGOUT)],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -59,7 +57,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/refresh-token',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.REFRESH_TOKEN)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -68,7 +66,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/forgot-password',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.FORGOT_PASSWORD)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.forgotPasswordPipe],
@@ -77,7 +75,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/otp',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.SEND_OTP)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.sendOtpPipe],
@@ -86,7 +84,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/2fa/enable',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.ENABLE_2FA)],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -95,7 +93,7 @@ export class AuthRoute extends BaseRoute {
       {
         path: '/2fa/disable',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(AUTH_THROTTLE_CONFIG.DISABLE_2FA)],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.disable2faPipe],

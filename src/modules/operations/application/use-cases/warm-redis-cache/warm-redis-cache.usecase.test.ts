@@ -1,7 +1,7 @@
 import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
-} from '@/modules/authorization/application/constants/cache.constant';
+} from '@/modules/authorization/application/constants/cache.constants';
 import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
@@ -11,12 +11,12 @@ import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-case
 import {
   CACHE_KEYS as RELATIONSHIP_CACHE_KEYS,
   CACHE_TTL as RELATIONSHIP_CACHE_TTL
-} from '@/modules/relationship/application/constants/cache.constant';
+} from '@/modules/relationship/application/constants/cache.constants';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import {
   CACHE_KEYS as USER_CACHE_KEYS,
   CACHE_TTL as USER_CACHE_TTL
-} from '@/modules/user/application/constants/cache.constant';
+} from '@/modules/user/application/constants/cache.constants';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';

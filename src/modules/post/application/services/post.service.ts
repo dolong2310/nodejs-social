@@ -1,6 +1,6 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constant';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constants';
 import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import {
   GetBlockedPostIdsPayload,

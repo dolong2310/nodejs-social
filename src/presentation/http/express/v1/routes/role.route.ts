@@ -1,3 +1,4 @@
+import { ROLE_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/role.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -33,13 +34,11 @@ export class RoleRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ROLE_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -53,7 +52,7 @@ export class RoleRoute extends BaseRoute {
       {
         path: '/',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ROLE_THROTTLE_CONFIG.CREATE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -67,7 +66,7 @@ export class RoleRoute extends BaseRoute {
       {
         path: '/:roleId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ROLE_THROTTLE_CONFIG.GET_BY_ID)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -81,7 +80,7 @@ export class RoleRoute extends BaseRoute {
       {
         path: '/:roleId',
         method: 'put',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ROLE_THROTTLE_CONFIG.UPDATE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -95,7 +94,7 @@ export class RoleRoute extends BaseRoute {
       {
         path: '/:roleId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(ROLE_THROTTLE_CONFIG.REMOVE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,

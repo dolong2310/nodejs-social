@@ -6,7 +6,7 @@ import {
   SOCKET_ROOM_CHAT_PREFIX,
   SOCKET_SERVER_PRESENCE_CHAT,
   chatRoom
-} from '@/modules/common/constants/socket.constant';
+} from '@/modules/common/constants/socket.constants';
 import { GetConversationPresencePort } from '@/modules/notification/application/use-cases/realtime/get-conversation-presence/get-conversation-presence.port';
 import { JoinConversationPort } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
 import { LeaveConversationPort } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';

@@ -1,0 +1,21 @@
+export const ONE_MINUTE_MS = 60 * 1000;
+export const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
+export const TEN_MINUTES_MS = 10 * ONE_MINUTE_MS;
+export const FIFTEEN_MINUTES_MS = 15 * ONE_MINUTE_MS;
+export const HALF_HOUR_MS = 30 * ONE_MINUTE_MS;
+export const ONE_HOUR_MS = 60 * ONE_MINUTE_MS;
+export const ONE_DAY_MS = 24 * 60 * ONE_MINUTE_MS;
+export const ONE_WEEK_MS = 7 * ONE_DAY_MS;
+export const ONE_MONTH_MS = 30 * ONE_DAY_MS;
+export const ONE_YEAR_MS = 365 * ONE_DAY_MS;
+
+export const ONE_MINUTE = 60;
+export const FIVE_MINUTES = 5 * ONE_MINUTE;
+export const TEN_MINUTES = 10 * ONE_MINUTE;
+export const FIFTEEN_MINUTES = 15 * ONE_MINUTE;
+export const HALF_HOUR = 30 * ONE_MINUTE;
+export const ONE_HOUR = 60 * ONE_MINUTE;
+export const ONE_DAY = 24 * 60 * 60;
+export const ONE_WEEK = 7 * ONE_DAY;
+export const ONE_MONTH = 30 * ONE_DAY;
+export const ONE_YEAR = 365 * ONE_DAY;

@@ -1,3 +1,4 @@
+import { CONVERSATION_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/conversation.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -35,13 +36,11 @@ export class ConversationRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/direct',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.CREATE_DIRECT)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -55,7 +54,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/groups',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.CREATE_GROUP)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -69,7 +68,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
@@ -78,7 +77,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.GET)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.conversationPipe.conversationIdParam],
@@ -87,7 +86,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.UPDATE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -101,7 +100,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/members',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.INVITE_MEMBER)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -115,7 +114,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/members/me',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.LEAVE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -129,7 +128,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/members/:userId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.KICK_MEMBER)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -143,7 +142,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/members/:userId/role',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.UPDATE_MEMBER_ROLE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -161,7 +160,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/admin/transfer',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.TRANSFER_ADMIN)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -176,7 +175,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/messages',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.LIST_MESSAGES)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.conversationPipe.conversationIdParam],
@@ -185,7 +184,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/messages',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.SEND_MESSAGE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -199,7 +198,7 @@ export class ConversationRoute extends BaseRoute {
       {
         path: '/:conversationId/read',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.MARK_READ)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,

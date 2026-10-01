@@ -1,5 +1,5 @@
-import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constant';
-import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
+import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
+import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
 
 /**
  * Base error class for all custom API errors.

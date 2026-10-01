@@ -1,5 +1,5 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/relationship/application/constants/cache.constant';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/relationship/application/constants/cache.constants';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export interface FriendServicePort {

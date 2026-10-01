@@ -3,7 +3,7 @@ import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-e
 import {
   NOTIFICATION_MAX_PER_USER,
   NOTIFICATION_SOCKET_EVENT
-} from '@/modules/notification/application/constants/notification.constant';
+} from '@/modules/notification/application/constants/notification.constants';
 import { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import {
   RecordAddedToGroupPayload,

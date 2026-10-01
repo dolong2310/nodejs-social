@@ -1,7 +1,7 @@
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { encodeCursor } from '@/modules/common/utils/cursor.util';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constants';
 import { SearchUsersInputPort } from '@/modules/user/application/use-cases/search-users/search-users.port';
 import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';

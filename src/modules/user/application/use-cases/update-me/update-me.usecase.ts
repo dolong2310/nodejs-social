@@ -1,5 +1,5 @@
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   UsernameAlreadyExistsException,
   UserNotFoundException

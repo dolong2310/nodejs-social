@@ -2,7 +2,7 @@ import { RoleServicePort } from '@/modules/authorization/application/services/ro
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { AdminUpdateUserInputPort } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { AdminUpdateUserUseCase } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.usecase';

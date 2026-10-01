@@ -1,3 +1,4 @@
+import { BLOCK_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/block.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -31,13 +32,11 @@ export class BlockRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(BLOCK_THROTTLE_CONFIG.LIST_BLOCKED)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.paginationQuery],
@@ -46,7 +45,7 @@ export class BlockRoute extends BaseRoute {
       {
         path: '/',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(BLOCK_THROTTLE_CONFIG.BLOCK_USER)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -60,7 +59,7 @@ export class BlockRoute extends BaseRoute {
       {
         path: '/:userId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(BLOCK_THROTTLE_CONFIG.UNBLOCK_USER)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,

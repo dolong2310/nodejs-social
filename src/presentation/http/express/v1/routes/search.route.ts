@@ -1,3 +1,4 @@
+import { SEARCH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/search.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
@@ -29,13 +30,11 @@ export class SearchRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(SEARCH_THROTTLE_CONFIG.SEARCH)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.searchPipe.searchPipe],

@@ -1,3 +1,4 @@
+import { STATIC_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/static.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
@@ -21,13 +22,11 @@ export class StaticRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/images/:filename',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_IMAGE)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -37,7 +36,7 @@ export class StaticRoute extends BaseRoute {
       {
         path: '/videos-stream/:filename',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_VIDEO_STREAM)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -46,7 +45,7 @@ export class StaticRoute extends BaseRoute {
       {
         path: '/videos-stream/:id/master.m3u8',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_VIDEO_STREAM_MASTER)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -55,7 +54,7 @@ export class StaticRoute extends BaseRoute {
       {
         path: '/videos-stream/:id/:version/:segment',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_VIDEO_STREAM_SEGMENT)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],

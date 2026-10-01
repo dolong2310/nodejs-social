@@ -14,7 +14,7 @@
 **Layer coupling (infrastructure ↔ presentation):**
 
 - Issue: `VideoStreamWorker` imports `UPLOAD_DIR_VIDEO` from presentation HTTP constants; worker is infrastructure but depends on presentation paths.
-- Files: `src/infrastructure/queue/video-stream/video-stream.worker.ts`, `src/presentation/http/express/constants/file.constant.ts`
+- Files: `src/infrastructure/queue/video-stream/video-stream.worker.ts`, `src/presentation/http/express/constants/file.constants.ts`
 - Impact: Refactors to HTTP layout or constants can break workers; violates intended dependency direction.
 - Fix approach: Move upload path constants to `bootstrap/config`, `infrastructure`, or a shared `modules/media` config module consumed by both layers.
 
@@ -55,10 +55,10 @@
 
 **Constants cleanup backlog:**
 
-- Issue: Multiple `TODO: remove if needed` on message strings in `message.constant.ts`.
-- Files: `src/presentation/http/express/constants/message.constant.ts`
+- Issue: Multiple `TODO: remove if needed` on message strings in `message.constants.ts`.
+- Files: `src/presentation/http/express/constants/message.constants.ts`
 - Impact: Unclear which messages are authoritative vs dead.
-- Fix approach: Audit callers; delete or consolidate with `http-message.constant.ts`.
+- Fix approach: Audit callers; delete or consolidate with `http-message.constants.ts`.
 
 **OTP expiry hardcoded in use case:**
 

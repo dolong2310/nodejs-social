@@ -1,6 +1,6 @@
 import { UnprocessableEntityException } from '@/presentation/http/express/responses/error.response';
-import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constant';
-import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
+import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
+import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
 import { NextFunction, Request, Response } from 'express';
 import { Location, matchedData, ValidationChain, ValidationError, validationResult } from 'express-validator';
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';

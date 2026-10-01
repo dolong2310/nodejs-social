@@ -1,3 +1,4 @@
+import { OAUTH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/oauth.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
@@ -21,13 +22,11 @@ export class OAuthRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/google/url',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(OAUTH_THROTTLE_CONFIG.GET_GOOGLE_AUTH_URL)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -36,7 +35,7 @@ export class OAuthRoute extends BaseRoute {
       {
         path: '/google',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(OAUTH_THROTTLE_CONFIG.GOOGLE_LOGIN)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],

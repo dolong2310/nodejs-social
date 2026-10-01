@@ -1,5 +1,5 @@
 import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.type';
-import { SOCKET_SERVER_PRESENCE_USER, userRoom } from '@/modules/common/constants/socket.constant';
+import { SOCKET_SERVER_PRESENCE_USER, userRoom } from '@/modules/common/constants/socket.constants';
 import { NotifyFriendsOfflinePort } from '@/modules/notification/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.port';
 import { NotifyFriendsOnlinePort } from '@/modules/notification/application/use-cases/realtime/notify-friends-online/notify-friends-online.port';
 import { ISocketFeature } from '@/presentation/socket/socket.type';

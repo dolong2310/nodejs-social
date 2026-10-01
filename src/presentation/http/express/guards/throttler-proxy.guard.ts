@@ -1,39 +1,48 @@
 import { IAppConfig } from '@/bootstrap/types/app.type';
-import { RATE_LIMIT_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
-import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
-import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constant';
-import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
+import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import { createRateLimitStore } from '@/infrastructure/persistence/redis/rate-limit-store';
+import { RATE_LIMIT_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
+import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
+import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
 import { Request, type RequestHandler } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+
+export type ThrottlePolicy = Readonly<{
+  key: string;
+  windowMs: number;
+  limit: number;
+}>;
 
 const skipRateLimit: RequestHandler = (_req, _res, next) => next();
 
 export class ThrottlerProxyGuard {
-  constructor(private readonly appConfig: IAppConfig) {
+  constructor(
+    private readonly appConfig: IAppConfig,
+    private readonly redis: RedisClientPort
+  ) {
     this.handler = this.handler.bind(this);
   }
 
-  handler(
-    windowMs: number = THROTTLE.DEFAULT.WINDOW_MS,
-    max: number = THROTTLE.DEFAULT.MAX,
-    message: string = RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_REQUESTS
-  ): RequestHandler {
+  handler(policy: ThrottlePolicy, message: string = RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_REQUESTS): RequestHandler {
     if (!this.appConfig.rateLimit.enabled) {
       return skipRateLimit;
     }
+
     return rateLimit({
-      windowMs,
-      max,
+      windowMs: policy.windowMs,
+      limit: policy.limit,
       message: {
         statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
         error: HTTP_ERROR_MESSAGE.TOO_MANY_REQUESTS,
         message
       },
-      standardHeaders: true,
-      legacyHeaders: false,
+      standardHeaders: this.appConfig.rateLimit.standardHeaders,
+      legacyHeaders: this.appConfig.rateLimit.legacyHeaders,
+      store: createRateLimitStore(this.redis, policy.key),
       keyGenerator: (req: Request) => {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
-        return ipKeyGenerator(ip);
+        const { ipv6Subnet } = this.appConfig.rateLimit;
+        return ipKeyGenerator(ip, typeof ipv6Subnet === 'number' || ipv6Subnet === false ? ipv6Subnet : undefined);
       }
     });
   }

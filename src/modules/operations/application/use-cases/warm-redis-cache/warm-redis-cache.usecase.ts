@@ -1,7 +1,7 @@
 import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
-} from '@/modules/authorization/application/constants/cache.constant';
+} from '@/modules/authorization/application/constants/cache.constants';
 import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
@@ -15,12 +15,12 @@ import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager
 import {
   CACHE_KEYS as RELATIONSHIP_CACHE_KEYS,
   CACHE_TTL as RELATIONSHIP_CACHE_TTL
-} from '@/modules/relationship/application/constants/cache.constant';
+} from '@/modules/relationship/application/constants/cache.constants';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import {
   CACHE_KEYS as USER_CACHE_KEYS,
   CACHE_TTL as USER_CACHE_TTL
-} from '@/modules/user/application/constants/cache.constant';
+} from '@/modules/user/application/constants/cache.constants';
 import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';

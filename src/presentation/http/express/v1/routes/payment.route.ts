@@ -1,3 +1,4 @@
+import { PAYMENT_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/payment.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -27,7 +28,6 @@ export class PaymentRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
     const guards = [this.authGuard, this.activeUserGuard];
     const interceptors = [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor];
 
@@ -35,7 +35,7 @@ export class PaymentRoute extends BaseRoute {
       {
         path: '/',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(PAYMENT_THROTTLE_CONFIG.CREATE)],
         guards,
         interceptors,
         pipes: [this.paymentPipe.createPaymentPipe, this.paymentPipe.idempotencyKeyHeader],
@@ -44,7 +44,7 @@ export class PaymentRoute extends BaseRoute {
       {
         path: '/:paymentId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(PAYMENT_THROTTLE_CONFIG.GET_BY_ID)],
         guards,
         interceptors,
         pipes: [this.paymentPipe.paymentIdParam],

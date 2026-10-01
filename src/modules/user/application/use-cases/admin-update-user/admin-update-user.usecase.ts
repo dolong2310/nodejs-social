@@ -3,7 +3,7 @@ import { RoleServicePort } from '@/modules/authorization/application/services/ro
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   CannotAssignAdminRoleException,
   CannotMutateAdminUserException,

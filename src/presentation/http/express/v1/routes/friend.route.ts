@@ -1,3 +1,4 @@
+import { FRIEND_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/friend.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -31,13 +32,11 @@ export class FriendRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_FRIENDS)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
@@ -46,7 +45,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/requests/incoming',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_INCOMING)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
@@ -55,7 +54,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/requests/outgoing',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_OUTGOING)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
@@ -64,7 +63,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/requests',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.SEND_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -78,7 +77,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/requests/:fromUserId/accept',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.ACCEPT_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -92,7 +91,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/requests/:fromUserId/decline',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.DECLINE_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -106,7 +105,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/requests/outgoing/:toUserId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.REVOKE_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -120,7 +119,7 @@ export class FriendRoute extends BaseRoute {
       {
         path: '/:userId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.UNFRIEND)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,

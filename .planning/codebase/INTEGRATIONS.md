@@ -26,7 +26,7 @@
 
 **File Storage:**
 - AWS S3 — primary durable storage for uploads/stream segments (`s3.service.ts`)
-- Local filesystem — upload/scratch dirs used before S3 (e.g. `UPLOAD_DIR_VIDEO` in `src/presentation/http/express/constants/file.constant.ts`, referenced from workers such as `src/infrastructure/queue/video-stream/video-stream.worker.ts`)
+- Local filesystem — upload/scratch dirs used before S3 (e.g. `UPLOAD_DIR_VIDEO` in `src/presentation/http/express/constants/file.constants.ts`, referenced from workers such as `src/infrastructure/queue/video-stream/video-stream.worker.ts`)
 
 **Caching:**
 - Redis (`ioredis`) — `src/infrastructure/persistence/redis/redis.ts`

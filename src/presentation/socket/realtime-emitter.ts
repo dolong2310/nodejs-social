@@ -3,7 +3,7 @@ import {
   SOCKET_SERVER_CHAT_MESSAGE_NEW,
   SOCKET_SERVER_CHAT_READ_UPDATED,
   userRoom
-} from '@/modules/common/constants/socket.constant';
+} from '@/modules/common/constants/socket.constants';
 import type {
   RealtimeEmitterPort,
   RealtimeMessagePayload

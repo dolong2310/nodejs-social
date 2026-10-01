@@ -1,4 +1,4 @@
-import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { POST_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/post.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
@@ -34,14 +34,11 @@ export class PostRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const defaultThrottler = this.throttlerGuard.handler();
-    const throttler = this.throttlerGuard.handler(THROTTLE.POSTS.WINDOW_MS, THROTTLE.POSTS.MAX);
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_NEW_FEEDS)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.postPipe.newFeedFilterQueryPipe],
@@ -50,7 +47,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/users/:userId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_BY_USER)],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [
@@ -63,7 +60,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/:postId',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.PATCH)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -77,7 +74,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/:postId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.DELETE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -91,7 +88,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/:postId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_DETAIL)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.postPipe.postIdPipe('postId', 'params')],
@@ -100,7 +97,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/me/likes',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_LIKED)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
@@ -109,7 +106,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/me/bookmarks',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_BOOKMARKED)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
@@ -118,7 +115,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/:type/:postId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_BY_TYPE)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [
@@ -131,7 +128,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.CREATE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -145,7 +142,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/bookmarks',
         method: 'post',
-        middlewares: [defaultThrottler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.CREATE_BOOKMARK)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -159,7 +156,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/bookmarks/:postId',
         method: 'delete',
-        middlewares: [defaultThrottler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.DELETE_BOOKMARK)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -173,7 +170,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/likes',
         method: 'post',
-        middlewares: [defaultThrottler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.CREATE_LIKE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -187,7 +184,7 @@ export class PostRoute extends BaseRoute {
       {
         path: '/likes/:postId',
         method: 'delete',
-        middlewares: [defaultThrottler],
+        middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.DELETE_LIKE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,

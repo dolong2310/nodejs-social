@@ -79,7 +79,7 @@ import { FriendshipRepositoryPort } from '@/modules/relationship/domain/reposito
 import { UserService, UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
-import { APP_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
+import { APP_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ChatFeature } from '@/presentation/socket/features/chat.feature';
 import { PresenceFeature } from '@/presentation/socket/features/presence.feature';
@@ -275,6 +275,7 @@ export class Container implements IContainer {
     this.routers = buildHttpRouters({
       ...repos,
       logger: this.logger,
+      redis: this.redis,
       cacheManager: this.cacheManager,
       realtimeEmitter: this.realtimeEmitter,
       fileStorage: this.fileStorage,

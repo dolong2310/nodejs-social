@@ -1,6 +1,6 @@
 import { USERNAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
+import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
   InvalidUserIdException,

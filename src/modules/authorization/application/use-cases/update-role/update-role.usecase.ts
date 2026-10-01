@@ -1,4 +1,4 @@
-import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constants';
 import {
   CannotDeactivateAdminRoleException,
   CannotRenameSystemRoleException,

@@ -1,4 +1,4 @@
-import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
+import { USER_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/user.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
@@ -32,14 +32,11 @@ export class UserRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-    const throttlerAuth = this.throttlerGuard.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
-
     const configs: RouterConfig[] = [
       {
         path: '/me',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.GET_ME)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -48,7 +45,7 @@ export class UserRoute extends BaseRoute {
       {
         path: '/me',
         method: 'patch',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.UPDATE_ME)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -62,7 +59,7 @@ export class UserRoute extends BaseRoute {
       {
         path: '/:username',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.GET_PROFILE)],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
@@ -71,7 +68,7 @@ export class UserRoute extends BaseRoute {
       {
         path: '/change-password',
         method: 'put',
-        middlewares: [throttlerAuth],
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.CHANGE_PASSWORD)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,

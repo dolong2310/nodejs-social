@@ -1,3 +1,4 @@
+import { HASHTAG_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/hashtag.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -31,13 +32,11 @@ export class HashtagRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -51,7 +50,7 @@ export class HashtagRoute extends BaseRoute {
       {
         path: '/',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.CREATE)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -65,7 +64,7 @@ export class HashtagRoute extends BaseRoute {
       {
         path: '/:hashtagId',
         method: 'get',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.GET_BY_ID)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -79,7 +78,7 @@ export class HashtagRoute extends BaseRoute {
       {
         path: '/:hashtagId',
         method: 'put',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.UPDATE)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -93,7 +92,7 @@ export class HashtagRoute extends BaseRoute {
       {
         path: '/:hashtagId',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.REMOVE)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,

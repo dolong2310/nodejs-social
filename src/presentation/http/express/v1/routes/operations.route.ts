@@ -1,3 +1,4 @@
+import { OPERATIONS_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/operations.throttler.constants';
 import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -23,13 +24,11 @@ export class OperationsRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
     const configs: RouterConfig[] = [
       {
         path: '/cache/redis',
         method: 'delete',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(OPERATIONS_THROTTLE_CONFIG.CLEAR_REDIS_CACHE)],
         guards: [this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         controller: this.operationsController.clearRedisCache
@@ -37,7 +36,7 @@ export class OperationsRoute extends BaseRoute {
       {
         path: '/role-permissions/sync',
         method: 'post',
-        middlewares: [throttler],
+        middlewares: [this.throttlerGuard.handler(OPERATIONS_THROTTLE_CONFIG.SYNC_ROLE_PERMISSIONS)],
         guards: [this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         controller: this.operationsController.syncRolePermissions

@@ -17,7 +17,7 @@ import {
   UploadVideoPort,
   UploadVideoOutputPort
 } from '@/modules/media/application/use-cases/upload-video/upload-video.port';
-import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant';
+import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
@@ -25,7 +25,7 @@ import {
   StaticVideoStreamInternalServerErrorException,
   VideoNotFoundException
 } from '@/presentation/http/express/exceptions/media.exception';
-import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
+import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
 import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
 import { parseUploadedFiles } from '@/presentation/http/express/utils/parse-uploaded-files.util';
 import { FilenameParamsDTO, VideoStreamParamsDTO } from '@/presentation/http/express/v1/dtos/media/media.request.dto';
