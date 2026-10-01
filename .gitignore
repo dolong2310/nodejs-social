@@ -69,3 +69,9 @@ out/
 *.swo
 # End of Selection
 ```
+# AI agent files
+.agents/
+.claude/
+docs/
+AGENTS.md
+CLAUDE.md
