@@ -160,25 +160,25 @@ Run the migration for the persistence driver you selected.
 MongoDB:
 
 ```bash
-pnpm run db:migrate:mongo --env=development
+pnpm run db:migrate:mongo
 ```
 
 PostgreSQL:
 
 ```bash
-pnpm run db:migrate:postgres --env=development
+pnpm run db:migrate:postgres
 ```
 
 Useful migration commands:
 
 ```bash
-pnpm run db:migrations:pending:mongo --env=development
-pnpm run db:migrations:executed:mongo --env=development
-pnpm run db:rollback:mongo --env=development
+pnpm run db:migrations:pending:mongo
+pnpm run db:migrations:executed:mongo
+pnpm run db:rollback:mongo
 
-pnpm run db:migrations:pending:postgres --env=development
-pnpm run db:migrations:executed:postgres --env=development
-pnpm run db:rollback:postgres --env=development
+pnpm run db:migrations:pending:postgres
+pnpm run db:migrations:executed:postgres
+pnpm run db:rollback:postgres
 ```
 
 ### Seed Data
@@ -211,6 +211,8 @@ Other environments:
 pnpm run dev:staging
 pnpm run dev:prod
 ```
+
+TSX watches imported source files. Restart the development process after changing an `.env.*` file or a file under `swagger/`.
 
 The API prefix is:
 

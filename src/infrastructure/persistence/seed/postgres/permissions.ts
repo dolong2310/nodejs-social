@@ -2,10 +2,10 @@
  * Sync permissions from HTTP routes and assign them to ADMIN/USER roles in Postgres.
  *
  * Run:
- * `pnpm run seed:permissions:postgres -- --env=development`
+ * `pnpm run seed:permissions:postgres`
  *
  * Prerequisite:
- * Run `pnpm run db:migrate:postgres --env=development` first.
+ * Run `pnpm run db:migrate:postgres` first.
  */
 import { appConfig } from '@/bootstrap/config/app.config';
 import logger from '@/infrastructure/logger/create-logger';

@@ -1,10 +1,10 @@
 /**
  * Seed fake data — clean architecture version.
- * Run: pnpm run seed:fake-data -- --env=development
+ * Run: pnpm run seed:fake-data:mongo
  *
  * Prerequisites:
- *  1. Run `pnpm run db:migrate:mongo --env=development` first.
- *  2. Run `pnpm run seed:permissions:mongo -- --env=development` first to ensure roles exist.
+ *  1. Run `pnpm run db:migrate:mongo` first.
+ *  2. Run `pnpm run seed:permissions:mongo` first to ensure roles exist.
  *  3. Set MYID to the entity ID of the existing admin/viewer user (format: "entity_<uuidv7>").
  *     You can find it in MongoDB under the `users` collection's `id` field.
  */
@@ -252,9 +252,7 @@ const main = async () => {
 
   const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {
-    throw new Error(
-      `Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`
-    );
+    throw new Error(`Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:mongo' first.`);
   }
   const userRoleId = userRole.id.toString();
   console.log(`Using USER role ID: ${userRoleId}`);

@@ -158,9 +158,11 @@ Các biến quan trọng:
 
 Không commit secrets thật trong `.env.*`.
 
+TSX chỉ theo dõi các source file đã được import. Hãy khởi động lại development process sau khi thay đổi file `.env.*` hoặc file trong thư mục `swagger/`.
+
 ### Payment sandbox
 
-Payment routes được mount ở mọi app environment. VNPay và MoMo luôn được cấu hình sandbox; kể cả khi ứng dụng chạy với `--env=production`, giao dịch vẫn đi tới test provider và không chuyển tiền thật. Không dùng tích hợp này cho giao dịch production.
+Payment routes được mount ở mọi app environment. VNPay và MoMo luôn được cấu hình sandbox; kể cả khi ứng dụng chạy bằng `.env.production`, giao dịch vẫn đi tới test provider và không chuyển tiền thật. Không dùng tích hợp này cho giao dịch production.
 
 Điền các biến payment trong `.env.development` bằng sandbox merchant credentials bạn đang dùng trong `nestjs-ecommerce`. Không đưa merchant secrets vào Postman collection hoặc git. `VNPAY_HOST` phải là `https://sandbox.vnpayment.vn`. `PAYMENT_PUBLIC_BASE_URL` phải là HTTPS origin có thể truy cập từ Internet, ví dụ domain HTTPS do tunnel cấp; server local không thể nhận callback từ provider nếu không được expose.
 
@@ -199,25 +201,25 @@ Chạy migration cho persistence driver bạn đã chọn.
 MongoDB:
 
 ```bash
-pnpm run db:migrate:mongo --env=development
+pnpm run db:migrate:mongo
 ```
 
 PostgreSQL:
 
 ```bash
-pnpm run db:migrate:postgres --env=development
+pnpm run db:migrate:postgres
 ```
 
 Các lệnh migration hữu ích:
 
 ```bash
-pnpm run db:migrations:pending:mongo --env=development
-pnpm run db:migrations:executed:mongo --env=development
-pnpm run db:rollback:mongo --env=development
+pnpm run db:migrations:pending:mongo
+pnpm run db:migrations:executed:mongo
+pnpm run db:rollback:mongo
 
-pnpm run db:migrations:pending:postgres --env=development
-pnpm run db:migrations:executed:postgres --env=development
-pnpm run db:rollback:postgres --env=development
+pnpm run db:migrations:pending:postgres
+pnpm run db:migrations:executed:postgres
+pnpm run db:rollback:postgres
 ```
 
 ### Seed Data

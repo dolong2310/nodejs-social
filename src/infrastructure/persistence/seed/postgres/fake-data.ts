@@ -2,11 +2,11 @@
  * Seed fake data for Postgres.
  *
  * Run:
- * `pnpm run seed:fake-data:postgres -- --env=development`
+ * `pnpm run seed:fake-data:postgres`
  *
  * Prerequisites:
- *  1. Run `pnpm run db:migrate:postgres --env=development` first.
- *  2. Run `pnpm run seed:permissions:postgres -- --env=development` first to ensure roles exist.
+ *  1. Run `pnpm run db:migrate:postgres` first.
+ *  2. Run `pnpm run seed:permissions:postgres` first to ensure roles exist.
  *  3. Set MYID to the entity ID of the existing viewer/admin user in Postgres.
  */
 import logger from '@/infrastructure/logger/create-logger';
@@ -222,9 +222,7 @@ const main = async (): Promise<void> => {
 
   const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {
-    throw new Error(
-      `Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
-    );
+    throw new Error(`Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres' first.`);
   }
 
   const userRoleId = userRole.id.toString();

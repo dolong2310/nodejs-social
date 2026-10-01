@@ -2,11 +2,11 @@
  * Create or repair the initial admin user in MongoDB.
  *
  * Run:
- * `pnpm run seed:create-admin-user -- --env=development`
+ * `pnpm run seed:create-admin-user:mongo`
  *
  * Prerequisites:
- * 1. Run `pnpm run db:migrate:mongo --env=development` first.
- * 2. Run `pnpm run seed:permissions:mongo -- --env=development` so the ADMIN role exists.
+ * 1. Run `pnpm run db:migrate:mongo` first.
+ * 2. Run `pnpm run seed:permissions:mongo` so the ADMIN role exists.
  *
  * Optional environment overrides:
  * - SEED_ADMIN_EMAIL
@@ -93,9 +93,7 @@ async function main(): Promise<void> {
 
   const adminRole = await roleRepository.findRoleByName(EnumRoleName.ADMIN);
   if (!adminRole) {
-    throw new Error(
-      `Role "${EnumRoleName.ADMIN}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`
-    );
+    throw new Error(`Role "${EnumRoleName.ADMIN}" not found. Run 'pnpm run seed:permissions:mongo' first.`);
   }
 
   await createOrUpdateAdminUser(adminRole.id.toString());

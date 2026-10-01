@@ -1,9 +1,9 @@
 /**
  * Sync permissions from HTTP routes (Express) and assign them to ADMIN/USER roles.
- * Run: `pnpm run seed:permissions:mongo -- --env=development`.
+ * Run: `pnpm run seed:permissions:mongo`.
  *
  * Prerequisite:
- * Run `pnpm run db:migrate:mongo --env=development` first.
+ * Run `pnpm run db:migrate:mongo` first.
  */
 import { appConfig } from '@/bootstrap/config/app.config';
 import logger from '@/infrastructure/logger/create-logger';
