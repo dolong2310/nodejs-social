@@ -80,7 +80,7 @@ src/
   infrastructure/     Shared database, Redis, queue, logger, and technical adapters
   modules/            Feature modules using domain/application/infrastructure layers
   presentation/       Express HTTP API and Socket.IO presentation adapters
-  index.ts            Process entry point
+  main.ts             Process entry point
 
 swagger/              OpenAPI YAML fragments used by Swagger UI
 postman/              Postman collections and environment

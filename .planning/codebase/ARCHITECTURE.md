@@ -19,7 +19,7 @@
 - Location: `src/bootstrap/`
 - Contains: `create-http-server.ts`, `create-socket-server.ts`, `setup-database.ts`, `setup-redis.ts`, `setup-workers.ts`, `setup-graceful-shutdown.ts`, `container.ts`, `setup-container.ts`, `config/app.config.ts`, `config/env.config.ts`, `di/*`
 - Depends on: All other layers (it imports them to construct the graph).
-- Used by: `src/index.ts`
+- Used by: `src/main.ts`
 
 **Presentation (adapters — HTTP & WebSocket):**
 - Purpose: Translate HTTP/Socket.IO to application calls and back; auth middleware; API versioning; OpenAPI/Swagger.
@@ -63,7 +63,7 @@
 
 **HTTP request (authenticated API):**
 
-1. `src/index.ts` starts `createSocketServer()` then `createHttpServer()` (`src/bootstrap/create-http-server.ts`).
+1. `src/main.ts` starts `createSocketServer()` then `createHttpServer()` (`src/bootstrap/create-http-server.ts`).
 2. Express app from `createExpressApp` (`src/presentation/http/express/app.ts`) mounts routers at `${appConfig.api.prefix}/${version}/${path}` (prefix `/api` from `src/bootstrap/config/app.config.ts`).
 3. Route class (`BaseRoute` in `src/presentation/http/express/v1/routes/base.route.ts`) delegates to controller methods.
 4. Controller calls an **interactor** constructed in `src/bootstrap/di/http-routes.ts`.
@@ -116,18 +116,18 @@
 ## Entry Points
 
 **Process entry:**
-- Location: `src/index.ts`
+- Location: `src/main.ts`
 - Triggers: Node process start (`tsx`/`node` via `package.json` scripts after `tsc` build).
 - Responsibilities: Load `reflect-metadata`, create HTTP + Socket.IO server, listen on configured port.
 
 **HTTP server factory:**
 - Location: `src/bootstrap/create-http-server.ts`
-- Triggers: Called from `bootstrap()` in `src/index.ts`
+- Triggers: Called from `bootstrap()` in `src/main.ts`
 - Responsibilities: DB + Redis, container, Express app, socket app attachment, optional rate limit, workers, graceful shutdown.
 
 **Socket server factory:**
 - Location: `src/bootstrap/create-socket-server.ts`
-- Triggers: Called before `createHttpServer` in `src/index.ts`
+- Triggers: Called before `createHttpServer` in `src/main.ts`
 - Responsibilities: Raw `http.Server` + `socket.io` Server with CORS from `appConfig`.
 
 **Express application:**

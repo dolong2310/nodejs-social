@@ -81,7 +81,7 @@ src/
   infrastructure/     Database, Redis, queue, logger và technical adapters
   modules/            Feature modules dùng các lớp domain/application/infrastructure
   presentation/       Express HTTP API và Socket.IO presentation adapters
-  index.ts            Process entry point
+  main.ts             Process entry point
 
 swagger/              OpenAPI YAML fragments dùng bởi Swagger UI
 postman/              Postman collections và environment

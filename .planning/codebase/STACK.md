@@ -23,7 +23,7 @@
 ## Frameworks
 
 **Core:**
-- Express ^5 — HTTP API; app factory in `src/presentation/http/express/app.ts`, bootstrap in `src/index.ts`
+- Express ^5 — HTTP API; app factory in `src/presentation/http/express/app.ts`, bootstrap in `src/main.ts`
 - Socket.IO ^4 — WebSocket/realtime; `src/bootstrap/create-socket-server.ts`, `src/presentation/socket/`
 
 **Testing:**
@@ -33,7 +33,7 @@
 - TypeScript compiler — `tsconfig.json` (`target` ES2023, `module` ESNext, `paths` `@/*` → `./src/*`)
 - `tsc-alias` — rewrites path aliases after `tsc` (`package.json` `build` script)
 - `tsx` — runs TypeScript in dev and production start scripts (`package.json` `start:*`)
-- `nodemon` — dev reload; config `nodemon.json` (`exec`: `tsx src/index.ts`)
+- `nodemon` — dev reload; config `nodemon.json` (`exec`: `tsx src/main.ts`)
 - `rimraf` — clean `dist` before build
 
 ## Key Dependencies

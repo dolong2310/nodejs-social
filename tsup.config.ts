@@ -2,7 +2,7 @@ import { cp } from 'node:fs/promises';
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/main.ts'],
   outDir: 'dist',
   format: ['esm'],
   target: 'node24',
@@ -20,7 +20,7 @@ export default defineConfig({
     options.packages = 'external';
   },
   async onSuccess() {
-    // The bundle's import.meta.url is dist/index.js, so templates must live at dist/templates.
+    // The bundle's import.meta.url is dist/main.js, so templates must live at dist/templates.
     await cp('src/infrastructure/email/templates', 'dist/templates', { recursive: true });
   }
 });

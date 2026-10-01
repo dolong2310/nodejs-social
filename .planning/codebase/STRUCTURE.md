@@ -7,7 +7,7 @@
 ```
 nodejs-social/
 ├── src/
-│   ├── index.ts                    # Process entry: HTTP + Socket bootstrap
+│   ├── main.ts                     # Process entry: HTTP + Socket bootstrap
 │   ├── bootstrap/                  # Composition root, config, DI wiring
 │   ├── infrastructure/             # Shared persistence, queues, loggers, tech services
 │   ├── modules/                    # Feature modules (domain / application / infrastructure)
@@ -62,7 +62,7 @@ nodejs-social/
 ## Key File Locations
 
 **Entry Points:**
-- `src/index.ts`: Bootstraps servers and listens on port.
+- `src/main.ts`: Bootstraps servers and listens on port.
 
 **Configuration:**
 - `src/bootstrap/config/app.config.ts`: Runtime app config (port, JWT shape, `/api` prefix, CORS, rate limit, logging level).
