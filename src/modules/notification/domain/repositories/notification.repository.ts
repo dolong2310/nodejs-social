@@ -4,7 +4,7 @@ import {
   FindNotificationsInput,
   FindOldestNotificationIdsForTrimInput,
   UpdateReadByIdsInput
-} from '@/modules/notification/domain/repositories/notification.repository.type';
+} from '@/modules/notification/domain/repositories/notification.repository.types';
 
 export interface NotificationRepositoryPort extends RepositoryPort<NotificationEntity> {
   findNotifications(data: FindNotificationsInput): Promise<NotificationEntity[]>;

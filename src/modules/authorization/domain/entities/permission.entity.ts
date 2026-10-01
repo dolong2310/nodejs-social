@@ -2,7 +2,7 @@ import {
   CreatePermissionProps,
   PermissionFullProps,
   PermissionProps
-} from '@/modules/authorization/domain/entities/permission.type';
+} from '@/modules/authorization/domain/entities/permission.types';
 import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';

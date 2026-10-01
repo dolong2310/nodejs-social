@@ -5,7 +5,7 @@ import {
   CreatePaymentPort
 } from '@/modules/payment/application/use-cases/create-payment/create-payment.port';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentFullProps, PaymentProvider, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentFullProps, PaymentProvider, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
 import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
 export class CreatePaymentUseCase extends CreatePaymentPort {

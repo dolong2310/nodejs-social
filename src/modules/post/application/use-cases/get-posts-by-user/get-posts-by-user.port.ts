@@ -1,6 +1,6 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EnumPostType } from '@/modules/post/domain/entities/post.type';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { EnumPostType } from '@/modules/post/domain/entities/post.types';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetPostsByUserInputPort {
   targetUserId: string;

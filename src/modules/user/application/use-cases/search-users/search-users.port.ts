@@ -1,6 +1,6 @@
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
 
 export class SearchUsersInputPort {
   userId?: string;

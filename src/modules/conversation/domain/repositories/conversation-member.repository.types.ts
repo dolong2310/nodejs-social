@@ -1,7 +1,7 @@
 import {
   ConversationMemberProps,
   CreateConversationMemberProps
-} from '@/modules/conversation/domain/entities/conversation-member.type';
+} from '@/modules/conversation/domain/entities/conversation-member.types';
 
 export interface FindMemberInput extends Pick<ConversationMemberProps, 'conversationId' | 'userId'> {}
 

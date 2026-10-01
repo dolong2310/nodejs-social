@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { PaymentProvider, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
 
 export interface CreatePaymentProps {
   userId: string;

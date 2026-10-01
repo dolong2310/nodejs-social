@@ -8,7 +8,7 @@ import type {
   PaymentFullProps,
   PaymentProps,
   VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.type';
+} from '@/modules/payment/domain/entities/payment.types';
 import type {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort

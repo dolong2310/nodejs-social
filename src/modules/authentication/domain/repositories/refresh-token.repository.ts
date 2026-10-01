@@ -2,7 +2,7 @@ import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/ref
 import {
   CreateRefreshTokenInput,
   RotateRefreshTokenInput
-} from '@/modules/authentication/domain/repositories/refresh-token.repository.type';
+} from '@/modules/authentication/domain/repositories/refresh-token.repository.types';
 import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface RefreshTokenRepositoryPort extends RepositoryPort<RefreshTokenEntity> {

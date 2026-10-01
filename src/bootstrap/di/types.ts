@@ -1,6 +1,6 @@
 import { DatabasePort } from '@/infrastructure/persistence/database.port';
 import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
@@ -15,7 +15,7 @@ import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-case
 import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ISocketFeature } from '@/presentation/socket/socket.type';
+import { ISocketFeature } from '@/presentation/socket/socket.types';
 import { type Server as SocketServer } from 'socket.io';
 
 export interface IContainer {

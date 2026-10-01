@@ -6,7 +6,7 @@ import {
   LoginEmailPort,
   LoginEmailOutputPort
 } from '@/modules/authentication/application/use-cases/login-email/login-email.port';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';

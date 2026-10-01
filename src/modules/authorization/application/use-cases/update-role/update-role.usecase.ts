@@ -10,9 +10,9 @@ import {
   UpdateRoleInputPort,
   UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
+import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 

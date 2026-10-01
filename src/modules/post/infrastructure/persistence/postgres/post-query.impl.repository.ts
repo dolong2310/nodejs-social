@@ -1,7 +1,7 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
   FindGuestPostsInput,
@@ -14,7 +14,7 @@ import {
   IsUserInteractedWithPostInput,
   PostDetailOutput,
   PostDetailWithAuthorOutput
-} from '@/modules/post/domain/repositories/post.query.type';
+} from '@/modules/post/domain/repositories/post.query.types';
 import type { Pool } from 'pg';
 
 type JsonRecord = Record<string, unknown>;

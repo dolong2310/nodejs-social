@@ -1,5 +1,5 @@
 import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
-import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.type';
+import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 import { MarkOptional } from 'ts-essentials';
 

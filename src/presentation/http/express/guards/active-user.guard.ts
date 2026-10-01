@@ -1,6 +1,6 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   MissingAuthTokenPayloadException,

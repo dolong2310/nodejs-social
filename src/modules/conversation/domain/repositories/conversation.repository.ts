@@ -3,7 +3,7 @@ import {
   CreateGroupConversationInput,
   TouchUpdatedAtInput,
   UpdateConversationInput
-} from '@/modules/conversation/domain/repositories/conversation.repository.type';
+} from '@/modules/conversation/domain/repositories/conversation.repository.types';
 import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface ConversationRepositoryPort extends RepositoryPort<ConversationEntity> {

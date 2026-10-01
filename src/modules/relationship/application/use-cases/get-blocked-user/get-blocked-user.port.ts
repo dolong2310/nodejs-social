@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
+import { UserRecordProps } from '@/modules/user/domain/entities/user.types';
 
 export class GetBlockedUserInputPort {
   blockerUserId: string;

@@ -1,4 +1,4 @@
-import { ChatMessageFullProps, IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
+import { ChatMessageFullProps, IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class SendMessageInputPort {

@@ -17,7 +17,7 @@ import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/ot
 import { AuthService, AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { OtpService, OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import { TokenService } from '@/modules/authentication/application/services/token.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredOtpsUseCase } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.usecase';
 import { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';

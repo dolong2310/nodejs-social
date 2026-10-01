@@ -12,7 +12,7 @@ import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
   PaymentProps
-} from '@/modules/payment/domain/entities/payment.type';
+} from '@/modules/payment/domain/entities/payment.types';
 import { createHash } from 'node:crypto';
 
 const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;

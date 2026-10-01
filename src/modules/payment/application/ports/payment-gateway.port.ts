@@ -1,4 +1,4 @@
-import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 
 export type CheckoutCreationError =
   | { kind: 'definitive_rejection'; resultCode: string }

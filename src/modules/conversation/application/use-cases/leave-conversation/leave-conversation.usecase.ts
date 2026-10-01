@@ -4,8 +4,8 @@ import {
   LeaveConversationInputPort,
   LeaveConversationPort
 } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class LeaveConversationUseCase extends LeaveConversationPort {

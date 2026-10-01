@@ -3,7 +3,7 @@ import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repo
 import {
   CreateRefreshTokenInput,
   RotateRefreshTokenInput
-} from '@/modules/authentication/domain/repositories/refresh-token.repository.type';
+} from '@/modules/authentication/domain/repositories/refresh-token.repository.types';
 import { RefreshTokenMapper } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.mapper';
 import { RefreshTokenModel } from '@/modules/authentication/infrastructure/persistence/postgres/refresh-token.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';

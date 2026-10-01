@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
+import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
 
 export class ListHashtagsInputPort {
   page: number;

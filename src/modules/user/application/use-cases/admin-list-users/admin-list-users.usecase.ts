@@ -4,7 +4,7 @@ import {
   AdminListUsersOutputPort
 } from '@/modules/user/application/use-cases/admin-list-users/admin-list-users.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminListUsersUseCase extends AdminListUsersPort {

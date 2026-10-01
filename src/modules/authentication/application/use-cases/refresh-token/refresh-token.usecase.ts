@@ -1,7 +1,7 @@
 import { InvalidTokenException } from '@/modules/authentication/application/exceptions/auth.exception';
 import { RefreshTokenExpiredException } from '@/modules/authentication/application/exceptions/refresh-token.exception';
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import {
   RefreshTokenInputPort,
   RefreshTokenPort,

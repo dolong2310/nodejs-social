@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { EnumEncodingVideoStatus, VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.type';
+import { EnumEncodingVideoStatus, VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.types';
 
 export class GetVideoStatusInputPort {
   name: string;

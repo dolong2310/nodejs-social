@@ -3,7 +3,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { BlockProps, CreateBlockProps } from '@/modules/relationship/domain/entities/block.type';
+import { BlockProps, CreateBlockProps } from '@/modules/relationship/domain/entities/block.types';
 
 export class BlockEntity extends Entity<BlockProps> {
   static create(createProps: CreateBlockProps) {

@@ -1,4 +1,4 @@
-import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.type';
+import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { MarkOptional } from 'ts-essentials';
 

@@ -1,7 +1,7 @@
 import {
   CreateRefreshTokenProps,
   RefreshTokenProps
-} from '@/modules/authentication/domain/entities/refresh-token.type';
+} from '@/modules/authentication/domain/entities/refresh-token.types';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';

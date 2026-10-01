@@ -1,14 +1,14 @@
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import {
   CreateGroupConversationInput,
   TouchUpdatedAtInput,
   UpdateConversationInput
-} from '@/modules/conversation/domain/repositories/conversation.repository.type';
+} from '@/modules/conversation/domain/repositories/conversation.repository.types';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';

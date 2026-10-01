@@ -4,7 +4,7 @@ import {
   CreateRoleInput,
   ListRolesInput,
   UpdateRoleInput
-} from '@/modules/authorization/domain/repositories/role.repository.type';
+} from '@/modules/authorization/domain/repositories/role.repository.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { RoleModel } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';

@@ -3,7 +3,7 @@ import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/reposit
 import {
   CreateMessageInput,
   FindMessagesInput
-} from '@/modules/conversation/domain/repositories/chat-message.repository.type';
+} from '@/modules/conversation/domain/repositories/chat-message.repository.types';
 import { ChatMessageMapper } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.mapper';
 import { ChatMessageModel } from '@/modules/conversation/infrastructure/persistence/postgres/chat-message.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';

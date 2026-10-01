@@ -8,7 +8,7 @@ import {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
-} from '@/modules/user/domain/repositories/user.repository.type';
+} from '@/modules/user/domain/repositories/user.repository.types';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/postgres/user.model';
 import type { Pool } from 'pg';

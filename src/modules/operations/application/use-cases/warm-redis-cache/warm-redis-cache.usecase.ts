@@ -2,9 +2,9 @@ import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
 } from '@/modules/authorization/application/constants/cache.constants';
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
+import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import {
   CacheWarmupJobData,
@@ -21,7 +21,7 @@ import {
   CACHE_KEYS as USER_CACHE_KEYS,
   CACHE_TTL as USER_CACHE_TTL
 } from '@/modules/user/application/constants/cache.constants';
-import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { keyBy } from 'lodash-es';

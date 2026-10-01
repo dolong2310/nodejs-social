@@ -6,7 +6,7 @@ import {
   GetFriendsOutputPort
 } from '@/modules/relationship/application/use-cases/get-friends/get-friends.port';
 import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
+import { UserFullProps } from '@/modules/user/domain/entities/user.types';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class GetFriendsUseCase extends GetFriendsPort {

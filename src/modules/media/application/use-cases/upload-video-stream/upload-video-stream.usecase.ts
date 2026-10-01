@@ -7,7 +7,7 @@ import {
   UploadVideoStreamOutputPort
 } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.port';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
-import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
+import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.types';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 
 type UploadVideoStreamConfig = {

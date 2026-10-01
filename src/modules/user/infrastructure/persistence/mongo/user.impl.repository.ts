@@ -8,7 +8,7 @@ import {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
-} from '@/modules/user/domain/repositories/user.repository.type';
+} from '@/modules/user/domain/repositories/user.repository.types';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
 import { Db, MongoClient } from 'mongodb';

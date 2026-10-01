@@ -1,6 +1,6 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { EnumNewFeedFilter, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumNewFeedFilter, EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import {

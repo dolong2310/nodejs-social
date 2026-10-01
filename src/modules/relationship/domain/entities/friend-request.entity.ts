@@ -6,7 +6,7 @@ import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
   CreateFriendRequestProps,
   FriendRequestProps
-} from '@/modules/relationship/domain/entities/friend-request.type';
+} from '@/modules/relationship/domain/entities/friend-request.types';
 
 export class FriendRequestEntity extends Entity<FriendRequestProps> {
   static create(createProps: CreateFriendRequestProps) {

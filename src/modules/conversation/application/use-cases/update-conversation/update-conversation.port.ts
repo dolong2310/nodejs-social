@@ -1,4 +1,4 @@
-import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UpdateConversationInputPort {

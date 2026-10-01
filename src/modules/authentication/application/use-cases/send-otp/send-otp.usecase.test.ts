@@ -2,7 +2,7 @@ import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/ot
 import { SendOtpInputPort } from '@/modules/authentication/application/use-cases/send-otp/send-otp.port';
 import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { idDouble } from '@test/support/doubles/entity.double';

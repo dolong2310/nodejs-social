@@ -8,7 +8,7 @@ import {
   TransferAdminRoleInput,
   UpdateReadStateInput,
   UpdateRoleInput
-} from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
+} from '@/modules/conversation/domain/repositories/conversation-member.repository.types';
 import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface ConversationMemberRepositoryPort extends RepositoryPort<ConversationMemberEntity> {

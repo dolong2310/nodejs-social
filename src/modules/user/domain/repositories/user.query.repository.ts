@@ -1,5 +1,5 @@
-import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
-import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.types';
 
 export interface UserQueryRepositoryPort {
   findSafeUserById(id: string): Promise<UserSafeProps | null>;

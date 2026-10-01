@@ -1,4 +1,4 @@
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { ExpressRequestHandler } from '@/presentation/http/express/types';

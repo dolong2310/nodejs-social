@@ -11,7 +11,7 @@ import {
   UpdatePostOutputPort
 } from '@/modules/post/application/use-cases/update-post/update-post.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumPostType } from '@/modules/post/domain/entities/post.types';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 

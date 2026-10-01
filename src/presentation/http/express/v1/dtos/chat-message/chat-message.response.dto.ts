@@ -1,4 +1,4 @@
-import { ChatMessageFullProps, IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
+import { ChatMessageFullProps, IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
 
 export class ChatMessageResponseDTO implements ChatMessageFullProps {
   id: string;

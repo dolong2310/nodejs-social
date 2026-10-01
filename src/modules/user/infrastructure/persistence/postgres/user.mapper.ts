@@ -3,7 +3,7 @@ import { Username } from '@/modules/common/domain/value-objects/username.value-o
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
+import { UserFullProps } from '@/modules/user/domain/entities/user.types';
 import { type UserModel, userSchema } from '@/modules/user/infrastructure/persistence/postgres/user.model';
 import { parse } from 'valibot';
 

@@ -1,5 +1,5 @@
 import { PermissionEntity } from '@/modules/authorization/domain/entities/permission.entity';
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import {
   PermissionModel,

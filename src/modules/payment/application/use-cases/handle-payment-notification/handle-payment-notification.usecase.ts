@@ -4,7 +4,7 @@ import {
   HandlePaymentNotificationInputPort,
   HandlePaymentNotificationPort
 } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.port';
-import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort

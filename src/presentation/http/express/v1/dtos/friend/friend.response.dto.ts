@@ -1,5 +1,5 @@
-import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.type';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
+import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.types';
+import { UserRecordProps } from '@/modules/user/domain/entities/user.types';
 
 export class FriendUserResponseDTO implements UserRecordProps {
   id: string;

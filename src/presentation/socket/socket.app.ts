@@ -1,9 +1,12 @@
 import { IContainer } from '@/bootstrap/container';
-import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import {
+  AccessTokenPayload,
+  TokenServicePort
+} from '@/modules/authentication/application/services/token.service.types';
 import { userRoom } from '@/modules/common/constants/socket.constants';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
-import { ExtendedError, Server as SocketServer, Socket } from 'socket.io';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
+import { ExtendedError, Socket, Server as SocketServer } from 'socket.io';
 
 export const createSocketApp = (socketServer: SocketServer, container: IContainer): SocketServer => {
   const { tokenService, userService, features } = container.getSocketDeps();

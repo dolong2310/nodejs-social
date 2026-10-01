@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { BlockEntity } from '@/modules/relationship/domain/entities/block.entity';
-import { BlockFullProps } from '@/modules/relationship/domain/entities/block.type';
+import { BlockFullProps } from '@/modules/relationship/domain/entities/block.types';
 import { BlockModel, blockSchema } from '@/modules/relationship/infrastructure/persistence/mongo/block.model';
 import { parse } from 'valibot';
 

@@ -1,5 +1,5 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { Request } from 'express';

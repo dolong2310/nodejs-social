@@ -4,7 +4,7 @@ import {
   ForgotPasswordInputPort,
   ForgotPasswordPort
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';

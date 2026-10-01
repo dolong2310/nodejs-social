@@ -6,7 +6,7 @@ import {
   GetIncomingRequestsOutputPort
 } from '@/modules/relationship/application/use-cases/get-incoming-requests/get-incoming-requests.port';
 import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
+import { UserRecordProps } from '@/modules/user/domain/entities/user.types';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
 export class GetIncomingRequestsUseCase extends GetIncomingRequestsPort {

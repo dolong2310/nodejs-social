@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
+import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
 import { HashtagModel, hashtagSchema } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
 import { parse } from 'valibot';
 

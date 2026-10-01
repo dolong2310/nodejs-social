@@ -6,7 +6,7 @@ import {
   CreatePostInput,
   DeletePostTreeInput,
   UpdatePostInput
-} from '@/modules/post/domain/repositories/post.repository.type';
+} from '@/modules/post/domain/repositories/post.repository.types';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
 import { Db, MongoClient } from 'mongodb';

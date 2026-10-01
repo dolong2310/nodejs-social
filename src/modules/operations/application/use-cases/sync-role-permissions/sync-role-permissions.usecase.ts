@@ -1,5 +1,5 @@
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import {

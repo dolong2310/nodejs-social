@@ -6,7 +6,7 @@ import {
   FindNotificationsInput,
   FindOldestNotificationIdsForTrimInput,
   UpdateReadByIdsInput
-} from '@/modules/notification/domain/repositories/notification.repository.type';
+} from '@/modules/notification/domain/repositories/notification.repository.types';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/postgres/notification.mapper';
 import { NotificationModel } from '@/modules/notification/infrastructure/persistence/postgres/notification.model';
 import type { Pool } from 'pg';

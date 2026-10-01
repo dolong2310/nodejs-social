@@ -7,7 +7,7 @@ import {
   URL_ATTACHABLE_PAYMENT_STATUSES
 } from '@/modules/payment/domain/helpers/payment.policy';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort

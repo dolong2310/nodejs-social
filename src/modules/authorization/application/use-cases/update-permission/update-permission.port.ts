@@ -1,5 +1,5 @@
 import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UpdatePermissionInputPort {

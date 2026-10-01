@@ -3,7 +3,7 @@ import { FriendshipEntity } from '@/modules/relationship/domain/entities/friends
 import {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
-} from '@/modules/relationship/domain/repositories/friendship.repository.type';
+} from '@/modules/relationship/domain/repositories/friendship.repository.types';
 
 export interface FriendshipRepositoryPort extends RepositoryPort<FriendshipEntity> {
   findFriendIdsByUserId(userId: string): Promise<string[]>;

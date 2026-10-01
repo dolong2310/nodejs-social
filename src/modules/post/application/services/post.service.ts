@@ -6,9 +6,9 @@ import {
   GetBlockedPostIdsPayload,
   IsUserInteractedWithPostPayload,
   UpdatePostsViewsPayload
-} from '@/modules/post/application/services/post.service.type';
+} from '@/modules/post/application/services/post.service.types';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export interface PostServicePort {
   updatePostsViews<T extends PostDetailOutput | PostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];

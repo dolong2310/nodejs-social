@@ -1,5 +1,5 @@
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { CreateChatMessageProps } from '@/modules/conversation/domain/entities/chat-message.type';
+import { CreateChatMessageProps } from '@/modules/conversation/domain/entities/chat-message.types';
 
 export interface CreateMessageInput extends CreateChatMessageProps {}
 

@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
 import { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
-import { UpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.type';
+import { UpdateVideoStatusInput } from '@/modules/media/domain/repositories/video-status.repository.types';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { VideoStatusModel } from '@/modules/media/infrastructure/persistence/mongo/video-status.model';
 import { Db, MongoClient } from 'mongodb';

@@ -1,6 +1,6 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
-import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
 import {
   type InferOutput,
   array,

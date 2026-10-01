@@ -1,4 +1,4 @@
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 import { MODULE_TAG_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';

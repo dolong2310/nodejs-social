@@ -2,7 +2,7 @@ import { OtpServicePort } from '@/modules/authentication/application/services/ot
 import { RegisterInputPort } from '@/modules/authentication/application/use-cases/register/register.port';
 import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';

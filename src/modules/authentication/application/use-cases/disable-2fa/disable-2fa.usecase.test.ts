@@ -1,7 +1,7 @@
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import { Disable2FAInputPort } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.port';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import { UserServicePort } from '@/modules/user/application/services/user.service';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';

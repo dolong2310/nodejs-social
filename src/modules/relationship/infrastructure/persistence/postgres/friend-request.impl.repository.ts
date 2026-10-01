@@ -10,7 +10,7 @@ import {
   FindPendingRequestByUserPairInput,
   ListIncomingForUserInput,
   ListOutgoingForUserInput
-} from '@/modules/relationship/domain/repositories/friend-request.repository.type';
+} from '@/modules/relationship/domain/repositories/friend-request.repository.types';
 import { FriendRequestMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.mapper';
 import { FriendRequestModel } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.model';
 import type { Pool } from 'pg';

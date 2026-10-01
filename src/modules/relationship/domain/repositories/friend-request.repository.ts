@@ -8,7 +8,7 @@ import {
   FindPendingRequestByUserPairInput,
   ListIncomingForUserInput,
   ListOutgoingForUserInput
-} from '@/modules/relationship/domain/repositories/friend-request.repository.type';
+} from '@/modules/relationship/domain/repositories/friend-request.repository.types';
 
 export interface FriendRequestRepositoryPort extends RepositoryPort<FriendRequestEntity> {
   findPendingRequestByUserPair(data: FindPendingRequestByUserPairInput): Promise<FriendRequestEntity | null>;

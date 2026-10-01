@@ -1,4 +1,4 @@
-import { GetBlockedPostIdsPayload } from '@/modules/post/application/services/post.service.type';
+import { GetBlockedPostIdsPayload } from '@/modules/post/application/services/post.service.types';
 import { createHash } from 'crypto';
 
 export const CACHE_KEYS = {

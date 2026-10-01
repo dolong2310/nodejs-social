@@ -1,4 +1,4 @@
-import { UserPrimitiveProps } from '@/modules/user/domain/entities/user.type';
+import { UserPrimitiveProps } from '@/modules/user/domain/entities/user.types';
 
 export interface UpdateMeInput extends Pick<
   UserPrimitiveProps,

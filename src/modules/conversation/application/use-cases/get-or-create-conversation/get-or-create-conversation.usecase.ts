@@ -10,7 +10,7 @@ import {
   GetOrCreateConversationPort,
   GetOrCreateConversationOutputPort
 } from '@/modules/conversation/application/use-cases/get-or-create-conversation/get-or-create-conversation.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';

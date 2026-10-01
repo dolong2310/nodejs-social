@@ -3,7 +3,7 @@ import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
+import { UserFullProps } from '@/modules/user/domain/entities/user.types';
 import { type UserModel, userSchema } from '@/modules/user/infrastructure/persistence/mongo/user.model';
 import { parse } from 'valibot';
 

@@ -8,7 +8,7 @@ import {
   GetGuestNewFeedsOutputPort
 } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
   private readonly log: LoggerPort;

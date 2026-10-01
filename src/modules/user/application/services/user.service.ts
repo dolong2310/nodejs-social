@@ -2,7 +2,7 @@ import { EmailAddress } from '@/modules/common/domain/value-objects/email-addres
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constants';
-import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 

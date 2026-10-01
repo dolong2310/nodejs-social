@@ -3,7 +3,7 @@ import {
   EnumRoleName,
   RoleFullProps,
   RoleProps
-} from '@/modules/authorization/domain/entities/role.type';
+} from '@/modules/authorization/domain/entities/role.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';

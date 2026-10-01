@@ -18,7 +18,7 @@ import {
   AdminUpdateUserPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminUpdateUserUseCase extends AdminUpdateUserPort {

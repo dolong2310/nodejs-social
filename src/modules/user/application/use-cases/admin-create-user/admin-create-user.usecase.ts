@@ -14,7 +14,7 @@ import {
   AdminCreateUserOutputPort
 } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminCreateUserUseCase extends AdminCreateUserPort {

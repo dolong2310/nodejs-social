@@ -1,5 +1,5 @@
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { RefreshTokenInputPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
 import { RefreshTokenUseCase } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.usecase';
 import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';

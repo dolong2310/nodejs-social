@@ -4,7 +4,7 @@ import {
   CreateHashtagInput,
   ListHashtagsInput,
   UpdateHashtagInput
-} from '@/modules/post/domain/repositories/hashtag.repository.type';
+} from '@/modules/post/domain/repositories/hashtag.repository.types';
 
 export interface HashtagRepositoryPort extends RepositoryPort<HashtagEntity> {
   createHashtag(data: CreateHashtagInput): Promise<HashtagEntity>;

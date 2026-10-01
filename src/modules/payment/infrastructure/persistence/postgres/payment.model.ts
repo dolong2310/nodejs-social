@@ -1,5 +1,5 @@
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
-import { PAYMENT_PROVIDERS, PAYMENT_STATUSES } from '@/modules/payment/domain/entities/payment.type';
+import { PAYMENT_PROVIDERS, PAYMENT_STATUSES } from '@/modules/payment/domain/entities/payment.types';
 import {
   type InferOutput,
   date,

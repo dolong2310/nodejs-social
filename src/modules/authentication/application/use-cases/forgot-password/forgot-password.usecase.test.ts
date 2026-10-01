@@ -2,7 +2,7 @@ import { OtpServicePort } from '@/modules/authentication/application/services/ot
 import { ForgotPasswordInputPort } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';

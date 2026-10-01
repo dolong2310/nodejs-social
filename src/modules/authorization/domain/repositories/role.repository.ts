@@ -3,7 +3,7 @@ import {
   CreateRoleInput,
   ListRolesInput,
   UpdateRoleInput
-} from '@/modules/authorization/domain/repositories/role.repository.type';
+} from '@/modules/authorization/domain/repositories/role.repository.types';
 import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface RoleRepositoryPort extends RepositoryPort<RoleEntity> {

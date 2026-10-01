@@ -1,5 +1,5 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import {
   CreateMemberInput,
@@ -10,7 +10,7 @@ import {
   TransferAdminRoleInput,
   UpdateReadStateInput,
   UpdateRoleInput
-} from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
+} from '@/modules/conversation/domain/repositories/conversation-member.repository.types';
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
 import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.model';
 import { LoggerPort } from '@/modules/core/application/ports/logger.port';

@@ -6,7 +6,7 @@ import {
   RefreshTokenPayloadCreate,
   TokenServiceConfig,
   TokenServicePort
-} from '@/modules/authentication/application/services/token.service.type';
+} from '@/modules/authentication/application/services/token.service.types';
 import { v4 as uuidv4 } from 'uuid';
 
 export class TokenService implements TokenServicePort {

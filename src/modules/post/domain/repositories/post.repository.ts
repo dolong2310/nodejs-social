@@ -4,7 +4,7 @@ import {
   CreatePostInput,
   DeletePostTreeInput,
   UpdatePostInput
-} from '@/modules/post/domain/repositories/post.repository.type';
+} from '@/modules/post/domain/repositories/post.repository.types';
 
 export interface PostRepositoryPort extends RepositoryPort<PostEntity> {
   findPostById(id: string): Promise<PostEntity | null>;

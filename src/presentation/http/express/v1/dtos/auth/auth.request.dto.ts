@@ -1,4 +1,4 @@
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 
 export class RegisterRequestDTO {
   name: string;

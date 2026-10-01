@@ -3,7 +3,7 @@ import {
   INotificationActor,
   INotificationPayload,
   NotificationFullProps
-} from '@/modules/notification/domain/entities/notification.type';
+} from '@/modules/notification/domain/entities/notification.types';
 
 export class NotificationResponseDTO implements NotificationFullProps {
   id: string;

@@ -1,4 +1,4 @@
-import { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 import type { Prettify } from 'ts-essentials';
 
 export interface ListPermissionsInput {

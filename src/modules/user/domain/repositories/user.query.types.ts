@@ -1,6 +1,6 @@
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
+import { UserFullProps } from '@/modules/user/domain/entities/user.types';
 import { Prettify } from 'ts-essentials';
 
 export interface FindUsersForSearchInput {

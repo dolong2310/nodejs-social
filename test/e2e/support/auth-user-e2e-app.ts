@@ -1,7 +1,7 @@
 import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createExpressApp } from '@/presentation/http/express/app';
 import type { IContainer } from '@/bootstrap/container';
-import type { IAppConfig } from '@/bootstrap/types/app.type';
+import type { IAppConfig } from '@/bootstrap/types/app.types';
 import type { OtpEmailJobData, OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { AuthService } from '@/modules/authentication/application/services/auth.service';
@@ -17,17 +17,17 @@ import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/s
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
 import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
 import { JwtService } from '@/modules/authentication/infrastructure/services/jwt.service';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
 import { RoleService } from '@/modules/authorization/application/services/role.service';
-import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { EnumRoleName, type RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName, type RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
 import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
 import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
@@ -47,15 +47,15 @@ import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EnumUserStatus, type UserFullProps, type UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, type UserFullProps, type UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import type { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import type { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.types';
 import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import type {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
-} from '@/modules/user/domain/repositories/user.repository.type';
+} from '@/modules/user/domain/repositories/user.repository.types';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';

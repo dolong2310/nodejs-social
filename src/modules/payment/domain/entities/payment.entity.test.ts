@@ -1,5 +1,5 @@
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentProvider, PaymentStatus } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider, PaymentStatus } from '@/modules/payment/domain/entities/payment.types';
 import { describe, expect, it } from 'vitest';
 
 function canTransitionPaymentStatus(from: PaymentStatus, to: PaymentStatus): boolean {

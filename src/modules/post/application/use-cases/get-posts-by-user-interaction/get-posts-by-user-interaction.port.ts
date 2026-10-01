@@ -2,7 +2,7 @@ import { UseCase } from '@/modules/core/application/base.usecase';
 import {
   PostDetailWithAuthorOutput,
   PostUserInteractionType
-} from '@/modules/post/domain/repositories/post.query.type';
+} from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetPostsByUserInteractionInputPort {
   userId: string;

@@ -10,7 +10,7 @@ import {
   RecordFriendAcceptedPayload,
   RecordFriendRequestPayload,
   RecordNewMessagePayload
-} from '@/modules/notification/application/services/notification.service.type';
+} from '@/modules/notification/application/services/notification.service.types';
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
@@ -21,7 +21,7 @@ import {
   IFriendRequestNotificationPayload,
   INewMessageNotificationPayload,
   NotificationFullProps
-} from '@/modules/notification/domain/entities/notification.type';
+} from '@/modules/notification/domain/entities/notification.types';
 import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import { UserServicePort } from '@/modules/user/application/services/user.service';

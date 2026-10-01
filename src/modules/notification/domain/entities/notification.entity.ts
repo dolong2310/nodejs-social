@@ -7,7 +7,7 @@ import {
   CreateNotificationProps,
   EnumNotificationType,
   NotificationProps
-} from '@/modules/notification/domain/entities/notification.type';
+} from '@/modules/notification/domain/entities/notification.types';
 
 export class NotificationEntity extends Entity<NotificationProps> {
   static create(createProps: CreateNotificationProps) {

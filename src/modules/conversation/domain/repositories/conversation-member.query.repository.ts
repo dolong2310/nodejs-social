@@ -1,7 +1,7 @@
 import {
   ListConversationsForUserInput,
   ListConversationsForUserOutput
-} from '@/modules/conversation/domain/repositories/conversation-member.query.type';
+} from '@/modules/conversation/domain/repositories/conversation-member.query.types';
 
 export interface ConversationMemberQueryRepositoryPort {
   listConversationsForUser(data: ListConversationsForUserInput): Promise<ListConversationsForUserOutput[]>;

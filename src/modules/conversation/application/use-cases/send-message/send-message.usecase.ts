@@ -10,9 +10,9 @@ import {
   SendMessagePort,
   SendMessageOutputPort
 } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
-import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
+import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';

@@ -1,4 +1,4 @@
-import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
+import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
 
 export class SendChatMessageBodyDTO {
   text?: string;

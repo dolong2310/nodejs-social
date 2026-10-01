@@ -1,5 +1,5 @@
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { ConversationFullProps } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationFullProps } from '@/modules/conversation/domain/entities/conversation.types';
 import {
   ConversationModel,
   conversationSchema

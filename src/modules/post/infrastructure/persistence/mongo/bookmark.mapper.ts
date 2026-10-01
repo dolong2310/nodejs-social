@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { BookmarkEntity } from '@/modules/post/domain/entities/bookmark.entity';
-import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.type';
+import { BookmarkFullProps } from '@/modules/post/domain/entities/bookmark.types';
 import { BookmarkModel, bookmarkSchema } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
 import { parse } from 'valibot';
 

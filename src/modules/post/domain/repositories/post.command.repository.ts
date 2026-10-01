@@ -2,7 +2,7 @@ import {
   IncreasePostsViewsInput,
   IncreasePostViewsInput,
   IncreasePostViewsOutput
-} from '@/modules/post/domain/repositories/post.command.type';
+} from '@/modules/post/domain/repositories/post.command.types';
 
 export interface PostCommandRepositoryPort {
   increasePostViews(data: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null>;

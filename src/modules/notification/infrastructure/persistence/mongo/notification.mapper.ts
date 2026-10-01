@@ -9,7 +9,7 @@ import {
   INewMessageNotificationPayload,
   INotificationPayload,
   NotificationFullProps
-} from '@/modules/notification/domain/entities/notification.type';
+} from '@/modules/notification/domain/entities/notification.types';
 import {
   NotificationModel,
   notificationSchema

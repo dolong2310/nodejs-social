@@ -1,8 +1,8 @@
 import {
   ConversationMemberFullProps,
   EnumConversationMemberRole
-} from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+} from '@/modules/conversation/domain/entities/conversation-member.types';
+import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class UpdateMemberRoleInputPort {

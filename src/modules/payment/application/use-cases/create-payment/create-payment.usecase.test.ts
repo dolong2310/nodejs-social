@@ -10,7 +10,7 @@ import {
   PaymentProps,
   PaymentProvider,
   VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.type';
+} from '@/modules/payment/domain/entities/payment.types';
 import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
 function toPaymentEntity(payment: PaymentFullProps): PaymentEntity {

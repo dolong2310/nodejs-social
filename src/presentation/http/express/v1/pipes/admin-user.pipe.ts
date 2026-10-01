@@ -1,6 +1,6 @@
 import { USERNAME_REGEX } from '@/modules/common/constants/regex.constants';
 import { isValidId } from '@/modules/core/domain/helpers/ids';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { ConfirmPasswordMustMatchException } from '@/presentation/http/express/exceptions/auth.exception';

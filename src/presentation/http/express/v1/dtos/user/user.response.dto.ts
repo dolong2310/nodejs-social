@@ -1,4 +1,4 @@
-import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, UserSafeProps } from '@/modules/user/domain/entities/user.types';
 
 export class UserResponseDTO implements UserSafeProps {
   id: string;

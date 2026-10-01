@@ -1,7 +1,7 @@
 import {
   CreateGroupConversationProps,
   EnumConversationType
-} from '@/modules/conversation/domain/entities/conversation.type';
+} from '@/modules/conversation/domain/entities/conversation.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class CreateGroupInputPort {

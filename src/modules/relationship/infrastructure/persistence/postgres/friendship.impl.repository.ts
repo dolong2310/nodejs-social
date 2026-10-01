@@ -6,7 +6,7 @@ import { FriendshipRepositoryPort } from '@/modules/relationship/domain/reposito
 import {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
-} from '@/modules/relationship/domain/repositories/friendship.repository.type';
+} from '@/modules/relationship/domain/repositories/friendship.repository.types';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
 import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.model';
 import type { Pool } from 'pg';

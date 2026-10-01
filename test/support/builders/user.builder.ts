@@ -1,5 +1,5 @@
-import { EnumUserStatus, UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
-import { UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import { EnumUserStatus, UserFullProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
+import { UserWithRole } from '@/modules/user/domain/repositories/user.query.types';
 import { makeRoleFullProps } from './role.builder';
 
 export function makeUserFullProps(overrides: Partial<UserFullProps> = {}): UserFullProps {

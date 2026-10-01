@@ -1,7 +1,7 @@
 import {
   CreateRefreshTokenProps,
   RefreshTokenProps
-} from '@/modules/authentication/domain/entities/refresh-token.type';
+} from '@/modules/authentication/domain/entities/refresh-token.types';
 
 export interface CreateRefreshTokenInput extends CreateRefreshTokenProps {}
 

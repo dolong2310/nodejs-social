@@ -89,11 +89,11 @@ export function sourceFiles(root = 'src'): string[] {
  * Read a file and return its import/export list.
  * This lets tests check whether one layer imports another layer.
  * Example if the file contains:
- * import { UserFullProps } from '@/modules/user/domain/entities/user.type';
+ * import { UserFullProps } from '@/modules/user/domain/entities/user.types';
  * returns:
   {
     file: '...',
-    importPath: '@/modules/user/domain/entities/user.type',
+    importPath: '@/modules/user/domain/entities/user.types',
     line: 3
   }
  */

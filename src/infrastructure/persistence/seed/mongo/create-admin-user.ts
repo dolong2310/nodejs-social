@@ -19,11 +19,11 @@ import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 

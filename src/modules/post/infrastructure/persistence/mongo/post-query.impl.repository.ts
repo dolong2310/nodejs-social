@@ -1,7 +1,7 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import {
   FindGuestPostsInput,
@@ -13,7 +13,7 @@ import {
   FindPostsTypeInput,
   IsUserInteractedWithPostInput,
   PostDetailWithAuthorOutput
-} from '@/modules/post/domain/repositories/post.query.type';
+} from '@/modules/post/domain/repositories/post.query.types';
 import { BookmarkModel } from '@/modules/post/infrastructure/persistence/mongo/bookmark.model';
 import { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';

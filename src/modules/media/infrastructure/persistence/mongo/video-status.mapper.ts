@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { VideoStatusEntity } from '@/modules/media/domain/entities/video-status.entity';
-import { VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.type';
+import { VideoStatusFullProps } from '@/modules/media/domain/entities/video-status.types';
 import {
   VideoStatusModel,
   videoStatusSchema

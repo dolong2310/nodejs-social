@@ -3,7 +3,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { CreateFriendshipProps, FriendshipProps } from '@/modules/relationship/domain/entities/friendship.type';
+import { CreateFriendshipProps, FriendshipProps } from '@/modules/relationship/domain/entities/friendship.types';
 
 export class FriendshipEntity extends Entity<FriendshipProps> {
   static create(createProps: CreateFriendshipProps) {

@@ -2,7 +2,7 @@ import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
 import {
   EnumNewMessagePreviewKind,
   EnumNotificationType
-} from '@/modules/notification/domain/entities/notification.type';
+} from '@/modules/notification/domain/entities/notification.types';
 import {
   type InferOutput,
   boolean,

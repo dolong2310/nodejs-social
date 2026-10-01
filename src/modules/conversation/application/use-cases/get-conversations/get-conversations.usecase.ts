@@ -7,7 +7,7 @@ import {
   GetConversationsInputPort,
   GetConversationsOutputPort
 } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.port';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';

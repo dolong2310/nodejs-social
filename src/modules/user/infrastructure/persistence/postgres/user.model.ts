@@ -1,5 +1,5 @@
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { type InferOutput, date, enum_, minLength, nullable, object, optional, pipe, string } from 'valibot';
 
 export const userSchema = object({

@@ -4,7 +4,7 @@ import {
   RegisterPort,
   RegisterOutputPort
 } from '@/modules/authentication/application/use-cases/register/register.port';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';

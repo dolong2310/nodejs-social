@@ -3,7 +3,7 @@ import {
   IncreasePostsViewsInput,
   IncreasePostViewsInput,
   IncreasePostViewsOutput
-} from '@/modules/post/domain/repositories/post.command.type';
+} from '@/modules/post/domain/repositories/post.command.types';
 import type { Pool } from 'pg';
 
 export class PostCommandRepository implements PostCommandRepositoryPort {

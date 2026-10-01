@@ -7,7 +7,7 @@ import {
   GetPostsByUserOutputPort
 } from '@/modules/post/application/use-cases/get-posts-by-user/get-posts-by-user.port';
 import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
 import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PaymentCheckoutError } from '@/modules/payment/application/ports/payment-gateway.port';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
 import { Momo } from '@longdoo/node-payment-gateway';
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 

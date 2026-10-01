@@ -7,7 +7,7 @@ import {
   LoginGoogleOutputPort
 } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
 import { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { generateId } from '@/modules/core/domain/helpers/ids';

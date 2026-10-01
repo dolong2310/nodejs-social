@@ -6,7 +6,7 @@ import { UserServicePort } from '@/modules/user/application/services/user.servic
 import { AdminCreateUserInputPort } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import { AdminCreateUserUseCase } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';

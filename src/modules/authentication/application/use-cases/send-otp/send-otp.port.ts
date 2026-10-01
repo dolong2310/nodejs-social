@@ -1,4 +1,4 @@
-import { CreateOtpProps, EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { CreateOtpProps, EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class SendOtpInputPort implements Pick<CreateOtpProps, 'email' | 'type'> {

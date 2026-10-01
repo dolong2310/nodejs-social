@@ -1,4 +1,4 @@
-import { ConversationProps } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationProps } from '@/modules/conversation/domain/entities/conversation.types';
 
 export interface CreateGroupConversationInput extends Pick<ConversationProps, 'name' | 'createdBy'> {
   memberIds: string[];

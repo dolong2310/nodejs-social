@@ -1,5 +1,5 @@
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
+import { RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { RoleModel, roleSchema } from '@/modules/authorization/infrastructure/persistence/postgres/role.model';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';

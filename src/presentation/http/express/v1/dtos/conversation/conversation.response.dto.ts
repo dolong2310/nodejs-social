@@ -1,5 +1,5 @@
-import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.types';
+import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 
 export class ConversationResponseDTO implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;

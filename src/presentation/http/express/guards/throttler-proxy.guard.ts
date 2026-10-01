@@ -1,4 +1,4 @@
-import { IAppConfig } from '@/bootstrap/types/app.type';
+import { IAppConfig } from '@/bootstrap/types/app.types';
 import { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createRateLimitStore } from '@/infrastructure/persistence/redis/rate-limit-store';
 import { RATE_LIMIT_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';

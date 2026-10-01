@@ -11,7 +11,7 @@ import {
   CreatePostOutputPort
 } from '@/modules/post/application/use-cases/create-post/create-post.port';
 import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
 import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import { BlockServicePort } from '@/modules/relationship/application/services/block.service';

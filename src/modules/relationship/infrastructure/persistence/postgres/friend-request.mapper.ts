@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
-import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.type';
+import { FriendRequestFullProps } from '@/modules/relationship/domain/entities/friend-request.types';
 import {
   FriendRequestModel,
   friendRequestSchema

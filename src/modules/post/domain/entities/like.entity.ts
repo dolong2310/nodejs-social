@@ -3,7 +3,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
-import { CreateLikeProps, LikeProps } from '@/modules/post/domain/entities/like.type';
+import { CreateLikeProps, LikeProps } from '@/modules/post/domain/entities/like.types';
 
 export class LikeEntity extends Entity<LikeProps> {
   static create(createProps: CreateLikeProps) {

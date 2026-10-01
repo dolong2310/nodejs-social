@@ -1,11 +1,11 @@
 import { EnumSearchPeople } from '@/modules/common/domain/enums/search.enum';
-import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { UserRecordProps, UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import {
   FindUsersForSearchInput,
   RoleFullProps,
   UserWithRole
-} from '@/modules/user/domain/repositories/user.query.type';
+} from '@/modules/user/domain/repositories/user.query.types';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 import { UserModel } from '@/modules/user/infrastructure/persistence/mongo/user.model';
 import { Collection, Db, Document, MongoClient } from 'mongodb';

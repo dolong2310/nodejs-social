@@ -1,5 +1,5 @@
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 
 export type ApplyVerifiedOutcomeResult =
   | 'applied'

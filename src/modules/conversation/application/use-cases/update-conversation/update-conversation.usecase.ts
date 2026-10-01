@@ -5,9 +5,9 @@ import {
   UpdateConversationPort,
   UpdateConversationOutputPort
 } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 
 /**

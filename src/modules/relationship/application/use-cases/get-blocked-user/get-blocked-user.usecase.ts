@@ -4,7 +4,7 @@ import {
   GetBlockedUserOutputPort
 } from '@/modules/relationship/application/use-cases/get-blocked-user/get-blocked-user.port';
 import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { UserFullProps, UserRecordProps } from '@/modules/user/domain/entities/user.type';
+import { UserFullProps, UserRecordProps } from '@/modules/user/domain/entities/user.types';
 import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class GetBlockedUserUseCase extends GetBlockedUserPort {

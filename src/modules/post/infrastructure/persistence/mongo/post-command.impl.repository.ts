@@ -3,7 +3,7 @@ import {
   IncreasePostsViewsInput,
   IncreasePostViewsInput,
   IncreasePostViewsOutput
-} from '@/modules/post/domain/repositories/post.command.type';
+} from '@/modules/post/domain/repositories/post.command.types';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
 import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
 import { Collection, Db, MongoClient } from 'mongodb';

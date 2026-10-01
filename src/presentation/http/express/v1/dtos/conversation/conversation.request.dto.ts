@@ -1,4 +1,4 @@
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface ConversationIdParams extends ParamsDictionary {

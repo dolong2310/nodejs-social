@@ -1,7 +1,7 @@
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.type';
+import { CreateOtpInput } from '@/modules/authentication/domain/repositories/otp.repository.types';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/postgres/otp.mapper';
 import { OtpModel } from '@/modules/authentication/infrastructure/persistence/postgres/otp.model';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';

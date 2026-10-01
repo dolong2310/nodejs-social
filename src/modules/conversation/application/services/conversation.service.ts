@@ -7,10 +7,10 @@ import {
   ConversationDetailResult,
   GetDirectPeerIdPayload,
   MapConversationDetailPayload
-} from '@/modules/conversation/application/services/conversation.service.type';
+} from '@/modules/conversation/application/services/conversation.service.types';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 

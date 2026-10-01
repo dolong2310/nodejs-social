@@ -6,7 +6,7 @@ import {
   CreateHashtagInput,
   ListHashtagsInput,
   UpdateHashtagInput
-} from '@/modules/post/domain/repositories/hashtag.repository.type';
+} from '@/modules/post/domain/repositories/hashtag.repository.types';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
 import { HashtagModel } from '@/modules/post/infrastructure/persistence/postgres/hashtag.model';
 import { Options } from '@/modules/core/domain/repositories/port.repository';

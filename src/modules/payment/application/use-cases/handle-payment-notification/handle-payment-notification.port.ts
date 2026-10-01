@@ -1,5 +1,5 @@
 import { UseCase } from '@/modules/core/application/base.usecase';
-import { PaymentProvider } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
 import { ApplyVerifiedOutcomeResult } from '@/modules/payment/domain/repositories/payment.repository';
 
 export interface HandlePaymentNotificationProps {

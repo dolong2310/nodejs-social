@@ -4,7 +4,7 @@ import {
   FindPermissionByPathAndMethodInput,
   ListPermissionsInput,
   UpdatePermissionInput
-} from '@/modules/authorization/domain/repositories/permission.repository.type';
+} from '@/modules/authorization/domain/repositories/permission.repository.types';
 import { Options, RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface PermissionRepositoryPort extends RepositoryPort<PermissionEntity> {

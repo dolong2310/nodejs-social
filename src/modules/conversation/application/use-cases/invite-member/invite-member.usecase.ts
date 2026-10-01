@@ -9,8 +9,8 @@ import {
   InviteMemberPort,
   InviteMemberOutputPort
 } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
 import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';

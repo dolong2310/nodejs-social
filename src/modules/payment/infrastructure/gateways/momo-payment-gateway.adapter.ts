@@ -1,6 +1,6 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentCheckoutError, PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
-import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import { Momo } from '@longdoo/node-payment-gateway';
 import type { ReturnQueryFromMomo } from '@longdoo/node-payment-gateway/momo';
 

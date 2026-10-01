@@ -2,7 +2,7 @@ import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
 } from '@/modules/authorization/application/constants/cache.constants';
-import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';

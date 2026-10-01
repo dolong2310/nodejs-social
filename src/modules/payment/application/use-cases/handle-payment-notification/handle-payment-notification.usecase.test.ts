@@ -4,7 +4,7 @@ import {
   PaymentNotificationVerificationReason
 } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
-import { VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import { VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
 

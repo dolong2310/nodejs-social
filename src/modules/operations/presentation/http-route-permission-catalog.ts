@@ -2,7 +2,7 @@ import {
   buildStubHttpRouters,
   permissionModuleTagFromBaseRoutePath
 } from '@/modules/operations/presentation/stub-http-routers';
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 import {
   AvailableRoute,
   RoutePermissionCatalogPort

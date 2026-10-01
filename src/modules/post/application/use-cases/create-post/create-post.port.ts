@@ -4,7 +4,7 @@ import {
   EnumPostAudience,
   EnumPostType,
   PostFullProps
-} from '@/modules/post/domain/entities/post.type';
+} from '@/modules/post/domain/entities/post.types';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class CreatePostInputPort implements CreatePostProps {

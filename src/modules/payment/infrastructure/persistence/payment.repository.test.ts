@@ -1,28 +1,45 @@
-import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { MongoClient } from 'mongodb';
-import { Pool } from 'pg';
+import {
+  down as downMongoPaymentMigration,
+  up as upMongoPaymentMigration
+} from '@/infrastructure/persistence/mongodb/migrations/20260924000000-payments';
+import {
+  down as downMongoPaymentSourceMigration,
+  up as upMongoPaymentSourceMigration
+} from '@/infrastructure/persistence/mongodb/migrations/20260925000000-payments-source-type-order';
+import {
+  down as downMongoPaymentAuditMigration,
+  up as upMongoPaymentAuditMigration
+} from '@/infrastructure/persistence/mongodb/migrations/20260929000000-payments-audit';
+import {
+  down as downPostgresPaymentMigration,
+  up as upPostgresPaymentMigration
+} from '@/infrastructure/persistence/postgres/migrations/20260924000000-payments';
+import {
+  down as downPostgresPaymentSourceMigration,
+  up as upPostgresPaymentSourceMigration
+} from '@/infrastructure/persistence/postgres/migrations/20260925000000-payments-source-type-order';
+import {
+  down as downPostgresPaymentAuditMigration,
+  up as upPostgresPaymentAuditMigration
+} from '@/infrastructure/persistence/postgres/migrations/20260929000000-payments-audit';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentFullProps, PaymentProps, PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
+import {
+  PaymentFullProps,
+  PaymentProps,
+  PaymentProvider,
+  VerifiedNotification
+} from '@/modules/payment/domain/entities/payment.types';
 import { PaymentRepository as MongoPaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
 import { PaymentMapper as MongoPaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
 import type { PaymentModel as MongoPaymentModel } from '@/modules/payment/infrastructure/persistence/mongo/payment.model';
 import { PaymentRepository as PostgresPaymentRepository } from '@/modules/payment/infrastructure/persistence/postgres/payment.impl.repository';
 import { PaymentMapper as PostgresPaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
 import type { PaymentModel as PostgresPaymentModel } from '@/modules/payment/infrastructure/persistence/postgres/payment.model';
-import { down as downMongoPaymentMigration } from '@/infrastructure/persistence/mongodb/migrations/20260924000000-payments';
-import { up as upMongoPaymentMigration } from '@/infrastructure/persistence/mongodb/migrations/20260924000000-payments';
-import { down as downMongoPaymentSourceMigration } from '@/infrastructure/persistence/mongodb/migrations/20260925000000-payments-source-type-order';
-import { up as upMongoPaymentSourceMigration } from '@/infrastructure/persistence/mongodb/migrations/20260925000000-payments-source-type-order';
-import { down as downMongoPaymentAuditMigration } from '@/infrastructure/persistence/mongodb/migrations/20260929000000-payments-audit';
-import { up as upMongoPaymentAuditMigration } from '@/infrastructure/persistence/mongodb/migrations/20260929000000-payments-audit';
-import { down as downPostgresPaymentMigration } from '@/infrastructure/persistence/postgres/migrations/20260924000000-payments';
-import { up as upPostgresPaymentMigration } from '@/infrastructure/persistence/postgres/migrations/20260924000000-payments';
-import { down as downPostgresPaymentSourceMigration } from '@/infrastructure/persistence/postgres/migrations/20260925000000-payments-source-type-order';
-import { up as upPostgresPaymentSourceMigration } from '@/infrastructure/persistence/postgres/migrations/20260925000000-payments-source-type-order';
-import { down as downPostgresPaymentAuditMigration } from '@/infrastructure/persistence/postgres/migrations/20260929000000-payments-audit';
-import { up as upPostgresPaymentAuditMigration } from '@/infrastructure/persistence/postgres/migrations/20260929000000-payments-audit';
+import { MongoClient } from 'mongodb';
+import { randomUUID } from 'node:crypto';
+import { Pool } from 'pg';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const mongoUri = process.env.PAYMENT_TEST_MONGO_URI;
 const postgresUri = process.env.PAYMENT_TEST_POSTGRES_URI;
@@ -212,7 +229,10 @@ async function runRepositoryContract(
       ]);
 
       expect(results.sort()).toEqual(['applied', 'state_conflict']);
-      const statuses = await Promise.all([repository.findPaymentById(first.id.toString()), repository.findPaymentById(second.id.toString())]);
+      const statuses = await Promise.all([
+        repository.findPaymentById(first.id.toString()),
+        repository.findPaymentById(second.id.toString())
+      ]);
       expect(statuses.map((payment) => payment?.getProps().status).sort()).toEqual(['creating', 'succeeded']);
     });
 
@@ -240,7 +260,10 @@ async function runRepositoryContract(
       const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
       await repository.applyVerifiedOutcome(notification(record, 'pending'));
 
-      const updated = await repository.attachCheckoutUrlIfAbsent(record.id.toString(), 'https://sandbox.example/checkout');
+      const updated = await repository.attachCheckoutUrlIfAbsent(
+        record.id.toString(),
+        'https://sandbox.example/checkout'
+      );
 
       expect(updated.getProps().status).toBe('pending');
       expect(updated.getProps().checkoutUrl).toBe('https://sandbox.example/checkout');
@@ -250,7 +273,10 @@ async function runRepositoryContract(
       const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
       await repository.applyVerifiedOutcome(notification(record));
 
-      const updated = await repository.attachCheckoutUrlIfAbsent(record.id.toString(), 'https://sandbox.example/checkout');
+      const updated = await repository.attachCheckoutUrlIfAbsent(
+        record.id.toString(),
+        'https://sandbox.example/checkout'
+      );
 
       expect(updated.getProps().status).toBe('succeeded');
       expect(updated.getProps().checkoutUrl).toBe('https://sandbox.example/checkout');
@@ -288,10 +314,12 @@ async function runRepositoryContract(
       ).toBe('unknown');
 
       const rejected = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      expect((await repository.setCreateFailedIfCreating(rejected.id.toString(), 'merchant_rejected')).getProps().status).toBe(
-        'create_failed'
+      expect(
+        (await repository.setCreateFailedIfCreating(rejected.id.toString(), 'merchant_rejected')).getProps().status
+      ).toBe('create_failed');
+      expect((await repository.findPaymentById(rejected.id.toString()))?.getProps().providerResultCode).toBe(
+        'merchant_rejected'
       );
-      expect((await repository.findPaymentById(rejected.id.toString()))?.getProps().providerResultCode).toBe('merchant_rejected');
     });
 
     it('allows the same provider order reference in separate provider namespaces', async () => {

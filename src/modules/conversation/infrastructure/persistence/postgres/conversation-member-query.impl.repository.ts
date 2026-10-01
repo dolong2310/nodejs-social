@@ -2,7 +2,7 @@ import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/do
 import {
   ListConversationsForUserInput,
   ListConversationsForUserOutput
-} from '@/modules/conversation/domain/repositories/conversation-member.query.type';
+} from '@/modules/conversation/domain/repositories/conversation-member.query.types';
 import type { Pool } from 'pg';
 
 export class ConversationMemberQueryRepository implements ConversationMemberQueryRepositoryPort {

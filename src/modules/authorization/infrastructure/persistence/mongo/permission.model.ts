@@ -1,4 +1,4 @@
-import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
 import { type InferOutput, date, nullable, enum_, minLength, object, optional, pipe, string } from 'valibot';
 

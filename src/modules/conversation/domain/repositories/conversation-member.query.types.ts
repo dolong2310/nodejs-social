@@ -1,5 +1,5 @@
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { ConversationMemberProps } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { ConversationMemberProps } from '@/modules/conversation/domain/entities/conversation-member.types';
 
 export interface ListConversationsForUserInput extends Pick<ConversationMemberProps, 'userId'> {
   limit: number;

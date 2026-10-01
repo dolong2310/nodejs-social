@@ -1,5 +1,5 @@
 import { envConfig, isProduction } from '@/bootstrap/config/env.config';
-import { IAppConfig } from '@/bootstrap/types/app.type';
+import { IAppConfig } from '@/bootstrap/types/app.types';
 import { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 

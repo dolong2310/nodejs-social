@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { BookmarkEntity } from '@/modules/post/domain/entities/bookmark.entity';
 import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
-import { CreateBookmarkInput, DeleteBookmarkInput } from '@/modules/post/domain/repositories/bookmark.repository.type';
+import { CreateBookmarkInput, DeleteBookmarkInput } from '@/modules/post/domain/repositories/bookmark.repository.types';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/postgres/bookmark.mapper';
 import { BookmarkModel } from '@/modules/post/infrastructure/persistence/postgres/bookmark.model';
 import type { Pool } from 'pg';

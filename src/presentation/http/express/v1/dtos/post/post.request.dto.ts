@@ -3,7 +3,7 @@ import {
   EnumNewFeedFilter,
   EnumPostAudience,
   EnumPostType
-} from '@/modules/post/domain/entities/post.type';
+} from '@/modules/post/domain/entities/post.types';
 import { IMedia, Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 

@@ -1,4 +1,4 @@
-import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { UseCase } from '@/modules/core/application/base.usecase';
 
 export class ListPermissionsInputPort {

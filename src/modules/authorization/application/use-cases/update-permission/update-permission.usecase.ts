@@ -7,9 +7,9 @@ import {
   UpdatePermissionInputPort,
   UpdatePermissionPort
 } from '@/modules/authorization/application/use-cases/update-permission/update-permission.port';
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { UpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.type';
+import { UpdatePermissionInput } from '@/modules/authorization/domain/repositories/permission.repository.types';
 import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class UpdatePermissionUseCase extends UpdatePermissionPort {

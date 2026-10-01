@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { LikeEntity } from '@/modules/post/domain/entities/like.entity';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.type';
+import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.types';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/mongo/like.mapper';
 import { LikeModel } from '@/modules/post/infrastructure/persistence/mongo/like.model';
 import { Db, MongoClient } from 'mongodb';

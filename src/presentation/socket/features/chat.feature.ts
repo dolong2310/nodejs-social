@@ -1,4 +1,4 @@
-import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.type';
+import { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
 import {
   SOCKET_CLIENT_CHAT_SUBSCRIBE,
   SOCKET_CLIENT_CHAT_TYPING,
@@ -11,7 +11,7 @@ import { GetConversationPresencePort } from '@/modules/notification/application/
 import { JoinConversationPort } from '@/modules/notification/application/use-cases/realtime/join-conversation/join-conversation.port';
 import { LeaveConversationPort } from '@/modules/notification/application/use-cases/realtime/leave-conversation/leave-conversation.port';
 import { TypingPort } from '@/modules/notification/application/use-cases/realtime/typing/typing.port';
-import { ISocketFeature } from '@/presentation/socket/socket.type';
+import { ISocketFeature } from '@/presentation/socket/socket.types';
 import { Server, Socket } from 'socket.io';
 
 export class ChatFeature implements ISocketFeature {

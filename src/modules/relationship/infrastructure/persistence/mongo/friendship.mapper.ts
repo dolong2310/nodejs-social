@@ -1,7 +1,7 @@
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
-import { FriendshipFullProps } from '@/modules/relationship/domain/entities/friendship.type';
+import { FriendshipFullProps } from '@/modules/relationship/domain/entities/friendship.types';
 import {
   FriendshipModel,
   friendshipSchema

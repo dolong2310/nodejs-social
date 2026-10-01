@@ -3,7 +3,7 @@ import {
   EnumNewMessagePreviewKind,
   EnumNotificationType,
   INewMessageNotificationPayload
-} from '@/modules/notification/domain/entities/notification.type';
+} from '@/modules/notification/domain/entities/notification.types';
 
 export function notificationSummary(entity: NotificationEntity): string {
   const notification = entity.toObject();

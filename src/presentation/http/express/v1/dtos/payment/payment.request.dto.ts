@@ -1,4 +1,4 @@
-import { PaymentProvider } from '@/modules/payment/domain/entities/payment.type';
+import { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export interface CreatePaymentBodyDTO {

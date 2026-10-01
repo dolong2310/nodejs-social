@@ -5,7 +5,7 @@ import {
   FindPermissionByPathAndMethodInput,
   ListPermissionsInput,
   UpdatePermissionInput
-} from '@/modules/authorization/domain/repositories/permission.repository.type';
+} from '@/modules/authorization/domain/repositories/permission.repository.types';
 import { PermissionPath } from '@/modules/authorization/domain/value-objects/permission-path.value-object';
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
 import { PermissionModel } from '@/modules/authorization/infrastructure/persistence/mongo/permission.model';

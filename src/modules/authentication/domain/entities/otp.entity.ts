@@ -1,4 +1,9 @@
-import { CreateOtpProps, EnumOtpType, OtpFullProps, OtpProps } from '@/modules/authentication/domain/entities/otp.type';
+import {
+  CreateOtpProps,
+  EnumOtpType,
+  OtpFullProps,
+  OtpProps
+} from '@/modules/authentication/domain/entities/otp.types';
 import { OtpCode } from '@/modules/authentication/domain/value-objects/otp-code.value-object';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Entity } from '@/modules/core/domain/entities/base.entity';

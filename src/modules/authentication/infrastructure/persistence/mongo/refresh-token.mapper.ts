@@ -1,5 +1,5 @@
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
-import { RefreshTokenFullProps } from '@/modules/authentication/domain/entities/refresh-token.type';
+import { RefreshTokenFullProps } from '@/modules/authentication/domain/entities/refresh-token.types';
 import {
   RefreshTokenModel,
   refreshTokenSchema

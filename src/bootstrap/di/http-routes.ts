@@ -5,7 +5,7 @@ import { GoogleOAuthServicePort } from '@/modules/authentication/application/por
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
@@ -66,7 +66,7 @@ import type { PaymentGatewayPort } from '@/modules/payment/application/ports/pay
 import { CreatePaymentUseCase } from '@/modules/payment/application/use-cases/create-payment/create-payment.usecase';
 import { GetPaymentUseCase } from '@/modules/payment/application/use-cases/get-payment/get-payment.usecase';
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
-import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.type';
+import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';

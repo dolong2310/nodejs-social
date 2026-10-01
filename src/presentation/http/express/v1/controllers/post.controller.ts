@@ -3,7 +3,7 @@ import { CreatePostPort } from '@/modules/post/application/use-cases/create-post
 import { DeletePostPort } from '@/modules/post/application/use-cases/delete-post/delete-post.port';
 import { GetGuestNewFeedsPort } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
 import { GetNewFeedsPort } from '@/modules/post/application/use-cases/get-new-feeds/get-new-feeds.port';
-import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.type';
+import { EnumNewFeedFilter } from '@/modules/post/domain/entities/post.types';
 import {
   GetPostDetailPort,
   GetPostDetailInputPort

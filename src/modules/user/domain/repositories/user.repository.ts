@@ -4,7 +4,7 @@ import {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
-} from '@/modules/user/domain/repositories/user.repository.type';
+} from '@/modules/user/domain/repositories/user.repository.types';
 
 export interface UserRepositoryPort extends RepositoryPort<UserEntity> {
   findUserById(id: string): Promise<UserEntity | null>;

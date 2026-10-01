@@ -3,7 +3,7 @@ import {
   PaymentProps,
   PaymentStatus,
   VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.type';
+} from '@/modules/payment/domain/entities/payment.types';
 
 export const MUTABLE_PAYMENT_STATUSES: PaymentStatus[] = ['creating', 'pending', 'unknown'];
 export const URL_ATTACHABLE_PAYMENT_STATUSES: PaymentStatus[] = [

@@ -2,7 +2,7 @@ import { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-m
 import {
   CreateMessageInput,
   FindMessagesInput
-} from '@/modules/conversation/domain/repositories/chat-message.repository.type';
+} from '@/modules/conversation/domain/repositories/chat-message.repository.types';
 import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
 
 export interface ChatMessageRepositoryPort extends RepositoryPort<ChatMessageEntity> {

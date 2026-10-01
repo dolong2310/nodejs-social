@@ -1,5 +1,5 @@
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { OtpFullProps } from '@/modules/authentication/domain/entities/otp.type';
+import { OtpFullProps } from '@/modules/authentication/domain/entities/otp.types';
 import { OtpCode } from '@/modules/authentication/domain/value-objects/otp-code.value-object';
 import { OtpModel, otpSchema } from '@/modules/authentication/infrastructure/persistence/mongo/otp.model';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';

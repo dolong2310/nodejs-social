@@ -1,7 +1,7 @@
 import { EnumSearchPeople, EnumSearchType } from '@/modules/common/domain/enums/search.enum';
 import { DateIdCursor } from '@/modules/common/domain/value-objects/cursor.value-object';
-import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.type';
-import { EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.type';
+import { HashtagFullProps } from '@/modules/post/domain/entities/hashtag.types';
+import { EnumPostType, PostFullProps } from '@/modules/post/domain/entities/post.types';
 import { Prettify } from 'ts-essentials';
 
 export interface IsUserInteractedWithPostInput {

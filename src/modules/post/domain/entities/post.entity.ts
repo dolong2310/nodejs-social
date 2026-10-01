@@ -9,7 +9,7 @@ import {
   EnumPostType,
   PostFullProps,
   PostProps
-} from '@/modules/post/domain/entities/post.type';
+} from '@/modules/post/domain/entities/post.types';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 
 export class PostEntity extends Entity<PostProps, PostFullProps> {

@@ -2,7 +2,7 @@ import { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { LikeEntity } from '@/modules/post/domain/entities/like.entity';
 import { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.type';
+import { CreateLikeInput, DeleteLikeInput } from '@/modules/post/domain/repositories/like.repository.types';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/postgres/like.mapper';
 import { LikeModel } from '@/modules/post/infrastructure/persistence/postgres/like.model';
 import type { Pool } from 'pg';
