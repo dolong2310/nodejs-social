@@ -6,7 +6,7 @@ import eslintPluginPrettier from 'eslint-plugin-prettier';
 
 export default defineConfig([
   {
-    ignores: ['**/node_modules/', '**/dist/']
+    ignores: ['**/node_modules/', '**/dist/', '**/.gitnexus/']
   },
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
