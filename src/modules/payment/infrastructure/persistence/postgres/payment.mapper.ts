@@ -2,7 +2,7 @@ import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity'
 import { Mapper } from '@/modules/core/infrastructure/base.mapper';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import { PaymentProps, PaymentSafeProps } from '@/modules/payment/domain/entities/payment.type';
-import { normalizeProviderTransactionId } from '@/modules/payment/domain/entities/payment.policy';
+import { normalizeProviderTransactionId } from '@/modules/payment/domain/helpers/payment.policy';
 import { type PaymentModel, paymentSchema } from '@/modules/payment/infrastructure/persistence/postgres/payment.model';
 import { parse } from 'valibot';
 

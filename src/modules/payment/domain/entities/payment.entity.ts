@@ -1,20 +1,19 @@
-import { createHash } from 'node:crypto';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
-  PAYMENT_PROVIDERS,
-  PAYMENT_STATUSES,
   CreatePaymentProps,
   MAX_PAYMENT_AMOUNT_VND,
   MAX_PAYMENT_DESCRIPTION_LENGTH,
   MAX_PAYMENT_SOURCE_REFERENCE_LENGTH,
   MIN_PAYMENT_AMOUNT_VND,
-  PaymentProps,
-  PaymentStatus
+  PAYMENT_PROVIDERS,
+  PAYMENT_STATUSES,
+  PaymentProps
 } from '@/modules/payment/domain/entities/payment.type';
+import { createHash } from 'node:crypto';
 
 const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;
 
@@ -23,7 +22,7 @@ type PaymentRequestFingerprintProps = Pick<
   'provider' | 'sourceReference' | 'description' | 'amountVnd'
 >;
 
-export function createPaymentRequestFingerprint(input: PaymentRequestFingerprintProps): string {
+function createPaymentRequestFingerprint(input: PaymentRequestFingerprintProps): string {
   const request = JSON.stringify({
     sourceType: 'order',
     provider: input.provider,
@@ -32,21 +31,6 @@ export function createPaymentRequestFingerprint(input: PaymentRequestFingerprint
     amountVnd: input.amountVnd
   });
   return createHash('sha256').update(request).digest('hex');
-}
-
-export function canTransitionPaymentStatus(from: PaymentStatus, to: PaymentStatus): boolean {
-  if (from === to) return true;
-  if (from === 'succeeded' || from === 'failed' || from === 'cancelled' || from === 'create_failed') return false;
-
-  if (from === 'creating')
-    return to === 'pending' || to === 'unknown' || to === 'create_failed' || isProviderOutcome(to);
-  if (from === 'pending') return isProviderOutcome(to);
-  if (from === 'unknown') return to === 'pending' || isProviderOutcome(to);
-  return false;
-}
-
-function isProviderOutcome(status: PaymentStatus): boolean {
-  return status === 'pending' || status === 'succeeded' || status === 'failed' || status === 'cancelled';
 }
 
 export class PaymentEntity extends Entity<PaymentProps> {

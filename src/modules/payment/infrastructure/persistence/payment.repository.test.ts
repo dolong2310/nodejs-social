@@ -68,9 +68,10 @@ describe('PaymentMapper', () => {
     const mapper = new MongoPaymentMapper();
     const payment = newPayment();
     const model = mapper.toPersistence(payment);
+    const restored = mapper.toDomain(model);
 
-    expect(mapper.toDomain(model)).toMatchObject({
-      id: payment.id,
+    expect(restored.toObject()).toMatchObject({
+      id: payment.id.toString(),
       sourceType: props(payment).sourceType,
       sourceReference: props(payment).sourceReference,
       description: props(payment).description,
@@ -84,9 +85,10 @@ describe('PaymentMapper', () => {
     const mapper = new PostgresPaymentMapper();
     const payment = newPayment();
     const model = mapper.toPersistence(payment);
+    const restored = mapper.toDomain(model);
 
-    expect(mapper.toDomain(model)).toMatchObject({
-      id: payment.id,
+    expect(restored.toObject()).toMatchObject({
+      id: payment.id.toString(),
       sourceType: props(payment).sourceType,
       sourceReference: props(payment).sourceReference,
       description: props(payment).description,

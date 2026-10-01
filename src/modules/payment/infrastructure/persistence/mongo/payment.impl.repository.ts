@@ -5,7 +5,7 @@ import {
   MUTABLE_PAYMENT_STATUSES,
   normalizeProviderTransactionId,
   URL_ATTACHABLE_PAYMENT_STATUSES
-} from '@/modules/payment/domain/entities/payment.policy';
+} from '@/modules/payment/domain/helpers/payment.policy';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.type';
 import {

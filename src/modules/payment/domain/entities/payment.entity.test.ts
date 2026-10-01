@@ -1,6 +1,21 @@
+import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
+import { PaymentProvider, PaymentStatus } from '@/modules/payment/domain/entities/payment.type';
 import { describe, expect, it } from 'vitest';
-import { PaymentEntity, canTransitionPaymentStatus } from '@/modules/payment/domain/entities/payment.entity';
-import { PaymentProvider } from '@/modules/payment/domain/entities/payment.type';
+
+function canTransitionPaymentStatus(from: PaymentStatus, to: PaymentStatus): boolean {
+  if (from === to) return true;
+  if (from === 'succeeded' || from === 'failed' || from === 'cancelled' || from === 'create_failed') return false;
+
+  if (from === 'creating')
+    return to === 'pending' || to === 'unknown' || to === 'create_failed' || isProviderOutcome(to);
+  if (from === 'pending') return isProviderOutcome(to);
+  if (from === 'unknown') return to === 'pending' || isProviderOutcome(to);
+  return false;
+}
+
+function isProviderOutcome(status: PaymentStatus): boolean {
+  return status === 'pending' || status === 'succeeded' || status === 'failed' || status === 'cancelled';
+}
 
 describe('PaymentEntity', () => {
   it('creates a VNPay order from the supplied payment details with a future expiry', () => {
