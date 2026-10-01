@@ -1,4 +1,4 @@
-import { envConfig, isDevelopment, isProduction } from '@/bootstrap/config/env.config';
+import { envConfig, isProduction } from '@/bootstrap/config/env.config';
 import { IAppConfig } from '@/bootstrap/types/app.type';
 import { type Algorithm, type Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
@@ -35,7 +35,7 @@ function parseCsv(value: string): string[] {
 
 // General configs
 export const appConfig: IAppConfig = {
-  port: parseInt(envConfig.PORT, 10),
+  port: envConfig.PORT,
 
   client: {
     url: envConfig.APP_URL
@@ -54,12 +54,7 @@ export const appConfig: IAppConfig = {
   },
 
   logs: {
-    /** Pino levels: fatal, error, warn, info, debug, trace, silent */
-    level: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'].includes(envConfig.LOG_LEVEL)
-      ? envConfig.LOG_LEVEL
-      : isDevelopment
-        ? 'debug'
-        : 'info'
+    level: envConfig.LOG_LEVEL
   },
 
   api: {
@@ -72,9 +67,9 @@ export const appConfig: IAppConfig = {
   },
 
   rateLimit: {
-    enabled: envConfig.RATE_LIMIT_ENABLED === '1',
-    windowMs: parseInt(envConfig.RATE_LIMIT_WINDOW_MS ?? '900000', 10),
-    limit: parseInt(envConfig.RATE_LIMIT_MAX ?? '100', 10),
+    enabled: envConfig.RATE_LIMIT_ENABLED,
+    windowMs: envConfig.RATE_LIMIT_WINDOW_MS,
+    limit: envConfig.RATE_LIMIT_MAX,
     standardHeaders: 'draft-8' as const, // Return standard rate-limit headers using the IETF draft-8 format.
     legacyHeaders: false, // Disable legacy X-RateLimit-* headers.
     ipv6Subnet: 56 // Group IPv6 clients by subnet to avoid one machine creating too many distinct clients.
@@ -87,28 +82,28 @@ export const appConfig: IAppConfig = {
   },
 
   systemHealth: {
-    enabled: envConfig.SYSTEM_HEALTH_MONITOR_ENABLED === '1',
+    enabled: envConfig.SYSTEM_HEALTH_MONITOR_ENABLED,
     cron: envConfig.SYSTEM_HEALTH_CRON,
     timezone: envConfig.SYSTEM_HEALTH_TIMEZONE,
     diskPath: envConfig.SYSTEM_HEALTH_DISK_PATH,
     adminEmails: parseCsv(envConfig.SYSTEM_HEALTH_ADMIN_EMAILS),
-    alertCooldownSeconds: Number(envConfig.SYSTEM_HEALTH_ALERT_COOLDOWN_SECONDS),
+    alertCooldownSeconds: envConfig.SYSTEM_HEALTH_ALERT_COOLDOWN_SECONDS,
     thresholds: {
       cpu: {
-        warning: Number(envConfig.SYSTEM_HEALTH_CPU_WARN),
-        critical: Number(envConfig.SYSTEM_HEALTH_CPU_CRITICAL)
+        warning: envConfig.SYSTEM_HEALTH_CPU_WARN,
+        critical: envConfig.SYSTEM_HEALTH_CPU_CRITICAL
       },
       memory: {
-        warning: Number(envConfig.SYSTEM_HEALTH_RAM_WARN),
-        critical: Number(envConfig.SYSTEM_HEALTH_RAM_CRITICAL)
+        warning: envConfig.SYSTEM_HEALTH_RAM_WARN,
+        critical: envConfig.SYSTEM_HEALTH_RAM_CRITICAL
       },
       disk: {
-        warning: Number(envConfig.SYSTEM_HEALTH_DISK_WARN),
-        critical: Number(envConfig.SYSTEM_HEALTH_DISK_CRITICAL)
+        warning: envConfig.SYSTEM_HEALTH_DISK_WARN,
+        critical: envConfig.SYSTEM_HEALTH_DISK_CRITICAL
       },
       processMemoryMb: {
-        warning: Number(envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_WARN_MB),
-        critical: Number(envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_CRITICAL_MB)
+        warning: envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_WARN_MB,
+        critical: envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_CRITICAL_MB
       }
     }
   },
@@ -130,5 +125,21 @@ export const appConfig: IAppConfig = {
     cloudName: envConfig.CLOUDINARY_CLOUD_NAME,
     apiKey: envConfig.CLOUDINARY_API_KEY,
     apiSecret: envConfig.CLOUDINARY_API_SECRET
+  },
+
+  payment: {
+    vnpay: {
+      tmnCode: envConfig.VNPAY_TMN_CODE,
+      secureSecret: envConfig.VNPAY_SECURE_SECRET,
+      vnpayHost: envConfig.VNPAY_HOST
+    },
+    momo: {
+      partnerCode: envConfig.MOMO_PARTNER_CODE,
+      accessKey: envConfig.MOMO_ACCESS_KEY,
+      secretKey: envConfig.MOMO_SECRET_KEY,
+      storeId: envConfig.MOMO_STORE_ID,
+      storeName: envConfig.MOMO_STORE_NAME
+    },
+    paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
   }
 };

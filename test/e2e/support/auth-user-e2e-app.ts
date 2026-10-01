@@ -982,7 +982,7 @@ function testAppConfig(): IAppConfig {
     api: { prefix: '/api' },
     cors: { origin: ['http://localhost:3000'], credentials: true },
     rateLimit: { enabled: false },
-    email: { fromAddress: 'no-reply@example.com' },
+    email: { apiKey: 'test-email-api-key', fromAddress: 'no-reply@example.com' },
     systemHealth: {
       enabled: false,
       cron: '*/1 * * * *',
@@ -1012,6 +1012,21 @@ function testAppConfig(): IAppConfig {
       cloudName: 'test-cloud-name',
       apiKey: 'test-cloudinary-api-key',
       apiSecret: 'test-cloudinary-api-secret'
+    },
+    payment: {
+      vnpay: {
+        tmnCode: 'VNPAY_TEST_MERCHANT',
+        secureSecret: 'vnpay-test-secret',
+        vnpayHost: 'https://sandbox.vnpayment.vn'
+      },
+      momo: {
+        partnerCode: 'MOMO_TEST_PARTNER',
+        accessKey: 'momo-test-access-key',
+        secretKey: 'momo-test-secret-key',
+        storeId: 'MomoTestStore',
+        storeName: 'Social Test Store'
+      },
+      paymentPublicBaseUrl: 'https://social-tunnel.test'
     }
   };
 }

@@ -1,10 +1,11 @@
 const defaults: Record<string, string> = {
-  PORT: '0',
+  NODE_ENV: 'development',
+  PORT: '3000',
   LOG_LEVEL: 'silent',
   FRONTEND_URL: 'http://localhost:3000',
   APP_URL: 'http://localhost:3000',
   CORS_ORIGINS: 'http://localhost:3000',
-  DATABASE_ADAPTER: 'memory',
+  DATABASE_ADAPTER: 'mongo',
   MONGO_URI: 'mongodb://localhost:27017/nodejs-social-test',
   MONGO_SECONDARY_URI: 'mongodb://localhost:27017/nodejs-social-test',
   MONGO_DB_NAME: 'nodejs-social-test',
@@ -45,10 +46,25 @@ const defaults: Record<string, string> = {
   PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test',
   RATE_LIMIT_ENABLED: '0',
   RATE_LIMIT_WINDOW_MS: '900000',
-  RATE_LIMIT_MAX: '1000'
+  RATE_LIMIT_MAX: '1000',
+  SYSTEM_HEALTH_MONITOR_ENABLED: '0',
+  SYSTEM_HEALTH_CRON: '*/5 * * * *',
+  SYSTEM_HEALTH_TIMEZONE: 'UTC',
+  SYSTEM_HEALTH_DISK_PATH: '/tmp',
+  SYSTEM_HEALTH_CPU_WARN: '75',
+  SYSTEM_HEALTH_CPU_CRITICAL: '90',
+  SYSTEM_HEALTH_RAM_WARN: '75',
+  SYSTEM_HEALTH_RAM_CRITICAL: '90',
+  SYSTEM_HEALTH_DISK_WARN: '75',
+  SYSTEM_HEALTH_DISK_CRITICAL: '90',
+  SYSTEM_HEALTH_PROCESS_MEMORY_WARN_MB: '512',
+  SYSTEM_HEALTH_PROCESS_MEMORY_CRITICAL_MB: '1024',
+  SYSTEM_HEALTH_ALERT_COOLDOWN_SECONDS: '300',
+  SYSTEM_HEALTH_ADMIN_EMAILS: 'test@example.com'
 };
 
 export function installE2eEnv(): void {
+  process.env.NODE_ENV = defaults.NODE_ENV;
   for (const [key, value] of Object.entries(defaults)) {
     process.env[key] ??= value;
   }

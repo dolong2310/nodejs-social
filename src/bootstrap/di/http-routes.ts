@@ -1,7 +1,5 @@
 import { appConfig } from '@/bootstrap/config/app.config';
-import { paymentConfig } from '@/bootstrap/config/payment.config';
 import { ContainerRepositories } from '@/bootstrap/di/repositories';
-import { buildPaymentModule } from '@/bootstrap/di/payment';
 import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
 import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
@@ -64,6 +62,13 @@ import { MarkNotificationsReadUseCase } from '@/modules/notification/application
 import { ClearCacheUseCase } from '@/modules/operations/application/use-cases/clear-cache/clear-cache.usecase';
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
 import { HttpRoutePermissionCatalog } from '@/modules/operations/presentation/http-route-permission-catalog';
+import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import { CreatePaymentUseCase } from '@/modules/payment/application/use-cases/create-payment/create-payment.usecase';
+import { GetPaymentUseCase } from '@/modules/payment/application/use-cases/get-payment/get-payment.usecase';
+import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
+import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.type';
+import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
+import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
 import { PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
@@ -148,6 +153,11 @@ import {
   OperationsController
 } from '@/presentation/http/express/v1/controllers/operations.controller';
 import {
+  IPaymentCallbackController,
+  PaymentCallbackController
+} from '@/presentation/http/express/v1/controllers/payment-callback.controller';
+import { IPaymentController, PaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
+import {
   IPermissionController,
   PermissionController
 } from '@/presentation/http/express/v1/controllers/permission.controller';
@@ -164,6 +174,7 @@ import { FriendsPipe, IFriendPipe } from '@/presentation/http/express/v1/pipes/f
 import { HashtagsPipe, IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
 import { INotificationPipe, NotificationsPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
 import { IPaginationPipe, PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { IPaymentPipe, PaymentsPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
 import { IPermissionsPipe, PermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
 import { IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
 import { IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
@@ -179,6 +190,8 @@ import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
 import { OperationsRoute } from '@/presentation/http/express/v1/routes/operations.route';
+import { PaymentCallbackRoute } from '@/presentation/http/express/v1/routes/payment-callback.route';
+import { PaymentRoute } from '@/presentation/http/express/v1/routes/payment.route';
 import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
 import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
 import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
@@ -270,6 +283,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
   const timeoutInterceptor = new TimeoutInterceptor();
+  const paymentTimeoutInterceptor = new TimeoutInterceptor({ timeoutMs: 45_000 });
   const lookupCacheInterceptor = new CacheInterceptor(cacheManager, {
     ttlSeconds: 60,
     prefix: 'http-cache:lookup'
@@ -471,6 +485,20 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     realtimeEmitter
   );
 
+  const paymentGateways: Record<PaymentProvider, PaymentGatewayPort> = {
+    vnpay: new VnpayPaymentGatewayAdapter({
+      ...appConfig.payment.vnpay,
+      paymentPublicBaseUrl: appConfig.payment.paymentPublicBaseUrl
+    }),
+    momo: new MomoPaymentGatewayAdapter({
+      ...appConfig.payment.momo,
+      paymentPublicBaseUrl: appConfig.payment.paymentPublicBaseUrl
+    })
+  };
+  const createPaymentUC = new CreatePaymentUseCase(paymentRepository, paymentGateways);
+  const getPaymentUC = new GetPaymentUseCase(paymentRepository);
+  const handlePaymentNotificationUC = new HandlePaymentNotificationUseCase(paymentRepository, paymentGateways);
+
   const authController: IAuthController = new AuthController(
     registerUC,
     loginEmailUC,
@@ -553,6 +581,10 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     markNotificationsReadUC,
     markNotificationReadUC
   );
+  const paymentController: IPaymentController = new PaymentController(createPaymentUC, getPaymentUC);
+  const paymentCallbackController: IPaymentCallbackController = new PaymentCallbackController(
+    handlePaymentNotificationUC
+  );
 
   const listRolesUC = new ListRolesUseCase(roleRepository);
   const getRoleUC = new GetRoleUseCase(roleRepository);
@@ -603,12 +635,13 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const conversationPipe: IConversationPipe = new ConversationsPipe(userPipe);
   const chatMessagePipe: IChatMessagePipe = new ChatMessagesPipe();
   const notificationPipe: INotificationPipe = new NotificationsPipe();
+  const paymentPipe: IPaymentPipe = new PaymentsPipe();
   const rolesPipe: IRolesPipe = new RolesPipe();
   const permissionsPipe: IPermissionsPipe = new PermissionsPipe();
   const hashtagsPipe: IHashtagsPipe = new HashtagsPipe();
   const paginationPipe: IPaginationPipe = new PaginationPipe();
 
-  const routers: BaseRoute[] = [
+  return [
     new OperationsRoute(
       operationsController,
       apiKeyGuard,
@@ -784,20 +817,17 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       timeoutInterceptor,
       lookupCacheInterceptor,
       idempotencyInterceptor
-    )
-  ];
-
-  routers.push(
-    ...buildPaymentModule({
-      paymentRepository,
-      paymentConfig,
+    ),
+    new PaymentRoute(
+      paymentController,
+      paymentPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
       loggingInterceptor,
-      transformResponseInterceptor
-    })
-  );
-
-  return routers;
+      transformResponseInterceptor,
+      paymentTimeoutInterceptor
+    ),
+    new PaymentCallbackRoute(paymentCallbackController)
+  ];
 }

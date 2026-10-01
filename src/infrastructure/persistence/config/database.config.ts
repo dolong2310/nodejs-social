@@ -16,13 +16,13 @@ export const dbConfig = {
       envConfig.POSTGRES_REPLICA_URIS.split(',')
         .map((item) => item.trim())
         .filter(Boolean) ?? [], // parse comma separated string to array example: 'uri1,uri2,uri3' > [uri1, uri2, uri3]
-    ssl: envConfig.POSTGRES_SSL === 'true'
+    ssl: envConfig.POSTGRES_SSL
   },
 
   redis: {
     host: envConfig.REDIS_HOST,
-    port: parseInt(envConfig.REDIS_PORT, 10),
+    port: envConfig.REDIS_PORT,
     password: envConfig.REDIS_PASSWORD || undefined,
-    db: parseInt(envConfig.REDIS_DB, 10)
+    db: envConfig.REDIS_DB
   }
 };

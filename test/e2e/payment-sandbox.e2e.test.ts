@@ -2,12 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 
 Object.assign(process.env, {
-  PORT: '0',
+  NODE_ENV: 'development',
+  PORT: '3000',
   LOG_LEVEL: 'silent',
   FRONTEND_URL: 'http://localhost:3000',
   APP_URL: 'http://localhost:3000',
   CORS_ORIGINS: 'http://localhost:3000',
-  DATABASE_ADAPTER: 'memory',
+  DATABASE_ADAPTER: 'mongo',
   MONGO_URI: 'mongodb://localhost:27017/nodejs-social-test',
   MONGO_SECONDARY_URI: 'mongodb://localhost:27017/nodejs-social-test',
   MONGO_DB_NAME: 'nodejs-social-test',
@@ -32,7 +33,8 @@ Object.assign(process.env, {
   AWS_SECRET_ACCESS_KEY: 'test-aws-secret-access-key',
   AWS_REGION: 'us-east-1',
   AWS_S3_BUCKET_NAME: 'test-bucket',
-  SES_FROM_ADDRESS: 'no-reply@example.com',
+  RESEND_API_KEY: 're_test_key',
+  RESEND_FROM_ADDRESS: 'no-reply@example.com',
   CLOUDINARY_CLOUD_NAME: 'test-cloud-name',
   CLOUDINARY_API_KEY: 'test-cloudinary-api-key',
   CLOUDINARY_API_SECRET: 'test-cloudinary-api-secret',
@@ -64,35 +66,25 @@ Object.assign(process.env, {
   PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test'
 });
 
-const [{ buildPaymentModule }, { createPaymentConfig }, { HttpRoutePermissionCatalog }] = await Promise.all([
-  import('@/bootstrap/di/payment'),
-  import('@/bootstrap/config/payment.config'),
+const [{ buildHttpRouters }, { HttpRoutePermissionCatalog }] = await Promise.all([
+  import('@/bootstrap/di/http-routes'),
   import('@/modules/operations/presentation/http-route-permission-catalog')
 ]);
-const paymentConfigValues = {
-  VNPAY_TMN_CODE: 'VNPAY_TEST_MERCHANT',
-  VNPAY_SECURE_SECRET: 'vnpay-test-secret',
-  VNPAY_HOST: 'https://sandbox.vnpayment.vn',
-  MOMO_PARTNER_CODE: 'MOMO_TEST_PARTNER',
-  MOMO_ACCESS_KEY: 'momo-test-access-key',
-  MOMO_SECRET_KEY: 'momo-test-secret-key',
-  MOMO_STORE_ID: 'MomoTestStore',
-  MOMO_STORE_NAME: 'Social Test Store',
-  PAYMENT_PUBLIC_BASE_URL: 'https://social-tunnel.test'
-};
 
 afterEach(() => vi.useRealTimers());
 
 function buildRoutes() {
-  return buildPaymentModule({
-    paymentRepository: {} as never,
-    paymentConfig: createPaymentConfig(paymentConfigValues),
-    authGuard: {} as never,
-    activeUserGuard: {} as never,
-    throttlerGuard: { handler: () => (_request: unknown, _response: unknown, next: () => void) => next() } as never,
-    loggingInterceptor: {} as never,
-    transformResponseInterceptor: {} as never
-  });
+  const logger = {
+    info: () => undefined,
+    warn: () => undefined,
+    error: () => undefined,
+    debug: () => undefined,
+    child: () => logger
+  };
+  const context = new Proxy({}, { get: (_target, property) => (property === 'logger' ? logger : {}) }) as Parameters<
+    typeof buildHttpRouters
+  >[0];
+  return buildHttpRouters(context).filter((route) => route.getPath().startsWith('payments'));
 }
 
 describe('payment bootstrap wiring', () => {

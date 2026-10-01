@@ -72,4 +72,19 @@ export interface IAppConfig {
     apiKey: string;
     apiSecret: string;
   };
+  payment: {
+    vnpay: {
+      tmnCode: string;
+      secureSecret: string;
+      vnpayHost: string;
+    };
+    momo: {
+      partnerCode: string;
+      accessKey: string;
+      secretKey: string;
+      storeId: string;
+      storeName: string;
+    };
+    paymentPublicBaseUrl: string;
+  };
 }
