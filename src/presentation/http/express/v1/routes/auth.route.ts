@@ -1,5 +1,5 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
@@ -28,85 +28,83 @@ export class AuthRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
 
-    this.router.post(
-      '/register',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/register',
+        method: 'post',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.registerPipe],
         controller: this.authController.register
-      })
-    );
-    this.router.post(
-      '/login',
-      this.createRouteHandler({
+      },
+      {
+        path: '/login',
+        method: 'post',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.loginPipe],
         controller: this.authController.login
-      })
-    );
-    this.router.post(
-      '/logout',
-      this.createRouteHandler({
+      },
+      {
+        path: '/logout',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.authController.logout
-      })
-    );
-    this.router.get(
-      '/refresh-token',
-      this.createRouteHandler({
+      },
+      {
+        path: '/refresh-token',
+        method: 'get',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.authController.refreshToken
-      })
-    );
-    this.router.post(
-      '/forgot-password',
-      this.createRouteHandler({
+      },
+      {
+        path: '/forgot-password',
+        method: 'post',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.forgotPasswordPipe],
         controller: this.authController.forgotPassword
-      })
-    );
-    this.router.post(
-      '/otp',
-      this.createRouteHandler({
+      },
+      {
+        path: '/otp',
+        method: 'post',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.sendOtpPipe],
         controller: this.authController.sendOtp
-      })
-    );
-    this.router.post(
-      '/2fa/enable',
-      this.createRouteHandler({
+      },
+      {
+        path: '/2fa/enable',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.authController.enable2fa
-      })
-    );
-    this.router.post(
-      '/2fa/disable',
-      this.createRouteHandler({
+      },
+      {
+        path: '/2fa/disable',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.authPipe.disable2faPipe],
         controller: this.authController.disable2fa
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

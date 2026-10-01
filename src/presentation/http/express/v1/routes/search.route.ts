@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -31,15 +31,20 @@ export class SearchRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.searchPipe.searchPipe],
         controller: this.searchController.search
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

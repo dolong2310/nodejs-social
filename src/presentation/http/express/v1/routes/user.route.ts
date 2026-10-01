@@ -1,5 +1,5 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -35,19 +35,19 @@ export class UserRoute extends BaseRoute {
     const throttler = this.throttlerGuard.handler();
     const throttlerAuth = this.throttlerGuard.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
 
-    this.router.get(
-      '/me',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/me',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.userController.getMe
-      })
-    );
-    this.router.patch(
-      '/me',
-      this.createRouteHandler({
+      },
+      {
+        path: '/me',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -58,21 +58,19 @@ export class UserRoute extends BaseRoute {
         ],
         pipes: [this.userPipe.updateMePipe],
         controller: this.userController.updateMe
-      })
-    );
-    this.router.get(
-      '/:username',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:username',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.userController.getUserProfile
-      })
-    );
-    this.router.put(
-      '/change-password',
-      this.createRouteHandler({
+      },
+      {
+        path: '/change-password',
+        method: 'put',
         middlewares: [throttlerAuth],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -83,7 +81,11 @@ export class UserRoute extends BaseRoute {
         ],
         pipes: [this.userPipe.changePasswordPipe],
         controller: this.userController.changePassword
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

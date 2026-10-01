@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -33,20 +33,19 @@ export class AdminUserRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.paginationQuery],
         controller: this.adminUserController.list
-      })
-    );
-
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -57,23 +56,19 @@ export class AdminUserRoute extends BaseRoute {
         ],
         pipes: [this.adminUsersPipe.createBodyPipe()],
         controller: this.adminUserController.create
-      })
-    );
-
-    this.router.get(
-      '/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:userId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.adminUsersPipe.userIdParam()],
         controller: this.adminUserController.getById
-      })
-    );
-
-    this.router.put(
-      '/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:userId',
+        method: 'put',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -84,12 +79,10 @@ export class AdminUserRoute extends BaseRoute {
         ],
         pipes: [this.adminUsersPipe.userIdParam(), this.adminUsersPipe.updateBodyPipe()],
         controller: this.adminUserController.update
-      })
-    );
-
-    this.router.delete(
-      '/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:userId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -100,7 +93,11 @@ export class AdminUserRoute extends BaseRoute {
         ],
         pipes: [this.adminUsersPipe.userIdParam()],
         controller: this.adminUserController.remove
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

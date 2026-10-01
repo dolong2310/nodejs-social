@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
@@ -33,9 +33,10 @@ export class HashtagRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [
@@ -46,11 +47,10 @@ export class HashtagRoute extends BaseRoute {
         ],
         pipes: [this.paginationPipe.paginationQuery],
         controller: this.hashtagController.list
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [
@@ -61,11 +61,10 @@ export class HashtagRoute extends BaseRoute {
         ],
         pipes: [this.hashtagsPipe.createBodyPipe],
         controller: this.hashtagController.create
-      })
-    );
-    this.router.get(
-      '/:hashtagId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:hashtagId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [
@@ -76,11 +75,10 @@ export class HashtagRoute extends BaseRoute {
         ],
         pipes: [this.hashtagsPipe.hashtagIdParam],
         controller: this.hashtagController.getById
-      })
-    );
-    this.router.put(
-      '/:hashtagId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:hashtagId',
+        method: 'put',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [
@@ -91,11 +89,10 @@ export class HashtagRoute extends BaseRoute {
         ],
         pipes: [this.hashtagsPipe.hashtagIdParam, this.hashtagsPipe.updateBodyPipe],
         controller: this.hashtagController.update
-      })
-    );
-    this.router.delete(
-      '/:hashtagId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:hashtagId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard],
         interceptors: [
@@ -106,7 +103,11 @@ export class HashtagRoute extends BaseRoute {
         ],
         pipes: [this.hashtagsPipe.hashtagIdParam],
         controller: this.hashtagController.remove
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

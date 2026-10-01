@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -33,19 +33,19 @@ export class BlockRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.paginationQuery],
         controller: this.blockController.listBlocked
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -56,11 +56,10 @@ export class BlockRoute extends BaseRoute {
         ],
         pipes: [this.blockPipe.blockUserBodyPipe],
         controller: this.blockController.blockUser
-      })
-    );
-    this.router.delete(
-      '/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:userId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -71,7 +70,11 @@ export class BlockRoute extends BaseRoute {
         ],
         pipes: [this.blockPipe.unblockUserIdPipe],
         controller: this.blockController.unblockUser
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { IPaymentCallbackController } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
 
 export class PaymentCallbackRoute extends BaseRoute {
@@ -12,17 +12,39 @@ export class PaymentCallbackRoute extends BaseRoute {
 
   protected override createRoutes(): void {
     // Provider callbacks use their own protocol response and must bypass the shared API response pipeline.
-    this.router.get('/vnpay/ipn', (req, res) => {
-      void this.paymentCallbackController.vnpayIpn(req, res);
-    });
-    this.router.get('/vnpay/return', (req, res) => {
-      this.paymentCallbackController.vnpayReturn(req, res);
-    });
-    this.router.post('/momo/ipn', (req, res) => {
-      void this.paymentCallbackController.momoIpn(req, res);
-    });
-    this.router.get('/momo/return', (req, res) => {
-      this.paymentCallbackController.momoReturn(req, res);
+    const configs: RouterConfig[] = [
+      {
+        path: '/vnpay/ipn',
+        method: 'get',
+        controller: (req, res) => {
+          void this.paymentCallbackController.vnpayIpn(req, res);
+        }
+      },
+      {
+        path: '/vnpay/return',
+        method: 'get',
+        controller: (req, res) => {
+          this.paymentCallbackController.vnpayReturn(req, res);
+        }
+      },
+      {
+        path: '/momo/ipn',
+        method: 'post',
+        controller: (req, res) => {
+          void this.paymentCallbackController.momoIpn(req, res);
+        }
+      },
+      {
+        path: '/momo/return',
+        method: 'get',
+        controller: (req, res) => {
+          this.paymentCallbackController.momoReturn(req, res);
+        }
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
     });
   }
 }

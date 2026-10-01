@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -37,9 +37,10 @@ export class ConversationRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.post(
-      '/direct',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/direct',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -50,11 +51,10 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.peerUserIdBody],
         controller: this.conversationController.createDirect
-      })
-    );
-    this.router.post(
-      '/groups',
-      this.createRouteHandler({
+      },
+      {
+        path: '/groups',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -65,31 +65,28 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.createGroupBody],
         controller: this.conversationController.createGroup
-      })
-    );
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.conversationController.listConversations
-      })
-    );
-    this.router.get(
-      '/:conversationId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.conversationPipe.conversationIdParam],
         controller: this.conversationController.getConversation
-      })
-    );
-    this.router.patch(
-      '/:conversationId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -100,11 +97,10 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.patchConversationBody],
         controller: this.conversationController.patchConversation
-      })
-    );
-    this.router.post(
-      '/:conversationId/members',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/members',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -115,11 +111,10 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.inviteUserIdBody],
         controller: this.conversationController.inviteMember
-      })
-    );
-    this.router.delete(
-      '/:conversationId/members/me',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/members/me',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -130,11 +125,10 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam],
         controller: this.conversationController.leaveConversation
-      })
-    );
-    this.router.delete(
-      '/:conversationId/members/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/members/:userId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -145,11 +139,10 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.kickTargetUserIdParam],
         controller: this.conversationController.kickMember
-      })
-    );
-    this.router.patch(
-      '/:conversationId/members/:userId/role',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/members/:userId/role',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -164,11 +157,10 @@ export class ConversationRoute extends BaseRoute {
           this.conversationPipe.patchMemberRoleBody
         ],
         controller: this.conversationController.patchMemberRole
-      })
-    );
-    this.router.post(
-      '/:conversationId/admin/transfer',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/admin/transfer',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -179,23 +171,20 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.newAdminUserIdBody],
         controller: this.conversationController.transferAdmin
-      })
-    );
-
-    // Chat Messages
-    this.router.get(
-      '/:conversationId/messages',
-      this.createRouteHandler({
+      },
+      // Chat Messages
+      {
+        path: '/:conversationId/messages',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.conversationPipe.conversationIdParam],
         controller: this.chatMessageController.listMessages
-      })
-    );
-    this.router.post(
-      '/:conversationId/messages',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/messages',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -206,11 +195,10 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam, this.chatMessagePipe.sendMessageBody],
         controller: this.chatMessageController.sendMessage
-      })
-    );
-    this.router.patch(
-      '/:conversationId/read',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:conversationId/read',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -221,7 +209,11 @@ export class ConversationRoute extends BaseRoute {
         ],
         pipes: [this.conversationPipe.conversationIdParam, this.chatMessagePipe.markReadBody],
         controller: this.chatMessageController.markRead
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

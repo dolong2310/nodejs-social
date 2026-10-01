@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -27,45 +27,47 @@ export class MediaRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.post(
-      '/upload-image',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/upload-image',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.mediaController.uploadImage
-      })
-    );
-    this.router.post(
-      '/upload-video',
-      this.createRouteHandler({
+      },
+      {
+        path: '/upload-video',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.mediaController.uploadVideo
-      })
-    );
-    this.router.post(
-      '/upload-video-stream',
-      this.createRouteHandler({
+      },
+      {
+        path: '/upload-video-stream',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.mediaController.uploadVideoStream
-      })
-    );
-    this.router.get(
-      '/video-status/:id',
-      this.createRouteHandler({
+      },
+      {
+        path: '/video-status/:id',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.mediaController.getVideoStatus
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

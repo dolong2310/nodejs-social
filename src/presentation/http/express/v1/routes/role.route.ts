@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -35,9 +35,10 @@ export class RoleRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -48,11 +49,10 @@ export class RoleRoute extends BaseRoute {
         ],
         pipes: [this.paginationPipe.paginationQuery],
         controller: this.roleController.list
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -63,11 +63,10 @@ export class RoleRoute extends BaseRoute {
         ],
         pipes: [this.rolesPipe.createBodyPipe],
         controller: this.roleController.create
-      })
-    );
-    this.router.get(
-      '/:roleId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:roleId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -78,11 +77,10 @@ export class RoleRoute extends BaseRoute {
         ],
         pipes: [this.rolesPipe.roleIdParam],
         controller: this.roleController.getById
-      })
-    );
-    this.router.put(
-      '/:roleId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:roleId',
+        method: 'put',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -93,11 +91,10 @@ export class RoleRoute extends BaseRoute {
         ],
         pipes: [this.rolesPipe.roleIdParam, this.rolesPipe.updateBodyPipe],
         controller: this.roleController.update
-      })
-    );
-    this.router.delete(
-      '/:roleId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:roleId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -108,7 +105,11 @@ export class RoleRoute extends BaseRoute {
         ],
         pipes: [this.rolesPipe.roleIdParam],
         controller: this.roleController.remove
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -35,9 +35,10 @@ export class PermissionRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -48,11 +49,10 @@ export class PermissionRoute extends BaseRoute {
         ],
         pipes: [this.paginationPipe.paginationQuery],
         controller: this.permissionController.list
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -63,11 +63,10 @@ export class PermissionRoute extends BaseRoute {
         ],
         pipes: [this.permissionsPipe.createBodyPipe],
         controller: this.permissionController.create
-      })
-    );
-    this.router.get(
-      '/:permissionId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:permissionId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -78,11 +77,10 @@ export class PermissionRoute extends BaseRoute {
         ],
         pipes: [this.permissionsPipe.permissionIdParam],
         controller: this.permissionController.getById
-      })
-    );
-    this.router.put(
-      '/:permissionId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:permissionId',
+        method: 'put',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -93,11 +91,10 @@ export class PermissionRoute extends BaseRoute {
         ],
         pipes: [this.permissionsPipe.permissionIdParam, this.permissionsPipe.updateBodyPipe],
         controller: this.permissionController.update
-      })
-    );
-    this.router.delete(
-      '/:permissionId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:permissionId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
@@ -108,7 +105,11 @@ export class PermissionRoute extends BaseRoute {
         ],
         pipes: [this.permissionsPipe.permissionIdParam],
         controller: this.permissionController.remove
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

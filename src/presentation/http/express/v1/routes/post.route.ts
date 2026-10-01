@@ -1,5 +1,5 @@
 import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
@@ -37,19 +37,19 @@ export class PostRoute extends BaseRoute {
     const defaultThrottler = this.throttlerGuard.handler();
     const throttler = this.throttlerGuard.handler(THROTTLE.POSTS.WINDOW_MS, THROTTLE.POSTS.MAX);
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.postPipe.newFeedFilterQueryPipe],
         controller: this.postController.getNewFeeds
-      })
-    );
-    this.router.get(
-      '/users/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/users/:userId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
@@ -59,11 +59,10 @@ export class PostRoute extends BaseRoute {
           this.postPipe.postTypeQueryPipe
         ],
         controller: this.postController.getPostsByUser
-      })
-    );
-    this.router.patch(
-      '/:postId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:postId',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -74,11 +73,10 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.postIdPipe('postId', 'params'), this.postPipe.patchPostPipe],
         controller: this.postController.patchPost
-      })
-    );
-    this.router.delete(
-      '/:postId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:postId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -89,41 +87,37 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deletePost
-      })
-    );
-    this.router.get(
-      '/:postId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:postId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.getPostDetail
-      })
-    );
-    this.router.get(
-      '/me/likes',
-      this.createRouteHandler({
+      },
+      {
+        path: '/me/likes',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.postController.getUserLikedPosts
-      })
-    );
-    this.router.get(
-      '/me/bookmarks',
-      this.createRouteHandler({
+      },
+      {
+        path: '/me/bookmarks',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.postController.getUserBookmarkedPosts
-      })
-    );
-    this.router.get(
-      '/:type/:postId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:type/:postId',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
@@ -133,11 +127,10 @@ export class PostRoute extends BaseRoute {
           this.postPipe.postTypePipe
         ],
         controller: this.postController.getPostsType
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+      },
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -148,11 +141,10 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.createPostPipe],
         controller: this.postController.createPost
-      })
-    );
-    this.router.post(
-      '/bookmarks',
-      this.createRouteHandler({
+      },
+      {
+        path: '/bookmarks',
+        method: 'post',
         middlewares: [defaultThrottler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -163,11 +155,10 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.postIdPipe('postId', 'body')],
         controller: this.postController.createBookmark
-      })
-    );
-    this.router.delete(
-      '/bookmarks/:postId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/bookmarks/:postId',
+        method: 'delete',
         middlewares: [defaultThrottler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -178,11 +169,10 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deleteBookmark
-      })
-    );
-    this.router.post(
-      '/likes',
-      this.createRouteHandler({
+      },
+      {
+        path: '/likes',
+        method: 'post',
         middlewares: [defaultThrottler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -193,11 +183,10 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.postIdPipe('postId', 'body')],
         controller: this.postController.createLike
-      })
-    );
-    this.router.delete(
-      '/likes/:postId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/likes/:postId',
+        method: 'delete',
         middlewares: [defaultThrottler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -208,7 +197,11 @@ export class PostRoute extends BaseRoute {
         ],
         pipes: [this.postPipe.postIdPipe('postId', 'params')],
         controller: this.postController.deleteLike
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

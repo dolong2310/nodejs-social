@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -33,39 +33,37 @@ export class FriendRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.friendController.listFriends
-      })
-    );
-    this.router.get(
-      '/requests/incoming',
-      this.createRouteHandler({
+      },
+      {
+        path: '/requests/incoming',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.friendController.listIncoming
-      })
-    );
-    this.router.get(
-      '/requests/outgoing',
-      this.createRouteHandler({
+      },
+      {
+        path: '/requests/outgoing',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery],
         controller: this.friendController.listOutgoing
-      })
-    );
-    this.router.post(
-      '/requests',
-      this.createRouteHandler({
+      },
+      {
+        path: '/requests',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -76,11 +74,10 @@ export class FriendRoute extends BaseRoute {
         ],
         pipes: [this.friendPipe.sendRequestToUsernamePipe],
         controller: this.friendController.sendFriendRequest
-      })
-    );
-    this.router.post(
-      '/requests/:fromUserId/accept',
-      this.createRouteHandler({
+      },
+      {
+        path: '/requests/:fromUserId/accept',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -91,11 +88,10 @@ export class FriendRoute extends BaseRoute {
         ],
         pipes: [this.friendPipe.incomingFromUserIdPipe],
         controller: this.friendController.acceptIncomingRequest
-      })
-    );
-    this.router.post(
-      '/requests/:fromUserId/decline',
-      this.createRouteHandler({
+      },
+      {
+        path: '/requests/:fromUserId/decline',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -106,11 +102,10 @@ export class FriendRoute extends BaseRoute {
         ],
         pipes: [this.friendPipe.incomingFromUserIdPipe],
         controller: this.friendController.declineIncomingRequest
-      })
-    );
-    this.router.delete(
-      '/requests/outgoing/:toUserId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/requests/outgoing/:toUserId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -121,11 +116,10 @@ export class FriendRoute extends BaseRoute {
         ],
         pipes: [this.friendPipe.revokeOutgoingToUserIdPipe],
         controller: this.friendController.revokeOutgoingRequest
-      })
-    );
-    this.router.delete(
-      '/:userId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:userId',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -136,7 +130,11 @@ export class FriendRoute extends BaseRoute {
         ],
         pipes: [this.friendPipe.unfriendUserIdPipe],
         controller: this.friendController.unfriend
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

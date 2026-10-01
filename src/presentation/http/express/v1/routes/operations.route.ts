@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
@@ -25,24 +25,27 @@ export class OperationsRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.delete(
-      '/cache/redis',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/cache/redis',
+        method: 'delete',
         middlewares: [throttler],
         guards: [this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         controller: this.operationsController.clearRedisCache
-      })
-    );
-
-    this.router.post(
-      '/role-permissions/sync',
-      this.createRouteHandler({
+      },
+      {
+        path: '/role-permissions/sync',
+        method: 'post',
         middlewares: [throttler],
         guards: [this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         controller: this.operationsController.syncRolePermissions
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

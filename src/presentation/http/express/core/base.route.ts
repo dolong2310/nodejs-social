@@ -10,6 +10,16 @@ import type {
 import { runRequestHandler } from '@/presentation/http/express/utils/request-handler.util';
 import express, { NextFunction, Router } from 'express';
 
+export interface RouterConfig {
+  path: string;
+  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
+  middlewares?: ExpressRequestHandler[];
+  guards?: BaseGuard[];
+  pipes?: ExpressRequestHandler[];
+  interceptors?: BaseInterceptor[];
+  controller: ControllerHandler<ExpressRequest, ExpressResponse, NextFunction>;
+}
+
 export abstract class BaseRoute {
   protected router: Router;
   protected abstract readonly version: string;

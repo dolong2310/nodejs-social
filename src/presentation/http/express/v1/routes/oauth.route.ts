@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
@@ -23,25 +23,29 @@ export class OAuthRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/google/url',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/google/url',
+        method: 'get',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.oauthController.getGoogleAuthUrl
-      })
-    );
-    this.router.get(
-      '/google',
-      this.createRouteHandler({
+      },
+      {
+        path: '/google',
+        method: 'get',
         middlewares: [throttler],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [],
         controller: this.oauthController.googleLogin
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

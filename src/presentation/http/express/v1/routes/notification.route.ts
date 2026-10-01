@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -33,20 +33,19 @@ export class NotificationRoute extends BaseRoute {
   protected override createRoutes(): void {
     const throttler = this.throttlerGuard.handler();
 
-    this.router.get(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
         pipes: [this.paginationPipe.cursorPaginationQuery, this.notificationPipe.listQuery],
         controller: this.notificationController.list
-      })
-    );
-
-    this.router.patch(
-      '/read',
-      this.createRouteHandler({
+      },
+      {
+        path: '/read',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -57,12 +56,10 @@ export class NotificationRoute extends BaseRoute {
         ],
         pipes: [this.notificationPipe.markReadBody],
         controller: this.notificationController.markRead
-      })
-    );
-
-    this.router.patch(
-      '/:notificationId/read',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:notificationId/read',
+        method: 'patch',
         middlewares: [throttler],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
@@ -73,7 +70,11 @@ export class NotificationRoute extends BaseRoute {
         ],
         pipes: [this.notificationPipe.notificationIdParam],
         controller: this.notificationController.markOneRead
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

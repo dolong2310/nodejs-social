@@ -1,4 +1,4 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
@@ -31,26 +31,29 @@ export class PaymentRoute extends BaseRoute {
     const guards = [this.authGuard, this.activeUserGuard];
     const interceptors = [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor];
 
-    this.router.post(
-      '/',
-      this.createRouteHandler({
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'post',
         middlewares: [throttler],
         guards,
         interceptors,
         pipes: [this.paymentPipe.createPaymentPipe, this.paymentPipe.idempotencyKeyHeader],
         controller: this.paymentController.create
-      })
-    );
-
-    this.router.get(
-      '/:paymentId',
-      this.createRouteHandler({
+      },
+      {
+        path: '/:paymentId',
+        method: 'get',
         middlewares: [throttler],
         guards,
         interceptors,
         pipes: [this.paymentPipe.paymentIdParam],
         controller: this.paymentController.getById
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }
