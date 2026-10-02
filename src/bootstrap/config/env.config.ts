@@ -180,6 +180,6 @@ if (!result.success) {
 }
 
 export const envConfig = result.output;
-export const isDevelopment = envConfig.NODE_ENV === 'development';
-export const isStaging = envConfig.NODE_ENV === 'staging';
-export const isProduction = envConfig.NODE_ENV === 'production';
+export const IS_DEV = envConfig.NODE_ENV === 'development';
+export const IS_STAGING = envConfig.NODE_ENV === 'staging';
+export const IS_PROD = envConfig.NODE_ENV === 'production';

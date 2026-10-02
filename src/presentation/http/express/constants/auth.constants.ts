@@ -1,4 +1,4 @@
-import { isProduction } from '@/bootstrap/config/env.config';
+import { IS_PROD } from '@/bootstrap/config/env.config';
 import type { CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -6,7 +6,7 @@ export const REFRESH_TOKEN_COOKIE_NAME = 'refreshToken';
 
 export const refreshTokenCookieSharedOptions: Pick<CookieOptions, 'httpOnly' | 'secure' | 'sameSite' | 'path'> = {
   httpOnly: true,
-  secure: isProduction,
+  secure: IS_PROD,
   sameSite: 'lax',
   path: '/'
 };

@@ -1,4 +1,4 @@
-import { isProduction } from '@/bootstrap/config/env.config';
+import { IS_PROD } from '@/bootstrap/config/env.config';
 import { UserNotFoundException } from '@/presentation/http/express/exceptions/user.exception';
 import {
   type Created,
@@ -100,7 +100,7 @@ export abstract class BaseController {
   protected setCookie(res: Response, name: string, value: string, options?: CookieOptions): void {
     const defaults: CookieOptions = {
       httpOnly: true,
-      secure: isProduction,
+      secure: IS_PROD,
       sameSite: 'strict'
     };
     res.cookie(name, value, { ...defaults, ...options });

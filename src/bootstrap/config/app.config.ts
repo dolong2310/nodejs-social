@@ -1,4 +1,4 @@
-import { envConfig, isProduction } from '@/bootstrap/config/env.config';
+import { envConfig, IS_PROD } from '@/bootstrap/config/env.config';
 
 /**
  * Allowed origins for Express CORS and Socket.IO.
@@ -14,7 +14,7 @@ function getCorsAllowedOrigins(): string[] {
       .map((s) => s.trim())
       .filter(Boolean);
   }
-  if (isProduction) {
+  if (IS_PROD) {
     return [envConfig.FRONTEND_URL];
   }
 

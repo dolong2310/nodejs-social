@@ -1,5 +1,5 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { isDevelopment } from '@/bootstrap/config/env.config';
+import { IS_DEV } from '@/bootstrap/config/env.config';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { randomUUID } from 'node:crypto';
@@ -48,7 +48,7 @@ class Logger implements LoggerPort, ILoggerGetter {
       }
     };
 
-    if (isDevelopment) {
+    if (IS_DEV) {
       return pino({
         ...baseOptions,
         transport: {
