@@ -1,4 +1,4 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import { isDevelopment } from '@/bootstrap/config/env.config';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
@@ -30,7 +30,7 @@ class Logger implements LoggerPort, ILoggerGetter {
     }
 
     const baseOptions: PinoLoggerOptions = {
-      level: appConfig.logs.level,
+      level: envConfig.LOG_LEVEL,
       mixin: logContextMixin,
       redact: {
         paths: [

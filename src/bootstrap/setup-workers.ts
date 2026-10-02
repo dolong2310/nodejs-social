@@ -1,4 +1,4 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import type { IContainer } from '@/bootstrap/container';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
@@ -36,7 +36,7 @@ export function setupWorkers(container: IContainer): void {
   new RefreshTokenCleanupWorker(connection, deleteExpiredRefreshTokensUC, logger);
   new CacheWarmupWorker(connection, warmRedisCacheUC, logger);
 
-  if (appConfig.systemHealth.enabled) {
+  if (envConfig.SYSTEM_HEALTH_MONITOR_ENABLED) {
     new SystemHealthWorker(connection, checkSystemHealthUC, logger);
   }
 }

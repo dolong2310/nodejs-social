@@ -1,4 +1,5 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import { buildHttpRouters } from '@/bootstrap/di/http-routes';
 import { createContainerQueues } from '@/bootstrap/di/queues';
 import { createContainerRepositories } from '@/bootstrap/di/repositories';
@@ -194,44 +195,43 @@ export class Container implements IContainer {
     this.otpRepository = repos.otpRepository;
     this.roleRepository = repos.roleRepository;
     this.roleQueryRepository = repos.roleQueryRepository;
-
     this.postQueryRepository = repos.postQueryRepository;
     this.postCommandRepository = repos.postCommandRepository;
     this.userQueryRepository = repos.userQueryRepository;
     this.conversationMemberQueryRepository = repos.conversationMemberQueryRepository;
 
     this.tokenService = new TokenService(this.jwtService, {
-      algorithm: appConfig.jwt.algorithm,
-      accessTokenSecret: appConfig.jwt.accessTokenSecret,
-      refreshTokenSecret: appConfig.jwt.refreshTokenSecret,
-      accessTokenExpiresIn: appConfig.jwt.accessTokenExpiresIn,
-      refreshTokenExpiresIn: appConfig.jwt.refreshTokenExpiresIn
+      algorithm: envConfig.JWT_ALGO,
+      accessTokenSecret: envConfig.ACCESS_TOKEN_SECRET,
+      refreshTokenSecret: envConfig.REFRESH_TOKEN_SECRET,
+      accessTokenExpiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN,
+      refreshTokenExpiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN
     });
     this.googleOAuthService = new GoogleOAuthService({
-      clientId: appConfig.google.clientId,
-      clientSecret: appConfig.google.clientSecret,
-      redirectUri: appConfig.google.redirectUri
+      clientId: envConfig.GOOGLE_CLIENT_ID,
+      clientSecret: envConfig.GOOGLE_CLIENT_SECRET,
+      redirectUri: envConfig.GOOGLE_REDIRECT_URI
     });
     // this.s3Service = new S3Service(this.logger, this.fileStorage, {
-    //   region: appConfig.s3.region,
-    //   accessKeyId: appConfig.s3.accessKeyId,
-    //   secretAccessKey: appConfig.s3.secretAccessKey,
-    //   bucketName: appConfig.s3.bucketName
+    //   region: envConfig.AWS_REGION,
+    //   accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
+    //   secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
+    //   bucketName: envConfig.AWS_S3_BUCKET_NAME
     // });
     this.s3Service = new CloudinaryService(this.logger, {
-      cloudName: appConfig.cloudinary.cloudName,
-      apiKey: appConfig.cloudinary.apiKey,
-      apiSecret: appConfig.cloudinary.apiSecret
+      cloudName: envConfig.CLOUDINARY_CLOUD_NAME,
+      apiKey: envConfig.CLOUDINARY_API_KEY,
+      apiSecret: envConfig.CLOUDINARY_API_SECRET
     });
     // this.emailSender = new SesEmailSender(this.logger, {
-    //   region: appConfig.s3.region,
-    //   accessKeyId: appConfig.s3.accessKeyId,
-    //   secretAccessKey: appConfig.s3.secretAccessKey,
-    //   fromAddress: appConfig.email.fromAddress
+    //   region: envConfig.AWS_REGION,
+    //   accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
+    //   secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
+    //   fromAddress: envConfig.RESEND_FROM_ADDRESS
     // });
     this.emailSender = new ResendEmailSender(this.logger, {
-      apiKey: appConfig.email.apiKey,
-      fromAddress: appConfig.email.fromAddress
+      apiKey: envConfig.RESEND_API_KEY,
+      fromAddress: envConfig.RESEND_FROM_ADDRESS
     });
 
     this.authService = new AuthService(this.refreshTokenRepository, this.tokenService);
@@ -261,14 +261,31 @@ export class Container implements IContainer {
       this.friendshipRepository
     );
     this.checkSystemHealthUC = new CheckSystemHealthUseCase(
-      new NodeSystemHealthProbe({ diskPath: appConfig.systemHealth.diskPath }),
+      new NodeSystemHealthProbe({ diskPath: envConfig.SYSTEM_HEALTH_DISK_PATH }),
       this.cacheManager,
       this.emailSender,
       this.logger,
       {
-        adminEmails: appConfig.systemHealth.adminEmails,
-        alertCooldownSeconds: appConfig.systemHealth.alertCooldownSeconds,
-        thresholds: appConfig.systemHealth.thresholds
+        adminEmails: APP_CONFIG.SYSTEM_HEALTH.ADMIN_EMAILS,
+        alertCooldownSeconds: envConfig.SYSTEM_HEALTH_ALERT_COOLDOWN_SECONDS,
+        thresholds: {
+          cpu: {
+            warning: envConfig.SYSTEM_HEALTH_CPU_WARN,
+            critical: envConfig.SYSTEM_HEALTH_CPU_CRITICAL
+          },
+          memory: {
+            warning: envConfig.SYSTEM_HEALTH_RAM_WARN,
+            critical: envConfig.SYSTEM_HEALTH_RAM_CRITICAL
+          },
+          disk: {
+            warning: envConfig.SYSTEM_HEALTH_DISK_WARN,
+            critical: envConfig.SYSTEM_HEALTH_DISK_CRITICAL
+          },
+          processMemoryMb: {
+            warning: envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_WARN_MB,
+            critical: envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_CRITICAL_MB
+          }
+        }
       }
     );
 

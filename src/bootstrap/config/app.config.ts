@@ -1,7 +1,4 @@
 import { envConfig, isProduction } from '@/bootstrap/config/env.config';
-import type { IAppConfig } from '@/bootstrap/types/app.types';
-import type { Algorithm, Secret } from 'jsonwebtoken';
-import type { StringValue } from 'ms';
 
 /**
  * Allowed origins for Express CORS and Socket.IO.
@@ -33,113 +30,24 @@ function parseCsv(value: string): string[] {
     .filter(Boolean);
 }
 
-// General configs
-export const appConfig: IAppConfig = {
-  port: envConfig.PORT,
-
-  client: {
-    url: envConfig.APP_URL
+// Derived values and constants only; plain env values are read from `envConfig` directly.
+export const APP_CONFIG = {
+  API: {
+    PREFIX: '/api'
   },
 
-  jwt: {
-    algorithm: envConfig.JWT_ALGO as Algorithm,
-    accessTokenSecret: envConfig.ACCESS_TOKEN_SECRET as Secret,
-    refreshTokenSecret: envConfig.REFRESH_TOKEN_SECRET as Secret,
-    accessTokenExpiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN as StringValue,
-    refreshTokenExpiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN as StringValue
+  CORS: {
+    ORIGIN: getCorsAllowedOrigins(),
+    CREDENTIALS: true
   },
 
-  auth: {
-    apiKey: envConfig.API_KEY
+  RATE_LIMIT: {
+    STANDARD_HEADERS: 'draft-8' as const, // Return standard rate-limit headers using the IETF draft-8 format.
+    LEGACY_HEADERS: false, // Disable legacy X-RateLimit-* headers.
+    IPV6_SUBNET: 56 // Group IPv6 clients by subnet to avoid one machine creating too many distinct clients.
   },
 
-  logs: {
-    level: envConfig.LOG_LEVEL
-  },
-
-  api: {
-    prefix: '/api'
-  },
-
-  cors: {
-    origin: getCorsAllowedOrigins(),
-    credentials: true
-  },
-
-  rateLimit: {
-    enabled: envConfig.RATE_LIMIT_ENABLED,
-    windowMs: envConfig.RATE_LIMIT_WINDOW_MS,
-    limit: envConfig.RATE_LIMIT_MAX,
-    standardHeaders: 'draft-8' as const, // Return standard rate-limit headers using the IETF draft-8 format.
-    legacyHeaders: false, // Disable legacy X-RateLimit-* headers.
-    ipv6Subnet: 56 // Group IPv6 clients by subnet to avoid one machine creating too many distinct clients.
-  },
-
-  email: {
-    apiKey: envConfig.RESEND_API_KEY,
-    fromAddress: envConfig.RESEND_FROM_ADDRESS
-    // fromAddress: envConfig.SES_FROM_ADDRESS
-  },
-
-  systemHealth: {
-    enabled: envConfig.SYSTEM_HEALTH_MONITOR_ENABLED,
-    cron: envConfig.SYSTEM_HEALTH_CRON,
-    timezone: envConfig.SYSTEM_HEALTH_TIMEZONE,
-    diskPath: envConfig.SYSTEM_HEALTH_DISK_PATH,
-    adminEmails: parseCsv(envConfig.SYSTEM_HEALTH_ADMIN_EMAILS),
-    alertCooldownSeconds: envConfig.SYSTEM_HEALTH_ALERT_COOLDOWN_SECONDS,
-    thresholds: {
-      cpu: {
-        warning: envConfig.SYSTEM_HEALTH_CPU_WARN,
-        critical: envConfig.SYSTEM_HEALTH_CPU_CRITICAL
-      },
-      memory: {
-        warning: envConfig.SYSTEM_HEALTH_RAM_WARN,
-        critical: envConfig.SYSTEM_HEALTH_RAM_CRITICAL
-      },
-      disk: {
-        warning: envConfig.SYSTEM_HEALTH_DISK_WARN,
-        critical: envConfig.SYSTEM_HEALTH_DISK_CRITICAL
-      },
-      processMemoryMb: {
-        warning: envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_WARN_MB,
-        critical: envConfig.SYSTEM_HEALTH_PROCESS_MEMORY_CRITICAL_MB
-      }
-    }
-  },
-
-  google: {
-    clientId: envConfig.GOOGLE_CLIENT_ID,
-    clientSecret: envConfig.GOOGLE_CLIENT_SECRET,
-    redirectUri: envConfig.GOOGLE_REDIRECT_URI
-  },
-
-  s3: {
-    region: envConfig.AWS_REGION,
-    accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
-    secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
-    bucketName: envConfig.AWS_S3_BUCKET_NAME
-  },
-
-  cloudinary: {
-    cloudName: envConfig.CLOUDINARY_CLOUD_NAME,
-    apiKey: envConfig.CLOUDINARY_API_KEY,
-    apiSecret: envConfig.CLOUDINARY_API_SECRET
-  },
-
-  payment: {
-    vnpay: {
-      tmnCode: envConfig.VNPAY_TMN_CODE,
-      secureSecret: envConfig.VNPAY_SECURE_SECRET,
-      vnpayHost: envConfig.VNPAY_HOST
-    },
-    momo: {
-      partnerCode: envConfig.MOMO_PARTNER_CODE,
-      accessKey: envConfig.MOMO_ACCESS_KEY,
-      secretKey: envConfig.MOMO_SECRET_KEY,
-      storeId: envConfig.MOMO_STORE_ID,
-      storeName: envConfig.MOMO_STORE_NAME
-    },
-    paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
+  SYSTEM_HEALTH: {
+    ADMIN_EMAILS: parseCsv(envConfig.SYSTEM_HEALTH_ADMIN_EMAILS)
   }
 };

@@ -1,4 +1,4 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import { setupContainer } from '@/bootstrap/setup-container';
 import { setupDatabase } from '@/bootstrap/setup-database';
 import { setupGracefulShutdown } from '@/bootstrap/setup-graceful-shutdown';
@@ -31,7 +31,7 @@ export async function createHttpServer(socketServer: SocketServer) {
 
   return {
     httpServer,
-    port: appConfig.port,
-    appUrl: appConfig.client.url
+    port: envConfig.PORT,
+    appUrl: envConfig.APP_URL
   };
 }

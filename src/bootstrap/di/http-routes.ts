@@ -1,4 +1,5 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import type { ContainerRepositories } from '@/bootstrap/di/repositories';
 import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
@@ -267,9 +268,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
-  const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
+  const apiKeyGuard = new ApiKeyGuard(envConfig.API_KEY);
 
-  const throttlerGuard = new ThrottlerProxyGuard(appConfig, redis);
+  const throttlerGuard = new ThrottlerProxyGuard(redis);
 
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
@@ -285,7 +286,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog({ apiPrefix: appConfig.api.prefix })
+    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX })
   );
 
   const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
@@ -375,7 +376,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const uploadImageUC = new UploadImageUseCase(s3Service, imageProcessor, fileStorage);
   const uploadVideoUC = new UploadVideoUseCase(s3Service, fileStorage);
   const uploadVideoStreamUC = new UploadVideoStreamUseCase(videoStatusRepository, videoStreamQueue, {
-    clientUrl: appConfig.client.url
+    clientUrl: envConfig.APP_URL
   });
 
   const getNewFeedsUC = new GetNewFeedsUseCase(postQueryRepository, postService, blockService, friendService, logger);
@@ -478,12 +479,18 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
 
   const paymentGateways: Record<PaymentProvider, PaymentGatewayPort> = {
     vnpay: new VnpayPaymentGatewayAdapter({
-      ...appConfig.payment.vnpay,
-      paymentPublicBaseUrl: appConfig.payment.paymentPublicBaseUrl
+      tmnCode: envConfig.VNPAY_TMN_CODE,
+      secureSecret: envConfig.VNPAY_SECURE_SECRET,
+      vnpayHost: envConfig.VNPAY_HOST,
+      paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
     }),
     momo: new MomoPaymentGatewayAdapter({
-      ...appConfig.payment.momo,
-      paymentPublicBaseUrl: appConfig.payment.paymentPublicBaseUrl
+      partnerCode: envConfig.MOMO_PARTNER_CODE,
+      accessKey: envConfig.MOMO_ACCESS_KEY,
+      secretKey: envConfig.MOMO_SECRET_KEY,
+      storeId: envConfig.MOMO_STORE_ID,
+      storeName: envConfig.MOMO_STORE_NAME,
+      paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
     })
   };
   const createPaymentUC = new CreatePaymentUseCase(paymentRepository, paymentGateways);

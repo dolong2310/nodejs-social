@@ -1,4 +1,5 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import type { IContainer } from '@/bootstrap/container';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
 import { createRateLimitStore } from '@/infrastructure/persistence/redis/rate-limit-store';
@@ -28,21 +29,21 @@ export function createExpressApp(container: IContainer): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use(cors(appConfig.cors));
+  app.use(cors({ origin: APP_CONFIG.CORS.ORIGIN, credentials: APP_CONFIG.CORS.CREDENTIALS }));
 
   // app.use(logger.getHttpLogger());
   app.use((req, res, next) => requestContextLogger.bindRequestLogContextMiddleware(req, res, next));
 
-  if (appConfig.rateLimit.enabled) {
+  if (envConfig.RATE_LIMIT_ENABLED) {
     const { redis } = container.getContext();
 
     app.use(
       rateLimit({
-        windowMs: appConfig.rateLimit.windowMs,
-        limit: appConfig.rateLimit.limit,
-        standardHeaders: appConfig.rateLimit.standardHeaders,
-        legacyHeaders: appConfig.rateLimit.legacyHeaders,
-        ipv6Subnet: appConfig.rateLimit.ipv6Subnet,
+        windowMs: envConfig.RATE_LIMIT_WINDOW_MS,
+        limit: envConfig.RATE_LIMIT_MAX,
+        standardHeaders: APP_CONFIG.RATE_LIMIT.STANDARD_HEADERS,
+        legacyHeaders: APP_CONFIG.RATE_LIMIT.LEGACY_HEADERS,
+        ipv6Subnet: APP_CONFIG.RATE_LIMIT.IPV6_SUBNET,
         message: {
           statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
           error: HTTP_ERROR_MESSAGE.TOO_MANY_REQUESTS,
@@ -54,14 +55,14 @@ export function createExpressApp(container: IContainer): Express {
   }
 
   routers.forEach((route) => {
-    const prefix = appConfig.api.prefix;
+    const prefix = APP_CONFIG.API.PREFIX;
     const version = route.getVersion();
     const path = route.getPath();
     const router = route.getRouter();
     app.use(`${prefix}/${version}/${path}`, router);
   });
   app.use('/static/videos', express.static(UPLOAD_DIR_VIDEO));
-  app.use(appConfig.api.prefix, setupSwagger());
+  app.use(APP_CONFIG.API.PREFIX, setupSwagger());
 
   app.use(notFoundMiddleware);
 

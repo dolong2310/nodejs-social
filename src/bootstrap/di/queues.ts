@@ -1,4 +1,4 @@
-import { appConfig } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
@@ -30,9 +30,9 @@ export function createContainerQueues(logger: LoggerPort): ContainerQueues {
   new RefreshTokenCleanupSchedule(connection, logger);
   new CacheWarmupSchedule(connection, logger);
   new SystemHealthSchedule(connection, logger, {
-    enabled: appConfig.systemHealth.enabled,
-    cron: appConfig.systemHealth.cron,
-    timezone: appConfig.systemHealth.timezone
+    enabled: envConfig.SYSTEM_HEALTH_MONITOR_ENABLED,
+    cron: envConfig.SYSTEM_HEALTH_CRON,
+    timezone: envConfig.SYSTEM_HEALTH_TIMEZONE
   });
 
   // register queues

@@ -1,7 +1,6 @@
 import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createExpressApp } from '@/presentation/http/express/app';
 import type { IContainer } from '@/bootstrap/container';
-import type { IAppConfig } from '@/bootstrap/types/app.types';
 import type { OtpEmailJobData, OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { AuthService } from '@/modules/authentication/application/services/auth.service';
@@ -816,7 +815,7 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(apiKey);
-  const throttlerGuard = new ThrottlerProxyGuard(testAppConfig(), {} as RedisClientPort); // rate limit is disabled in e2e, so redis is never touched;
+  const throttlerGuard = new ThrottlerProxyGuard({} as RedisClientPort); // rate limit is disabled in e2e, so redis is never touched;
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
   const timeoutInterceptor = new TimeoutInterceptor();
@@ -953,71 +952,6 @@ function permission(method: EnumHttpMethod, path: string): PermissionFullProps {
     updatedById: null,
     deletedAt: null,
     deletedById: null
-  };
-}
-
-function testAppConfig(): IAppConfig {
-  return {
-    port: 0,
-    client: { url: 'http://localhost:3000' },
-    jwt: {
-      algorithm: 'HS256',
-      accessTokenSecret: 'test-access-token-secret',
-      refreshTokenSecret: 'test-refresh-token-secret',
-      accessTokenExpiresIn: '15m',
-      refreshTokenExpiresIn: '7d'
-    },
-    auth: { apiKey },
-    logs: { level: 'silent' },
-    api: { prefix: '/api' },
-    cors: { origin: ['http://localhost:3000'], credentials: true },
-    rateLimit: { enabled: false },
-    email: { apiKey: 'test-email-api-key', fromAddress: 'no-reply@example.com' },
-    systemHealth: {
-      enabled: false,
-      cron: '*/1 * * * *',
-      timezone: 'Asia/Ho_Chi_Minh',
-      diskPath: '/',
-      adminEmails: [],
-      alertCooldownSeconds: 1800,
-      thresholds: {
-        cpu: { warning: 80, critical: 90 },
-        memory: { warning: 80, critical: 90 },
-        disk: { warning: 80, critical: 90 },
-        processMemoryMb: { warning: 512, critical: 1024 }
-      }
-    },
-    google: {
-      clientId: 'test-google-client-id',
-      clientSecret: 'test-google-client-secret',
-      redirectUri: 'http://localhost:3000/oauth/google'
-    },
-    s3: {
-      region: 'us-east-1',
-      accessKeyId: 'test-aws-access-key-id',
-      secretAccessKey: 'test-aws-secret-access-key',
-      bucketName: 'test-bucket'
-    },
-    cloudinary: {
-      cloudName: 'test-cloud-name',
-      apiKey: 'test-cloudinary-api-key',
-      apiSecret: 'test-cloudinary-api-secret'
-    },
-    payment: {
-      vnpay: {
-        tmnCode: 'VNPAY_TEST_MERCHANT',
-        secureSecret: 'vnpay-test-secret',
-        vnpayHost: 'https://sandbox.vnpayment.vn'
-      },
-      momo: {
-        partnerCode: 'MOMO_TEST_PARTNER',
-        accessKey: 'momo-test-access-key',
-        secretKey: 'momo-test-secret-key',
-        storeId: 'MomoTestStore',
-        storeName: 'Social Test Store'
-      },
-      paymentPublicBaseUrl: 'https://social-tunnel.test'
-    }
   };
 }
 

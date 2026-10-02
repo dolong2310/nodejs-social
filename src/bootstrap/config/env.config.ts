@@ -18,8 +18,13 @@ import {
   union,
   url
 } from 'valibot';
+import type { StringValue } from 'ms';
 
 const requiredString = pipe(string(), trim(), minLength(1, 'Value is required'));
+const durationString = pipe(
+  requiredString,
+  transform((value) => value as StringValue)
+);
 const urlString = pipe(requiredString, url('Must be a valid URL'));
 const optionalUrlString = optional(union([literal(''), urlString]), '');
 
@@ -105,8 +110,8 @@ const envSchema = object({
   ]),
   ACCESS_TOKEN_SECRET: requiredString,
   REFRESH_TOKEN_SECRET: requiredString,
-  ACCESS_TOKEN_EXPIRES_IN: requiredString,
-  REFRESH_TOKEN_EXPIRES_IN: requiredString,
+  ACCESS_TOKEN_EXPIRES_IN: durationString,
+  REFRESH_TOKEN_EXPIRES_IN: durationString,
 
   // API Key
   API_KEY: requiredString,

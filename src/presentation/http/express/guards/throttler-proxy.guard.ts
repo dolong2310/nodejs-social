@@ -1,4 +1,5 @@
-import type { IAppConfig } from '@/bootstrap/types/app.types';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
 import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createRateLimitStore } from '@/infrastructure/persistence/redis/rate-limit-store';
 import { RATE_LIMIT_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
@@ -16,15 +17,12 @@ export type ThrottlePolicy = Readonly<{
 const skipRateLimit: RequestHandler = (_req, _res, next) => next();
 
 export class ThrottlerProxyGuard {
-  constructor(
-    private readonly appConfig: IAppConfig,
-    private readonly redis: RedisClientPort
-  ) {
+  constructor(private readonly redis: RedisClientPort) {
     this.handler = this.handler.bind(this);
   }
 
   handler(policy: ThrottlePolicy, message: string = RATE_LIMIT_ERROR_MESSAGE.TOO_MANY_REQUESTS): RequestHandler {
-    if (!this.appConfig.rateLimit.enabled) {
+    if (!envConfig.RATE_LIMIT_ENABLED) {
       return skipRateLimit;
     }
 
@@ -36,12 +34,12 @@ export class ThrottlerProxyGuard {
         error: HTTP_ERROR_MESSAGE.TOO_MANY_REQUESTS,
         message
       },
-      standardHeaders: this.appConfig.rateLimit.standardHeaders,
-      legacyHeaders: this.appConfig.rateLimit.legacyHeaders,
+      standardHeaders: APP_CONFIG.RATE_LIMIT.STANDARD_HEADERS,
+      legacyHeaders: APP_CONFIG.RATE_LIMIT.LEGACY_HEADERS,
       store: createRateLimitStore(this.redis, policy.key),
       keyGenerator: (req: Request) => {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
-        const { ipv6Subnet } = this.appConfig.rateLimit;
+        const ipv6Subnet = APP_CONFIG.RATE_LIMIT.IPV6_SUBNET;
         return ipKeyGenerator(ip, typeof ipv6Subnet === 'number' || ipv6Subnet === false ? ipv6Subnet : undefined);
       }
     });

@@ -5,7 +5,7 @@
  * Prerequisite:
  * Run `pnpm run db:migrate:mongo` first.
  */
-import { appConfig } from '@/bootstrap/config/app.config';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
@@ -35,7 +35,7 @@ async function main(): Promise<void> {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog({ apiPrefix: appConfig.api.prefix })
+    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX })
   );
   const result = await syncRolePermissionsUC.execute();
 
