@@ -3,7 +3,7 @@ import { PaymentCheckoutError } from '@/modules/payment/application/ports/paymen
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import type { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
-import { Momo } from '@longdoo/node-payment-gateway';
+import { generateSignature } from '@longdoo/node-payment-gateway/momo';
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 
 const partnerCode = 'MOMOTESTPARTNER';
@@ -95,7 +95,7 @@ function signIpn(
   ].join('&');
   return {
     ...payload,
-    signature: Momo.generateSignature(secretKey, rawSignature)
+    signature: generateSignature(secretKey, rawSignature)
   };
 }
 

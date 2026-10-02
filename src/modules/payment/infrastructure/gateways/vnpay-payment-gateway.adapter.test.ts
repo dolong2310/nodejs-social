@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import type { PaymentCheckoutProps, PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
-import { VNPay } from '@longdoo/node-payment-gateway';
-import type { ReturnQueryFromVNPay } from '@longdoo/node-payment-gateway/vnpay';
+import {
+  HashAlgorithm,
+  VNPay,
+  buildPaymentUrlSearchParams,
+  calculateSecureHash,
+  type ReturnQueryFromVNPay
+} from '@longdoo/node-payment-gateway/vnpay';
 import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
 
 const tmnCode = 'TESTTMNCODE';
@@ -56,11 +61,11 @@ function signIpn(overrides: Record<string, string> = {}, merchantCode = tmnCode)
     vnp_TxnRef: 'po_test_1',
     ...overrides
   };
-  const data = VNPay.buildPaymentUrlSearchParams(payload).toString();
-  payload.vnp_SecureHash = VNPay.calculateSecureHash({
+  const data = buildPaymentUrlSearchParams(payload).toString();
+  payload.vnp_SecureHash = calculateSecureHash({
     secureSecret,
     data,
-    hashAlgorithm: VNPay.HashAlgorithm.SHA512,
+    hashAlgorithm: HashAlgorithm.SHA512,
     bufferEncode: 'utf-8'
   });
   return payload as unknown as ReturnQueryFromVNPay;
@@ -74,7 +79,7 @@ describe('VnpayPaymentGatewayAdapter', () => {
     const checkoutUrl = await adapter.createCheckout(payment, '203.0.113.10');
     const url = new URL(checkoutUrl);
     const query = Object.fromEntries(url.searchParams) as unknown as ReturnQueryFromVNPay;
-    const verified = new VNPay.VNPay({ tmnCode, secureSecret, testMode: true, enableLog: false }).verifyReturnUrl(
+    const verified = new VNPay({ tmnCode, secureSecret, testMode: true, enableLog: false }).verifyReturnUrl(
       query
     );
 
@@ -138,11 +143,11 @@ describe('VnpayPaymentGatewayAdapter', () => {
     const unsignedPayload = payload as unknown as Record<string, string>;
     delete unsignedPayload.vnp_TxnRef;
     delete unsignedPayload.vnp_SecureHash;
-    const data = VNPay.buildPaymentUrlSearchParams(unsignedPayload).toString();
-    unsignedPayload.vnp_SecureHash = VNPay.calculateSecureHash({
+    const data = buildPaymentUrlSearchParams(unsignedPayload).toString();
+    unsignedPayload.vnp_SecureHash = calculateSecureHash({
       secureSecret,
       data,
-      hashAlgorithm: VNPay.HashAlgorithm.SHA512,
+      hashAlgorithm: HashAlgorithm.SHA512,
       bufferEncode: 'utf-8'
     });
 

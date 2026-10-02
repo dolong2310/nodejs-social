@@ -13,7 +13,7 @@ import type {
   ApplyVerifiedOutcomeResult,
   PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
-import { Momo } from '@longdoo/node-payment-gateway';
+import { generateSignature } from '@longdoo/node-payment-gateway/momo';
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
 import { PaymentCallbackController } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
@@ -150,7 +150,7 @@ function signIpn(
     `resultCode=${payload.resultCode}`,
     `transId=${payload.transId}`
   ].join('&');
-  return { ...payload, signature: Momo.generateSignature(secretKey, rawSignature) };
+  return { ...payload, signature: generateSignature(secretKey, rawSignature) };
 }
 
 class InMemoryPaymentRepository implements PaymentRepositoryPort {

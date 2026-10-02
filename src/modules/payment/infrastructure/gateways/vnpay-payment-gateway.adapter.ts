@@ -1,8 +1,14 @@
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import type { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import { VNPay } from '@longdoo/node-payment-gateway';
-import type { ReturnQueryFromVNPay } from '@longdoo/node-payment-gateway/vnpay';
+import {
+  HashAlgorithm,
+  ProductCode,
+  VNPay,
+  VnpLocale,
+  dateFormat,
+  type ReturnQueryFromVNPay
+} from '@longdoo/node-payment-gateway';
 
 export interface VnpayPaymentGatewayAdapterConfig {
   tmnCode: string;
@@ -15,17 +21,17 @@ const VNPAY_CALLBACK_RETURN_PATH = '/api/v1/payments/callbacks/vnpay/return';
 const VNPAY_FINAL_FAILURE_CODES = new Set(['09', '10', '11', '12', '13', '51', '65', '75', '79']);
 
 export class VnpayPaymentGatewayAdapter implements PaymentGatewayPort {
-  private readonly client: InstanceType<typeof VNPay.VNPay>;
+  private readonly client: VNPay;
   private readonly returnUrl: string;
 
   constructor(private readonly config: VnpayPaymentGatewayAdapterConfig) {
-    this.client = new VNPay.VNPay({
+    this.client = new VNPay({
       tmnCode: config.tmnCode,
       secureSecret: config.secureSecret,
       vnpayHost: config.vnpayHost,
       testMode: true,
       enableLog: false,
-      hashAlgorithm: VNPay.HashAlgorithm.SHA512
+      hashAlgorithm: HashAlgorithm.SHA512
     });
     this.returnUrl = new URL(VNPAY_CALLBACK_RETURN_PATH, config.paymentPublicBaseUrl).toString();
   }
@@ -39,11 +45,11 @@ export class VnpayPaymentGatewayAdapter implements PaymentGatewayPort {
       vnp_IpAddr: clientIp,
       vnp_TxnRef: payment.providerOrderId,
       vnp_OrderInfo: `${payment.description} ${payment.providerOrderId}`,
-      vnp_OrderType: VNPay.ProductCode.Other,
+      vnp_OrderType: ProductCode.Other,
       vnp_ReturnUrl: this.returnUrl,
-      vnp_Locale: VNPay.VnpLocale.VN,
-      vnp_CreateDate: VNPay.dateFormat(payment.createdAt),
-      vnp_ExpireDate: VNPay.dateFormat(payment.expiresAt)
+      vnp_Locale: VnpLocale.VN,
+      vnp_CreateDate: dateFormat(payment.createdAt),
+      vnp_ExpireDate: dateFormat(payment.expiresAt)
     });
   }
 

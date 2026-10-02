@@ -4,8 +4,13 @@ import {
   type PaymentGatewayPort
 } from '@/modules/payment/application/ports/payment-gateway.port';
 import type { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import { Momo } from '@longdoo/node-payment-gateway';
-import type { ReturnQueryFromMomo } from '@longdoo/node-payment-gateway/momo';
+import {
+  Momo,
+  MomoLocale,
+  RequestType,
+  verifyMomoSignature,
+  type ReturnQueryFromMomo
+} from '@longdoo/node-payment-gateway';
 
 export interface MomoPaymentGatewayAdapterConfig {
   partnerCode: string;
@@ -25,19 +30,19 @@ const MOMO_FINAL_FAILURE_CODES = new Set([
 const MOMO_CANCELLATION_CODES = new Set([1006, 1017]);
 
 export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
-  private readonly client: InstanceType<typeof Momo.Momo>;
+  private readonly client: Momo;
   private readonly ipnUrl: string;
   private readonly redirectUrl: string;
 
   constructor(private readonly config: MomoPaymentGatewayAdapterConfig) {
-    this.client = new Momo.Momo({
+    this.client = new Momo({
       partnerCode: config.partnerCode,
       accessKey: config.accessKey,
       secretKey: config.secretKey,
       storeId: config.storeId,
       storeName: config.storeName,
-      requestType: Momo.RequestType.PAY_WITH_METHOD,
-      lang: Momo.MomoLocale.VI,
+      requestType: RequestType.PAY_WITH_METHOD,
+      lang: MomoLocale.VI,
       testMode: true,
       enableLog: false
     });
@@ -52,7 +57,7 @@ export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
     let timeoutId: NodeJS.Timeout | undefined;
     try {
       const sdkRequest = this.client.buildPaymentUrl({
-        requestType: Momo.RequestType.PAY_WITH_METHOD,
+        requestType: RequestType.PAY_WITH_METHOD,
         autoCapture: true,
         amount: payment.amountVnd,
         orderId: payment.providerOrderId,
@@ -92,7 +97,7 @@ export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
     let isVerified: boolean;
     try {
       // The SDK's verifyIpnCall also resolves a result-code message and throws on undocumented codes.
-      isVerified = Momo.verifySignature({ ...query, accessKey: this.config.accessKey }, this.config.secretKey);
+      isVerified = verifyMomoSignature({ ...query, accessKey: this.config.accessKey }, this.config.secretKey);
     } catch {
       throw new PaymentNotificationVerificationError('invalid_payload');
     }

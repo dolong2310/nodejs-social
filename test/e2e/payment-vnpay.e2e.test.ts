@@ -48,7 +48,7 @@ const [
   { TimeoutInterceptor },
   { HttpExceptionFilter },
   { UnauthorizedException },
-  { VNPay }
+  vnpay
 ] = await Promise.all([
   import('@/presentation/http/express/v1/routes/payment.route'),
   import('@/presentation/http/express/v1/routes/payment-callback.route'),
@@ -63,7 +63,7 @@ const [
   import('@/presentation/http/express/interceptors/timeout.interceptor'),
   import('@/presentation/http/express/filters/exception.filter'),
   import('@/presentation/http/express/responses/error.response'),
-  import('@longdoo/node-payment-gateway')
+  import('@longdoo/node-payment-gateway/vnpay')
 ]);
 
 const merchantCode = 'TESTTMNCODE';
@@ -344,11 +344,11 @@ function signIpn(payment: PaymentFullProps, overrides: Record<string, string> = 
     vnp_TxnRef: payment.providerOrderId,
     ...overrides
   };
-  const data = VNPay.buildPaymentUrlSearchParams(payload).toString();
-  payload.vnp_SecureHash = VNPay.calculateSecureHash({
+  const data = vnpay.buildPaymentUrlSearchParams(payload).toString();
+  payload.vnp_SecureHash = vnpay.calculateSecureHash({
     secureSecret,
     data,
-    hashAlgorithm: VNPay.HashAlgorithm.SHA512,
+    hashAlgorithm: vnpay.HashAlgorithm.SHA512,
     bufferEncode: 'utf-8'
   });
   return payload;
