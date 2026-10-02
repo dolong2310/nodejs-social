@@ -44,7 +44,7 @@ describe.concurrent('Application boundaries', () => {
   it('application support folders use project suffixes', () => {
     expectFilesMatch(
       applicationFiles.filter((file) => file.includes('/application/services/')),
-      (file) => /(\.service|\.service\.type)\.ts$/.test(file)
+      (file) => /(\.service|\.service\.types)\.ts$/.test(file)
     );
 
     expectFilesMatch(

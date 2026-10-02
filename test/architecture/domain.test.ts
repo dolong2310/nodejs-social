@@ -50,7 +50,7 @@ describe.concurrent('Domain boundaries', () => {
   it('domain entities, value objects, and repository ports use project suffixes', () => {
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/entities/')),
-      (file) => /(\.entity|\.type)\.ts$/.test(file)
+      (file) => /(\.entity|\.types)\.ts$/.test(file)
     );
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/value-objects/')),
@@ -59,7 +59,7 @@ describe.concurrent('Domain boundaries', () => {
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/repositories/')),
       (file) =>
-        /(\.repository|\.repository\.type|\.query\.repository|\.query\.type|\.command\.repository|\.command\.type)\.ts$/.test(
+        /(\.repository|\.repository\.types|\.query\.repository|\.query\.types|\.command\.repository|\.command\.types)\.ts$/.test(
           file
         )
     );

@@ -6,7 +6,7 @@ import { expect } from 'vitest';
  * Represents an import found in a source file.
  * Example:
   {
-    file: 'src/modules/user/domain/repositories/user.query.type.ts',
+    file: 'src/modules/user/domain/repositories/user.query.types.ts',
     importPath: '@/modules/common/domain/enums/search.enum',
     line: 1
   }
@@ -44,9 +44,9 @@ const sideEffectImportRegex = /import\s+['"]([^'"]+)['"]/g;
 /**
  * Convert a file path from Windows separators to the project Unix-style convention.
  * Example:
- * 'src\modules\user\domain\repositories\user.query.type.ts'
+ * 'src\modules\user\domain\repositories\user.query.types.ts'
  * becomes
- * 'src/modules/user/domain/repositories/user.query.type.ts'
+ * 'src/modules/user/domain/repositories/user.query.types.ts'
  */
 function toProjectPath(filePath: string): string {
   return filePath.split(path.sep).join('/');
@@ -57,7 +57,7 @@ function toProjectPath(filePath: string): string {
  * Example:
  * 'src'
  * returns
- * ['src/modules/user/domain/repositories/user.query.type.ts', 'src/modules/user/domain/entities/user.entity.ts']
+ * ['src/modules/user/domain/repositories/user.query.types.ts', 'src/modules/user/domain/entities/user.entity.ts']
  */
 function walkFiles(directory: string): string[] {
   if (!fs.existsSync(directory)) return [];
@@ -119,7 +119,7 @@ export function importsOf(file: string): ImportRecord[] {
  * Parse a module-local import.
  * Return null if the import does not match @/modules/<module>/<layer>.
  * Example:
- * @/modules/post/domain/entities/post.type
+ * @/modules/post/domain/entities/post.types
  * becomes
   {
     moduleName: 'post',
