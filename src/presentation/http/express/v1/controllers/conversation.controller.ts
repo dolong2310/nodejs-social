@@ -57,6 +57,7 @@ export interface IConversationController {
   transferAdmin(req: TransferAdminRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class ConversationController extends BaseController implements IConversationController {
   constructor(
     private readonly createDirectUC: GetOrCreateConversationPort,
@@ -73,7 +74,6 @@ export class ConversationController extends BaseController implements IConversat
     super();
   }
 
-  @AutoBind()
   async createDirect(req: CreateDirectRequest) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -83,7 +83,6 @@ export class ConversationController extends BaseController implements IConversat
     return this.response({ instance: Created, data: conv, message: 'Direct conversation ready' });
   }
 
-  @AutoBind()
   async createGroup(req: CreateGroupRequest) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -93,7 +92,6 @@ export class ConversationController extends BaseController implements IConversat
     return this.response({ instance: Created, data: conv, message: 'Group conversation created' });
   }
 
-  @AutoBind()
   async listConversations(req: ListConversationsRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
@@ -111,7 +109,6 @@ export class ConversationController extends BaseController implements IConversat
     });
   }
 
-  @AutoBind()
   async getConversation(req: ConversationRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
@@ -124,7 +121,6 @@ export class ConversationController extends BaseController implements IConversat
     });
   }
 
-  @AutoBind()
   async patchConversation(req: PatchConversationRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
@@ -143,7 +139,6 @@ export class ConversationController extends BaseController implements IConversat
     });
   }
 
-  @AutoBind()
   async inviteMember(req: InviteMemberRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
@@ -157,7 +152,6 @@ export class ConversationController extends BaseController implements IConversat
     });
   }
 
-  @AutoBind()
   async kickMember(req: ConversationMemberRequest) {
     const userId = this.getUserId(req);
     const { conversationId, userId: targetUserId } = req.params;
@@ -167,7 +161,6 @@ export class ConversationController extends BaseController implements IConversat
     return this.response({ message: 'Member removed' });
   }
 
-  @AutoBind()
   async leaveConversation(req: ConversationRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
@@ -177,7 +170,6 @@ export class ConversationController extends BaseController implements IConversat
     return this.response({ message: 'Left conversation' });
   }
 
-  @AutoBind()
   async patchMemberRole(req: PatchMemberRoleRequest) {
     const userId = this.getUserId(req);
     const { conversationId, userId: targetUserId } = req.params;
@@ -196,7 +188,6 @@ export class ConversationController extends BaseController implements IConversat
     });
   }
 
-  @AutoBind()
   async transferAdmin(req: TransferAdminRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;

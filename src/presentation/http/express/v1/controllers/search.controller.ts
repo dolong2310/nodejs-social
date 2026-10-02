@@ -14,6 +14,7 @@ export interface ISearchController {
   search(req: SearchRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class SearchController extends BaseController implements ISearchController {
   constructor(
     private readonly searchPostsUC: SearchPostsPort,
@@ -22,7 +23,6 @@ export class SearchController extends BaseController implements ISearchControlle
     super();
   }
 
-  @AutoBind()
   async search(req: SearchRequest) {
     const { query, type, people, cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });

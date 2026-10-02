@@ -45,6 +45,7 @@ export interface IAuthController {
   disable2fa(req: Disable2faRequest): Promise<SuccessResponse<unknown>>;
 }
 
+@AutoBind()
 export class AuthController extends BaseController implements IAuthController {
   constructor(
     private readonly registerUC: RegisterPort,
@@ -59,7 +60,6 @@ export class AuthController extends BaseController implements IAuthController {
     super();
   }
 
-  @AutoBind()
   async register(req: RegisterRequest) {
     const body = req.body;
 
@@ -78,7 +78,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async login(req: LoginRequest, res: ExpressResponse) {
     const body = req.body;
 
@@ -100,7 +99,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async logout(req: ExpressRequest, res: ExpressResponse) {
     await this.logoutUC.execute({
       refreshToken: req.cookies[REFRESH_TOKEN_COOKIE_NAME]
@@ -113,7 +111,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async refreshToken(req: ExpressRequest, res: ExpressResponse) {
     const { accessToken, refreshToken } = await this.refreshTokenUC.execute({
       refreshToken: req.cookies[REFRESH_TOKEN_COOKIE_NAME]
@@ -130,7 +127,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async forgotPassword(req: ForgotPasswordRequest) {
     const body = req.body;
 
@@ -145,7 +141,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async sendOtp(req: SendOtpRequest) {
     const body = req.body;
 
@@ -159,7 +154,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async enable2fa(req: ExpressRequest) {
     const userId = this.getUserId(req);
 
@@ -171,7 +165,6 @@ export class AuthController extends BaseController implements IAuthController {
     });
   }
 
-  @AutoBind()
   async disable2fa(req: Disable2faRequest) {
     const userId = this.getUserId(req);
 

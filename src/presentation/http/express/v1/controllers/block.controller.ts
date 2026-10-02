@@ -23,6 +23,7 @@ export interface IBlockController {
   listBlocked(req: ListBlockedRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class BlockController extends BaseController implements IBlockController {
   constructor(
     private readonly blockUserUC: BlockUserPort,
@@ -32,7 +33,6 @@ export class BlockController extends BaseController implements IBlockController 
     super();
   }
 
-  @AutoBind()
   async blockUser(req: BlockUserRequest) {
     const { userId } = req.body;
     const blockerUserId = this.getUserId(req);
@@ -46,7 +46,6 @@ export class BlockController extends BaseController implements IBlockController 
     });
   }
 
-  @AutoBind()
   async unblockUser(req: UnblockUserRequest) {
     const blockerUserId = this.getUserId(req);
     const { userId: blockedUserId } = req.params;
@@ -56,7 +55,6 @@ export class BlockController extends BaseController implements IBlockController 
     return this.response({ message: 'User unblocked successfully' });
   }
 
-  @AutoBind()
   async listBlocked(req: ListBlockedRequest) {
     const blockerUserId = this.getUserId(req);
     const { page, limit } = req.query;

@@ -22,6 +22,7 @@ export interface IUserController {
   changePassword(req: ValidatedRequest<{ body: typeof ChangePasswordBodySchema }>): Promise<SuccessResponse<unknown>>;
 }
 
+@AutoBind()
 export class UserController extends BaseController implements IUserController {
   constructor(
     private readonly getMeUC: GetMePort,
@@ -32,7 +33,6 @@ export class UserController extends BaseController implements IUserController {
     super();
   }
 
-  @AutoBind()
   async getMe(req: ExpressRequest) {
     const userId = this.getUserId(req);
 
@@ -44,7 +44,6 @@ export class UserController extends BaseController implements IUserController {
     });
   }
 
-  @AutoBind()
   async updateMe(req: ValidatedRequest<{ body: typeof UpdateMeBodySchema }>) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -67,7 +66,6 @@ export class UserController extends BaseController implements IUserController {
     });
   }
 
-  @AutoBind()
   async getUserProfile(req: ValidatedRequest<{ params: typeof GetUserProfileParamsSchema }>) {
     const { username } = req.params;
     const userId = this.getUserId(req, { optional: true });
@@ -80,7 +78,6 @@ export class UserController extends BaseController implements IUserController {
     });
   }
 
-  @AutoBind()
   async changePassword(req: ValidatedRequest<{ body: typeof ChangePasswordBodySchema }>) {
     const userId = this.getUserId(req);
 

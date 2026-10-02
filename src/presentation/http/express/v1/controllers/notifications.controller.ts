@@ -21,6 +21,7 @@ export interface INotificationController {
   markOneRead(req: MarkOneReadRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class NotificationsController extends BaseController implements INotificationController {
   constructor(
     private readonly listNotificationsUC: ListNotificationsPort,
@@ -30,7 +31,6 @@ export class NotificationsController extends BaseController implements INotifica
     super();
   }
 
-  @AutoBind()
   async list(req: ListNotificationsRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor, unreadOnly } = req.query;
@@ -49,7 +49,6 @@ export class NotificationsController extends BaseController implements INotifica
     });
   }
 
-  @AutoBind()
   async markRead(req: MarkReadRequest) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -60,7 +59,6 @@ export class NotificationsController extends BaseController implements INotifica
     return this.response({ message: 'Notifications updated' });
   }
 
-  @AutoBind()
   async markOneRead(req: MarkOneReadRequest) {
     const userId = this.getUserId(req);
     const { notificationId } = req.params;

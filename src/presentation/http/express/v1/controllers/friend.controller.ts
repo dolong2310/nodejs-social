@@ -39,6 +39,7 @@ export interface IFriendController {
   unfriend(req: UnfriendRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class FriendController extends BaseController implements IFriendController {
   constructor(
     private readonly listFriendsUC: GetFriendsPort,
@@ -53,7 +54,6 @@ export class FriendController extends BaseController implements IFriendControlle
     super();
   }
 
-  @AutoBind()
   async listFriends(req: ListRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
@@ -71,7 +71,6 @@ export class FriendController extends BaseController implements IFriendControlle
     });
   }
 
-  @AutoBind()
   async listIncoming(req: ListRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
@@ -89,7 +88,6 @@ export class FriendController extends BaseController implements IFriendControlle
     });
   }
 
-  @AutoBind()
   async listOutgoing(req: ListRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
@@ -107,7 +105,6 @@ export class FriendController extends BaseController implements IFriendControlle
     });
   }
 
-  @AutoBind()
   async sendFriendRequest(req: SendFriendRequestRequest) {
     const userId = this.getUserId(req);
     const created = await this.sendFriendRequestUC.execute({ userId, username: req.body.username });
@@ -119,7 +116,6 @@ export class FriendController extends BaseController implements IFriendControlle
     });
   }
 
-  @AutoBind()
   async acceptIncomingRequest(req: IncomingRequestRequest) {
     const userId = this.getUserId(req);
     const { fromUserId } = req.params;
@@ -129,7 +125,6 @@ export class FriendController extends BaseController implements IFriendControlle
     return this.response({ message: 'Friend request accepted successfully' });
   }
 
-  @AutoBind()
   async declineIncomingRequest(req: IncomingRequestRequest) {
     const userId = this.getUserId(req);
     const { fromUserId } = req.params;
@@ -139,7 +134,6 @@ export class FriendController extends BaseController implements IFriendControlle
     return this.response({ message: 'Friend request declined successfully' });
   }
 
-  @AutoBind()
   async revokeOutgoingRequest(req: OutgoingRequestRequest) {
     const userId = this.getUserId(req);
     const { toUserId } = req.params;
@@ -149,7 +143,6 @@ export class FriendController extends BaseController implements IFriendControlle
     return this.response({ message: 'Friend request revoked successfully' });
   }
 
-  @AutoBind()
   async unfriend(req: UnfriendRequest) {
     const userId = this.getUserId(req);
     const { userId: otherUserId } = req.params;

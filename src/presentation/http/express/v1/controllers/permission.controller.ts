@@ -46,6 +46,7 @@ export interface IPermissionController {
   remove(req: PermissionIdRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class PermissionController extends BaseController implements IPermissionController {
   constructor(
     private readonly listPermissionsUC: ListPermissionsPort,
@@ -57,7 +58,6 @@ export class PermissionController extends BaseController implements IPermissionC
     super();
   }
 
-  @AutoBind()
   async list(req: ListPermissionsRequest): Promise<unknown> {
     const { page, limit } = req.query;
     const { items, total } = await this.listPermissionsUC.execute(new ListPermissionsInputPort({ page, limit }));
@@ -68,7 +68,6 @@ export class PermissionController extends BaseController implements IPermissionC
     });
   }
 
-  @AutoBind()
   async create(req: CreatePermissionRequest): Promise<unknown> {
     const body = req.body;
     const item = await this.createPermissionUC.execute(
@@ -87,14 +86,12 @@ export class PermissionController extends BaseController implements IPermissionC
     });
   }
 
-  @AutoBind()
   async getById(req: PermissionIdRequest): Promise<unknown> {
     const { permissionId } = req.params;
     const item = await this.getPermissionUC.execute(new GetPermissionInputPort(permissionId));
     return this.response<PermissionResponse>({ data: item, message: 'Get permission successfully' });
   }
 
-  @AutoBind()
   async update(req: UpdatePermissionRequest): Promise<unknown> {
     const { permissionId } = req.params;
     const body = req.body;
@@ -111,7 +108,6 @@ export class PermissionController extends BaseController implements IPermissionC
     return this.response<PermissionResponse>({ data: item, message: 'Permission updated successfully' });
   }
 
-  @AutoBind()
   async remove(req: PermissionIdRequest): Promise<unknown> {
     const { permissionId } = req.params;
     await this.deletePermissionUC.execute(

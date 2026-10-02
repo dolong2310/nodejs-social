@@ -24,6 +24,7 @@ export interface IChatMessageController {
   markRead(req: MarkReadRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class ChatMessageController extends BaseController implements IChatMessageController {
   constructor(
     private readonly sendMessageUC: SendMessagePort,
@@ -33,7 +34,6 @@ export class ChatMessageController extends BaseController implements IChatMessag
     super();
   }
 
-  @AutoBind()
   async sendMessage(req: SendMessageRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
@@ -53,7 +53,6 @@ export class ChatMessageController extends BaseController implements IChatMessag
     });
   }
 
-  @AutoBind()
   async listMessages(req: ListMessagesRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
@@ -73,7 +72,6 @@ export class ChatMessageController extends BaseController implements IChatMessag
     });
   }
 
-  @AutoBind()
   async markRead(req: MarkReadRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;

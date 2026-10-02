@@ -19,6 +19,7 @@ export interface IPaymentController {
   getById(req: GetPaymentRequest): Promise<SuccessResponse<PaymentSafeProps>>;
 }
 
+@AutoBind()
 export class PaymentController extends BaseController implements IPaymentController {
   constructor(
     private readonly createPaymentUC: CreatePaymentPort,
@@ -27,7 +28,6 @@ export class PaymentController extends BaseController implements IPaymentControl
     super();
   }
 
-  @AutoBind()
   async create(req: CreatePaymentRequest) {
     const idempotencyKey = req.get('Idempotency-Key')?.trim();
     const payment = await this.createPaymentUC.execute({
@@ -47,7 +47,6 @@ export class PaymentController extends BaseController implements IPaymentControl
     });
   }
 
-  @AutoBind()
   async getById(req: GetPaymentRequest) {
     const payment = await this.getPaymentUC.execute({
       userId: this.getUserId(req),

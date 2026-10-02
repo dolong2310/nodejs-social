@@ -74,6 +74,7 @@ export interface IPostController {
   deleteLike(req: PostIdRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class PostController extends BaseController implements IPostController {
   constructor(
     private readonly getNewFeedsUC: GetNewFeedsPort,
@@ -94,7 +95,6 @@ export class PostController extends BaseController implements IPostController {
     super();
   }
 
-  @AutoBind()
   async getNewFeeds(req: NewFeedsRequest) {
     const { cursor, limit, filter } = req.query;
     const userId = this.getUserId(req, { optional: true });
@@ -129,7 +129,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async getPostsByUser(req: PostsByUserRequest) {
     const { userId: targetUserId } = req.params;
     const { cursor, limit, type } = req.query;
@@ -152,7 +151,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async getPostDetail(req: PostIdRequest) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
@@ -176,7 +174,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async getPostsType(req: PostsTypeRequest) {
     const { postId, type } = req.params;
     const { cursor, limit } = req.query;
@@ -197,7 +194,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async getUserLikedPosts(req: InteractionListRequest) {
     const userId = this.getUserId(req);
     const { cursor, limit } = req.query;
@@ -217,7 +213,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async getUserBookmarkedPosts(req: InteractionListRequest) {
     const userId = this.getUserId(req);
     const { cursor, limit } = req.query;
@@ -237,7 +232,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async createPost(req: CreatePostRequest) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -261,7 +255,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async patchPost(req: PatchPostRequest) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
@@ -284,7 +277,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async deletePost(req: PostIdRequest) {
     const userId = this.getUserId(req);
     const roleId = req.tokenPayload?.roleId ?? '';
@@ -301,7 +293,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async createBookmark(req: PostIdBodyRequest) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -318,7 +309,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async deleteBookmark(req: PostIdRequest) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
@@ -333,7 +323,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async createLike(req: PostIdBodyRequest) {
     const userId = this.getUserId(req);
     const body = req.body;
@@ -350,7 +339,6 @@ export class PostController extends BaseController implements IPostController {
     });
   }
 
-  @AutoBind()
   async deleteLike(req: PostIdRequest) {
     const userId = this.getUserId(req);
     const { postId } = req.params;

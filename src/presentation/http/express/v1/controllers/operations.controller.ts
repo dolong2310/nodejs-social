@@ -10,6 +10,7 @@ export interface IOperationsController {
   syncRolePermissions(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
+@AutoBind()
 export class OperationsController extends BaseController implements IOperationsController {
   constructor(
     private readonly clearCacheUC: ClearCachePort,
@@ -18,13 +19,11 @@ export class OperationsController extends BaseController implements IOperationsC
     super();
   }
 
-  @AutoBind()
   async clearRedisCache(): Promise<unknown> {
     await this.clearCacheUC.execute();
     return this.response({ message: 'Redis cache cleared successfully' });
   }
 
-  @AutoBind()
   async syncRolePermissions(): Promise<unknown> {
     const result = await this.syncRolePermissionsUC.execute();
     return this.response({ data: result, message: 'Role permissions synced successfully' });

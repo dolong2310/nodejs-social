@@ -10,10 +10,10 @@ export interface IPaymentCallbackController {
   momoReturn(req: Request, res: Response): void;
 }
 
+@AutoBind()
 export class PaymentCallbackController {
   constructor(private readonly handlePaymentNotification: HandlePaymentNotificationPort) {}
 
-  @AutoBind()
   async vnpayIpn(req: Request, res: Response): Promise<void> {
     try {
       const result = await this.handlePaymentNotification.execute({ provider: 'vnpay', payload: req.query });
@@ -30,12 +30,10 @@ export class PaymentCallbackController {
     }
   }
 
-  @AutoBind()
   vnpayReturn(_req: Request, res: Response): void {
     res.status(200).send('Payment result received. Please check the payment status in the application.');
   }
 
-  @AutoBind()
   async momoIpn(req: Request, res: Response): Promise<void> {
     try {
       const result = await this.handlePaymentNotification.execute({ provider: 'momo', payload: req.body });
@@ -60,7 +58,6 @@ export class PaymentCallbackController {
     }
   }
 
-  @AutoBind()
   momoReturn(_req: Request, res: Response): void {
     res.status(200).send('Payment result received. Please check the payment status in the application.');
   }

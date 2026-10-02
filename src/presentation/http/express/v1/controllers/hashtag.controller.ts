@@ -46,6 +46,7 @@ export interface IHashtagController {
   remove(req: HashtagIdRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class HashtagController extends BaseController implements IHashtagController {
   constructor(
     private readonly listHashtagsUC: ListHashtagsPort,
@@ -57,7 +58,6 @@ export class HashtagController extends BaseController implements IHashtagControl
     super();
   }
 
-  @AutoBind()
   async list(req: ListHashtagsRequest): Promise<unknown> {
     const { page, limit } = req.query;
     const { items, total } = await this.listHashtagsUC.execute(new ListHashtagsInputPort({ page, limit }));
@@ -68,21 +68,18 @@ export class HashtagController extends BaseController implements IHashtagControl
     });
   }
 
-  @AutoBind()
   async create(req: CreateHashtagRequest): Promise<unknown> {
     const body = req.body;
     const item = await this.createHashtagUC.execute(new CreateHashtagInputPort({ name: body.name }));
     return this.response<HashtagResponse>({ instance: Created, data: item, message: 'Hashtag created successfully' });
   }
 
-  @AutoBind()
   async getById(req: HashtagIdRequest): Promise<unknown> {
     const { hashtagId } = req.params;
     const item = await this.getHashtagUC.execute(new GetHashtagInputPort(hashtagId));
     return this.response<HashtagResponse>({ data: item, message: 'Get hashtag successfully' });
   }
 
-  @AutoBind()
   async update(req: UpdateHashtagRequest): Promise<unknown> {
     const { hashtagId } = req.params;
     const body = req.body;
@@ -95,7 +92,6 @@ export class HashtagController extends BaseController implements IHashtagControl
     return this.response<HashtagResponse>({ data: item, message: 'Hashtag updated successfully' });
   }
 
-  @AutoBind()
   async remove(req: HashtagIdRequest): Promise<unknown> {
     const { hashtagId } = req.params;
     await this.deleteHashtagUC.execute(new DeleteHashtagInputPort({ id: hashtagId, actorId: this.getUserId(req) }));

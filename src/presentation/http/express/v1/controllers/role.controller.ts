@@ -43,6 +43,7 @@ export interface IRoleController {
   remove(req: RoleIdRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class RoleController extends BaseController implements IRoleController {
   constructor(
     private readonly listRolesUC: ListRolesPort,
@@ -54,7 +55,6 @@ export class RoleController extends BaseController implements IRoleController {
     super();
   }
 
-  @AutoBind()
   async list(req: ListRolesRequest): Promise<unknown> {
     const { page, limit } = req.query;
     const { items, total } = await this.listRolesUC.execute(new ListRolesInputPort({ page, limit }));
@@ -65,7 +65,6 @@ export class RoleController extends BaseController implements IRoleController {
     });
   }
 
-  @AutoBind()
   async create(req: CreateRoleRequest): Promise<unknown> {
     const body = req.body;
     const item = await this.createRoleUC.execute(
@@ -79,14 +78,12 @@ export class RoleController extends BaseController implements IRoleController {
     return this.response<RoleResponse>({ instance: Created, data: item, message: 'Role created successfully' });
   }
 
-  @AutoBind()
   async getById(req: RoleIdRequest): Promise<unknown> {
     const { roleId } = req.params;
     const item = await this.getRoleUC.execute(new GetRoleInputPort(roleId));
     return this.response<RoleResponse>({ data: item, message: 'Get role successfully' });
   }
 
-  @AutoBind()
   async update(req: UpdateRoleRequest): Promise<unknown> {
     const { roleId } = req.params;
     const body = req.body;
@@ -102,7 +99,6 @@ export class RoleController extends BaseController implements IRoleController {
     return this.response<RoleResponse>({ data: item, message: 'Role updated successfully' });
   }
 
-  @AutoBind()
   async remove(req: RoleIdRequest): Promise<unknown> {
     const { roleId } = req.params;
     await this.deleteRoleUC.execute(new DeleteRoleInputPort({ id: roleId, actorId: this.getUserId(req) }));

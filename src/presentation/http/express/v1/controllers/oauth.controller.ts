@@ -22,6 +22,7 @@ export interface IOAuthController {
   googleLogin(req: GoogleLoginRequest, res: ExpressResponse): Promise<unknown>;
 }
 
+@AutoBind()
 export class OAuthController extends BaseController implements IOAuthController {
   constructor(
     private readonly getGoogleAuthUrlUC: GetGoogleAuthUrlPort,
@@ -30,7 +31,6 @@ export class OAuthController extends BaseController implements IOAuthController 
     super();
   }
 
-  @AutoBind()
   getGoogleAuthUrl(req: GoogleAuthUrlRequest) {
     const { ip, userAgent } = req.query;
     const url = this.getGoogleAuthUrlUC.execute({ ip, userAgent });
@@ -40,7 +40,6 @@ export class OAuthController extends BaseController implements IOAuthController 
     });
   }
 
-  @AutoBind()
   async googleLogin(req: GoogleLoginRequest, res: ExpressResponse) {
     const { state, code } = req.query;
     const { refreshToken } = await this.googleLoginUC.execute({ state, code });

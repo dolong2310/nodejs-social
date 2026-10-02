@@ -45,6 +45,7 @@ export interface IAdminUserController {
   remove(req: UserIdRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class AdminUserController extends BaseController implements IAdminUserController {
   constructor(
     private readonly listUsersUC: AdminListUsersPort,
@@ -56,7 +57,6 @@ export class AdminUserController extends BaseController implements IAdminUserCon
     super();
   }
 
-  @AutoBind()
   async list(req: ListUsersRequest): Promise<unknown> {
     const { page, limit } = req.query;
     const { items, total } = await this.listUsersUC.execute(new AdminListUsersInputPort({ page, limit }));
@@ -67,7 +67,6 @@ export class AdminUserController extends BaseController implements IAdminUserCon
     });
   }
 
-  @AutoBind()
   async create(req: CreateUserRequest): Promise<unknown> {
     const body = req.body;
 
@@ -92,14 +91,12 @@ export class AdminUserController extends BaseController implements IAdminUserCon
     return this.response({ instance: Created, data: item, message: 'User created successfully' });
   }
 
-  @AutoBind()
   async getById(req: UserIdRequest): Promise<unknown> {
     const { userId } = req.params;
     const item = await this.getUserUC.execute(new AdminGetUserInputPort(userId));
     return this.response({ data: item, message: 'Get user successfully' });
   }
 
-  @AutoBind()
   async update(req: UpdateUserRequest): Promise<unknown> {
     const { userId } = req.params;
     const body = req.body;
@@ -126,7 +123,6 @@ export class AdminUserController extends BaseController implements IAdminUserCon
     return this.response({ data: item, message: 'User updated successfully' });
   }
 
-  @AutoBind()
   async remove(req: UserIdRequest): Promise<unknown> {
     const { userId } = req.params;
     await this.deleteUserUC.execute(new AdminDeleteUserInputPort({ actorId: this.getUserId(req), userId }));
