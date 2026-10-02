@@ -89,7 +89,7 @@ export abstract class BaseController {
     res.sendFile(path);
   }
 
-  protected getUserId(req: Pick<Request, 'tokenPayload'>, options?: { optional?: boolean }): string {
+  protected getUserId(req: Request, options?: { optional?: boolean }): string {
     const userId = req.tokenPayload?.userId;
     if (!userId && !options?.optional) {
       throw UserNotFoundException;
