@@ -8,8 +8,21 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
-import type { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  cursorPaginatedSchema,
+  CursorPaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  IncomingRequestParamsSchema,
+  OutgoingRequestParamsSchema,
+  SendFriendRequestBodySchema,
+  UnfriendParamsSchema
+} from '@/presentation/http/express/v1/schemas/friend/friend.request.schema';
+import {
+  FriendRequestResponseSchema,
+  UserRecordResponseSchema
+} from '@/presentation/http/express/v1/schemas/friend/friend.response.schema';
 
 export class FriendRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +30,6 @@ export class FriendRoute extends BaseRoute {
 
   constructor(
     private readonly friendController: IFriendController,
-    private readonly friendPipe: IFriendPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -39,7 +50,8 @@ export class FriendRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_FRIENDS)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(UserRecordResponseSchema),
         controller: this.friendController.listFriends
       },
       {
@@ -48,7 +60,8 @@ export class FriendRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_INCOMING)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(UserRecordResponseSchema),
         controller: this.friendController.listIncoming
       },
       {
@@ -57,7 +70,8 @@ export class FriendRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_OUTGOING)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(UserRecordResponseSchema),
         controller: this.friendController.listOutgoing
       },
       {
@@ -71,7 +85,8 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.sendRequestToUsernamePipe],
+        pipes: [validate({ body: SendFriendRequestBodySchema })],
+        response: FriendRequestResponseSchema,
         controller: this.friendController.sendFriendRequest
       },
       {
@@ -85,7 +100,7 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.incomingFromUserIdPipe],
+        pipes: [validate({ params: IncomingRequestParamsSchema })],
         controller: this.friendController.acceptIncomingRequest
       },
       {
@@ -99,7 +114,7 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.incomingFromUserIdPipe],
+        pipes: [validate({ params: IncomingRequestParamsSchema })],
         controller: this.friendController.declineIncomingRequest
       },
       {
@@ -113,7 +128,7 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.revokeOutgoingToUserIdPipe],
+        pipes: [validate({ params: OutgoingRequestParamsSchema })],
         controller: this.friendController.revokeOutgoingRequest
       },
       {
@@ -127,7 +142,7 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.unfriendUserIdPipe],
+        pipes: [validate({ params: UnfriendParamsSchema })],
         controller: this.friendController.unfriend
       }
     ];

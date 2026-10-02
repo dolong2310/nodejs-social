@@ -8,8 +8,17 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
-import type { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  CreateHashtagBodySchema,
+  HashtagIdParamsSchema,
+  UpdateHashtagBodySchema
+} from '@/presentation/http/express/v1/schemas/hashtag/hashtag.request.schema';
+import { HashtagResponseSchema } from '@/presentation/http/express/v1/schemas/hashtag/hashtag.response.schema';
 
 export class HashtagRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +26,6 @@ export class HashtagRoute extends BaseRoute {
 
   constructor(
     private readonly hashtagController: IHashtagController,
-    private readonly hashtagsPipe: IHashtagsPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
@@ -44,7 +51,8 @@ export class HashtagRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(HashtagResponseSchema),
         controller: this.hashtagController.list
       },
       {
@@ -58,7 +66,8 @@ export class HashtagRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.createBodyPipe],
+        pipes: [validate({ body: CreateHashtagBodySchema })],
+        response: HashtagResponseSchema,
         controller: this.hashtagController.create
       },
       {
@@ -72,7 +81,8 @@ export class HashtagRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.hashtagIdParam],
+        pipes: [validate({ params: HashtagIdParamsSchema })],
+        response: HashtagResponseSchema,
         controller: this.hashtagController.getById
       },
       {
@@ -86,7 +96,8 @@ export class HashtagRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.hashtagIdParam, this.hashtagsPipe.updateBodyPipe],
+        pipes: [validate({ params: HashtagIdParamsSchema, body: UpdateHashtagBodySchema })],
+        response: HashtagResponseSchema,
         controller: this.hashtagController.update
       },
       {
@@ -100,7 +111,7 @@ export class HashtagRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.hashtagIdParam],
+        pipes: [validate({ params: HashtagIdParamsSchema })],
         controller: this.hashtagController.remove
       }
     ];

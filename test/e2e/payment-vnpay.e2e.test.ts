@@ -39,7 +39,6 @@ const [
   { PaymentCallbackRoute },
   { PaymentController },
   { PaymentCallbackController },
-  { PaymentsPipe },
   { VnpayPaymentGatewayAdapter },
   { CreatePaymentUseCase },
   { GetPaymentUseCase },
@@ -55,7 +54,6 @@ const [
   import('@/presentation/http/express/v1/routes/payment-callback.route'),
   import('@/presentation/http/express/v1/controllers/payment.controller'),
   import('@/presentation/http/express/v1/controllers/payment-callback.controller'),
-  import('@/presentation/http/express/v1/pipes/payment.pipe'),
   import('@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter'),
   import('@/modules/payment/application/use-cases/create-payment/create-payment.usecase'),
   import('@/modules/payment/application/use-cases/get-payment/get-payment.usecase'),
@@ -289,7 +287,6 @@ function createFixture(): PaymentFixture {
   const throttlerGuard = { handler: () => (_req: Request, _res: express.Response, next: NextFunction) => next() };
   const paymentRoute = new PaymentRoute(
     paymentController,
-    new PaymentsPipe(),
     authGuard as never,
     activeUserGuard as never,
     throttlerGuard as never,

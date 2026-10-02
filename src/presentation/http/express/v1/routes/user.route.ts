@@ -9,7 +9,13 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IUserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  ChangePasswordBodySchema,
+  GetUserProfileParamsSchema,
+  UpdateMeBodySchema
+} from '@/presentation/http/express/v1/schemas/user/user.request.schema';
+import { UserResponseSchema } from '@/presentation/http/express/v1/schemas/user/user.response.schema';
 
 export class UserRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,7 +23,6 @@ export class UserRoute extends BaseRoute {
 
   constructor(
     private readonly userController: IUserController,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly authOptionGuard: AuthOptionGuard,
     private readonly activeUserGuard: ActiveUserGuard,
@@ -39,7 +44,7 @@ export class UserRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.GET_ME)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        response: UserResponseSchema,
         controller: this.userController.getMe
       },
       {
@@ -53,7 +58,8 @@ export class UserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.updateMePipe],
+        pipes: [validate({ body: UpdateMeBodySchema })],
+        response: UserResponseSchema,
         controller: this.userController.updateMe
       },
       {
@@ -62,7 +68,8 @@ export class UserRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.GET_PROFILE)],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: GetUserProfileParamsSchema })],
+        response: UserResponseSchema,
         controller: this.userController.getUserProfile
       },
       {
@@ -76,7 +83,7 @@ export class UserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.changePasswordPipe],
+        pipes: [validate({ body: ChangePasswordBodySchema })],
         controller: this.userController.changePassword
       }
     ];

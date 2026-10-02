@@ -13,7 +13,7 @@ export class GetPostsByUserInputPort {
     targetUserId: string;
     currentUserId?: string;
     type?: EnumPostType;
-    limit: string;
+    limit: number;
     cursor?: string;
   }) {
     this.targetUserId = payload.targetUserId;

@@ -9,8 +9,17 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import type { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  CreateRoleBodySchema,
+  RoleIdParamsSchema,
+  UpdateRoleBodySchema
+} from '@/presentation/http/express/v1/schemas/role/role.request.schema';
+import { RoleResponseSchema } from '@/presentation/http/express/v1/schemas/role/role.response.schema';
 
 export class RoleRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -18,8 +27,6 @@ export class RoleRoute extends BaseRoute {
 
   constructor(
     private readonly roleController: IRoleController,
-    private readonly rolesPipe: IRolesPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -46,7 +53,8 @@ export class RoleRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(RoleResponseSchema),
         controller: this.roleController.list
       },
       {
@@ -60,7 +68,8 @@ export class RoleRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.rolesPipe.createBodyPipe],
+        pipes: [validate({ body: CreateRoleBodySchema })],
+        response: RoleResponseSchema,
         controller: this.roleController.create
       },
       {
@@ -74,7 +83,8 @@ export class RoleRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.rolesPipe.roleIdParam],
+        pipes: [validate({ params: RoleIdParamsSchema })],
+        response: RoleResponseSchema,
         controller: this.roleController.getById
       },
       {
@@ -88,7 +98,8 @@ export class RoleRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.rolesPipe.roleIdParam, this.rolesPipe.updateBodyPipe],
+        pipes: [validate({ params: RoleIdParamsSchema, body: UpdateRoleBodySchema })],
+        response: RoleResponseSchema,
         controller: this.roleController.update
       },
       {
@@ -102,7 +113,7 @@ export class RoleRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.rolesPipe.roleIdParam],
+        pipes: [validate({ params: RoleIdParamsSchema })],
         controller: this.roleController.remove
       }
     ];

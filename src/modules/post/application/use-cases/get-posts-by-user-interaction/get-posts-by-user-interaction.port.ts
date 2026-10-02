@@ -10,7 +10,7 @@ export class GetPostsByUserInteractionInputPort {
   limit: number;
   cursor?: string;
 
-  constructor(payload: { userId: string; interaction: PostUserInteractionType; limit: string; cursor?: string }) {
+  constructor(payload: { userId: string; interaction: PostUserInteractionType; limit: number; cursor?: string }) {
     this.userId = payload.userId;
     this.interaction = payload.interaction;
     this.limit = Number(payload.limit);

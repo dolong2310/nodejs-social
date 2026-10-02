@@ -34,7 +34,7 @@ export class GetBlockedUserUseCase extends GetBlockedUserPort {
     return new GetBlockedUserOutputPort({ users: items, total });
   }
 
-  private parsePageLimit(page: string, limit: string): { pageNum: number; limitNum: number; skip: number } {
+  private parsePageLimit(page: number, limit: number): { pageNum: number; limitNum: number; skip: number } {
     const pageNum = Math.max(1, Number(page) || 1);
     const limitNum = Math.min(100, Math.max(1, Number(limit) || 10));
     return { pageNum, limitNum, skip: (pageNum - 1) * limitNum };

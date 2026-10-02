@@ -7,6 +7,8 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import { VideoStreamIdParamsSchema } from '@/presentation/http/express/v1/schemas/media/media.request.schema';
 
 export class MediaRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -33,7 +35,6 @@ export class MediaRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_IMAGE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
         controller: this.mediaController.uploadImage
       },
       {
@@ -42,7 +43,6 @@ export class MediaRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_VIDEO)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
         controller: this.mediaController.uploadVideo
       },
       {
@@ -51,7 +51,6 @@ export class MediaRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_VIDEO_STREAM)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
         controller: this.mediaController.uploadVideoStream
       },
       {
@@ -60,7 +59,7 @@ export class MediaRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.GET_VIDEO_STATUS)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: VideoStreamIdParamsSchema })],
         controller: this.mediaController.getVideoStatus
       }
     ];

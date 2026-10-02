@@ -3,6 +3,11 @@ export const APP_ERROR_MESSAGE = {
 } as const;
 
 export const VALIDATION_ERROR_MESSAGE = {
+  // Common request errors
+  FIELD_IS_REQUIRED: 'Field is required',
+  FIELD_IS_NOT_ALLOWED: 'Field is not allowed',
+  REQUEST_DATA_MUST_BE_AN_OBJECT: 'Request data must be an object',
+
   // Auth errors
   NAME_IS_REQUIRED: 'Name is required',
   NAME_MUST_BE_A_STRING: 'Name must be a string',
@@ -124,6 +129,24 @@ export const VALIDATION_ERROR_MESSAGE = {
 
   // Media errors
   VIDEO_NOT_FOUND: 'Video not found',
+
+  // Payment errors
+  PAYMENT_PROVIDER_IS_REQUIRED: 'Payment provider is required',
+  PAYMENT_PROVIDER_INVALID: 'Payment provider must be vnpay or momo',
+  PAYMENT_SOURCE_REFERENCE_IS_REQUIRED: 'Source reference is required',
+  PAYMENT_SOURCE_REFERENCE_MUST_BE_A_STRING: 'Source reference must be a string',
+  PAYMENT_SOURCE_REFERENCE_LENGTH_INVALID: 'Source reference must contain between 1 and 128 characters',
+  PAYMENT_DESCRIPTION_IS_REQUIRED: 'Payment description is required',
+  PAYMENT_DESCRIPTION_MUST_BE_A_STRING: 'Payment description must be a string',
+  PAYMENT_DESCRIPTION_LENGTH_INVALID: 'Payment description must contain between 1 and 200 characters',
+  PAYMENT_AMOUNT_IS_REQUIRED: 'Payment amount is required',
+  PAYMENT_AMOUNT_INVALID: 'Payment amount must be an integer between 10000 and 50000000 VND',
+  PAYMENT_ID_IS_REQUIRED: 'Payment ID is required',
+  PAYMENT_ID_MUST_BE_A_STRING: 'Payment ID must be a string',
+  INVALID_PAYMENT_ID: 'Invalid payment ID',
+  IDEMPOTENCY_KEY_IS_REQUIRED: 'Idempotency-Key header is required',
+  IDEMPOTENCY_KEY_MUST_BE_A_STRING: 'Idempotency-Key must be a string',
+  IDEMPOTENCY_KEY_LENGTH_INVALID: 'Idempotency-Key must contain between 1 and 128 characters',
 
   // Notification errors
   NOTIFICATION_ID_IS_REQUIRED: 'Notification ID is required',

@@ -3,9 +3,9 @@ import type { UserRecordProps } from '@/modules/user/domain/entities/user.types'
 
 export class GetBlockedUserInputPort {
   blockerUserId: string;
-  page: string;
-  limit: string;
-  constructor(payload: { blockerUserId: string; page: string; limit: string }) {
+  page: number;
+  limit: number;
+  constructor(payload: { blockerUserId: string; page: number; limit: number }) {
     this.blockerUserId = payload.blockerUserId;
     this.page = payload.page;
     this.limit = payload.limit;

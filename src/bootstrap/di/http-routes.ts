@@ -171,21 +171,6 @@ import { type IPostController, PostController } from '@/presentation/http/expres
 import { type IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
 import { type ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
 import { type IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import { AdminUsersPipe, type IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import { AuthPipe, type IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { BlocksPipe, type IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
-import { ChatMessagesPipe, type IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
-import { ConversationsPipe, type IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import { FriendsPipe, type IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import { HashtagsPipe, type IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import { type INotificationPipe, NotificationsPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import { type IPaginationPipe, PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { type IPaymentPipe, PaymentsPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
-import { type IPermissionsPipe, PermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
-import { type IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
-import { type IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
-import { type ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
-import { type IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
@@ -631,22 +616,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     deleteHashtagUC
   );
 
-  const authPipe: IAuthPipe = new AuthPipe();
-  const userPipe: IUserPipe = new UsersPipe();
-  const adminUsersPipe: IAdminUsersPipe = new AdminUsersPipe();
-  const postPipe: IPostPipe = new PostsPipe();
-  const searchPipe: ISearchPipe = new SearchPipe();
-  const friendPipe: IFriendPipe = new FriendsPipe(userPipe);
-  const blocksPipe: IBlockPipe = new BlocksPipe(userPipe);
-  const conversationPipe: IConversationPipe = new ConversationsPipe(userPipe);
-  const chatMessagePipe: IChatMessagePipe = new ChatMessagesPipe();
-  const notificationPipe: INotificationPipe = new NotificationsPipe();
-  const paymentPipe: IPaymentPipe = new PaymentsPipe();
-  const rolesPipe: IRolesPipe = new RolesPipe();
-  const permissionsPipe: IPermissionsPipe = new PermissionsPipe();
-  const hashtagsPipe: IHashtagsPipe = new HashtagsPipe();
-  const paginationPipe: IPaginationPipe = new PaginationPipe();
-
   return [
     new OperationsRoute(
       operationsController,
@@ -658,7 +627,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new AuthRoute(
       authController,
-      authPipe,
       authGuard,
       throttlerGuard,
       loggingInterceptor,
@@ -667,8 +635,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new AdminUserRoute(
       adminUserController,
-      adminUsersPipe,
-      paginationPipe,
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -679,7 +645,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new UserRoute(
       userController,
-      userPipe,
       authGuard,
       authOptionGuard,
       activeUserGuard,
@@ -707,8 +672,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new PostRoute(
       postController,
-      postPipe,
-      paginationPipe,
       authGuard,
       authOptionGuard,
       activeUserGuard,
@@ -720,8 +683,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new SearchRoute(
       searchController,
-      searchPipe,
-      paginationPipe,
       authOptionGuard,
       activeUserGuard,
       throttlerGuard,
@@ -731,8 +692,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new FriendRoute(
       friendController,
-      friendPipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -743,8 +702,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new BlockRoute(
       blocksController,
-      blocksPipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -755,10 +712,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new ConversationRoute(
       conversationController,
-      conversationPipe,
       chatMessageController,
-      chatMessagePipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -776,8 +730,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new NotificationRoute(
       notificationController,
-      notificationPipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -788,8 +740,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new RoleRoute(
       roleController,
-      rolesPipe,
-      paginationPipe,
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -801,8 +751,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new PermissionRoute(
       permissionController,
-      permissionsPipe,
-      paginationPipe,
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -814,8 +762,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new HashtagRoute(
       hashtagController,
-      hashtagsPipe,
-      paginationPipe,
       authGuard,
       throttlerGuard,
       loggingInterceptor,
@@ -826,7 +772,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new PaymentRoute(
       paymentController,
-      paymentPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,

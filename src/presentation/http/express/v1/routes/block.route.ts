@@ -8,8 +8,17 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
-import type { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  BlockUserBodySchema,
+  UnblockUserParamsSchema
+} from '@/presentation/http/express/v1/schemas/block/block.request.schema';
+import { BlockCreatedResponseSchema } from '@/presentation/http/express/v1/schemas/block/block.response.schema';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import { UserRecordResponseSchema } from '@/presentation/http/express/v1/schemas/friend/friend.response.schema';
 
 export class BlockRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +26,6 @@ export class BlockRoute extends BaseRoute {
 
   constructor(
     private readonly blockController: IBlockController,
-    private readonly blockPipe: IBlockPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -39,7 +46,8 @@ export class BlockRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(BLOCK_THROTTLE_CONFIG.LIST_BLOCKED)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(UserRecordResponseSchema),
         controller: this.blockController.listBlocked
       },
       {
@@ -53,7 +61,8 @@ export class BlockRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.blockPipe.blockUserBodyPipe],
+        pipes: [validate({ body: BlockUserBodySchema })],
+        response: BlockCreatedResponseSchema,
         controller: this.blockController.blockUser
       },
       {
@@ -67,7 +76,7 @@ export class BlockRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.blockPipe.unblockUserIdPipe],
+        pipes: [validate({ params: UnblockUserParamsSchema })],
         controller: this.blockController.unblockUser
       }
     ];

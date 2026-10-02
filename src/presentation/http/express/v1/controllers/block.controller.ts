@@ -4,33 +4,23 @@ import type { UnblockUserPort } from '@/modules/relationship/application/use-cas
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import {
-  BlockUserBodyDTO,
-  type UnblockUserParamsDTO
-} from '@/presentation/http/express/v1/dtos/block/block.request.dto';
-import { BlockCreatedResponseDTO } from '@/presentation/http/express/v1/dtos/block/block.response.dto';
-import type { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
-import { FriendUserResponseDTO } from '@/presentation/http/express/v1/dtos/friend/friend.response.dto';
-import type { NextFunction } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
+import type { ValidatedRequest } from '@/presentation/http/express/types';
+import type {
+  BlockUserBodySchema,
+  UnblockUserParamsSchema
+} from '@/presentation/http/express/v1/schemas/block/block.request.schema';
+import type { BlockCreatedResponse } from '@/presentation/http/express/v1/schemas/block/block.response.schema';
+import type { PaginationQuerySchema } from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import type { UserRecordResponse } from '@/presentation/http/express/v1/schemas/friend/friend.response.schema';
+
+type BlockUserRequest = ValidatedRequest<{ body: typeof BlockUserBodySchema }>;
+type UnblockUserRequest = ValidatedRequest<{ params: typeof UnblockUserParamsSchema }>;
+type ListBlockedRequest = ValidatedRequest<{ query: typeof PaginationQuerySchema }>;
 
 export interface IBlockController {
-  blockUser(
-    req: ExpressRequest<ParamsDictionary, object, BlockUserBodyDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<SuccessResponse<BlockCreatedResponseDTO>>;
-  unblockUser(
-    req: ExpressRequest<UnblockUserParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<SuccessResponse<unknown>>;
-  listBlocked(
-    req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
+  blockUser(req: BlockUserRequest): Promise<SuccessResponse<BlockCreatedResponse>>;
+  unblockUser(req: UnblockUserRequest): Promise<SuccessResponse<unknown>>;
+  listBlocked(req: ListBlockedRequest): Promise<unknown>;
 }
 
 export class BlockController extends BaseController implements IBlockController {
@@ -43,21 +33,21 @@ export class BlockController extends BaseController implements IBlockController 
   }
 
   @AutoBind()
-  async blockUser(req: ExpressRequest<ParamsDictionary, object, BlockUserBodyDTO>) {
-    const dto = new BlockUserBodyDTO(req.body);
+  async blockUser(req: BlockUserRequest) {
+    const { userId } = req.body;
     const blockerUserId = this.getUserId(req);
 
-    await this.blockUserUC.execute({ blockerUserId, blockedUserId: dto.userId });
+    await this.blockUserUC.execute({ blockerUserId, blockedUserId: userId });
 
-    return this.response<BlockCreatedResponseDTO>({
+    return this.response<BlockCreatedResponse>({
       instance: Created,
-      data: new BlockCreatedResponseDTO(dto.userId),
+      data: { userId },
       message: 'User blocked successfully'
     });
   }
 
   @AutoBind()
-  async unblockUser(req: ExpressRequest<UnblockUserParamsDTO>) {
+  async unblockUser(req: UnblockUserRequest) {
     const blockerUserId = this.getUserId(req);
     const { userId: blockedUserId } = req.params;
 
@@ -67,14 +57,14 @@ export class BlockController extends BaseController implements IBlockController 
   }
 
   @AutoBind()
-  async listBlocked(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>) {
+  async listBlocked(req: ListBlockedRequest) {
     const blockerUserId = this.getUserId(req);
     const { page, limit } = req.query;
 
     const { users, total } = await this.listBlockedUC.execute({ blockerUserId, page, limit });
 
-    return this.paginatedResponse<FriendUserResponseDTO[]>({
-      data: users.map((user) => new FriendUserResponseDTO(user)),
+    return this.paginatedResponse<UserRecordResponse[]>({
+      data: users,
       pagination: { page, limit, totalItems: total },
       message: 'Get blocked users successfully'
     });

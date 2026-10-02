@@ -9,9 +9,30 @@ import type { TimeoutInterceptor } from '@/presentation/http/express/interceptor
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IChatMessageController } from '@/presentation/http/express/v1/controllers/chat-message.controller';
 import type { IConversationController } from '@/presentation/http/express/v1/controllers/conversation.controller';
-import type { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
-import type { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  MarkChatReadBodySchema,
+  SendChatMessageBodySchema
+} from '@/presentation/http/express/v1/schemas/chat-message/chat-message.request.schema';
+import { ChatMessageResponseSchema } from '@/presentation/http/express/v1/schemas/chat-message/chat-message.response.schema';
+import {
+  cursorPaginatedSchema,
+  CursorPaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  ConversationIdParamsSchema,
+  ConversationMemberParamsSchema,
+  CreateDirectConversationBodySchema,
+  CreateGroupConversationBodySchema,
+  InviteConversationMemberBodySchema,
+  PatchConversationBodySchema,
+  PatchConversationMemberRoleBodySchema,
+  TransferConversationAdminBodySchema
+} from '@/presentation/http/express/v1/schemas/conversation/conversation.request.schema';
+import {
+  ConversationDetailResponseSchema,
+  ConversationResponseSchema
+} from '@/presentation/http/express/v1/schemas/conversation/conversation.response.schema';
 
 export class ConversationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -19,10 +40,7 @@ export class ConversationRoute extends BaseRoute {
 
   constructor(
     private readonly conversationController: IConversationController,
-    private readonly conversationPipe: IConversationPipe,
     private readonly chatMessageController: IChatMessageController,
-    private readonly chatMessagePipe: IChatMessagePipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -48,7 +66,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.peerUserIdBody],
+        pipes: [validate({ body: CreateDirectConversationBodySchema })],
+        response: ConversationResponseSchema,
         controller: this.conversationController.createDirect
       },
       {
@@ -62,7 +81,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.createGroupBody],
+        pipes: [validate({ body: CreateGroupConversationBodySchema })],
+        response: ConversationResponseSchema,
         controller: this.conversationController.createGroup
       },
       {
@@ -71,7 +91,8 @@ export class ConversationRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(ConversationResponseSchema),
         controller: this.conversationController.listConversations
       },
       {
@@ -80,7 +101,8 @@ export class ConversationRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.GET)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.conversationPipe.conversationIdParam],
+        pipes: [validate({ params: ConversationIdParamsSchema })],
+        response: ConversationDetailResponseSchema,
         controller: this.conversationController.getConversation
       },
       {
@@ -94,7 +116,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.patchConversationBody],
+        pipes: [validate({ params: ConversationIdParamsSchema, body: PatchConversationBodySchema })],
+        response: ConversationResponseSchema,
         controller: this.conversationController.patchConversation
       },
       {
@@ -108,7 +131,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.inviteUserIdBody],
+        pipes: [validate({ params: ConversationIdParamsSchema, body: InviteConversationMemberBodySchema })],
+        response: ConversationDetailResponseSchema,
         controller: this.conversationController.inviteMember
       },
       {
@@ -122,7 +146,7 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam],
+        pipes: [validate({ params: ConversationIdParamsSchema })],
         controller: this.conversationController.leaveConversation
       },
       {
@@ -136,7 +160,7 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.kickTargetUserIdParam],
+        pipes: [validate({ params: ConversationMemberParamsSchema })],
         controller: this.conversationController.kickMember
       },
       {
@@ -150,11 +174,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [
-          this.conversationPipe.conversationIdParam,
-          this.conversationPipe.kickTargetUserIdParam,
-          this.conversationPipe.patchMemberRoleBody
-        ],
+        pipes: [validate({ params: ConversationMemberParamsSchema, body: PatchConversationMemberRoleBodySchema })],
+        response: ConversationDetailResponseSchema,
         controller: this.conversationController.patchMemberRole
       },
       {
@@ -168,7 +189,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam, this.conversationPipe.newAdminUserIdBody],
+        pipes: [validate({ params: ConversationIdParamsSchema, body: TransferConversationAdminBodySchema })],
+        response: ConversationDetailResponseSchema,
         controller: this.conversationController.transferAdmin
       },
       // Chat Messages
@@ -178,7 +200,8 @@ export class ConversationRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(CONVERSATION_THROTTLE_CONFIG.LIST_MESSAGES)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.conversationPipe.conversationIdParam],
+        pipes: [validate({ params: ConversationIdParamsSchema, query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(ChatMessageResponseSchema),
         controller: this.chatMessageController.listMessages
       },
       {
@@ -192,7 +215,8 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam, this.chatMessagePipe.sendMessageBody],
+        pipes: [validate({ params: ConversationIdParamsSchema, body: SendChatMessageBodySchema })],
+        response: ChatMessageResponseSchema,
         controller: this.chatMessageController.sendMessage
       },
       {
@@ -206,7 +230,7 @@ export class ConversationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.conversationPipe.conversationIdParam, this.chatMessagePipe.markReadBody],
+        pipes: [validate({ params: ConversationIdParamsSchema, body: MarkChatReadBodySchema })],
         controller: this.chatMessageController.markRead
       }
     ];

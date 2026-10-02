@@ -8,25 +8,18 @@ import {
 } from '@/presentation/http/express/constants/auth.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import type { ExpressResponse, ValidatedRequest } from '@/presentation/http/express/types';
 import type {
-  GetGoogleAuthUrlQueryDTO,
-  OAuthGoogleLoginQueryDTO
-} from '@/presentation/http/express/v1/dtos/oauth/oauth.request.dto';
-import type { NextFunction } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
+  GoogleAuthUrlQuerySchema,
+  GoogleLoginQuerySchema
+} from '@/presentation/http/express/v1/schemas/oauth/oauth.request.schema';
+
+type GoogleAuthUrlRequest = ValidatedRequest<{ query: typeof GoogleAuthUrlQuerySchema }>;
+type GoogleLoginRequest = ValidatedRequest<{ query: typeof GoogleLoginQuerySchema }>;
 
 export interface IOAuthController {
-  getGoogleAuthUrl(
-    req: ExpressRequest<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): void;
-  googleLogin(
-    req: ExpressRequest<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
+  getGoogleAuthUrl(req: GoogleAuthUrlRequest): unknown;
+  googleLogin(req: GoogleLoginRequest, res: ExpressResponse): Promise<unknown>;
 }
 
 export class OAuthController extends BaseController implements IOAuthController {
@@ -38,7 +31,7 @@ export class OAuthController extends BaseController implements IOAuthController 
   }
 
   @AutoBind()
-  getGoogleAuthUrl(req: ExpressRequest<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>) {
+  getGoogleAuthUrl(req: GoogleAuthUrlRequest) {
     const { ip, userAgent } = req.query;
     const url = this.getGoogleAuthUrlUC.execute({ ip, userAgent });
     return this.response<string>({
@@ -48,10 +41,7 @@ export class OAuthController extends BaseController implements IOAuthController 
   }
 
   @AutoBind()
-  async googleLogin(
-    req: ExpressRequest<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
-    res: ExpressResponse
-  ) {
+  async googleLogin(req: GoogleLoginRequest, res: ExpressResponse) {
     const { state, code } = req.query;
     const { refreshToken } = await this.googleLoginUC.execute({ state, code });
 

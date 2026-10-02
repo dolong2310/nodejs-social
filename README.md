@@ -36,7 +36,7 @@ This repository is built as a TypeScript backend API, with a clean/hexagonal arc
 | Auth            | JWT, bcrypt, Google OAuth, OTPAuth      |
 | Storage / email | AWS S3, AWS SES                         |
 | Media           | Sharp, ffmpeg-compatible video pipeline |
-| Validation      | Valibot, express-validator-style pipes  |
+| Validation      | Valibot schemas + NestJS-style pipes    |
 | Logging         | Pino                                    |
 | API docs        | Swagger UI, OpenAPI YAML                |
 | Testing         | Vitest, Supertest, tsarch               |

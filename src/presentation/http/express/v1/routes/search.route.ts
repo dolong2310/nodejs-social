@@ -7,8 +7,9 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import { SearchQuerySchema } from '@/presentation/http/express/v1/schemas/search/search.request.schema';
+import { SearchResponseSchema } from '@/presentation/http/express/v1/schemas/search/search.response.schema';
 
 export class SearchRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -16,8 +17,6 @@ export class SearchRoute extends BaseRoute {
 
   constructor(
     private readonly searchController: ISearchController,
-    private readonly searchPipe: ISearchPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authOptionGuard: AuthOptionGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -37,7 +36,8 @@ export class SearchRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(SEARCH_THROTTLE_CONFIG.SEARCH)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.searchPipe.searchPipe],
+        pipes: [validate({ query: SearchQuerySchema })],
+        response: SearchResponseSchema,
         controller: this.searchController.search
       }
     ];

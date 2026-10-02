@@ -37,7 +37,7 @@ Repository này là một TypeScript backend API, được xây theo clean/hexag
 | Auth            | JWT, bcrypt, Google OAuth, OTPAuth      |
 | Storage / email | AWS S3, AWS SES                         |
 | Media           | Sharp, ffmpeg-compatible video pipeline |
-| Validation      | Valibot, express-validator-style pipes  |
+| Validation      | Valibot schemas + NestJS-style pipes    |
 | Logging         | Pino                                    |
 | API docs        | Swagger UI, OpenAPI YAML                |
 | Testing         | Vitest, Supertest, tsarch               |

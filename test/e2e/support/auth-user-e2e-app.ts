@@ -68,10 +68,6 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { AdminUserController } from '@/presentation/http/express/v1/controllers/admin-user.controller';
 import { AuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { UserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import { AdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import { AuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
@@ -829,7 +825,6 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
   const routers = [
     new AuthRoute(
       authController,
-      new AuthPipe(),
       authGuard,
       throttlerGuard,
       loggingInterceptor,
@@ -838,7 +833,6 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     ),
     new UserRoute(
       userController,
-      new UsersPipe(),
       authGuard,
       authOptionGuard,
       activeUserGuard,
@@ -850,8 +844,6 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     ),
     new AdminUserRoute(
       adminUserController,
-      new AdminUsersPipe(),
-      new PaginationPipe(),
       authGuard,
       apiKeyGuard,
       throttlerGuard,

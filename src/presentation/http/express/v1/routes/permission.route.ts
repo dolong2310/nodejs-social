@@ -9,8 +9,17 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import type { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  CreatePermissionBodySchema,
+  PermissionIdParamsSchema,
+  UpdatePermissionBodySchema
+} from '@/presentation/http/express/v1/schemas/permission/permission.request.schema';
+import { PermissionResponseSchema } from '@/presentation/http/express/v1/schemas/permission/permission.response.schema';
 
 export class PermissionRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -18,8 +27,6 @@ export class PermissionRoute extends BaseRoute {
 
   constructor(
     private readonly permissionController: IPermissionController,
-    private readonly permissionsPipe: IPermissionsPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -46,7 +53,8 @@ export class PermissionRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(PermissionResponseSchema),
         controller: this.permissionController.list
       },
       {
@@ -60,7 +68,8 @@ export class PermissionRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.createBodyPipe],
+        pipes: [validate({ body: CreatePermissionBodySchema })],
+        response: PermissionResponseSchema,
         controller: this.permissionController.create
       },
       {
@@ -74,7 +83,8 @@ export class PermissionRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.permissionIdParam],
+        pipes: [validate({ params: PermissionIdParamsSchema })],
+        response: PermissionResponseSchema,
         controller: this.permissionController.getById
       },
       {
@@ -88,7 +98,8 @@ export class PermissionRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.permissionIdParam, this.permissionsPipe.updateBodyPipe],
+        pipes: [validate({ params: PermissionIdParamsSchema, body: UpdatePermissionBodySchema })],
+        response: PermissionResponseSchema,
         controller: this.permissionController.update
       },
       {
@@ -102,7 +113,7 @@ export class PermissionRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.permissionIdParam],
+        pipes: [validate({ params: PermissionIdParamsSchema })],
         controller: this.permissionController.remove
       }
     ];

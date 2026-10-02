@@ -1,23 +1,30 @@
 import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import type { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
+import type { BasePipe } from '@/presentation/http/express/core/base.pipe';
 import { ForbiddenException } from '@/presentation/http/express/responses/error.response';
 import type {
   ControllerHandler,
   ExpressRequest,
   ExpressRequestHandler,
-  ExpressResponse
+  ExpressResponse,
+  RequestSchema
 } from '@/presentation/http/express/types';
 import { runRequestHandler } from '@/presentation/http/express/utils/request-handler.util';
+import { serializeResponse } from '@/presentation/http/express/utils/serialize-response.util';
 import express, { type NextFunction, type Router } from 'express';
 
-export interface RouterConfig {
-  path: string;
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
+export interface RouteHandlerOptions {
   middlewares?: ExpressRequestHandler[];
   guards?: BaseGuard[];
-  pipes?: ExpressRequestHandler[];
+  pipes?: BasePipe[];
   interceptors?: BaseInterceptor[];
+  response?: RequestSchema;
   controller: ControllerHandler<ExpressRequest, ExpressResponse, NextFunction>;
+}
+
+export interface RouterConfig extends RouteHandlerOptions {
+  path: string;
+  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
 }
 
 export abstract class BaseRoute {
@@ -43,21 +50,15 @@ export abstract class BaseRoute {
 
   protected abstract createRoutes(): void;
 
-  protected createRouteHandler(options: {
-    middlewares?: ExpressRequestHandler[];
-    guards?: BaseGuard[];
-    pipes?: ExpressRequestHandler[];
-    // pipes?: BasePipe[];
-    interceptors?: BaseInterceptor[];
-    controller: ControllerHandler<ExpressRequest, ExpressResponse, NextFunction>;
-  }) {
+  protected createRouteHandler(options: RouteHandlerOptions) {
     const middlewares = options.middlewares ?? [];
     const guards = options.guards ?? [];
     const pipes = options.pipes ?? [];
     const interceptors = options.interceptors ?? [];
+    const responseSchema = options.response;
     const controller = options.controller;
 
-    // Request lifecycle: Middleware -> Guard -> Interceptor -> Pipe -> Controller
+    // Request lifecycle: Middleware -> Guard -> Interceptor -> Pipe -> Controller -> Response serializer
     return async function routeHandler(req: ExpressRequest, res: ExpressResponse, next: NextFunction) {
       try {
         // 1. Middlewares
@@ -78,16 +79,17 @@ export abstract class BaseRoute {
         const pipelineAfterInterceptor = async () => {
           // 3. Pipes
           for (const pipe of pipes) {
-            // await pipe.transform(req, res, next);
-            await runRequestHandler(pipe, req, res);
-            if (res.headersSent) return;
+            await pipe.transform(req, res);
           }
 
           // 4. Controller
-          return controller(req, res, next);
+          const result = await controller(req, res, next);
+
+          // 5. Response serializer
+          return serializeResponse(result, responseSchema);
         };
 
-        // 5. Interceptors wrap pipe + controller
+        // 6. Interceptors wrap pipe + controller + response serializer
         const handler = interceptors.reduceRight(
           (nextInterceptor: () => Promise<unknown>, interceptor: BaseInterceptor) => () => {
             return Promise.resolve(interceptor.intercept(req, res, nextInterceptor));

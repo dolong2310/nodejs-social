@@ -59,7 +59,6 @@
     "date-fns": "^4.1.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1",
-    "express-validator": "^7.3.1",
     "formidable": "^3.5.4",
     "google-auth-library": "^10.6.2",
     "googleapis": "^171.4.0",

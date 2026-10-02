@@ -5,6 +5,11 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IOAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  GoogleAuthUrlQuerySchema,
+  GoogleLoginQuerySchema
+} from '@/presentation/http/express/v1/schemas/oauth/oauth.request.schema';
 
 export class OAuthRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -29,7 +34,7 @@ export class OAuthRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(OAUTH_THROTTLE_CONFIG.GET_GOOGLE_AUTH_URL)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ query: GoogleAuthUrlQuerySchema })],
         controller: this.oauthController.getGoogleAuthUrl
       },
       {
@@ -38,7 +43,7 @@ export class OAuthRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(OAUTH_THROTTLE_CONFIG.GOOGLE_LOGIN)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ query: GoogleLoginQuerySchema })],
         controller: this.oauthController.googleLogin
       }
     ];

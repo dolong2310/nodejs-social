@@ -8,8 +8,14 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
-import type { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import { cursorPaginatedSchema } from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  MarkNotificationsReadBodySchema,
+  NotificationIdParamsSchema,
+  NotificationListQuerySchema
+} from '@/presentation/http/express/v1/schemas/notification/notification.request.schema';
+import { NotificationResponseSchema } from '@/presentation/http/express/v1/schemas/notification/notification.response.schema';
 
 export class NotificationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +23,6 @@ export class NotificationRoute extends BaseRoute {
 
   constructor(
     private readonly notificationController: INotificationController,
-    private readonly notificationPipe: INotificationPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -39,7 +43,8 @@ export class NotificationRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.notificationPipe.listQuery],
+        pipes: [validate({ query: NotificationListQuerySchema })],
+        response: cursorPaginatedSchema(NotificationResponseSchema),
         controller: this.notificationController.list
       },
       {
@@ -53,7 +58,7 @@ export class NotificationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.notificationPipe.markReadBody],
+        pipes: [validate({ body: MarkNotificationsReadBodySchema })],
         controller: this.notificationController.markRead
       },
       {
@@ -67,7 +72,7 @@ export class NotificationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.notificationPipe.notificationIdParam],
+        pipes: [validate({ params: NotificationIdParamsSchema })],
         controller: this.notificationController.markOneRead
       }
     ];

@@ -25,89 +25,53 @@ import type { UpdatePostPort } from '@/modules/post/application/use-cases/update
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
-import {
-  CreateBookmarkRequestDTO,
-  CreateLikeRequestDTO,
-  CreatePostRequestDTO,
-  type DeleteBookmarkParamsDTO,
-  type DeleteLikeParamsDTO,
-  type GetNewFeedsQueryDTO,
-  type GetPostDetailParamsDTO,
-  type GetPostsByUserParamsDTO,
-  type GetPostsByUserQueryDTO,
-  type GetPostsParamsDTO,
-  PatchPostRequestDTO
-} from '@/presentation/http/express/v1/dtos/post/post.request.dto';
-import {
-  CreateBookmarkResponseDTO,
-  CreateLikeResponseDTO,
-  DeleteLikeResponseDTO,
-  PostDetailWithAuthorResponseDTO,
-  PostResponseDTO
-} from '@/presentation/http/express/v1/dtos/post/post.response.dto';
-import type { NextFunction } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
+import type { ValidatedRequest } from '@/presentation/http/express/types';
+import type { CursorPaginationQuerySchema } from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import type {
+  CreatePostBodySchema,
+  NewFeedsQuerySchema,
+  PatchPostBodySchema,
+  PostIdBodySchema,
+  PostIdParamsSchema,
+  PostsByUserParamsSchema,
+  PostsByUserQuerySchema,
+  PostsTypeParamsSchema
+} from '@/presentation/http/express/v1/schemas/post/post.request.schema';
+import type {
+  PostDetailWithAuthorResponse,
+  PostInteractionResponse,
+  PostResponse
+} from '@/presentation/http/express/v1/schemas/post/post.response.schema';
+
+type NewFeedsRequest = ValidatedRequest<{ query: typeof NewFeedsQuerySchema }>;
+type PostIdRequest = ValidatedRequest<{ params: typeof PostIdParamsSchema }>;
+type PostsByUserRequest = ValidatedRequest<{
+  params: typeof PostsByUserParamsSchema;
+  query: typeof PostsByUserQuerySchema;
+}>;
+type PostsTypeRequest = ValidatedRequest<{
+  params: typeof PostsTypeParamsSchema;
+  query: typeof CursorPaginationQuerySchema;
+}>;
+type InteractionListRequest = ValidatedRequest<{ query: typeof CursorPaginationQuerySchema }>;
+type CreatePostRequest = ValidatedRequest<{ body: typeof CreatePostBodySchema }>;
+type PatchPostRequest = ValidatedRequest<{ params: typeof PostIdParamsSchema; body: typeof PatchPostBodySchema }>;
+type PostIdBodyRequest = ValidatedRequest<{ body: typeof PostIdBodySchema }>;
 
 export interface IPostController {
-  getNewFeeds(
-    req: ExpressRequest<ParamsDictionary, object, object, GetNewFeedsQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getPostDetail(
-    req: ExpressRequest<GetPostDetailParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getPostsByUser(
-    req: ExpressRequest<GetPostsByUserParamsDTO, object, object, GetPostsByUserQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getPostsType(
-    req: ExpressRequest<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getUserLikedPosts(
-    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getUserBookmarkedPosts(
-    req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  createPost(
-    req: ExpressRequest<ParamsDictionary, object, CreatePostRequestDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  patchPost(
-    req: ExpressRequest<GetPostDetailParamsDTO, object, PatchPostRequestDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  deletePost(req: ExpressRequest<GetPostDetailParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
-  createBookmark(
-    req: ExpressRequest<ParamsDictionary, object, CreateBookmarkRequestDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  deleteBookmark(
-    req: ExpressRequest<DeleteBookmarkParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  createLike(
-    req: ExpressRequest<ParamsDictionary, object, CreateLikeRequestDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  deleteLike(req: ExpressRequest<DeleteLikeParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
+  getNewFeeds(req: NewFeedsRequest): Promise<unknown>;
+  getPostDetail(req: PostIdRequest): Promise<unknown>;
+  getPostsByUser(req: PostsByUserRequest): Promise<unknown>;
+  getPostsType(req: PostsTypeRequest): Promise<unknown>;
+  getUserLikedPosts(req: InteractionListRequest): Promise<unknown>;
+  getUserBookmarkedPosts(req: InteractionListRequest): Promise<unknown>;
+  createPost(req: CreatePostRequest): Promise<unknown>;
+  patchPost(req: PatchPostRequest): Promise<unknown>;
+  deletePost(req: PostIdRequest): Promise<unknown>;
+  createBookmark(req: PostIdBodyRequest): Promise<unknown>;
+  deleteBookmark(req: PostIdRequest): Promise<unknown>;
+  createLike(req: PostIdBodyRequest): Promise<unknown>;
+  deleteLike(req: PostIdRequest): Promise<unknown>;
 }
 
 export class PostController extends BaseController implements IPostController {
@@ -131,34 +95,34 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getNewFeeds(req: ExpressRequest<ParamsDictionary, object, object, GetNewFeedsQueryDTO>) {
+  async getNewFeeds(req: NewFeedsRequest) {
     const { cursor, limit, filter } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    let items: PostDetailWithAuthorResponseDTO[];
+    let items: PostDetailWithAuthorResponse[];
     let nextCursor: string | null;
 
     if (userId) {
-      const results = await this.getNewFeedsUC.execute<PostDetailWithAuthorResponseDTO>({
+      const results = await this.getNewFeedsUC.execute<PostDetailWithAuthorResponse>({
         userId,
         cursor,
-        limit: Number(limit),
+        limit,
         filter: filter ?? EnumNewFeedFilter.FOR_YOU
       });
 
       items = results.items;
       nextCursor = results.nextCursor;
     } else {
-      const guestResults = await this.getGuestNewFeedsUC.execute<PostDetailWithAuthorResponseDTO>({
+      const guestResults = await this.getGuestNewFeedsUC.execute<PostDetailWithAuthorResponse>({
         cursor,
-        limit: Number(limit)
+        limit
       });
 
       items = guestResults.items;
       nextCursor = guestResults.nextCursor;
     }
 
-    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponse>({
       items,
       nextCursor,
       message: 'Get new feeds successfully'
@@ -166,12 +130,12 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getPostsByUser(req: ExpressRequest<GetPostsByUserParamsDTO, object, object, GetPostsByUserQueryDTO>) {
+  async getPostsByUser(req: PostsByUserRequest) {
     const { userId: targetUserId } = req.params;
     const { cursor, limit, type } = req.query;
     const currentUserId = this.getUserId(req, { optional: true }) || undefined;
 
-    const { items, nextCursor } = await this.getPostsByUserUC.execute<PostDetailWithAuthorResponseDTO>(
+    const { items, nextCursor } = await this.getPostsByUserUC.execute<PostDetailWithAuthorResponse>(
       new GetPostsByUserInputPort({
         targetUserId,
         currentUserId,
@@ -181,7 +145,7 @@ export class PostController extends BaseController implements IPostController {
       })
     );
 
-    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponse>({
       items,
       nextCursor,
       message: 'Get posts by user successfully'
@@ -189,42 +153,44 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getPostDetail(req: ExpressRequest<GetPostDetailParamsDTO>) {
+  async getPostDetail(req: PostIdRequest) {
     const { postId } = req.params;
     const userId = this.getUserId(req, { optional: true });
     const postDetail = await this.getPostDetailUC.execute(
       new GetPostDetailInputPort({ postId, currentUserId: userId })
     );
-    const post = new PostDetailWithAuthorResponseDTO(postDetail);
 
     const updatedViews = await this.increaseViewsUC.execute({ postId, userId });
-    if (updatedViews) {
-      post.userViews = updatedViews.userViews;
-      post.guestViews = updatedViews.guestViews;
-      post.updatedAt = updatedViews.updatedAt!;
-    }
+    const post: PostDetailWithAuthorResponse = updatedViews
+      ? {
+          ...postDetail,
+          userViews: updatedViews.userViews,
+          guestViews: updatedViews.guestViews,
+          updatedAt: updatedViews.updatedAt!
+        }
+      : postDetail;
 
-    return this.response<PostDetailWithAuthorResponseDTO>({
+    return this.response<PostDetailWithAuthorResponse>({
       data: post,
       message: 'Get post detail successfully'
     });
   }
 
   @AutoBind()
-  async getPostsType(req: ExpressRequest<GetPostsParamsDTO, object, object, CursorPaginationQueryDTO>) {
+  async getPostsType(req: PostsTypeRequest) {
     const { postId, type } = req.params;
     const { cursor, limit } = req.query;
     const userId = this.getUserId(req, { optional: true });
 
-    const { items, nextCursor } = await this.getPostsTypeUC.execute<PostDetailWithAuthorResponseDTO>({
+    const { items, nextCursor } = await this.getPostsTypeUC.execute<PostDetailWithAuthorResponse>({
       userId,
       postId,
       type,
       cursor,
-      limit: Number(limit)
+      limit
     });
 
-    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponse>({
       items,
       nextCursor,
       message: 'Get posts type successfully'
@@ -232,10 +198,10 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getUserLikedPosts(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async getUserLikedPosts(req: InteractionListRequest) {
     const userId = this.getUserId(req);
     const { cursor, limit } = req.query;
-    const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponseDTO>(
+    const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponse>(
       new GetPostsByUserInteractionInputPort({
         userId,
         interaction: 'likes',
@@ -244,7 +210,7 @@ export class PostController extends BaseController implements IPostController {
       })
     );
 
-    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponse>({
       items,
       nextCursor,
       message: 'Get liked posts successfully'
@@ -252,10 +218,10 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async getUserBookmarkedPosts(req: ExpressRequest<ParamsDictionary, object, object, CursorPaginationQueryDTO>) {
+  async getUserBookmarkedPosts(req: InteractionListRequest) {
     const userId = this.getUserId(req);
     const { cursor, limit } = req.query;
-    const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponseDTO>(
+    const { items, nextCursor } = await this.getPostsByUserInteractionUC.execute<PostDetailWithAuthorResponse>(
       new GetPostsByUserInteractionInputPort({
         userId,
         interaction: 'bookmarks',
@@ -264,7 +230,7 @@ export class PostController extends BaseController implements IPostController {
       })
     );
 
-    return this.cursorPaginatedResponse<PostDetailWithAuthorResponseDTO>({
+    return this.cursorPaginatedResponse<PostDetailWithAuthorResponse>({
       items,
       nextCursor,
       message: 'Get bookmarked posts successfully'
@@ -272,54 +238,54 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async createPost(req: ExpressRequest<ParamsDictionary, object, CreatePostRequestDTO>) {
+  async createPost(req: CreatePostRequest) {
     const userId = this.getUserId(req);
-    const dto = new CreatePostRequestDTO(req.body);
+    const body = req.body;
 
     const post = await this.createPostUC.execute({
       userId,
-      type: dto.type,
-      parentId: dto.parentId,
-      content: dto.content,
-      audience: dto.audience,
-      allowStrangerComments: dto.allowStrangerComments,
-      media: dto.media,
-      hashtags: dto.hashtags,
-      mentions: dto.mentions
+      type: body.type,
+      parentId: body.parentId,
+      content: body.content,
+      audience: body.audience,
+      allowStrangerComments: body.allowStrangerComments,
+      media: body.media,
+      hashtags: body.hashtags,
+      mentions: body.mentions
     });
 
-    return this.response<PostResponseDTO>({
+    return this.response<PostResponse>({
       instance: Created,
-      data: new PostResponseDTO(post),
+      data: post,
       message: 'Create post successfully'
     });
   }
 
   @AutoBind()
-  async patchPost(req: ExpressRequest<GetPostDetailParamsDTO, object, PatchPostRequestDTO>) {
+  async patchPost(req: PatchPostRequest) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
-    const dto = new PatchPostRequestDTO(req.body);
+    const body = req.body;
 
     const post = await this.updatePostUC.execute({
       userId,
       postId,
-      audience: dto.audience,
-      allowStrangerComments: dto.allowStrangerComments,
-      content: dto.content,
-      media: dto.media,
-      hashtags: dto.hashtags,
-      mentions: dto.mentions
+      audience: body.audience,
+      allowStrangerComments: body.allowStrangerComments,
+      content: body.content,
+      media: body.media,
+      hashtags: body.hashtags,
+      mentions: body.mentions
     });
 
-    return this.response<PostResponseDTO>({
-      data: new PostResponseDTO(post),
+    return this.response<PostResponse>({
+      data: post,
       message: 'Post updated successfully'
     });
   }
 
   @AutoBind()
-  async deletePost(req: ExpressRequest<GetPostDetailParamsDTO>) {
+  async deletePost(req: PostIdRequest) {
     const userId = this.getUserId(req);
     const roleId = req.tokenPayload?.roleId ?? '';
     const { postId } = req.params;
@@ -336,24 +302,24 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async createBookmark(req: ExpressRequest<ParamsDictionary, object, CreateBookmarkRequestDTO>) {
+  async createBookmark(req: PostIdBodyRequest) {
     const userId = this.getUserId(req);
-    const dto = new CreateBookmarkRequestDTO(req.body);
+    const body = req.body;
 
     const bookmark = await this.createBookmarkUC.execute({
       userId,
-      postId: dto.postId
+      postId: body.postId
     });
 
-    return this.response<CreateBookmarkResponseDTO>({
+    return this.response<PostInteractionResponse>({
       instance: Created,
-      data: new CreateBookmarkResponseDTO(bookmark),
+      data: bookmark,
       message: 'Bookmark post successfully'
     });
   }
 
   @AutoBind()
-  async deleteBookmark(req: ExpressRequest<DeleteBookmarkParamsDTO>) {
+  async deleteBookmark(req: PostIdRequest) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 
@@ -368,24 +334,24 @@ export class PostController extends BaseController implements IPostController {
   }
 
   @AutoBind()
-  async createLike(req: ExpressRequest<ParamsDictionary, object, CreateLikeRequestDTO>) {
+  async createLike(req: PostIdBodyRequest) {
     const userId = this.getUserId(req);
-    const dto = new CreateLikeRequestDTO(req.body);
+    const body = req.body;
 
     const like = await this.createLikeUC.execute({
       userId,
-      postId: dto.postId
+      postId: body.postId
     });
 
-    return this.response<CreateLikeResponseDTO>({
+    return this.response<PostInteractionResponse>({
       instance: Created,
-      data: new CreateLikeResponseDTO(like),
+      data: like,
       message: 'Post liked successfully'
     });
   }
 
   @AutoBind()
-  async deleteLike(req: ExpressRequest<DeleteLikeParamsDTO>) {
+  async deleteLike(req: PostIdRequest) {
     const userId = this.getUserId(req);
     const { postId } = req.params;
 
@@ -394,8 +360,8 @@ export class PostController extends BaseController implements IPostController {
       postId
     });
 
-    return this.response<DeleteLikeResponseDTO>({
-      data: new DeleteLikeResponseDTO(like),
+    return this.response<PostInteractionResponse>({
+      data: like,
       message: 'Like removed successfully'
     });
   }

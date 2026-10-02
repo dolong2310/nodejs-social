@@ -4,32 +4,24 @@ import type { SendMessagePort } from '@/modules/conversation/application/use-cas
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import {
-  MarkChatReadBodyDTO,
-  SendChatMessageBodyDTO
-} from '@/presentation/http/express/v1/dtos/chat-message/chat-message.request.dto';
-import { ChatMessageResponseDTO } from '@/presentation/http/express/v1/dtos/chat-message/chat-message.response.dto';
-import type { CursorPaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
-import type { ConversationIdParams } from '@/presentation/http/express/v1/dtos/conversation/conversation.request.dto';
-import type { NextFunction } from 'express';
+import type { ValidatedRequest } from '@/presentation/http/express/types';
+import type {
+  MarkChatReadBodySchema,
+  SendChatMessageBodySchema
+} from '@/presentation/http/express/v1/schemas/chat-message/chat-message.request.schema';
+import type { ChatMessageResponse } from '@/presentation/http/express/v1/schemas/chat-message/chat-message.response.schema';
+import type { CursorPaginationQuerySchema } from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import type { ConversationIdParamsSchema } from '@/presentation/http/express/v1/schemas/conversation/conversation.request.schema';
+
+type ConversationIdParams = { params: typeof ConversationIdParamsSchema };
+type SendMessageRequest = ValidatedRequest<ConversationIdParams & { body: typeof SendChatMessageBodySchema }>;
+type ListMessagesRequest = ValidatedRequest<ConversationIdParams & { query: typeof CursorPaginationQuerySchema }>;
+type MarkReadRequest = ValidatedRequest<ConversationIdParams & { body: typeof MarkChatReadBodySchema }>;
 
 export interface IChatMessageController {
-  sendMessage(
-    req: ExpressRequest<ConversationIdParams, object, SendChatMessageBodyDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<SuccessResponse<ChatMessageResponseDTO>>;
-  listMessages(
-    req: ExpressRequest<ConversationIdParams, object, object, CursorPaginationQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  markRead(
-    req: ExpressRequest<ConversationIdParams, object, MarkChatReadBodyDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
+  sendMessage(req: SendMessageRequest): Promise<SuccessResponse<ChatMessageResponse>>;
+  listMessages(req: ListMessagesRequest): Promise<unknown>;
+  markRead(req: MarkReadRequest): Promise<unknown>;
 }
 
 export class ChatMessageController extends BaseController implements IChatMessageController {
@@ -42,10 +34,10 @@ export class ChatMessageController extends BaseController implements IChatMessag
   }
 
   @AutoBind()
-  async sendMessage(req: ExpressRequest<ConversationIdParams, object, SendChatMessageBodyDTO>) {
+  async sendMessage(req: SendMessageRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
-    const body = new SendChatMessageBodyDTO(req.body);
+    const body = req.body;
 
     const message = await this.sendMessageUC.execute({
       userId,
@@ -54,15 +46,15 @@ export class ChatMessageController extends BaseController implements IChatMessag
       attachments: body.attachments
     });
 
-    return this.response<ChatMessageResponseDTO>({
+    return this.response<ChatMessageResponse>({
       instance: Created,
-      data: new ChatMessageResponseDTO(message),
+      data: message,
       message: 'Message sent'
     });
   }
 
   @AutoBind()
-  async listMessages(req: ExpressRequest<ConversationIdParams, object, object, CursorPaginationQueryDTO>) {
+  async listMessages(req: ListMessagesRequest) {
     const userId = this.getUserId(req);
     const { limit, cursor } = req.query;
     const { conversationId } = req.params;
@@ -70,11 +62,11 @@ export class ChatMessageController extends BaseController implements IChatMessag
     const { items, nextCursor } = await this.listMessagesUC.execute({
       userId,
       conversationId,
-      limit: Number(limit),
+      limit,
       cursor
     });
 
-    return this.cursorPaginatedResponse<ChatMessageResponseDTO>({
+    return this.cursorPaginatedResponse<ChatMessageResponse>({
       items,
       nextCursor,
       message: 'Messages loaded'
@@ -82,10 +74,10 @@ export class ChatMessageController extends BaseController implements IChatMessag
   }
 
   @AutoBind()
-  async markRead(req: ExpressRequest<ConversationIdParams, object, MarkChatReadBodyDTO>) {
+  async markRead(req: MarkReadRequest) {
     const userId = this.getUserId(req);
     const { conversationId } = req.params;
-    const body = new MarkChatReadBodyDTO(req.body);
+    const body = req.body;
 
     await this.markReadUC.execute({ userId, conversationId, lastReadMessageId: body.lastReadMessageId });
 

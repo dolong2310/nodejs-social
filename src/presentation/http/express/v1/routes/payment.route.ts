@@ -7,7 +7,13 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IPaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
-import type { IPaymentPipe } from '@/presentation/http/express/v1/pipes/payment.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  CreatePaymentBodySchema,
+  IdempotencyKeyHeadersSchema,
+  PaymentIdParamsSchema
+} from '@/presentation/http/express/v1/schemas/payment/payment.request.schema';
+import { PaymentResponseSchema } from '@/presentation/http/express/v1/schemas/payment/payment.response.schema';
 
 export class PaymentRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -15,7 +21,6 @@ export class PaymentRoute extends BaseRoute {
 
   constructor(
     private readonly paymentController: IPaymentController,
-    private readonly paymentPipe: IPaymentPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -38,7 +43,8 @@ export class PaymentRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(PAYMENT_THROTTLE_CONFIG.CREATE)],
         guards,
         interceptors,
-        pipes: [this.paymentPipe.createPaymentPipe, this.paymentPipe.idempotencyKeyHeader],
+        pipes: [validate({ headers: IdempotencyKeyHeadersSchema, body: CreatePaymentBodySchema })],
+        response: PaymentResponseSchema,
         controller: this.paymentController.create
       },
       {
@@ -47,7 +53,8 @@ export class PaymentRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(PAYMENT_THROTTLE_CONFIG.GET_BY_ID)],
         guards,
         interceptors,
-        pipes: [this.paymentPipe.paymentIdParam],
+        pipes: [validate({ params: PaymentIdParamsSchema })],
+        response: PaymentResponseSchema,
         controller: this.paymentController.getById
       }
     ];

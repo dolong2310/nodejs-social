@@ -9,8 +9,26 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IPostController } from '@/presentation/http/express/v1/controllers/post.controller';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import type { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  cursorPaginatedSchema,
+  CursorPaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  CreatePostBodySchema,
+  NewFeedsQuerySchema,
+  PatchPostBodySchema,
+  PostIdBodySchema,
+  PostIdParamsSchema,
+  PostsByUserParamsSchema,
+  PostsByUserQuerySchema,
+  PostsTypeParamsSchema
+} from '@/presentation/http/express/v1/schemas/post/post.request.schema';
+import {
+  PostDetailWithAuthorResponseSchema,
+  PostInteractionResponseSchema,
+  PostResponseSchema
+} from '@/presentation/http/express/v1/schemas/post/post.response.schema';
 
 export class PostRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -18,8 +36,6 @@ export class PostRoute extends BaseRoute {
 
   constructor(
     private readonly postController: IPostController,
-    private readonly postPipe: IPostPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly authOptionGuard: AuthOptionGuard,
     private readonly activeUserGuard: ActiveUserGuard,
@@ -41,7 +57,8 @@ export class PostRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_NEW_FEEDS)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.postPipe.newFeedFilterQueryPipe],
+        pipes: [validate({ query: NewFeedsQuerySchema })],
+        response: cursorPaginatedSchema(PostDetailWithAuthorResponseSchema),
         controller: this.postController.getNewFeeds
       },
       {
@@ -50,11 +67,8 @@ export class PostRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_BY_USER)],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [
-          this.paginationPipe.cursorPaginationQuery,
-          this.postPipe.userIdPipe('userId', 'params'),
-          this.postPipe.postTypeQueryPipe
-        ],
+        pipes: [validate({ params: PostsByUserParamsSchema, query: PostsByUserQuerySchema })],
+        response: cursorPaginatedSchema(PostDetailWithAuthorResponseSchema),
         controller: this.postController.getPostsByUser
       },
       {
@@ -68,7 +82,8 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.postIdPipe('postId', 'params'), this.postPipe.patchPostPipe],
+        pipes: [validate({ params: PostIdParamsSchema, body: PatchPostBodySchema })],
+        response: PostResponseSchema,
         controller: this.postController.patchPost
       },
       {
@@ -82,7 +97,7 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [validate({ params: PostIdParamsSchema })],
         controller: this.postController.deletePost
       },
       {
@@ -91,7 +106,8 @@ export class PostRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_DETAIL)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [validate({ params: PostIdParamsSchema })],
+        response: PostDetailWithAuthorResponseSchema,
         controller: this.postController.getPostDetail
       },
       {
@@ -100,7 +116,8 @@ export class PostRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_LIKED)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(PostDetailWithAuthorResponseSchema),
         controller: this.postController.getUserLikedPosts
       },
       {
@@ -109,7 +126,8 @@ export class PostRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_BOOKMARKED)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(PostDetailWithAuthorResponseSchema),
         controller: this.postController.getUserBookmarkedPosts
       },
       {
@@ -118,11 +136,8 @@ export class PostRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(POST_THROTTLE_CONFIG.GET_BY_TYPE)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [
-          this.paginationPipe.cursorPaginationQuery,
-          this.postPipe.postIdPipe('postId', 'params'),
-          this.postPipe.postTypePipe
-        ],
+        pipes: [validate({ params: PostsTypeParamsSchema, query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(PostDetailWithAuthorResponseSchema),
         controller: this.postController.getPostsType
       },
       {
@@ -136,7 +151,8 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.createPostPipe],
+        pipes: [validate({ body: CreatePostBodySchema })],
+        response: PostResponseSchema,
         controller: this.postController.createPost
       },
       {
@@ -150,7 +166,8 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.postIdPipe('postId', 'body')],
+        pipes: [validate({ body: PostIdBodySchema })],
+        response: PostInteractionResponseSchema,
         controller: this.postController.createBookmark
       },
       {
@@ -164,7 +181,7 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [validate({ params: PostIdParamsSchema })],
         controller: this.postController.deleteBookmark
       },
       {
@@ -178,7 +195,8 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.postIdPipe('postId', 'body')],
+        pipes: [validate({ body: PostIdBodySchema })],
+        response: PostInteractionResponseSchema,
         controller: this.postController.createLike
       },
       {
@@ -192,7 +210,8 @@ export class PostRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.postPipe.postIdPipe('postId', 'params')],
+        pipes: [validate({ params: PostIdParamsSchema })],
+        response: PostInteractionResponseSchema,
         controller: this.postController.deleteLike
       }
     ];

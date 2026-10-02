@@ -2,27 +2,21 @@ import type { CreatePaymentPort } from '@/modules/payment/application/use-cases/
 import type { GetPaymentPort } from '@/modules/payment/application/use-cases/get-payment/get-payment.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import type {
-  CreatePaymentBodyDTO,
-  PaymentIdParamsDTO
-} from '@/presentation/http/express/v1/dtos/payment/payment.request.dto';
-import { PaymentResponseDTO } from '@/presentation/http/express/v1/dtos/payment/payment.response.dto';
 import { Created, type SuccessResponse } from '@/presentation/http/express/responses/success.response';
-import type { NextFunction } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
+import type { ValidatedRequest } from '@/presentation/http/express/types';
+import type {
+  CreatePaymentBodySchema,
+  PaymentIdParamsSchema
+} from '@/presentation/http/express/v1/schemas/payment/payment.request.schema';
+import type { PaymentSafeProps } from '@/modules/payment/domain/entities/payment.types';
 
+type CreatePaymentRequest = ValidatedRequest<{ body: typeof CreatePaymentBodySchema }>;
+type GetPaymentRequest = ValidatedRequest<{ params: typeof PaymentIdParamsSchema }>;
+
+/** Returns `PaymentSafeProps`; the route's `PaymentResponseSchema` maps it to the public shape. */
 export interface IPaymentController {
-  create(
-    req: ExpressRequest<ParamsDictionary, object, CreatePaymentBodyDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<SuccessResponse<PaymentResponseDTO>>;
-  getById(
-    req: ExpressRequest<PaymentIdParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<SuccessResponse<PaymentResponseDTO>>;
+  create(req: CreatePaymentRequest): Promise<SuccessResponse<PaymentSafeProps>>;
+  getById(req: GetPaymentRequest): Promise<SuccessResponse<PaymentSafeProps>>;
 }
 
 export class PaymentController extends BaseController implements IPaymentController {
@@ -34,7 +28,7 @@ export class PaymentController extends BaseController implements IPaymentControl
   }
 
   @AutoBind()
-  async create(req: ExpressRequest<ParamsDictionary, object, CreatePaymentBodyDTO>) {
+  async create(req: CreatePaymentRequest) {
     const idempotencyKey = req.get('Idempotency-Key')?.trim();
     const payment = await this.createPaymentUC.execute({
       userId: this.getUserId(req),
@@ -48,19 +42,19 @@ export class PaymentController extends BaseController implements IPaymentControl
 
     return this.response({
       instance: Created,
-      data: new PaymentResponseDTO(payment),
+      data: payment,
       message: 'Payment created'
     });
   }
 
   @AutoBind()
-  async getById(req: ExpressRequest<PaymentIdParamsDTO>) {
+  async getById(req: GetPaymentRequest) {
     const payment = await this.getPaymentUC.execute({
       userId: this.getUserId(req),
       paymentId: req.params.paymentId
     });
     return this.response({
-      data: new PaymentResponseDTO(payment),
+      data: payment,
       message: 'Payment loaded'
     });
   }

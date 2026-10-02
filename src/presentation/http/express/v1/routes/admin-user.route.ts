@@ -8,8 +8,17 @@ import type { LoggingInterceptor } from '@/presentation/http/express/interceptor
 import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
 import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import type { IAdminUserController } from '@/presentation/http/express/v1/controllers/admin-user.controller';
-import type { IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  AdminCreateUserBodySchema,
+  AdminUpdateUserBodySchema,
+  AdminUserIdParamsSchema
+} from '@/presentation/http/express/v1/schemas/admin-user/admin-user.request.schema';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import { UserResponseSchema } from '@/presentation/http/express/v1/schemas/user/user.response.schema';
 
 export class AdminUserRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +26,6 @@ export class AdminUserRoute extends BaseRoute {
 
   constructor(
     private readonly adminUserController: IAdminUserController,
-    private readonly adminUsersPipe: IAdminUsersPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -39,7 +46,8 @@ export class AdminUserRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(UserResponseSchema),
         controller: this.adminUserController.list
       },
       {
@@ -53,7 +61,8 @@ export class AdminUserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.adminUsersPipe.createBodyPipe()],
+        pipes: [validate({ body: AdminCreateUserBodySchema })],
+        response: UserResponseSchema,
         controller: this.adminUserController.create
       },
       {
@@ -62,7 +71,8 @@ export class AdminUserRoute extends BaseRoute {
         middlewares: [this.throttlerGuard.handler(ADMIN_USER_THROTTLE_CONFIG.GET_BY_ID)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.adminUsersPipe.userIdParam()],
+        pipes: [validate({ params: AdminUserIdParamsSchema })],
+        response: UserResponseSchema,
         controller: this.adminUserController.getById
       },
       {
@@ -76,7 +86,8 @@ export class AdminUserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.adminUsersPipe.userIdParam(), this.adminUsersPipe.updateBodyPipe()],
+        pipes: [validate({ params: AdminUserIdParamsSchema, body: AdminUpdateUserBodySchema })],
+        response: UserResponseSchema,
         controller: this.adminUserController.update
       },
       {
@@ -90,7 +101,7 @@ export class AdminUserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.adminUsersPipe.userIdParam()],
+        pipes: [validate({ params: AdminUserIdParamsSchema })],
         controller: this.adminUserController.remove
       }
     ];
