@@ -15,6 +15,13 @@ type CacheValue<T> =
       type: 'null';
     };
 
+/**
+ * Redis only stores strings, so values are JSON-encoded. `JSON.stringify` turns a `Date` into an ISO string and
+ * `JSON.parse` cannot tell it apart from a regular string afterwards. Dates are therefore tagged on write
+ * (`{ "__cacheDate": "<iso>" }`) and revived on read, without guessing from string contents.
+ */
+const CACHE_DATE_TAG = '__cacheDate';
+
 export class CacheManager implements CacheManagerPort {
   constructor(private readonly redis: RedisClientPort) {}
 
@@ -22,14 +29,14 @@ export class CacheManager implements CacheManagerPort {
     const raw = await this.redis.client.get(key);
     if (raw === null) return null;
     try {
-      return JSON.parse(raw) as T;
+      return decodeCacheValue(JSON.parse(raw)) as T;
     } catch {
       return raw as T;
     }
   }
 
   async set<T>(key: string, value: T, options?: { ttlSeconds?: number }): Promise<void> {
-    const raw = JSON.stringify(value);
+    const raw = JSON.stringify(encodeCacheValue(value));
     if (options?.ttlSeconds) {
       await this.redis.client.set(key, raw, 'EX', options.ttlSeconds);
     } else {
@@ -193,6 +200,46 @@ export class CacheManager implements CacheManagerPort {
     const jitter = Math.floor(ttlSeconds * ratio * Math.random());
     return ttlSeconds + jitter;
   }
+}
+
+function encodeCacheValue(value: unknown): unknown {
+  if (value instanceof Date) {
+    // `toISOString()` throws on an invalid date; JSON.stringify used to write `null` for it.
+    return Number.isNaN(value.getTime()) ? null : { [CACHE_DATE_TAG]: value.toISOString() };
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(encodeCacheValue);
+  }
+
+  if (value && typeof value === 'object') {
+    // Objects with their own JSON form (ObjectId, Buffer, value objects...) are left to JSON.stringify.
+    if (typeof (value as { toJSON?: unknown }).toJSON === 'function') {
+      return value;
+    }
+
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, encodeCacheValue(item)]));
+  }
+
+  return value;
+}
+
+function decodeCacheValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(decodeCacheValue);
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+
+    if (Object.keys(record).length === 1 && typeof record[CACHE_DATE_TAG] === 'string') {
+      return new Date(record[CACHE_DATE_TAG]);
+    }
+
+    return Object.fromEntries(Object.entries(record).map(([key, item]) => [key, decodeCacheValue(item)]));
+  }
+
+  return value;
 }
 
 function sleep(ms: number): Promise<void> {
