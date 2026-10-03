@@ -129,7 +129,7 @@ paths:
       tags: [payments]
       summary: Create a sandbox order payment
       operationId: createPayment
-      description: Creates an order payment from the supplied reference, description and VND amount, then returns a provider checkout URL. VNPay and MoMo are sandbox-only in every app environment.
+      description: Creates an order payment from the supplied reference, description and VND amount, then returns a provider checkout URL. VNPay, MoMo and ZaloPay are sandbox-only in every app environment.
       security: [{ bearerAuth: [] }]
       parameters:
         - name: Idempotency-Key
@@ -251,6 +251,46 @@ paths:
       summary: MoMo browser return
       operationId: receiveMomoReturn
       description: Read-only return page. The payment state is updated only by the verified MoMo IPN.
+      security: []
+      responses:
+        '200':
+          description: User-facing instruction to check payment status in the application
+          content:
+            text/plain:
+              schema: { type: string }
+  /payments/callbacks/zalopay/callback:
+    post:
+      tags: [payments]
+      summary: ZaloPay server-to-server callback
+      operationId: receiveZalopayCallback
+      description: >-
+        ZaloPay calls this URL (sent as callback_url when the order is created) only after a successful payment.
+        The API verifies the mac with key2 and persists the notification before acknowledging it.
+        return_code 1 = applied, 2 = duplicate, 0 = ZaloPay should retry, -1 = rejected without retry.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZalopayCallbackRequest'
+      responses:
+        '200':
+          description: ZaloPay protocol response with return_code and return_message
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [return_code, return_message]
+                properties:
+                  return_code: { type: integer, enum: [1, 2, 0, -1], example: 1 }
+                  return_message: { type: string, example: Success }
+  /payments/callbacks/zalopay/return:
+    get:
+      tags: [payments]
+      summary: ZaloPay browser return
+      operationId: receiveZalopayReturn
+      description: Read-only return page. The payment state is updated only by the verified ZaloPay callback.
       security: []
       responses:
         '200':

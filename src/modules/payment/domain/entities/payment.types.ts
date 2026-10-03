@@ -1,9 +1,9 @@
 import type { BaseEntityProps } from '@/modules/core/domain/entities/base.entity';
 import type { Prettify } from 'ts-essentials';
 
-export type PaymentProvider = 'vnpay' | 'momo';
+export type PaymentProvider = 'vnpay' | 'momo' | 'zalopay';
 
-export const PAYMENT_PROVIDERS = ['vnpay', 'momo'] as const;
+export const PAYMENT_PROVIDERS = ['vnpay', 'momo', 'zalopay'] as const;
 
 export const MIN_PAYMENT_AMOUNT_VND = 10_000;
 
@@ -72,6 +72,8 @@ export type PaymentCheckoutProps = Pick<
 export interface CreatePaymentProps {
   userId: string;
   provider: PaymentProvider;
+  providerOrderId: string;
+  expiresAt: Date | null;
   sourceReference: string;
   description: string;
   amountVnd: number;

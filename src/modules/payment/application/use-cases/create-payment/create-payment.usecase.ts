@@ -1,4 +1,4 @@
-import { ConflictException } from '@/modules/core/domain/exceptions/exceptions';
+import { ArgumentInvalidException, ConflictException } from '@/modules/core/domain/exceptions/exceptions';
 import {
   PaymentCheckoutError,
   type PaymentGatewayPort
@@ -24,18 +24,26 @@ export class CreatePaymentUseCase extends CreatePaymentPort {
   }
 
   async execute(input: CreatePaymentInputPort): Promise<PaymentSafeProps> {
-    const candidate = PaymentEntity.create({
+    const gateway = this.gateways[input.provider];
+    if (!gateway) throw new ArgumentInvalidException('Unsupported payment provider');
+
+    const now = new Date();
+    const reference = gateway.createOrderReference(now);
+    const entity = PaymentEntity.create({
       userId: input.userId,
       provider: input.provider,
+      providerOrderId: reference.providerOrderId,
+      expiresAt: reference.expiresAt,
       sourceReference: input.sourceReference,
       description: input.description,
       amountVnd: input.amountVnd,
-      idempotencyKey: input.idempotencyKey
+      idempotencyKey: input.idempotencyKey,
+      now
     });
 
-    const result = await this.paymentRepository.insertOrFindByIdempotency(candidate);
+    const result = await this.paymentRepository.insertOrFindByIdempotency(entity);
     if (!result.inserted) {
-      if (result.payment.getProps().requestFingerprint !== candidate.getProps().requestFingerprint) {
+      if (result.payment.getProps().requestFingerprint !== entity.getProps().requestFingerprint) {
         throw new ConflictException('Idempotency key was already used for a different payment request');
       }
       return this.toSafeProps(result.payment);
@@ -43,10 +51,7 @@ export class CreatePaymentUseCase extends CreatePaymentPort {
 
     let checkoutUrl: string;
     try {
-      checkoutUrl = await this.gateways[input.provider].createCheckout(
-        result.payment.toObject<PaymentFullProps>(),
-        input.clientIp
-      );
+      checkoutUrl = await gateway.createCheckout(result.payment.toObject<PaymentFullProps>(), input.clientIp);
     } catch (error) {
       if (error instanceof PaymentCheckoutError && error.classification.kind === 'definitive_rejection') {
         return this.toSafeProps(

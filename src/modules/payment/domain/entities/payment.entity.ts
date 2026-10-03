@@ -15,8 +15,6 @@ import {
 } from '@/modules/payment/domain/entities/payment.types';
 import { createHash } from 'node:crypto';
 
-const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;
-
 type PaymentRequestFingerprintProps = Pick<
   CreatePaymentProps,
   'provider' | 'sourceReference' | 'description' | 'amountVnd'
@@ -48,13 +46,13 @@ export class PaymentEntity extends Entity<PaymentProps> {
         amountVnd: input.amountVnd,
         currency: 'VND',
         provider: input.provider,
-        providerOrderId: generatePrefixId('po'),
+        providerOrderId: input.providerOrderId,
         providerRequestId: generatePrefixId('pr'),
         idempotencyKey: input.idempotencyKey,
         requestFingerprint: createPaymentRequestFingerprint(input),
         status: 'creating',
         checkoutUrl: null,
-        expiresAt: input.provider === 'vnpay' ? new Date(now.getTime() + VNPAY_CHECKOUT_TTL_MS) : null,
+        expiresAt: input.expiresAt,
         providerTransactionId: null,
         providerResultCode: null,
         version: 0
@@ -110,10 +108,6 @@ export class PaymentEntity extends Entity<PaymentProps> {
       new ArgumentInvalidException('Unsupported payment provider')
     );
     invariant(PAYMENT_STATUSES.includes(payment.status), new ArgumentInvalidException('Invalid payment status'));
-    invariant(
-      payment.provider !== 'vnpay' || payment.expiresAt instanceof Date,
-      new ArgumentNotProvidedException('VNPay expiry is required')
-    );
     invariant(
       payment.expiresAt === null || !Number.isNaN(payment.expiresAt.getTime()),
       new ArgumentInvalidException('Invalid payment expiry')

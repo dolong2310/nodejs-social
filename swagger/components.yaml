@@ -1136,7 +1136,7 @@ components:
       properties:
         provider:
           type: string
-          enum: [vnpay, momo]
+          enum: [vnpay, momo, zalopay]
         sourceReference:
           type: string
           minLength: 1
@@ -1176,7 +1176,7 @@ components:
         description: { type: string, example: Thanh toan don hang 123456 }
         amountVnd: { type: integer, example: 150000 }
         currency: { type: string, enum: [VND] }
-        provider: { type: string, enum: [vnpay, momo] }
+        provider: { type: string, enum: [vnpay, momo, zalopay] }
         status:
           type: string
           enum: [creating, pending, unknown, create_failed, succeeded, failed, cancelled]
@@ -1184,7 +1184,7 @@ components:
           type: string
           format: uri
           nullable: true
-          description: Null after the VNPay checkout URL expires.
+          description: Null after the VNPay or ZaloPay checkout URL expires.
         expiresAt:
           type: string
           format: date-time
@@ -1230,6 +1230,20 @@ components:
         responseTime: { type: integer }
         extraData: { type: string }
         signature: { type: string }
+      additionalProperties: true
+    ZalopayCallbackRequest:
+      type: object
+      required: [data, mac, type]
+      properties:
+        data:
+          type: string
+          description: JSON string with app_id, app_trans_id, amount, zp_trans_id, server_time, channel and other order fields
+        mac:
+          type: string
+          description: HMAC-SHA256 of data using key2
+        type:
+          type: integer
+          description: 1 = order callback
       additionalProperties: true
     NotificationListItem:
       type: object

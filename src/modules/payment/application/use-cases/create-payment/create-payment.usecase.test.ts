@@ -117,7 +117,14 @@ class InMemoryPaymentRepository implements PaymentRepositoryPort {
   }
 }
 
+let orderReferenceSequence = 0;
+
 class FakePaymentGateway implements PaymentGatewayPort {
+  createOrderReference = vi.fn((now: Date) => ({
+    providerOrderId: `fake-order-${++orderReferenceSequence}`,
+    expiresAt: new Date(now.getTime() + 60_000)
+  }));
+
   createCheckout = vi.fn(async (_payment: PaymentCheckoutProps, _clientIp: string) => {
     void _payment;
     void _clientIp;
@@ -133,8 +140,9 @@ function setup() {
   const repository = new InMemoryPaymentRepository();
   const vnpay = new FakePaymentGateway();
   const momo = new FakePaymentGateway();
-  const useCase = new CreatePaymentUseCase(repository, { vnpay, momo });
-  return { repository, vnpay, momo, useCase };
+  const zalopay = new FakePaymentGateway();
+  const useCase = new CreatePaymentUseCase(repository, { vnpay, momo, zalopay });
+  return { repository, vnpay, momo, zalopay, useCase };
 }
 
 const request = (
@@ -179,6 +187,21 @@ describe('CreatePaymentUseCase', () => {
     expect(payment).not.toHaveProperty('userId');
     expect(payment).not.toHaveProperty('idempotencyKey');
     expect(vnpay.createCheckout).toHaveBeenCalledOnce();
+  });
+
+  it('stores the order reference chosen by the provider gateway', async () => {
+    const { vnpay, useCase } = setup();
+    const expiresAt = new Date('2026-10-03T00:15:00.000Z');
+    vnpay.createOrderReference.mockReturnValueOnce({ providerOrderId: 'gateway-order-id', expiresAt });
+
+    const payment = await useCase.execute(request());
+
+    expect(vnpay.createOrderReference).toHaveBeenCalledOnce();
+    expect(vnpay.createCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ providerOrderId: 'gateway-order-id', expiresAt }),
+      '203.0.113.10'
+    );
+    expect(payment.expiresAt).toEqual(expiresAt);
   });
 
   it('returns the same payment for a repeated key and does not create another checkout', async () => {

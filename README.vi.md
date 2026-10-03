@@ -18,7 +18,7 @@ Repository này là một TypeScript backend API, được xây theo clean/hexag
 - Notifications với realtime delivery và cleanup jobs
 - Image upload, video upload, video stream status và static video streaming
 - Role và permission management cho protected operations
-- Thanh toán đơn hàng mẫu 10.000 VND qua VNPay và MoMo sandbox
+- Thanh toán đơn hàng mẫu 10.000 VND qua VNPay, MoMo và ZaloPay sandbox
 - Swagger/OpenAPI documentation và Postman collections
 - MongoDB và PostgreSQL persistence adapters nằm sau repository ports
 - Hỗ trợ cache/rate-limit bằng Redis và background jobs bằng BullMQ
@@ -105,7 +105,7 @@ Các module chính:
 - `notification`: notification listing, read state, realtime presence và cleanup
 - `media`: image upload, video upload, stream status và static video streaming
 - `operations`: internal admin/maintenance actions như cache clearing và permission sync
-- `payment`: thanh toán order; use cases phụ thuộc repository/gateway ports, adapter riêng cho MongoDB, PostgreSQL, VNPay và MoMo
+- `payment`: thanh toán order; use cases phụ thuộc repository/gateway ports, adapter riêng cho MongoDB, PostgreSQL, VNPay, MoMo và ZaloPay
 - `core`: shared DDD primitives, base use-case contracts, repository bases và app-wide ports
 
 ## Bắt đầu
@@ -137,24 +137,25 @@ Sau đó điền các biến bắt buộc.
 
 Các biến quan trọng:
 
-| Variable                                                                                      | Mục Đích                                                             |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `PORT`                                                                                        | HTTP server port                                                     |
-| `APP_URL`                                                                                     | Backend application URL                                              |
-| `FRONTEND_URL`                                                                                | Frontend URL dùng cho CORS defaults                                  |
-| `CORS_ORIGINS`                                                                                | Danh sách origins được phép, phân tách bằng dấu phẩy                 |
-| `DATABASE_ADAPTER`                                                                            | `mongo` hoặc `postgres`                                              |
-| `MONGO_URI`, `MONGO_DB_NAME`                                                                  | MongoDB connection config                                            |
-| `POSTGRES_URI`, `POSTGRES_SSL`                                                                | PostgreSQL connection config                                         |
-| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`                                      | Redis connection config                                              |
-| `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`                                                 | JWT secrets                                                          |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                             | Google OAuth config                                                  |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME`              | S3 storage config                                                    |
-| `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`                                                       | API key Resend và email người gửi cho luồng OTP/email                |
-| `VNPAY_TMN_CODE`, `VNPAY_SECURE_SECRET`, `VNPAY_HOST`                                         | Thông tin VNPay sandbox; host phải là `https://sandbox.vnpayment.vn` |
-| `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_STORE_ID`, `MOMO_STORE_NAME` | Thông tin MoMo sandbox                                               |
-| `PAYMENT_PUBLIC_BASE_URL`                                                                     | HTTPS origin công khai để provider gọi callback; không thêm path     |
-| `RATE_LIMIT_ENABLED`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`                                | API rate limit config                                                |
+| Variable                                                                                      | Mục Đích                                                                              |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `PORT`                                                                                        | HTTP server port                                                                      |
+| `APP_URL`                                                                                     | Backend application URL                                                               |
+| `FRONTEND_URL`                                                                                | Frontend URL dùng cho CORS defaults                                                   |
+| `CORS_ORIGINS`                                                                                | Danh sách origins được phép, phân tách bằng dấu phẩy                                  |
+| `DATABASE_ADAPTER`                                                                            | `mongo` hoặc `postgres`                                                               |
+| `MONGO_URI`, `MONGO_DB_NAME`                                                                  | MongoDB connection config                                                             |
+| `POSTGRES_URI`, `POSTGRES_SSL`                                                                | PostgreSQL connection config                                                          |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`                                      | Redis connection config                                                               |
+| `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`                                                 | JWT secrets                                                                           |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                             | Google OAuth config                                                                   |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME`              | S3 storage config                                                                     |
+| `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`                                                       | API key Resend và email người gửi cho luồng OTP/email                                 |
+| `VNPAY_TMN_CODE`, `VNPAY_SECURE_SECRET`, `VNPAY_HOST`                                         | Thông tin VNPay sandbox; host phải là `https://sandbox.vnpayment.vn`                  |
+| `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_STORE_ID`, `MOMO_STORE_NAME` | Thông tin MoMo sandbox                                                                |
+| `ZALOPAY_APP_ID`, `ZALOPAY_KEY1`, `ZALOPAY_KEY2`                                              | Thông tin ZaloPay sandbox (`app_id` dạng số, key1 ký request, key2 xác thực callback) |
+| `PAYMENT_PUBLIC_BASE_URL`                                                                     | HTTPS origin công khai để provider gọi callback; không thêm path                      |
+| `RATE_LIMIT_ENABLED`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`                                | API rate limit config                                                                 |
 
 Không commit secrets thật trong `.env.*`.
 
@@ -162,7 +163,7 @@ TSX chỉ theo dõi các source file đã được import. Hãy khởi động l
 
 ### Payment sandbox
 
-Payment routes được mount ở mọi app environment. VNPay và MoMo luôn được cấu hình sandbox; kể cả khi ứng dụng chạy bằng `.env.production`, giao dịch vẫn đi tới test provider và không chuyển tiền thật. Không dùng tích hợp này cho giao dịch production.
+Payment routes được mount ở mọi app environment. VNPay, MoMo và ZaloPay luôn được cấu hình sandbox; kể cả khi ứng dụng chạy bằng `.env.production`, giao dịch vẫn đi tới test provider và không chuyển tiền thật. Không dùng tích hợp này cho giao dịch production.
 
 Điền các biến payment trong `.env.development` bằng sandbox merchant credentials bạn đang dùng trong `nestjs-ecommerce`. Không đưa merchant secrets vào Postman collection hoặc git. `VNPAY_HOST` phải là `https://sandbox.vnpayment.vn`. `PAYMENT_PUBLIC_BASE_URL` phải là HTTPS origin có thể truy cập từ Internet, ví dụ domain HTTPS do tunnel cấp; server local không thể nhận callback từ provider nếu không được expose.
 
@@ -177,7 +178,7 @@ Content-Type: application/json
 {"provider":"vnpay"}
 ```
 
-Đổi `provider` thành `momo` để thử MoMo. Mở `data.checkoutUrl` để thanh toán; dùng `GET /api/v1/payments/{paymentId}` để đọc trạng thái. Trạng thái được xác nhận bởi IPN đã xác thực chữ ký; trang return của provider chỉ hiển thị hướng dẫn kiểm tra trạng thái và không tự kết luận giao dịch thành công.
+Đổi `provider` thành `momo` hoặc `zalopay` để thử MoMo hoặc ZaloPay. Mở `data.checkoutUrl` để thanh toán; dùng `GET /api/v1/payments/{paymentId}` để đọc trạng thái. Trạng thái được xác nhận bởi IPN đã xác thực chữ ký; trang return của provider chỉ hiển thị hướng dẫn kiểm tra trạng thái và không tự kết luận giao dịch thành công.
 
 Trước khi test live sandbox:
 
@@ -185,12 +186,14 @@ Trước khi test live sandbox:
 2. Mở server qua một HTTPS tunnel. Đặt `PAYMENT_PUBLIC_BASE_URL` bằng origin tunnel, rồi khởi động lại server.
 3. Với VNPay, cấu hình IPN URL trong merchant sandbox là `{PAYMENT_PUBLIC_BASE_URL}/api/v1/payments/callbacks/vnpay/ipn`. Return URL được sinh bởi ứng dụng là `{PAYMENT_PUBLIC_BASE_URL}/api/v1/payments/callbacks/vnpay/return`.
 4. Với MoMo, IPN và return URLs được gửi trong payment request: `/api/v1/payments/callbacks/momo/ipn` và `/api/v1/payments/callbacks/momo/return`.
-5. Đăng nhập để lấy access token, rồi dùng folder **Payment Sandbox** trong Postman hoặc gọi API ở trên. Callback không nên được giả lập bằng request thủ công vì chữ ký phải do provider tạo.
+5. Với ZaloPay, callback và redirect URLs cũng được gửi trong request tạo đơn: `/api/v1/payments/callbacks/zalopay/callback` (`callback_url`) và `/api/v1/payments/callbacks/zalopay/return` (`embed_data.redirecturl`), nên không cần cấu hình trên Merchant Portal. Đơn ZaloPay hết hạn sau 15 phút.
+6. Đăng nhập để lấy access token, rồi dùng folder **Payment Sandbox** trong Postman hoặc gọi API ở trên. Callback không nên được giả lập bằng request thủ công vì chữ ký phải do provider tạo.
 
 Thông tin thử thanh toán lấy từ hướng dẫn chính thức của provider:
 
 - VNPay: chọn NCB; số thẻ `9704198526191432198`, tên `NGUYEN VAN A`, ngày phát hành `07/15`, OTP `123456` ([tài liệu sandbox VNPay](https://sandbox.vnpayment.vn/apis/docs/gioi-thieu/)).
 - MoMo: cài MoMo Test App theo [hướng dẫn test chính thức](https://developers.momo.vn/v3/docs/payment/onboarding/test-instructions/), tạo Test Wallet bằng số điện thoại hợp lệ; mật khẩu và OTP mặc định `000000`.
+- ZaloPay: thẻ ATM test `9704540000000062`, tên `NGUYEN VAN A`, ngày `10/18` ([bank test resources](https://docs.zalopay.vn/docs/developer-tools/test-instructions/testing/)); hoặc ví ZaloPay sandbox, mã xác thực `111111` ([test wallets](https://docs.zalopay.vn/docs/developer-tools/test-instructions/test-wallets/)).
 
 Automated tests kiểm tra adapter, chữ ký, persistence, callback và API wiring bằng credentials giả; chúng không gọi provider. Live sandbox smoke test cần merchant sandbox credentials hợp lệ, tunnel HTTPS, mở trang checkout và xác nhận IPN cập nhật trạng thái payment.
 

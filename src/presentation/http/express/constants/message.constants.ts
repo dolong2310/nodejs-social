@@ -132,7 +132,7 @@ export const VALIDATION_ERROR_MESSAGE = {
 
   // Payment errors
   PAYMENT_PROVIDER_IS_REQUIRED: 'Payment provider is required',
-  PAYMENT_PROVIDER_INVALID: 'Payment provider must be vnpay or momo',
+  PAYMENT_PROVIDER_INVALID: 'Payment provider must be vnpay, momo or zalopay',
   PAYMENT_SOURCE_REFERENCE_IS_REQUIRED: 'Source reference is required',
   PAYMENT_SOURCE_REFERENCE_MUST_BE_A_STRING: 'Source reference must be a string',
   PAYMENT_SOURCE_REFERENCE_LENGTH_INVALID: 'Source reference must contain between 1 and 128 characters',

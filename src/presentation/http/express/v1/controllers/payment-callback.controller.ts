@@ -8,6 +8,8 @@ export interface IPaymentCallbackController {
   vnpayReturn(req: Request, res: Response): void;
   momoIpn(req: Request, res: Response): Promise<void>;
   momoReturn(req: Request, res: Response): void;
+  zalopayCallback(req: Request, res: Response): Promise<void>;
+  zalopayReturn(req: Request, res: Response): void;
 }
 
 @AutoBind()
@@ -61,6 +63,25 @@ export class PaymentCallbackController {
   momoReturn(_req: Request, res: Response): void {
     res.status(200).send('Payment result received. Please check the payment status in the application.');
   }
+
+  async zalopayCallback(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.handlePaymentNotification.execute({ provider: 'zalopay', payload: req.body });
+      res.status(200).json(toZalopayResponse(result));
+    } catch (error) {
+      if (error instanceof PaymentNotificationVerificationError) {
+        res.status(200).json({ return_code: -1, return_message: 'Invalid signature' });
+        return;
+      }
+
+      // return_code 0 makes ZaloPay retry the callback; never acknowledge an unpersisted notification.
+      res.status(200).json({ return_code: 0, return_message: 'Unknown error' });
+    }
+  }
+
+  zalopayReturn(_req: Request, res: Response): void {
+    res.status(200).send('Payment result received. Please check the payment status in the application.');
+  }
 }
 
 function toVnpayResponse(
@@ -79,5 +100,25 @@ function toVnpayResponse(
       return { RspCode: '97', Message: 'Invalid signature' };
     case 'state_conflict':
       return { RspCode: '99', Message: 'Unknown error' };
+  }
+}
+
+// ZaloPay protocol: 1 = success, 2 = already processed, 0 = retry later, other values = rejected without retry.
+function toZalopayResponse(
+  result: 'applied' | 'duplicate' | 'not_found' | 'amount_mismatch' | 'reference_mismatch' | 'state_conflict'
+): { return_code: number; return_message: string } {
+  switch (result) {
+    case 'applied':
+      return { return_code: 1, return_message: 'Success' };
+    case 'duplicate':
+      return { return_code: 2, return_message: 'Order already confirmed' };
+    case 'not_found':
+      return { return_code: -1, return_message: 'Order not found' };
+    case 'amount_mismatch':
+      return { return_code: -1, return_message: 'Invalid amount' };
+    case 'reference_mismatch':
+      return { return_code: -1, return_message: 'Invalid reference' };
+    case 'state_conflict':
+      return { return_code: 0, return_message: 'Unknown error' };
   }
 }

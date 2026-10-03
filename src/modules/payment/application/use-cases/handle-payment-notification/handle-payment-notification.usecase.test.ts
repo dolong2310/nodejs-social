@@ -9,6 +9,7 @@ import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositorie
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
 
 class FakePaymentGateway implements PaymentGatewayPort {
+  createOrderReference = vi.fn(() => ({ providerOrderId: 'order-1', expiresAt: null }));
   createCheckout = vi.fn(async () => 'https://sandbox.example/checkout');
   verifyNotification = vi.fn((payload: unknown) => payload as VerifiedNotification);
 }
@@ -29,9 +30,10 @@ function notification(overrides: Partial<VerifiedNotification> = {}): VerifiedNo
 function setup() {
   const vnpay = new FakePaymentGateway();
   const momo = new FakePaymentGateway();
+  const zalopay = new FakePaymentGateway();
   const repository = { applyVerifiedOutcome: vi.fn() } as unknown as PaymentRepositoryPort;
-  const useCase = new HandlePaymentNotificationUseCase(repository, { vnpay, momo });
-  return { repository, vnpay, momo, useCase };
+  const useCase = new HandlePaymentNotificationUseCase(repository, { vnpay, momo, zalopay });
+  return { repository, vnpay, momo, zalopay, useCase };
 }
 
 describe('HandlePaymentNotificationUseCase', () => {

@@ -40,6 +40,20 @@ export class PaymentCallbackRoute extends BaseRoute {
         controller: (req, res) => {
           this.paymentCallbackController.momoReturn(req, res);
         }
+      },
+      {
+        path: '/zalopay/callback',
+        method: 'post',
+        controller: (req, res) => {
+          void this.paymentCallbackController.zalopayCallback(req, res);
+        }
+      },
+      {
+        path: '/zalopay/return',
+        method: 'get',
+        controller: (req, res) => {
+          this.paymentCallbackController.zalopayReturn(req, res);
+        }
       }
     ];
 

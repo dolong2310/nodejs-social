@@ -1,5 +1,9 @@
+import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
-import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import type {
+  PaymentGatewayPort,
+  ProviderOrderReference
+} from '@/modules/payment/application/ports/payment-gateway.port';
 import type { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import {
   HashAlgorithm,
@@ -19,6 +23,8 @@ export interface VnpayPaymentGatewayAdapterConfig {
 
 const VNPAY_CALLBACK_RETURN_PATH = '/api/v1/payments/callbacks/vnpay/return';
 const VNPAY_FINAL_FAILURE_CODES = new Set(['09', '10', '11', '12', '13', '51', '65', '75', '79']);
+// VNPay requires vnp_ExpireDate on every checkout.
+const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;
 
 export class VnpayPaymentGatewayAdapter implements PaymentGatewayPort {
   private readonly client: VNPay;
@@ -34,6 +40,13 @@ export class VnpayPaymentGatewayAdapter implements PaymentGatewayPort {
       hashAlgorithm: HashAlgorithm.SHA512
     });
     this.returnUrl = new URL(VNPAY_CALLBACK_RETURN_PATH, config.paymentPublicBaseUrl).toString();
+  }
+
+  createOrderReference(now: Date): ProviderOrderReference {
+    return {
+      providerOrderId: generatePrefixId('po'),
+      expiresAt: new Date(now.getTime() + VNPAY_CHECKOUT_TTL_MS)
+    };
   }
 
   async createCheckout(payment: PaymentCheckoutProps, clientIp: string): Promise<string> {

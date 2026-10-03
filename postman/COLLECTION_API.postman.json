@@ -2226,7 +2226,7 @@
     },
     {
       "name": "Payment Sandbox",
-      "description": "Create order payments against sandbox providers using payment details supplied in the request body. After creating one, open the returned checkoutUrl in a browser. Provider callbacks must be sent by VNPay or MoMo because they require valid signatures.",
+      "description": "Create order payments against sandbox providers using payment details supplied in the request body. After creating one, open the returned checkoutUrl in a browser. Provider callbacks must be sent by VNPay, MoMo or ZaloPay because they require valid signatures.",
       "item": [
         {
           "name": "Create VNPay Order Payment",
@@ -2288,6 +2288,41 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"provider\": \"momo\",\n  \"sourceReference\": \"order_momo_{{$timestamp}}\",\n  \"description\": \"Thanh toan don hang MoMo\",\n  \"amountVnd\": 150000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create ZaloPay Order Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "if (res.data && res.data.paymentId) pm.environment.set('paymentId', res.data.paymentId);",
+                  "if (res.data && res.data.checkoutUrl) console.log('Open checkoutUrl in a browser to finish sandbox payment.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"zalopay\",\n  \"sourceReference\": \"order_zalopay_{{$timestamp}}\",\n  \"description\": \"Thanh toan don hang ZaloPay\",\n  \"amountVnd\": 150000\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {

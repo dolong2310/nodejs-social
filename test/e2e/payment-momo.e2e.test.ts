@@ -84,6 +84,8 @@ function createFixture() {
   const payment = PaymentEntity.create({
     userId: 'u_momo_test',
     provider: 'momo',
+    providerOrderId: 'po_momo_http_e2e',
+    expiresAt: null,
     sourceReference: 'order_momo_http_e2e',
     description: 'MoMo HTTP e2e order',
     amountVnd: 10_000,
@@ -101,12 +103,20 @@ function createFixture() {
     paymentPublicBaseUrl: 'https://social.test'
   });
   const vnpay = {
+    createOrderReference: () => ({ providerOrderId: 'unused', expiresAt: null }),
     createCheckout: async () => '',
     verifyNotification: () => {
       throw new Error('VNPay is not used in MoMo tests');
     }
   };
-  const notificationUseCase = new HandlePaymentNotificationUseCase(repository, { momo, vnpay });
+  const zalopay = {
+    createOrderReference: () => ({ providerOrderId: 'unused', expiresAt: null }),
+    createCheckout: async () => '',
+    verifyNotification: () => {
+      throw new Error('ZaloPay is not used in MoMo tests');
+    }
+  };
+  const notificationUseCase = new HandlePaymentNotificationUseCase(repository, { momo, vnpay, zalopay });
   const callbackController = new PaymentCallbackController(notificationUseCase);
   const callbackRoute = new PaymentCallbackRoute(callbackController);
   const app = express();

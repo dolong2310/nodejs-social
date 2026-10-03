@@ -70,6 +70,7 @@ import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/
 import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
 import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
 import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
+import { ZalopayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/zalopay-payment-gateway.adapter';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
 import type { PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
@@ -490,6 +491,12 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       secretKey: envConfig.MOMO_SECRET_KEY,
       storeId: envConfig.MOMO_STORE_ID,
       storeName: envConfig.MOMO_STORE_NAME,
+      paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
+    }),
+    zalopay: new ZalopayPaymentGatewayAdapter({
+      appId: envConfig.ZALOPAY_APP_ID,
+      key1: envConfig.ZALOPAY_KEY1,
+      key2: envConfig.ZALOPAY_KEY2,
       paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
     })
   };

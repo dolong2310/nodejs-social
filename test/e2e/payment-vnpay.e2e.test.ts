@@ -257,12 +257,20 @@ function createFixture(): PaymentFixture {
     paymentPublicBaseUrl: 'https://social.test'
   });
   const momo = {
+    createOrderReference: () => ({ providerOrderId: 'unused', expiresAt: null }),
     createCheckout: async () => 'https://momo.test/unused',
     verifyNotification: () => {
       throw new Error('MoMo is not used in VNPay tests');
     }
   };
-  const gateways = { vnpay, momo };
+  const zalopay = {
+    createOrderReference: () => ({ providerOrderId: 'unused', expiresAt: null }),
+    createCheckout: async () => 'https://zalopay.test/unused',
+    verifyNotification: () => {
+      throw new Error('ZaloPay is not used in VNPay tests');
+    }
+  };
+  const gateways = { vnpay, momo, zalopay };
   const createPaymentUseCase = new CreatePaymentUseCase(repository, gateways);
   const getPaymentUseCase = new GetPaymentUseCase(repository);
   const notificationUseCase = new HandlePaymentNotificationUseCase(repository, gateways);

@@ -22,6 +22,10 @@ import {
   down as downPostgresPaymentAuditMigration,
   up as upPostgresPaymentAuditMigration
 } from '@/infrastructure/persistence/postgres/migrations/20260929000000-payments-audit';
+import {
+  down as downPostgresPaymentProviderZalopayMigration,
+  up as upPostgresPaymentProviderZalopayMigration
+} from '@/infrastructure/persistence/postgres/migrations/20261002000000-payments-provider-zalopay';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
 import type { PaymentFullProps, PaymentProps, PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
@@ -47,6 +51,8 @@ function newPayment(
   return PaymentEntity.create({
     userId,
     provider,
+    providerOrderId: `po_${randomUUID()}`,
+    expiresAt: provider === 'momo' ? null : new Date(Date.now() + 15 * 60 * 1000),
     sourceReference: `order_${key}`,
     description: 'Repository payment order',
     amountVnd: 10_000,
@@ -366,9 +372,11 @@ if (postgresUri) {
     await upPostgresPaymentMigration({ context: pool });
     await upPostgresPaymentSourceMigration({ context: pool });
     await upPostgresPaymentAuditMigration({ context: pool });
+    await upPostgresPaymentProviderZalopayMigration({ context: pool });
     return {
       repository: new PostgresPaymentRepository(pool, new PostgresPaymentMapper(), {} as never),
       cleanup: async () => {
+        await downPostgresPaymentProviderZalopayMigration({ context: pool });
         await downPostgresPaymentAuditMigration({ context: pool });
         await downPostgresPaymentSourceMigration({ context: pool });
         await downPostgresPaymentMigration({ context: pool });

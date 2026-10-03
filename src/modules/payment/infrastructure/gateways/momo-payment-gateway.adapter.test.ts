@@ -26,6 +26,7 @@ function createPayment(): PaymentCheckoutProps {
   const payment = PaymentEntity.create({
     userId: 'u_payment_test',
     provider: 'momo',
+    ...createAdapter().createOrderReference(),
     sourceReference: 'order_momo_adapter',
     description: 'MoMo adapter order',
     amountVnd: 10_000,
@@ -105,6 +106,15 @@ afterEach(() => {
 });
 
 describe('MomoPaymentGatewayAdapter', () => {
+  it('creates a unique order reference without inventing a provider expiry', () => {
+    const first = createAdapter().createOrderReference();
+    const second = createAdapter().createOrderReference();
+
+    expect(first.providerOrderId).toMatch(/^po_[0-9a-f-]{36}$/);
+    expect(first.providerOrderId).not.toBe(second.providerOrderId);
+    expect(first.expiresAt).toBeNull();
+  });
+
   it('builds a multi-method sandbox checkout using the stored order and request references', async () => {
     const payment = createPayment();
     let targetUrl = '';

@@ -26,14 +26,16 @@ function createAdapter(overrides: Partial<{ tmnCode: string; secureSecret: strin
 }
 
 function createPayment(): PaymentCheckoutProps {
+  const now = new Date('2026-09-25T00:00:00.000Z');
   const payment = PaymentEntity.create({
     userId: 'u_payment_test',
     provider: 'vnpay',
+    ...createAdapter().createOrderReference(now),
     sourceReference: 'order_vnpay_adapter',
     description: 'VNPay adapter order',
     amountVnd: 10_000,
     idempotencyKey: 'vnpay-adapter-key',
-    now: new Date('2026-09-25T00:00:00.000Z')
+    now
   }).toObject<PaymentFullProps>();
   return {
     provider: payment.provider,
@@ -72,6 +74,16 @@ function signIpn(overrides: Record<string, string> = {}, merchantCode = tmnCode)
 }
 
 describe('VnpayPaymentGatewayAdapter', () => {
+  it('creates a unique order reference with the 15 minute expiry VNPay requires', () => {
+    const now = new Date('2026-09-25T00:00:00.000Z');
+    const first = createAdapter().createOrderReference(now);
+    const second = createAdapter().createOrderReference(now);
+
+    expect(first.providerOrderId).toMatch(/^po_[0-9a-f-]{36}$/);
+    expect(first.providerOrderId).not.toBe(second.providerOrderId);
+    expect(first.expiresAt).toEqual(new Date('2026-09-25T00:15:00.000Z'));
+  });
+
   it('builds a sandbox URL with the provider-scaled VND amount and required GMT+7 expiry', async () => {
     const adapter = createAdapter({ vnpayHost: 'https://payment.vnpay.vn' });
     const payment = createPayment();

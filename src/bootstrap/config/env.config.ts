@@ -148,6 +148,9 @@ const envSchema = object({
   MOMO_SECRET_KEY: requiredString,
   MOMO_STORE_ID: requiredString,
   MOMO_STORE_NAME: requiredString,
+  ZALOPAY_APP_ID: requiredString,
+  ZALOPAY_KEY1: requiredString,
+  ZALOPAY_KEY2: requiredString,
   PAYMENT_PUBLIC_BASE_URL: httpsOriginString,
 
   // Rate Limit

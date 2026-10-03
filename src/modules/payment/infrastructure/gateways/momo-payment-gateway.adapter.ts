@@ -1,7 +1,9 @@
+import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
 import {
   PaymentCheckoutError,
-  type PaymentGatewayPort
+  type PaymentGatewayPort,
+  type ProviderOrderReference
 } from '@/modules/payment/application/ports/payment-gateway.port';
 import type { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
 import {
@@ -48,6 +50,10 @@ export class MomoPaymentGatewayAdapter implements PaymentGatewayPort {
     });
     this.ipnUrl = new URL(MOMO_CALLBACK_IPN_PATH, config.paymentPublicBaseUrl).toString();
     this.redirectUrl = new URL(MOMO_CALLBACK_RETURN_PATH, config.paymentPublicBaseUrl).toString();
+  }
+
+  createOrderReference(): ProviderOrderReference {
+    return { providerOrderId: generatePrefixId('po'), expiresAt: null };
   }
 
   async createCheckout(payment: PaymentCheckoutProps, clientIp: string): Promise<string> {

@@ -1,5 +1,9 @@
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type { PaymentProvider, PaymentStatus } from '@/modules/payment/domain/entities/payment.types';
+import type {
+  CreatePaymentProps,
+  PaymentProvider,
+  PaymentStatus
+} from '@/modules/payment/domain/entities/payment.types';
 import { describe, expect, it } from 'vitest';
 
 function canTransitionPaymentStatus(from: PaymentStatus, to: PaymentStatus): boolean {
@@ -17,23 +21,34 @@ function isProviderOutcome(status: PaymentStatus): boolean {
   return status === 'pending' || status === 'succeeded' || status === 'failed' || status === 'cancelled';
 }
 
+const validInput: CreatePaymentProps = {
+  userId: 'u_user',
+  provider: 'vnpay',
+  providerOrderId: 'provider-order-1',
+  expiresAt: null,
+  sourceReference: 'order_client_1',
+  description: 'Thanh toan don hang client 1',
+  amountVnd: 150_000,
+  idempotencyKey: 'key-1'
+};
+
 describe('PaymentEntity', () => {
-  it('creates a VNPay order from the supplied payment details with a future expiry', () => {
+  it('creates an order from the supplied payment details and the provider order reference', () => {
+    const now = new Date('2026-10-01T18:30:00.000Z');
+    const expiresAt = new Date(now.getTime() + 15 * 60 * 1000);
     const first = PaymentEntity.create({
-      userId: 'u_user',
-      provider: 'vnpay',
-      sourceReference: 'order_client_1',
-      description: 'Thanh toan don hang client 1',
-      amountVnd: 150_000,
-      idempotencyKey: 'key-1'
+      ...validInput,
+      providerOrderId: 'provider-order-1',
+      expiresAt,
+      now
     }).toObject();
     const second = PaymentEntity.create({
-      userId: 'u_user',
-      provider: 'vnpay',
+      ...validInput,
       sourceReference: 'order_client_2',
       description: 'Thanh toan don hang client 2',
       amountVnd: 250_000,
-      idempotencyKey: 'key-2'
+      idempotencyKey: 'key-2',
+      providerOrderId: 'provider-order-2'
     }).toObject();
 
     expect(first).toMatchObject({
@@ -43,78 +58,31 @@ describe('PaymentEntity', () => {
       currency: 'VND',
       status: 'creating',
       userId: 'u_user',
-      sourceType: 'order'
+      sourceType: 'order',
+      provider: 'vnpay',
+      providerOrderId: 'provider-order-1',
+      expiresAt,
+      createdAt: now
     });
     expect(first.id).toMatch(/^p_[0-9a-f-]{36}$/i);
-    expect(first.sourceReference).not.toBe(second.sourceReference);
-    expect(first.providerOrderId).not.toBe(second.providerOrderId);
     expect(first.providerRequestId).not.toBe(second.providerRequestId);
-    expect(first.expiresAt).toBeInstanceOf(Date);
-    expect(first.expiresAt!.getTime()).toBeGreaterThan(Date.now());
   });
 
-  it('creates a MoMo order without inventing a provider expiry', () => {
-    const payment = PaymentEntity.create({
-      userId: 'u_user',
-      provider: 'momo',
-      sourceReference: 'order_client_1',
-      description: 'Thanh toan don hang client 1',
-      amountVnd: 150_000,
-      idempotencyKey: 'key-1'
-    }).toObject();
+  it('keeps a provider order without checkout expiry', () => {
+    const payment = PaymentEntity.create({ ...validInput, provider: 'momo', expiresAt: null }).toObject();
 
     expect(payment.expiresAt).toBeNull();
   });
 
   it.each([
-    {
-      userId: '',
-      provider: 'vnpay' as PaymentProvider,
-      sourceReference: 'order_client_1',
-      description: 'Order client 1',
-      amountVnd: 10_000,
-      idempotencyKey: 'key-1'
-    },
-    {
-      userId: 'u_user',
-      provider: 'vnpay' as PaymentProvider,
-      sourceReference: 'order_client_1',
-      description: 'Order client 1',
-      amountVnd: 10_000,
-      idempotencyKey: ' '
-    },
-    {
-      userId: 'u_user',
-      provider: 'unknown' as PaymentProvider,
-      sourceReference: 'order_client_1',
-      description: 'Order client 1',
-      amountVnd: 10_000,
-      idempotencyKey: 'key-1'
-    },
-    {
-      userId: 'u_user',
-      provider: 'vnpay' as PaymentProvider,
-      sourceReference: ' ',
-      description: 'Order client 1',
-      amountVnd: 10_000,
-      idempotencyKey: 'key-1'
-    },
-    {
-      userId: 'u_user',
-      provider: 'vnpay' as PaymentProvider,
-      sourceReference: 'order_client_1',
-      description: ' ',
-      amountVnd: 10_000,
-      idempotencyKey: 'key-1'
-    },
-    {
-      userId: 'u_user',
-      provider: 'vnpay' as PaymentProvider,
-      sourceReference: 'order_client_1',
-      description: 'Order client 1',
-      amountVnd: 9_999,
-      idempotencyKey: 'key-1'
-    }
+    { ...validInput, userId: '' },
+    { ...validInput, idempotencyKey: ' ' },
+    { ...validInput, provider: 'unknown' as PaymentProvider },
+    { ...validInput, providerOrderId: ' ' },
+    { ...validInput, expiresAt: new Date(Number.NaN) },
+    { ...validInput, sourceReference: ' ' },
+    { ...validInput, description: ' ' },
+    { ...validInput, amountVnd: 9_999 }
   ])('rejects invalid creation input %#', (input) => {
     expect(() => PaymentEntity.create(input)).toThrow();
   });
