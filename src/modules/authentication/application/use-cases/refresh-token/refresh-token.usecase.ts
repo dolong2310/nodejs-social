@@ -9,7 +9,6 @@ import {
 } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
 import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { invariant } from '@/modules/core/domain/helpers/invariant';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import jwt from 'jsonwebtoken';
@@ -62,8 +61,13 @@ export class RefreshTokenUseCase extends RefreshTokenPort {
       // 4. Return tokens
       return new RefreshTokenOutputPort({ accessToken, refreshToken });
     } catch (error) {
-      invariant(error instanceof jwt.TokenExpiredError, new RefreshTokenExpiredException());
-      invariant(error instanceof jwt.JsonWebTokenError, new InvalidTokenException());
+      // TokenExpiredError extends JsonWebTokenError, so it must be checked first.
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new RefreshTokenExpiredException();
+      }
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new InvalidTokenException();
+      }
       // RefreshTokenHasBeenRevokedException
 
       throw error;
