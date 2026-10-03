@@ -55,11 +55,11 @@ export class AuthGuard implements BaseGuard {
 
       return decoded;
     } catch (error) {
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw TokenInvalidException;
-      }
       if (error instanceof jwt.TokenExpiredError) {
         throw TokenHasExpiredException;
+      }
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw TokenInvalidException;
       }
       throw error;
     }
