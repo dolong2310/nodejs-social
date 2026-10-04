@@ -10,7 +10,7 @@ import { UserEntity } from '@/modules/user/domain/entities/user.entity';
 import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { entityDouble, idDouble } from '@test/support/doubles/entity.double';
-import { mockPort } from '@test/support/mocks/port.mock';
+import { mockPort, mockUnitOfWork } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
 
 const createdUser = makeUserFullProps({ password: 'hashed-password', username: 'user_generated' });
@@ -34,7 +34,14 @@ describe('RegisterUseCase', () => {
     const roleService = mockPort<RoleServicePort>({
       getUserRoleId: vi.fn().mockResolvedValue('role_user')
     });
-    const useCase = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
+    const useCase = new RegisterUseCase(
+      userRepository,
+      hashingService,
+      otpRepository,
+      otpService,
+      roleService,
+      mockUnitOfWork()
+    );
 
     const result = await useCase.execute(
       new RegisterInputPort({

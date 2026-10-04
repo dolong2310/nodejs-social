@@ -8,10 +8,12 @@ import {
   type RepositoryPort
 } from '@/modules/core/domain/repositories/port.repository';
 import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
-import type { ClientSession, Collection, Db, Filter, MongoClient, OptionalUnlessRequiredId } from 'mongodb';
-import { AsyncLocalStorage } from 'node:async_hooks';
-
-const transactionStorage = new AsyncLocalStorage<ClientSession>();
+import {
+  bindTransactionSession,
+  getMongoTransactionSession,
+  MongoUnitOfWork
+} from '@/modules/core/infrastructure/unit-of-work/mongo.unit-of-work';
+import type { ClientSession, Collection, Db, Document, Filter, MongoClient, OptionalUnlessRequiredId } from 'mongodb';
 
 export abstract class MongoRepositoryBase<
   Entity extends DomainEntity<unknown>,
@@ -21,13 +23,19 @@ export abstract class MongoRepositoryBase<
   protected abstract readonly db: Db;
   protected abstract readonly dbClient: MongoClient;
 
-  // Repositories are singletons, so the session must be scoped to the async call chain, not stored on the instance.
+  // Session of the UnitOfWork transaction for the current async call chain (repositories are singletons).
+  // Collections from `collection()` already carry it; passing it explicitly is only kept for readability.
   protected get session(): ClientSession | undefined {
-    return transactionStorage.getStore();
+    return getMongoTransactionSession(this.dbClient);
   }
 
   protected get dbCollection(): Collection<DbModel> {
-    return this.db.collection<DbModel>(this.collectionName);
+    return this.collection<DbModel>(this.collectionName);
+  }
+
+  /** Use instead of `this.db.collection(...)` so queries join the active UnitOfWork transaction. */
+  protected collection<TSchema extends Document>(name: string): Collection<TSchema> {
+    return bindTransactionSession(this.db.collection<TSchema>(name));
   }
 
   protected constructor(
@@ -256,23 +264,13 @@ export abstract class MongoRepositoryBase<
 
   // TRANSACTION
 
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    // Join the outer transaction when nested
-    if (transactionStorage.getStore()) {
-      return handler();
-    }
-
-    const session = this.dbClient.startSession();
-    try {
-      let result!: T;
-      await session.withTransaction(async () => {
-        result = await transactionStorage.run(session, async () => handler());
-      });
-
-      return result;
-    } finally {
-      await session.endSession();
-    }
+  /**
+   * Internal helper for multi-statement writes inside this repository only.
+   * Intentionally not part of RepositoryPort: use cases set transaction boundaries through UnitOfWorkPort,
+   * and this helper joins that transaction when one is already open.
+   */
+  protected transaction<T>(handler: () => Promise<T> | T): Promise<T> {
+    return new MongoUnitOfWork(this.dbClient).run(async () => handler());
   }
 
   // HELPERS

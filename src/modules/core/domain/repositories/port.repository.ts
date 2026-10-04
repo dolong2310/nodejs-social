@@ -54,6 +54,5 @@ export interface RepositoryPort<Entity> {
   deleteById(id: string, options?: Options): Promise<boolean>;
   deleteAllByIds(ids: string[], options?: Options): Promise<boolean>;
 
-  // Transaction
-  transaction<T>(handler: () => Promise<T> | T): Promise<T>;
+  // No transaction method here on purpose: use cases set transaction boundaries through UnitOfWorkPort.
 }

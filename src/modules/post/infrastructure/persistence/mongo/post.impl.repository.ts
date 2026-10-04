@@ -84,14 +84,17 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
         { $set: audit },
         { session: this.session }
       );
-      await Promise.all([
-        this.db
-          .collection('likes')
-          .updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit }, { session: this.session }),
-        this.db
-          .collection('bookmarks')
-          .updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit }, { session: this.session })
-      ]);
+      // Sequential on purpose: MongoDB does not support parallel operations inside one transaction.
+      await this.collection('likes').updateMany(
+        { post_id: { $in: ids }, deleted_at: null },
+        { $set: audit },
+        { session: this.session }
+      );
+      await this.collection('bookmarks').updateMany(
+        { post_id: { $in: ids }, deleted_at: null },
+        { $set: audit },
+        { session: this.session }
+      );
 
       return postsResult.modifiedCount;
     });

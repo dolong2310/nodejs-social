@@ -17,6 +17,7 @@ import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/
 import { ConversationRepository } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.impl.repository';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.mapper';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { PostgresUnitOfWork } from '@/modules/core/infrastructure/unit-of-work/postgres.unit-of-work';
 import { VideoStatusRepository } from '@/modules/media/infrastructure/persistence/postgres/video-status.impl.repository';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/postgres/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/postgres/notification.impl.repository';
@@ -104,6 +105,7 @@ export function createPostgresContainerRepositories(
   return {
     ...repositories,
     ...queryRepositories,
-    ...commandRepositories
+    ...commandRepositories,
+    unitOfWork: new PostgresUnitOfWork(pool)
   };
 }

@@ -1,3 +1,4 @@
+import { getPostgresQueryable } from '@/modules/core/infrastructure/unit-of-work/postgres.unit-of-work';
 import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import type {
   IncreasePostsViewsInput,
@@ -11,7 +12,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
 
   async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
     const column = userId ? 'user_views' : 'guest_views';
-    const result = await this.pool.query<{
+    const result = await getPostgresQueryable(this.pool).query<{
       user_views: number;
       guest_views: number;
       updated_at: Date;
@@ -37,7 +38,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
   async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
     if (ids.length === 0) return 0;
     const column = isAuthenticatedUser ? 'user_views' : 'guest_views';
-    const result = await this.pool.query(
+    const result = await getPostgresQueryable(this.pool).query(
       `
         UPDATE posts
         SET ${column} = ${column} + 1, updated_at = NOW()

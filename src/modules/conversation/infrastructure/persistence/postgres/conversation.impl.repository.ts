@@ -17,8 +17,6 @@ import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import type { Pool } from 'pg';
 
-const UNIQUE_VIOLATION = '23505';
-
 export class ConversationRepository
   extends PostgresRepositoryBase<ConversationEntity, ConversationModel>
   implements ConversationRepositoryPort
@@ -58,50 +56,47 @@ export class ConversationRepository
   }
 
   async createDirectConversation(createdBy: string, peerId: string): Promise<ConversationEntity | null> {
-    try {
-      const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
-      const entity = ConversationEntity.create({
-        type: EnumConversationType.DIRECT,
-        createdBy,
-        userIdLow,
-        userIdHigh
-      });
-      const record = this.mapper.toPersistence(entity);
-      const result = await this.query<ConversationModel>(
-        `
-          INSERT INTO conversations (
-            id,
-            type,
-            created_by,
-            name,
-            avatar_media_id,
-            user_id_low,
-            user_id_high,
-            created_at,
-            updated_at
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-          RETURNING *
-        `,
-        [
-          record.id,
-          record.type,
-          record.created_by,
-          record.name,
-          record.avatar_media_id,
-          record.user_id_low,
-          record.user_id_high,
-          record.created_at,
-          record.updated_at
-        ]
-      );
-      return this.mapper.toDomain(result.rows[0] ?? record);
-    } catch (error) {
-      if ((error as { code?: string })?.code === UNIQUE_VIOLATION) {
-        return null;
-      }
-      throw error;
-    }
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
+    const entity = ConversationEntity.create({
+      type: EnumConversationType.DIRECT,
+      createdBy,
+      userIdLow,
+      userIdHigh
+    });
+    const record = this.mapper.toPersistence(entity);
+    // ON CONFLICT instead of catching the unique violation: a failed statement would abort an open transaction.
+    // A conflict means another request created the same direct conversation concurrently.
+    const result = await this.query<ConversationModel>(
+      `
+        INSERT INTO conversations (
+          id,
+          type,
+          created_by,
+          name,
+          avatar_media_id,
+          user_id_low,
+          user_id_high,
+          created_at,
+          updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT DO NOTHING
+        RETURNING *
+      `,
+      [
+        record.id,
+        record.type,
+        record.created_by,
+        record.name,
+        record.avatar_media_id,
+        record.user_id_low,
+        record.user_id_high,
+        record.created_at,
+        record.updated_at
+      ]
+    );
+    const [inserted] = result.rows;
+    return inserted ? this.mapper.toDomain(inserted) : null;
   }
 
   async createGroupConversation(data: CreateGroupConversationInput): Promise<ConversationEntity> {

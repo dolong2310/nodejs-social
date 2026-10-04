@@ -242,6 +242,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     postCommandRepository,
     userQueryRepository,
     conversationMemberQueryRepository,
+    unitOfWork,
     logger,
     redis,
     cacheManager,
@@ -287,10 +288,18 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX })
+    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX }),
+    unitOfWork
   );
 
-  const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
+  const registerUC = new RegisterUseCase(
+    userRepository,
+    hashingService,
+    otpRepository,
+    otpService,
+    roleService,
+    unitOfWork
+  );
   const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
   const logoutUC = new LogoutUseCase(refreshTokenRepository);
   const refreshTokenUC = new RefreshTokenUseCase(
@@ -350,7 +359,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userRepository,
     friendshipRepository,
     friendRequestRepository,
-    friendService
+    friendService,
+    unitOfWork
   );
   const unblockUserUC = new UnblockUserUseCase(blockRepository, friendService);
   const listBlockedUC = new GetBlockedUserUseCase(blockRepository, userRepository);
@@ -427,7 +437,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     friendRequestRepository,
     friendService,
     blockRepository,
-    notificationsService
+    notificationsService,
+    unitOfWork
   );
   const declineIncomingRequestUC = new DeclineIncomingRequestUseCase(friendRequestRepository, friendService);
   const revokeOutgoingRequestUC = new RevokeOutgoingRequestUseCase(friendRequestRepository, friendService);
@@ -438,7 +449,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     conversationMemberRepository,
     conversationService,
     friendService,
-    blockRepository
+    blockRepository,
+    unitOfWork
   );
   const createGroupUC = new CreateGroupUseCase(conversationRepository, friendshipRepository);
   const listConversationsUC = new GetConversationsUseCase(

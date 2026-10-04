@@ -15,6 +15,7 @@ import { PermissionRepository } from '@/modules/authorization/infrastructure/per
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/postgres/permission.mapper';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
+import { PostgresUnitOfWork } from '@/modules/core/infrastructure/unit-of-work/postgres.unit-of-work';
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
 import { HttpRoutePermissionCatalog } from '@/modules/operations/presentation/http-route-permission-catalog';
 
@@ -32,7 +33,8 @@ async function main(): Promise<void> {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX })
+    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX }),
+    new PostgresUnitOfWork(databaseService.pool)
   );
   const result = await syncRolePermissionsUC.execute();
 

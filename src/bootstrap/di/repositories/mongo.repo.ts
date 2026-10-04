@@ -17,6 +17,7 @@ import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/
 import { ConversationRepository } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.impl.repository';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { MongoUnitOfWork } from '@/modules/core/infrastructure/unit-of-work/mongo.unit-of-work';
 import { VideoStatusRepository } from '@/modules/media/infrastructure/persistence/mongo/video-status.impl.repository';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/mongo/notification.impl.repository';
@@ -112,6 +113,7 @@ export function createMongoContainerRepositories(
   return {
     ...repositories,
     ...queryRepositories,
-    ...commandRepositories
+    ...commandRepositories,
+    unitOfWork: new MongoUnitOfWork(dbClient)
   };
 }

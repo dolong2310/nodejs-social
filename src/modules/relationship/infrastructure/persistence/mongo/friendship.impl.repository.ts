@@ -65,18 +65,21 @@ export class FriendshipRepository
   }
 
   async createFriendship(userIdA: string, userIdB: string): Promise<FriendshipEntity | null> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+    const entity = FriendshipEntity.create({ userIdLow, userIdHigh });
+    const { user_id_low, user_id_high, ...rest } = this.mapper.toPersistence(entity);
     try {
-      const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
-      const entity = FriendshipEntity.create({
-        userIdLow,
-        userIdHigh
-      });
-      const record = this.mapper.toPersistence(entity);
-      await this.dbCollection.insertOne(record);
-      return this.mapper.toDomain(record);
+      // Upsert instead of catching the duplicate key: inside a transaction a failed write aborts it.
+      const result = await this.dbCollection.updateOne(
+        { user_id_low, user_id_high },
+        { $setOnInsert: rest },
+        { upsert: true }
+      );
+      return result.upsertedCount === 1 ? entity : null;
     } catch (error) {
-      // May hit the unique index (Mongo error 11000) if the friendship already exists due to a race condition.
-      if (error instanceof MongoServerError && error.code === 11000) {
+      // Outside a transaction a concurrent upsert can still hit the unique index; it means the friendship exists.
+      // Inside a transaction the error must propagate so the driver can abort or retry it.
+      if (!this.session && error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
       throw error;

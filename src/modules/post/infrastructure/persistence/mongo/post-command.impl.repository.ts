@@ -1,3 +1,4 @@
+import { bindTransactionSession } from '@/modules/core/infrastructure/unit-of-work/mongo.unit-of-work';
 import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import type {
   IncreasePostsViewsInput,
@@ -16,7 +17,7 @@ export class PostCommandRepository implements PostCommandRepositoryPort {
   ) {}
 
   get dbCollection(): Collection<PostModel> {
-    return this.db.collection<PostModel>('posts');
+    return bindTransactionSession(this.db.collection<PostModel>('posts'));
   }
 
   async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {

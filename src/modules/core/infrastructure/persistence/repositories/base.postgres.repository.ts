@@ -6,16 +6,15 @@ import {
   type RepositoryPort
 } from '@/modules/core/domain/repositories/port.repository';
 import type { Mapper } from '@/modules/core/infrastructure/base.mapper';
-import { AsyncLocalStorage } from 'node:async_hooks';
-import type { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
+import {
+  getPostgresQueryable,
+  PostgresUnitOfWork
+} from '@/modules/core/infrastructure/unit-of-work/postgres.unit-of-work';
+import type { Pool, QueryResult, QueryResultRow } from 'pg';
 
 const idColumn = 'id';
 const uppercaseLetterRegex = /[A-Z]/g;
 const doubleQuoteRegex = /"/g;
-
-const transactionStorage = new AsyncLocalStorage<PoolClient>();
-
-type Queryable = Pick<Pool, 'query'> | Pick<PoolClient, 'query'>;
 
 export abstract class PostgresRepositoryBase<
   Entity extends DomainEntity<unknown>,
@@ -222,32 +221,20 @@ export abstract class PostgresRepositoryBase<
     return (result.rowCount ?? 0) > 0;
   }
 
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    const existingClient = transactionStorage.getStore();
-    if (existingClient) {
-      return handler();
-    }
-
-    const client = await this.pool.connect();
-    try {
-      await client.query('BEGIN');
-      const result = await transactionStorage.run(client, async () => handler());
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+  /**
+   * Internal helper for multi-statement writes inside this repository only.
+   * Intentionally not part of RepositoryPort: use cases set transaction boundaries through UnitOfWorkPort,
+   * and this helper joins that transaction when one is already open.
+   */
+  protected transaction<T>(handler: () => Promise<T> | T): Promise<T> {
+    return new PostgresUnitOfWork(this.pool).run(async () => handler());
   }
 
   protected query<T extends QueryResultRow = QueryResultRow>(
     sql: string,
     params: readonly unknown[] = []
   ): Promise<QueryResult<T>> {
-    const client: Queryable = transactionStorage.getStore() ?? this.pool;
-    return client.query<T>(sql, [...params]);
+    return getPostgresQueryable(this.pool).query<T>(sql, [...params]);
   }
 
   protected _toColumnName(property: string): string {

@@ -70,6 +70,7 @@ import { UserController } from '@/presentation/http/express/v1/controllers/user.
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
+import { mockUnitOfWork } from '@test/support/mocks/port.mock';
 import type { Express } from 'express';
 import bcrypt from 'bcrypt';
 
@@ -267,10 +268,6 @@ class MemoryRoleRepository implements RoleRepositoryPort {
     return true;
   }
 
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
-  }
-
   private save(entity: RoleEntity): void {
     this.roles.set(entity.id.toString(), entity);
   }
@@ -401,10 +398,6 @@ class MemoryOtpRepository implements OtpRepositoryPort {
     ids.forEach((id) => this.otps.delete(id));
     return true;
   }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
-  }
 }
 
 class MemoryRefreshTokenRepository implements RefreshTokenRepositoryPort {
@@ -501,10 +494,6 @@ class MemoryRefreshTokenRepository implements RefreshTokenRepositoryPort {
 
   async deleteAllByIds(): Promise<boolean> {
     return false;
-  }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
   }
 }
 
@@ -608,10 +597,6 @@ class MemoryUserRepository implements UserRepositoryPort {
   async deleteAllByIds(ids: string[]): Promise<boolean> {
     ids.forEach((id) => this.users.delete(id));
     return true;
-  }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
   }
 
   private async patchUser(id: string, patch: StoredUserPatch): Promise<UserEntity | null> {
@@ -754,7 +739,14 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
   const authService = new AuthService(refreshTokenRepository, tokenService);
   const otpEmailQueue = new CapturingOtpEmailQueue();
 
-  const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
+  const registerUC = new RegisterUseCase(
+    userRepository,
+    hashingService,
+    otpRepository,
+    otpService,
+    roleService,
+    mockUnitOfWork()
+  );
   const loginUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
   const logoutUC = new LogoutUseCase(refreshTokenRepository);
   const refreshUC = new RefreshTokenUseCase(refreshTokenRepository, userQueryRepository, authService, tokenService);

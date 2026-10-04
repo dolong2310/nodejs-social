@@ -1,3 +1,4 @@
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
 import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import {
   FriendActionBlockedException,
@@ -18,7 +19,8 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
     private readonly friendService: FriendServicePort,
     private readonly blockRepository: BlockRepositoryPort,
-    private readonly notificationsService: NotificationServicePort
+    private readonly notificationsService: NotificationServicePort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {
     super();
   }
@@ -42,22 +44,23 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
       throw new FriendActionBlockedException();
     }
 
-    const entity = await this.friendshipRepository.createFriendship(fromUserId, userId);
-    if (!entity) {
-      // If friendship already exists, delete the request and invalidate cache.
-      await Promise.all([
-        this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId }),
-        this.friendService.invalidateBoth(userId, fromUserId)
-      ]);
-      return;
-    }
+    // Create the friendship and consume the request atomically.
+    const created = await this.unitOfWork.run(async () => {
+      // null means the friendship already exists; the request is still deleted.
+      const friendship = await this.friendshipRepository.createFriendship(fromUserId, userId);
+      await this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId });
+      return friendship !== null;
+    });
 
     await Promise.all([
-      // Delete the request and invalidate cache.
-      this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId }),
       this.friendService.invalidateBoth(userId, fromUserId),
-      // Send "friend accepted" notification to the sender.
-      this.notificationsService.recordFriendAccepted({ originalRequesterUserId: fromUserId, accepterUserId: userId })
+      // Send "friend accepted" notification to the sender only when this request created the friendship.
+      created
+        ? this.notificationsService.recordFriendAccepted({
+            originalRequesterUserId: fromUserId,
+            accepterUserId: userId
+          })
+        : Promise.resolve()
     ]);
   }
 }

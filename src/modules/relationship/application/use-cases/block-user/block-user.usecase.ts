@@ -1,3 +1,4 @@
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
 import {
   BlockAlreadyExistsException,
   CannotBlockYourselfException
@@ -21,7 +22,8 @@ export class BlockUserUseCase extends BlockUserPort {
     private readonly userRepository: UserRepositoryPort,
     private readonly friendshipRepository: FriendshipRepositoryPort,
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
-    private readonly friendService: FriendServicePort
+    private readonly friendService: FriendServicePort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {
     super();
   }
@@ -41,13 +43,16 @@ export class BlockUserUseCase extends BlockUserPort {
       throw new BlockAlreadyExistsException();
     }
 
-    await this.friendshipRepository.deleteFriendship(blockerUserId, blockedUserId);
-    await this.friendRequestRepository.deleteAllRequestsBetweenUsers({
-      fromUserId: blockerUserId,
-      toUserId: blockedUserId
+    // Remove the relationship and create the block atomically: if the block fails (e.g. a concurrent duplicate),
+    // the friendship and requests are kept.
+    await this.unitOfWork.run(async () => {
+      await this.friendshipRepository.deleteFriendship(blockerUserId, blockedUserId);
+      await this.friendRequestRepository.deleteAllRequestsBetweenUsers({
+        fromUserId: blockerUserId,
+        toUserId: blockedUserId
+      });
+      await this.blockRepository.createBlock(blockerUserId, blockedUserId);
     });
-
-    await this.blockRepository.createBlock(blockerUserId, blockedUserId);
 
     await Promise.all([
       this.friendService.invalidateFriendCache(blockerUserId),

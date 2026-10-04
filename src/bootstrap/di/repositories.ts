@@ -14,6 +14,7 @@ import type { ConversationMemberQueryRepositoryPort } from '@/modules/conversati
 import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
 import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
@@ -58,7 +59,12 @@ type QueryRepositories = {
   roleQueryRepository: RoleQueryRepositoryPort;
 };
 
-export type ContainerRepositories = Repositories & QueryRepositories;
+// The UnitOfWork lives with the repositories because it must match the selected database adapter.
+type Persistence = {
+  unitOfWork: UnitOfWorkPort;
+};
+
+export type ContainerRepositories = Repositories & QueryRepositories & Persistence;
 
 export function createContainerRepositories(database: DatabasePort, logger: LoggerPort): ContainerRepositories {
   switch (dbConfig.driver) {

@@ -102,9 +102,11 @@ export class ConversationMemberRepository
         { $set: { role: EnumConversationMemberRole.ADMIN } },
         { session: this.session }
       );
-      await this.db
-        .collection<ConversationModel>('conversations')
-        .updateOne({ _id: conversationId }, { $set: { updated_at: joinedAt } }, { session: this.session });
+      await this.collection<ConversationModel>('conversations').updateOne(
+        { _id: conversationId },
+        { $set: { updated_at: joinedAt } },
+        { session: this.session }
+      );
     });
   }
 

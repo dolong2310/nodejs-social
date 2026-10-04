@@ -13,6 +13,7 @@ import {
 import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
 import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
@@ -25,7 +26,8 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
     private readonly conversationMemberRepository: ConversationMemberRepositoryPort,
     private readonly conversationService: ConversationServicePort,
     private readonly friendService: FriendServicePort,
-    private readonly blockRepository: BlockRepositoryPort
+    private readonly blockRepository: BlockRepositoryPort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {
     super();
   }
@@ -53,8 +55,25 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
       throw new ConversationPeerBlockedException();
     }
 
-    const convEntity = await this.conversationRepository.createDirectConversation(userId, peerUserId);
-    const conv = convEntity?.toObject();
+    // Create the room and both memberships atomically, so a failure never leaves a room without members.
+    const conv = await this.unitOfWork.run(async () => {
+      const convEntity = await this.conversationRepository.createDirectConversation(userId, peerUserId);
+      // null: another request created the room concurrently.
+      if (!convEntity) return null;
+
+      const conversationId = convEntity.id.toString();
+      await this.conversationMemberRepository.createMember({
+        conversationId,
+        userId,
+        role: EnumConversationMemberRole.MEMBER
+      });
+      await this.conversationMemberRepository.createMember({
+        conversationId,
+        userId: peerUserId,
+        role: EnumConversationMemberRole.MEMBER
+      });
+      return convEntity.toObject();
+    });
 
     if (!conv) {
       // Handle race conditions when two requests create the room concurrently.
@@ -66,23 +85,8 @@ export class GetOrCreateConversationUseCase extends GetOrCreateConversationPort 
       }
     }
 
-    // Add both members to the direct room.
-    const conversationId = conv.id;
-    await Promise.all([
-      this.conversationMemberRepository.createMember({
-        conversationId,
-        userId,
-        role: EnumConversationMemberRole.MEMBER
-      }),
-      this.conversationMemberRepository.createMember({
-        conversationId,
-        userId: peerUserId,
-        role: EnumConversationMemberRole.MEMBER
-      })
-    ]);
-
     return new GetOrCreateConversationOutputPort({
-      id: conversationId,
+      id: conv.id,
       type: conv.type,
       createdBy: conv.createdBy,
       name: conv.name,

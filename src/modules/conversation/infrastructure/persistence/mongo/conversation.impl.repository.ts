@@ -55,20 +55,27 @@ export class ConversationRepository
   }
 
   async createDirectConversation(createdBy: string, peerId: string): Promise<ConversationEntity | null> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
+    const entity = ConversationEntity.create({
+      type: EnumConversationType.DIRECT,
+      createdBy,
+      userIdLow,
+      userIdHigh
+    });
+    const { type, user_id_low, user_id_high, deleted_at, ...rest } = this.mapper.toPersistence(entity);
     try {
-      const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
-      const entity = ConversationEntity.create({
-        type: EnumConversationType.DIRECT,
-        createdBy,
-        userIdLow,
-        userIdHigh
-      });
-      const record = this.mapper.toPersistence(entity);
-      await this.dbCollection.insertOne(record);
-      return this.mapper.toDomain(record);
+      // Upsert instead of catching the duplicate key: inside a transaction a failed write aborts it.
+      // The filter matches the partial unique index (active direct conversation per user pair).
+      const result = await this.dbCollection.updateOne(
+        { type, user_id_low, user_id_high, deleted_at },
+        { $setOnInsert: rest },
+        { upsert: true }
+      );
+      return result.upsertedCount === 1 ? entity : null;
     } catch (error) {
-      // Handle race conditions when two requests create the conversation concurrently.
-      if (error instanceof MongoServerError && error.code === 11000) {
+      // Outside a transaction a concurrent upsert can still hit the unique index: another request created the room.
+      // Inside a transaction the error must propagate so the driver can abort or retry it.
+      if (!this.session && error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
       throw error;
@@ -112,9 +119,9 @@ export class ConversationRepository
       await this.dbCollection.insertOne(groupRecord, { session: this.session });
       if (allMembers.length > 0) {
         const memberRecords = allMembers.map((member) => this.conversationMemberMapper.toPersistence(member));
-        await this.db
-          .collection<ConversationMemberModel>('conversation_members')
-          .insertMany(memberRecords, { session: this.session });
+        await this.collection<ConversationMemberModel>('conversation_members').insertMany(memberRecords, {
+          session: this.session
+        });
       }
     });
 
