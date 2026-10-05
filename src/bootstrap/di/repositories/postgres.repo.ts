@@ -30,7 +30,6 @@ import { HashtagRepository } from '@/modules/post/infrastructure/persistence/pos
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
 import { LikeRepository } from '@/modules/post/infrastructure/persistence/postgres/like.impl.repository';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/postgres/like.mapper';
-import { PostCommandRepository } from '@/modules/post/infrastructure/persistence/postgres/post-command.impl.repository';
 import { PostQueryRepository } from '@/modules/post/infrastructure/persistence/postgres/post-query.impl.repository';
 import { PostRepository } from '@/modules/post/infrastructure/persistence/postgres/post.impl.repository';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
@@ -98,14 +97,9 @@ export function createPostgresContainerRepositories(
     roleQueryRepository: new RoleQueryRepository(readPool)
   };
 
-  const commandRepositories = {
-    postCommandRepository: new PostCommandRepository(pool)
-  };
-
   return {
     ...repositories,
     ...queryRepositories,
-    ...commandRepositories,
     unitOfWork: new PostgresUnitOfWork(pool)
   };
 }

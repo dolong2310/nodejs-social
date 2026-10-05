@@ -5,6 +5,9 @@ import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post
 import type {
   CreatePostInput,
   DeletePostTreeInput,
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput,
   UpdatePostInput
 } from '@/modules/post/domain/repositories/post.repository.types';
 import type { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
@@ -166,5 +169,44 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
       );
       return result.rows[0]?.deleted_count ?? 0;
     });
+  }
+
+  async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
+    const column = userId ? 'user_views' : 'guest_views';
+    const result = await this.query<{
+      user_views: number;
+      guest_views: number;
+      updated_at: Date;
+    }>(
+      `
+        UPDATE posts
+        SET ${column} = ${column} + 1, updated_at = NOW()
+        WHERE id = $1 AND deleted_at IS NULL
+        RETURNING user_views, guest_views, updated_at
+      `,
+      [postId]
+    );
+    const [record] = result.rows;
+    return record
+      ? {
+          userViews: record.user_views,
+          guestViews: record.guest_views,
+          updatedAt: record.updated_at
+        }
+      : null;
+  }
+
+  async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
+    if (ids.length === 0) return 0;
+    const column = isAuthenticatedUser ? 'user_views' : 'guest_views';
+    const result = await this.query(
+      `
+        UPDATE posts
+        SET ${column} = ${column} + 1, updated_at = NOW()
+        WHERE id = ANY($1::text[]) AND deleted_at IS NULL
+      `,
+      [[...new Set(ids)]]
+    );
+    return result.rowCount ?? 0;
   }
 }

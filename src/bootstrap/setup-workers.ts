@@ -17,7 +17,7 @@ export function setupWorkers(container: IContainer): void {
   const {
     emailSender,
     otpRepository,
-    postCommandRepository,
+    postRepository,
     notificationService,
     mediaRepository,
     s3Service,
@@ -29,7 +29,7 @@ export function setupWorkers(container: IContainer): void {
   } = container.getWorkerDeps();
 
   new OtpEmailWorker(connection, emailSender, otpRepository, logger);
-  new PostViewsWorker(connection, postCommandRepository, logger);
+  new PostViewsWorker(connection, postRepository, logger);
   new NotificationTrimWorker(connection, notificationService, logger);
   new VideoStreamWorker(connection, mediaRepository, s3Service, fileStorage, logger);
   new OtpCleanupWorker(connection, deleteExpiredOtpsUC, logger);

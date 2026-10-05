@@ -239,7 +239,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     permissionRepository,
     paymentRepository,
     postQueryRepository,
-    postCommandRepository,
     userQueryRepository,
     conversationMemberQueryRepository,
     unitOfWork,
@@ -392,7 +391,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
 
   const getNewFeedsUC = new GetNewFeedsUseCase(postQueryRepository, postService, blockService, friendService, logger);
   const getGuestNewFeedsUC = new GetGuestNewFeedsUseCase(postQueryRepository, postService, logger);
-  const increaseViewsUC = new IncreaseViewsUseCase(postCommandRepository);
+  const increaseViewsUC = new IncreaseViewsUseCase(postRepository);
   const getPostDetailUC = new GetPostDetailUseCase(postQueryRepository, postAudienceAccessService);
   const getPostsTypeUC = new GetPostsTypeUseCase(
     postQueryRepository,

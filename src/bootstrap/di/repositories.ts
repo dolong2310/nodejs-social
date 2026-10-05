@@ -21,7 +21,6 @@ import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositorie
 import type { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
 import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import type { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
@@ -53,7 +52,6 @@ type Repositories = {
 
 type QueryRepositories = {
   postQueryRepository: PostQueryRepositoryPort;
-  postCommandRepository: PostCommandRepositoryPort;
   userQueryRepository: UserQueryRepositoryPort;
   conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort;
   roleQueryRepository: RoleQueryRepositoryPort;

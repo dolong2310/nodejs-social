@@ -18,3 +18,19 @@ export interface DeletePostTreeInput {
   postId: string;
   actorId: string;
 }
+
+export interface IncreasePostViewsInput {
+  postId: string;
+  userId?: string;
+}
+
+export interface IncreasePostsViewsInput {
+  ids: string[];
+  isAuthenticatedUser: boolean;
+}
+
+export interface IncreasePostViewsOutput {
+  userViews: number;
+  guestViews: number;
+  updatedAt: Date;
+}

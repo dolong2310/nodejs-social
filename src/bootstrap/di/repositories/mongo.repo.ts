@@ -30,7 +30,6 @@ import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mon
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper';
 import { LikeRepository } from '@/modules/post/infrastructure/persistence/mongo/like.impl.repository';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/mongo/like.mapper';
-import { PostCommandRepository } from '@/modules/post/infrastructure/persistence/mongo/post-command.impl.repository';
 import { PostQueryRepository } from '@/modules/post/infrastructure/persistence/mongo/post-query.impl.repository';
 import { PostRepository } from '@/modules/post/infrastructure/persistence/mongo/post.impl.repository';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
@@ -106,14 +105,9 @@ export function createMongoContainerRepositories(
     roleQueryRepository: new RoleQueryRepository(readDb, readDbClient, roleMapper)
   };
 
-  const commandRepositories = {
-    postCommandRepository: new PostCommandRepository(db, dbClient, postMapper)
-  };
-
   return {
     ...repositories,
     ...queryRepositories,
-    ...commandRepositories,
     unitOfWork: new MongoUnitOfWork(dbClient)
   };
 }

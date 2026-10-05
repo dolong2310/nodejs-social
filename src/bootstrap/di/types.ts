@@ -12,7 +12,7 @@ import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositor
 import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import type { CheckSystemHealthPort } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.port';
 import type { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
-import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import type { BaseRoute } from '@/presentation/http/express/core/base.route';
 import type { ISocketFeature } from '@/presentation/socket/socket.types';
@@ -33,7 +33,7 @@ export interface IContainer {
   getWorkerDeps(): {
     emailSender: EmailSenderPort;
     otpRepository: OtpRepositoryPort;
-    postCommandRepository: PostCommandRepositoryPort;
+    postRepository: PostRepositoryPort;
     notificationService: NotificationServicePort;
     mediaRepository: VideoStatusRepositoryPort;
     s3Service: ObjectStoragePort;

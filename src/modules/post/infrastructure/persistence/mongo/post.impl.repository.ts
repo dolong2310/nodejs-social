@@ -5,6 +5,9 @@ import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post
 import type {
   CreatePostInput,
   DeletePostTreeInput,
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput,
   UpdatePostInput
 } from '@/modules/post/domain/repositories/post.repository.types';
 import type { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
@@ -134,5 +137,32 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
     }
 
     return ids;
+  }
+
+  async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
+    const result = await this.dbCollection.findOneAndUpdate(
+      { _id: postId, deleted_at: null },
+      { $inc: userId ? { user_views: 1 } : { guest_views: 1 }, $currentDate: { updated_at: true } },
+      { returnDocument: 'after', projection: { user_views: 1, guest_views: 1, updated_at: 1 } }
+    );
+    return result
+      ? {
+          userViews: result.user_views,
+          guestViews: result.guest_views,
+          updatedAt: result.updated_at
+        }
+      : null;
+  }
+
+  async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
+    if (ids.length === 0) return 0;
+    const res = await this.dbCollection.updateMany(
+      { _id: { $in: ids }, deleted_at: null },
+      {
+        $inc: isAuthenticatedUser ? { user_views: 1 } : { guest_views: 1 },
+        $currentDate: { updated_at: true }
+      }
+    );
+    return res.modifiedCount;
   }
 }

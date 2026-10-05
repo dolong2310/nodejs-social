@@ -69,7 +69,6 @@ import { PostService, type PostServicePort } from '@/modules/post/application/se
 import type { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
 import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import type { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
-import type { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
 import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 import { BlockService, type BlockServicePort } from '@/modules/relationship/application/services/block.service';
@@ -127,7 +126,6 @@ export class Container implements IContainer {
   private readonly roleRepository: RoleRepositoryPort;
 
   private readonly postQueryRepository: PostQueryRepositoryPort;
-  private readonly postCommandRepository: PostCommandRepositoryPort;
   private readonly userQueryRepository: UserQueryRepositoryPort;
   private readonly conversationMemberQueryRepository: ConversationMemberQueryRepositoryPort;
   private readonly roleQueryRepository: RoleQueryRepositoryPort;
@@ -196,7 +194,6 @@ export class Container implements IContainer {
     this.roleRepository = repos.roleRepository;
     this.roleQueryRepository = repos.roleQueryRepository;
     this.postQueryRepository = repos.postQueryRepository;
-    this.postCommandRepository = repos.postCommandRepository;
     this.userQueryRepository = repos.userQueryRepository;
     this.conversationMemberQueryRepository = repos.conversationMemberQueryRepository;
 
@@ -369,7 +366,7 @@ export class Container implements IContainer {
     return {
       emailSender: this.emailSender,
       otpRepository: this.otpRepository,
-      postCommandRepository: this.postCommandRepository,
+      postRepository: this.postRepository,
       notificationService: this.notificationsService,
       mediaRepository: this.videoStatusRepository,
       s3Service: this.s3Service,
