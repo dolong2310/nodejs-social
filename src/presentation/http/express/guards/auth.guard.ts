@@ -1,8 +1,9 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import type {
-  AccessTokenPayload,
-  TokenServicePort
-} from '@/modules/authentication/application/services/token.service.types';
+import {
+  ExpiredTokenException,
+  InvalidTokenException
+} from '@/modules/authentication/application/exceptions/auth.exception';
+import type { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/ports/token.port';
 import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constants';
 import type { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
@@ -18,7 +19,6 @@ import { ForbiddenException, UnauthorizedException } from '@/presentation/http/e
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { resolveUrlPath } from '@/presentation/http/express/utils/url.util';
 import type { Request } from 'express';
-import jwt from 'jsonwebtoken';
 import { keyBy, omit } from 'lodash-es';
 import type { Dictionary, Prettify } from 'ts-essentials';
 
@@ -55,10 +55,10 @@ export class AuthGuard implements BaseGuard {
 
       return decoded;
     } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
+      if (error instanceof ExpiredTokenException) {
         throw TokenHasExpiredException;
       }
-      if (error instanceof jwt.JsonWebTokenError) {
+      if (error instanceof InvalidTokenException) {
         throw TokenInvalidException;
       }
       throw error;

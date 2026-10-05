@@ -2,7 +2,7 @@ import type { IContainer } from '@/bootstrap/container';
 import type {
   AccessTokenPayload,
   TokenServicePort
-} from '@/modules/authentication/application/services/token.service.types';
+} from '@/modules/authentication/application/ports/token.port';
 import { userRoom } from '@/modules/common/constants/socket.constants';
 import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';

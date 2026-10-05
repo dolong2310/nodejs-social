@@ -5,7 +5,6 @@ import type { OtpEmailJobData, OtpEmailQueuePort } from '@/modules/authenticatio
 import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { AuthService } from '@/modules/authentication/application/services/auth.service';
 import { OtpService } from '@/modules/authentication/application/services/otp.service';
-import { TokenService } from '@/modules/authentication/application/services/token.service';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { LoginEmailUseCase } from '@/modules/authentication/application/use-cases/login-email/login-email.usecase';
@@ -20,6 +19,7 @@ import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types'
 import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
 import { JwtService } from '@/modules/authentication/infrastructure/services/jwt.service';
+import { TokenService } from '@/modules/authentication/infrastructure/services/token.service';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
 import { RoleService } from '@/modules/authorization/application/services/role.service';
 import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';

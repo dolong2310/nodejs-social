@@ -6,7 +6,7 @@ import type { GoogleOAuthServicePort } from '@/modules/authentication/applicatio
 import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';

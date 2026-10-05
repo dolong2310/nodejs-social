@@ -1,7 +1,10 @@
-import { InvalidTokenException } from '@/modules/authentication/application/exceptions/auth.exception';
+import {
+  ExpiredTokenException,
+  InvalidTokenException
+} from '@/modules/authentication/application/exceptions/auth.exception';
 import { RefreshTokenExpiredException } from '@/modules/authentication/application/exceptions/refresh-token.exception';
 import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
 import { RefreshTokenInputPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
 import { RefreshTokenUseCase } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.usecase';
 import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
@@ -9,7 +12,6 @@ import { UserNotFoundException } from '@/modules/user/application/exceptions/use
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { makeUserWithRole } from '@test/support/builders/user.builder';
 import { mockPort } from '@test/support/mocks/port.mock';
-import jwt from 'jsonwebtoken';
 import { describe, expect, it, vi } from 'vitest';
 
 const user = makeUserWithRole({ password: 'hash' });
@@ -71,7 +73,7 @@ describe('RefreshTokenUseCase', () => {
 
   it('maps an expired refresh token to RefreshTokenExpiredException', async () => {
     const useCase = makeUseCase({
-      verifyRefreshToken: vi.fn().mockRejectedValue(new jwt.TokenExpiredError('jwt expired', new Date()))
+      verifyRefreshToken: vi.fn().mockRejectedValue(new ExpiredTokenException())
     });
 
     await expect(useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old' }))).rejects.toBeInstanceOf(
@@ -79,9 +81,9 @@ describe('RefreshTokenUseCase', () => {
     );
   });
 
-  it('maps an invalid refresh token to InvalidTokenException', async () => {
+  it('propagates an invalid refresh token as InvalidTokenException', async () => {
     const useCase = makeUseCase({
-      verifyRefreshToken: vi.fn().mockRejectedValue(new jwt.JsonWebTokenError('invalid signature'))
+      verifyRefreshToken: vi.fn().mockRejectedValue(new InvalidTokenException())
     });
 
     await expect(useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old' }))).rejects.toBeInstanceOf(

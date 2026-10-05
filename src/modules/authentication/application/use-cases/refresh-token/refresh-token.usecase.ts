@@ -1,7 +1,10 @@
-import { InvalidTokenException } from '@/modules/authentication/application/exceptions/auth.exception';
+import {
+  ExpiredTokenException,
+  InvalidTokenException
+} from '@/modules/authentication/application/exceptions/auth.exception';
 import { RefreshTokenExpiredException } from '@/modules/authentication/application/exceptions/refresh-token.exception';
 import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
 import {
   type RefreshTokenInputPort,
   RefreshTokenPort,
@@ -11,7 +14,6 @@ import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import jwt from 'jsonwebtoken';
 
 export class RefreshTokenUseCase extends RefreshTokenPort {
   constructor(
@@ -61,12 +63,9 @@ export class RefreshTokenUseCase extends RefreshTokenPort {
       // 4. Return tokens
       return new RefreshTokenOutputPort({ accessToken, refreshToken });
     } catch (error) {
-      // TokenExpiredError extends JsonWebTokenError, so it must be checked first.
-      if (error instanceof jwt.TokenExpiredError) {
+      // An invalid token already surfaces as InvalidTokenException from the token service.
+      if (error instanceof ExpiredTokenException) {
         throw new RefreshTokenExpiredException();
-      }
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw new InvalidTokenException();
       }
       // RefreshTokenHasBeenRevokedException
 

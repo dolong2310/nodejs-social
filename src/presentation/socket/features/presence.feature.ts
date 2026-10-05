@@ -1,4 +1,4 @@
-import type { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
+import type { AccessTokenPayload } from '@/modules/authentication/application/ports/token.port';
 import { SOCKET_SERVER_PRESENCE_USER, userRoom } from '@/modules/common/constants/socket.constants';
 import type { NotifyFriendsOfflinePort } from '@/modules/notification/application/use-cases/realtime/notify-friends-offline/notify-friends-offline.port';
 import type { NotifyFriendsOnlinePort } from '@/modules/notification/application/use-cases/realtime/notify-friends-online/notify-friends-online.port';

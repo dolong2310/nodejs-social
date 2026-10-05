@@ -1,4 +1,4 @@
-import type { AccessTokenPayload } from '@/modules/authentication/application/services/token.service.types';
+import type { AccessTokenPayload } from '@/modules/authentication/application/ports/token.port';
 import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
 import type { UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import type { REFRESH_TOKEN_COOKIE_NAME } from '@/presentation/http/express/constants/auth.constants';

@@ -1,6 +1,3 @@
-import type { Algorithm, Secret } from 'jsonwebtoken';
-import type { StringValue } from 'ms';
-
 // Access Token
 export interface AccessTokenPayloadCreate {
   userId: string;
@@ -23,17 +20,14 @@ export interface RefreshTokenPayload extends RefreshTokenPayloadCreate {
   iat: number;
 }
 
+/**
+ * Issues and verifies auth tokens. The token format (JWT today) is an infrastructure detail.
+ * `verify*` rejects with ExpiredTokenException when the token has expired and InvalidTokenException
+ * for any other invalid token, so callers never depend on the token library's errors.
+ */
 export interface TokenServicePort {
   signAccessToken(payload: AccessTokenPayloadCreate): Promise<string>;
   signRefreshToken(payload: RefreshTokenPayloadCreate): Promise<string>;
   verifyAccessToken(token: string): Promise<AccessTokenPayload>;
   verifyRefreshToken(token: string): Promise<RefreshTokenPayload>;
 }
-
-export type TokenServiceConfig = {
-  algorithm: Algorithm;
-  accessTokenSecret: Secret;
-  refreshTokenSecret: Secret;
-  accessTokenExpiresIn: StringValue;
-  refreshTokenExpiresIn: StringValue;
-};

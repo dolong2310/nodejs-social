@@ -1,6 +1,6 @@
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
 import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
-import type { TokenServicePort } from '@/modules/authentication/application/services/token.service.types';
+import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
 import type { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import type { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';

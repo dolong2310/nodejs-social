@@ -1,14 +1,28 @@
-import type { JwtPort } from '@/modules/authentication/application/ports/jwt.port';
+import {
+  ExpiredTokenException,
+  InvalidTokenException
+} from '@/modules/authentication/application/exceptions/auth.exception';
 import type {
   AccessTokenPayload,
   AccessTokenPayloadCreate,
   RefreshTokenPayload,
   RefreshTokenPayloadCreate,
-  TokenServiceConfig,
   TokenServicePort
-} from '@/modules/authentication/application/services/token.service.types';
+} from '@/modules/authentication/application/ports/token.port';
+import type { JwtPort } from '@/modules/authentication/infrastructure/services/jwt.service';
+import jwt, { type Algorithm, type Secret } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 import { v4 as uuidv4 } from 'uuid';
 
+export type TokenServiceConfig = {
+  algorithm: Algorithm;
+  accessTokenSecret: Secret;
+  refreshTokenSecret: Secret;
+  accessTokenExpiresIn: StringValue;
+  refreshTokenExpiresIn: StringValue;
+};
+
+/** JWT implementation of TokenServicePort. */
 export class TokenService implements TokenServicePort {
   constructor(
     private readonly jwtService: JwtPort,
@@ -42,14 +56,22 @@ export class TokenService implements TokenServicePort {
   }
 
   verifyAccessToken(token: string): Promise<AccessTokenPayload> {
-    return this.jwtService.verifyAsync<AccessTokenPayload>(token, {
-      secret: this.tokenConfig.accessTokenSecret
-    });
+    return this.verify<AccessTokenPayload>(token, this.tokenConfig.accessTokenSecret);
   }
 
   verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
-    return this.jwtService.verifyAsync<RefreshTokenPayload>(token, {
-      secret: this.tokenConfig.refreshTokenSecret
-    });
+    return this.verify<RefreshTokenPayload>(token, this.tokenConfig.refreshTokenSecret);
+  }
+
+  // Translate jsonwebtoken errors into the errors promised by TokenServicePort.
+  private async verify<T extends object>(token: string, secret: Secret): Promise<T> {
+    try {
+      return await this.jwtService.verifyAsync<T>(token, { secret });
+    } catch (error) {
+      // TokenExpiredError extends JsonWebTokenError, so it must be checked first.
+      if (error instanceof jwt.TokenExpiredError) throw new ExpiredTokenException();
+      if (error instanceof jwt.JsonWebTokenError) throw new InvalidTokenException();
+      throw error;
+    }
   }
 }

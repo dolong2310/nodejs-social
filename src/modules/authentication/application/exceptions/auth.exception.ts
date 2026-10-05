@@ -5,6 +5,11 @@ export class InvalidTokenException extends ExceptionBase {
   readonly type = 'unauthenticated';
 }
 
+export class ExpiredTokenException extends ExceptionBase {
+  readonly code = 'AUTH.TOKEN_EXPIRED';
+  readonly type = 'unauthenticated';
+}
+
 export class InvalidEmailOrPasswordException extends ExceptionBase {
   readonly code = 'AUTH.INVALID_EMAIL_OR_PASSWORD';
   readonly type = 'unauthenticated';
