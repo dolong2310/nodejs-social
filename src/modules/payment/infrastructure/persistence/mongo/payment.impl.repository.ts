@@ -60,8 +60,7 @@ export class PaymentRepository
       {
         $set: { checkout_url: url, status: 'pending', updated_at: new Date(), updated_by_id: null },
         $inc: { version: 1 }
-      },
-      { session: this.session }
+      }
     );
     await this.dbCollection.updateOne(
       {
@@ -70,8 +69,7 @@ export class PaymentRepository
         status: { $in: URL_ATTACHABLE_PAYMENT_STATUSES.filter((status) => status !== 'creating') },
         deleted_at: null
       },
-      { $set: { checkout_url: url, updated_at: new Date(), updated_by_id: null }, $inc: { version: 1 } },
-      { session: this.session }
+      { $set: { checkout_url: url, updated_at: new Date(), updated_by_id: null }, $inc: { version: 1 } }
     );
     return this.requirePayment(id);
   }
@@ -79,8 +77,7 @@ export class PaymentRepository
   async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
     await this.dbCollection.updateOne(
       { _id: id, status: 'creating', deleted_at: null },
-      { $set: { status: 'unknown', updated_at: new Date(), updated_by_id: null }, $inc: { version: 1 } },
-      { session: this.session }
+      { $set: { status: 'unknown', updated_at: new Date(), updated_by_id: null }, $inc: { version: 1 } }
     );
     return this.requirePayment(id);
   }
@@ -96,8 +93,7 @@ export class PaymentRepository
           updated_by_id: null
         },
         $inc: { version: 1 }
-      },
-      { session: this.session }
+      }
     );
     return this.requirePayment(id);
   }
@@ -132,7 +128,7 @@ export class PaymentRepository
           },
           $inc: { version: 1 }
         },
-        { returnDocument: 'after', session: this.session }
+        { returnDocument: 'after' }
       );
       if (updatedPayment) return 'applied';
     } catch (error) {

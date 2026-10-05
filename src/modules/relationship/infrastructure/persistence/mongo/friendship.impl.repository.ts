@@ -79,7 +79,7 @@ export class FriendshipRepository
     } catch (error) {
       // Outside a transaction a concurrent upsert can still hit the unique index; it means the friendship exists.
       // Inside a transaction the error must propagate so the driver can abort or retry it.
-      if (!this.session && error instanceof MongoServerError && error.code === 11000) {
+      if (!this.inTransaction && error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
       throw error;

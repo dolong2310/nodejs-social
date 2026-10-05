@@ -75,7 +75,7 @@ export class ConversationRepository
     } catch (error) {
       // Outside a transaction a concurrent upsert can still hit the unique index: another request created the room.
       // Inside a transaction the error must propagate so the driver can abort or retry it.
-      if (!this.session && error instanceof MongoServerError && error.code === 11000) {
+      if (!this.inTransaction && error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
       throw error;
@@ -116,12 +116,10 @@ export class ConversationRepository
     // Create a transaction that performs two operations: insert group and insert members.
     await this.transaction(async () => {
       const groupRecord = this.mapper.toPersistence(group);
-      await this.dbCollection.insertOne(groupRecord, { session: this.session });
+      await this.dbCollection.insertOne(groupRecord);
       if (allMembers.length > 0) {
         const memberRecords = allMembers.map((member) => this.conversationMemberMapper.toPersistence(member));
-        await this.collection<ConversationMemberModel>('conversation_members').insertMany(memberRecords, {
-          session: this.session
-        });
+        await this.collection<ConversationMemberModel>('conversation_members').insertMany(memberRecords);
       }
     });
 

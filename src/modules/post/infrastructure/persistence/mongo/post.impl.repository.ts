@@ -82,32 +82,17 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
         updated_by_id: actorId
       };
 
-      const postsResult = await this.dbCollection.updateMany(
-        { _id: { $in: ids }, deleted_at: null },
-        { $set: audit },
-        { session: this.session }
-      );
+      const postsResult = await this.dbCollection.updateMany({ _id: { $in: ids }, deleted_at: null }, { $set: audit });
       // Sequential on purpose: MongoDB does not support parallel operations inside one transaction.
-      await this.collection('likes').updateMany(
-        { post_id: { $in: ids }, deleted_at: null },
-        { $set: audit },
-        { session: this.session }
-      );
-      await this.collection('bookmarks').updateMany(
-        { post_id: { $in: ids }, deleted_at: null },
-        { $set: audit },
-        { session: this.session }
-      );
+      await this.collection('likes').updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit });
+      await this.collection('bookmarks').updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit });
 
       return postsResult.modifiedCount;
     });
   }
 
   private async collectActivePostTreeIds(postId: string): Promise<string[]> {
-    const root = await this.dbCollection.findOne(
-      { _id: postId, deleted_at: null },
-      { projection: { _id: 1 }, session: this.session }
-    );
+    const root = await this.dbCollection.findOne({ _id: postId, deleted_at: null }, { projection: { _id: 1 } });
     if (!root) {
       return [];
     }
@@ -122,7 +107,7 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
           {
             parent_id: { $in: frontier }
           },
-          { projection: { _id: 1 }, session: this.session }
+          { projection: { _id: 1 } }
         )
         .toArray();
 

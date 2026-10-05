@@ -94,18 +94,15 @@ export class ConversationMemberRepository
     await this.transaction(async () => {
       await this.dbCollection.updateOne(
         { conversation_id: conversationId, user_id: oldAdminUserId },
-        { $set: { role: EnumConversationMemberRole.MANAGER } },
-        { session: this.session }
+        { $set: { role: EnumConversationMemberRole.MANAGER } }
       );
       await this.dbCollection.updateOne(
         { conversation_id: conversationId, user_id: newAdminUserId },
-        { $set: { role: EnumConversationMemberRole.ADMIN } },
-        { session: this.session }
+        { $set: { role: EnumConversationMemberRole.ADMIN } }
       );
       await this.collection<ConversationModel>('conversations').updateOne(
         { _id: conversationId },
-        { $set: { updated_at: joinedAt } },
-        { session: this.session }
+        { $set: { updated_at: joinedAt } }
       );
     });
   }
