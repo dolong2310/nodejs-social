@@ -1,4 +1,4 @@
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
 import { type InferOutput, date, enum_, minLength, nullable, object, optional, pipe, string } from 'valibot';
 

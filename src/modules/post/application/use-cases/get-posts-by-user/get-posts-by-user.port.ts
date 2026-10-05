@@ -1,8 +1,8 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { EnumPostType } from '@/modules/post/domain/entities/post.type';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { EnumPostType } from '@/modules/post/domain/entities/post.types';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
-export class GetPostsByUserQuery {
+export class GetPostsByUserInputPort {
   targetUserId: string;
   currentUserId?: string;
   type?: EnumPostType;
@@ -13,7 +13,7 @@ export class GetPostsByUserQuery {
     targetUserId: string;
     currentUserId?: string;
     type?: EnumPostType;
-    limit: string;
+    limit: number;
     cursor?: string;
   }) {
     this.targetUserId = payload.targetUserId;
@@ -24,7 +24,7 @@ export class GetPostsByUserQuery {
   }
 }
 
-export class GetPostsByUserResult<T extends PostDetailWithAuthorOutput> {
+export class GetPostsByUserOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
 
@@ -35,8 +35,10 @@ export class GetPostsByUserResult<T extends PostDetailWithAuthorOutput> {
 }
 
 export abstract class GetPostsByUserPort implements UseCase<
-  GetPostsByUserQuery,
-  GetPostsByUserResult<PostDetailWithAuthorOutput>
+  GetPostsByUserInputPort,
+  GetPostsByUserOutputPort<PostDetailWithAuthorOutput>
 > {
-  abstract execute<T extends PostDetailWithAuthorOutput>(query: GetPostsByUserQuery): Promise<GetPostsByUserResult<T>>;
+  abstract execute<T extends PostDetailWithAuthorOutput>(
+    input: GetPostsByUserInputPort
+  ): Promise<GetPostsByUserOutputPort<T>>;
 }

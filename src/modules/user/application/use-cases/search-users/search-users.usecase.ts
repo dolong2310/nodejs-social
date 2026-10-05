@@ -1,28 +1,29 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constant';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/user/application/constants/cache.constants';
 import {
-  SearchUsersPort,
-  SearchUsersQuery,
-  SearchUsersResult
+  type SearchUsersInputPort,
+  SearchUsersOutputPort,
+  SearchUsersPort
 } from '@/modules/user/application/use-cases/search-users/search-users.port';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
 export class SearchUsersUseCase extends SearchUsersPort {
   constructor(
     private readonly userQueryRepository: UserQueryRepositoryPort,
     private readonly friendService: FriendServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
 
-  async execute({ userId, query = '', people, cursor, limit }: SearchUsersQuery): Promise<SearchUsersResult> {
+  async execute(input: SearchUsersInputPort): Promise<SearchUsersOutputPort> {
+    const { userId, query = '', people, cursor, limit } = input;
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
 
-    const load = async (): Promise<SearchUsersResult> => {
+    const load = async (): Promise<SearchUsersOutputPort> => {
       const userEntities = await this.userQueryRepository.findUsersForSearch({
         userId,
         query,
@@ -36,7 +37,7 @@ export class SearchUsersUseCase extends SearchUsersPort {
       const last = items[items.length - 1];
       const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id.toString()) : null;
 
-      return new SearchUsersResult({ items, nextCursor });
+      return new SearchUsersOutputPort({ items, nextCursor });
     };
 
     if (CACHE_TTL.SEARCH_USERS <= 0) {
@@ -51,7 +52,7 @@ export class SearchUsersUseCase extends SearchUsersPort {
       limit
     });
 
-    const result = await this.cache.get(key, load, { ttlSeconds: CACHE_TTL.SEARCH_USERS });
+    const result = await this.cache.read(key, load, { ttlSeconds: CACHE_TTL.SEARCH_USERS });
     return result ?? load();
   }
 }

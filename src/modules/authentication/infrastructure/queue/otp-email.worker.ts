@@ -1,9 +1,9 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import { OtpEmailJobData, OtpEmailJobResult } from '@/modules/authentication/application/ports/otp-email-job.port';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { OtpEmailJobData, OtpEmailJobResult } from '@/modules/authentication/application/ports/otp-email-job.port';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { OTP_EMAIL_QUEUE_NAME } from '@/modules/authentication/infrastructure/queue/otp-email.queue';
-import { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { UnrecoverableError, type ConnectionOptions, type Job } from 'bullmq';
 
 // Consumer

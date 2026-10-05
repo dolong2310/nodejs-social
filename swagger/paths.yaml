@@ -123,6 +123,182 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ==================== PAYMENTS ====================
+  /payments:
+    post:
+      tags: [payments]
+      summary: Create a sandbox order payment
+      operationId: createPayment
+      description: Creates an order payment from the supplied reference, description and VND amount, then returns a provider checkout URL. VNPay, MoMo and ZaloPay are sandbox-only in every app environment.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+          description: Reuse the same key to safely retry this request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Payment created or returned for the same idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '422':
+          description: Invalid payment details or missing Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payments/{paymentId}:
+    get:
+      tags: [payments]
+      summary: Get the current user's payment status
+      operationId: getPayment
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/MongoId' }
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment not found for the current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payments/callbacks/vnpay/ipn:
+    get:
+      tags: [payments]
+      summary: VNPay server-to-server IPN
+      operationId: receiveVnpayIpn
+      description: Configure this HTTPS URL in the VNPay sandbox merchant settings. The API verifies the signature and persists the notification before acknowledging it.
+      security: []
+      responses:
+        '200':
+          description: VNPay protocol response with RspCode and Message
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [RspCode, Message]
+                properties:
+                  RspCode: { type: string, example: '00' }
+                  Message: { type: string, example: Success }
+  /payments/callbacks/vnpay/return:
+    get:
+      tags: [payments]
+      summary: VNPay browser return
+      operationId: receiveVnpayReturn
+      description: Read-only return page. The payment state is updated only by the verified VNPay IPN.
+      security: []
+      responses:
+        '200':
+          description: User-facing instruction to check payment status in the application
+          content:
+            text/plain:
+              schema: { type: string }
+  /payments/callbacks/momo/ipn:
+    post:
+      tags: [payments]
+      summary: MoMo server-to-server IPN
+      operationId: receiveMomoIpn
+      description: Verifies the MoMo signature and persists the notification. A 204 response means the notification was applied or was an idempotent duplicate.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MomoIpnRequest'
+      responses:
+        '204':
+          description: Notification applied or duplicate
+        '400':
+          description: Invalid signature, payload, order, or amount
+        '409':
+          description: Payment is in a conflicting final state
+        '500':
+          description: Notification could not be durably processed; provider may retry
+  /payments/callbacks/momo/return:
+    get:
+      tags: [payments]
+      summary: MoMo browser return
+      operationId: receiveMomoReturn
+      description: Read-only return page. The payment state is updated only by the verified MoMo IPN.
+      security: []
+      responses:
+        '200':
+          description: User-facing instruction to check payment status in the application
+          content:
+            text/plain:
+              schema: { type: string }
+  /payments/callbacks/zalopay/callback:
+    post:
+      tags: [payments]
+      summary: ZaloPay server-to-server callback
+      operationId: receiveZalopayCallback
+      description: >-
+        ZaloPay calls this URL (sent as callback_url when the order is created) only after a successful payment.
+        The API verifies the mac with key2 and persists the notification before acknowledging it.
+        return_code 1 = applied, 2 = duplicate, 0 = ZaloPay should retry, -1 = rejected without retry.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZalopayCallbackRequest'
+      responses:
+        '200':
+          description: ZaloPay protocol response with return_code and return_message
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [return_code, return_message]
+                properties:
+                  return_code: { type: integer, enum: [1, 2, 0, -1], example: 1 }
+                  return_message: { type: string, example: Success }
+  /payments/callbacks/zalopay/return:
+    get:
+      tags: [payments]
+      summary: ZaloPay browser return
+      operationId: receiveZalopayReturn
+      description: Read-only return page. The payment state is updated only by the verified ZaloPay callback.
+      security: []
+      responses:
+        '200':
+          description: User-facing instruction to check payment status in the application
+          content:
+            text/plain:
+              schema: { type: string }
+
   # ==================== USERS ====================
   /users/me:
     get:

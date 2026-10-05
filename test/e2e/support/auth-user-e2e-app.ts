@@ -1,11 +1,10 @@
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
 import { createExpressApp } from '@/presentation/http/express/app';
 import type { IContainer } from '@/bootstrap/container';
-import type { IAppConfig } from '@/bootstrap/types/app.type';
 import type { OtpEmailJobData, OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
 import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { AuthService } from '@/modules/authentication/application/services/auth.service';
 import { OtpService } from '@/modules/authentication/application/services/otp.service';
-import { TokenService } from '@/modules/authentication/application/services/token.service';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { LoginEmailUseCase } from '@/modules/authentication/application/use-cases/login-email/login-email.usecase';
@@ -16,22 +15,22 @@ import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/s
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
 import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
 import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
 import { JwtService } from '@/modules/authentication/infrastructure/services/jwt.service';
+import { TokenService } from '@/modules/authentication/infrastructure/services/token.service';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
 import { RoleService } from '@/modules/authorization/application/services/role.service';
-import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
+import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { EnumRoleName, type RoleFullProps } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName, type RoleFullProps } from '@/modules/authorization/domain/entities/role.types';
 import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
 import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import { EmailAddress } from '@/modules/common/domain/value-objects/email-address.value-object';
 import { Username } from '@/modules/common/domain/value-objects/username.value-object';
 import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import type { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { Paginated, type PaginatedQueryParams } from '@/modules/core/domain/repositories/port.repository';
@@ -47,15 +46,15 @@ import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EnumUserStatus, type UserFullProps, type UserSafeProps } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus, type UserFullProps, type UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
-import type { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.type';
+import type { FindUsersForSearchInput, UserWithRole } from '@/modules/user/domain/repositories/user.query.types';
 import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import type {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
-} from '@/modules/user/domain/repositories/user.repository.type';
+} from '@/modules/user/domain/repositories/user.repository.types';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
@@ -68,13 +67,10 @@ import { TransformResponseInterceptor } from '@/presentation/http/express/interc
 import { AdminUserController } from '@/presentation/http/express/v1/controllers/admin-user.controller';
 import { AuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
 import { UserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import { AdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import { AuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
+import { mockUnitOfWork } from '@test/support/mocks/port.mock';
 import type { Express } from 'express';
 import bcrypt from 'bcrypt';
 
@@ -121,29 +117,28 @@ class MemoryCacheManager implements CacheManagerPort {
   async releaseLock(key: string, token: string): Promise<void> {
     if (this.locks.get(key) === token) this.locks.delete(key);
   }
-}
 
-class PassthroughCacheStrategy implements CacheStrategyPort {
-  constructor(private readonly cacheManager: CacheManagerPort) {}
-
-  async get<T>(key: string, loader: () => Promise<T | null>): Promise<T | null> {
-    const cached = await this.cacheManager.get<T>(key);
+  async read<T>(key: string, loader: () => Promise<T | null>): Promise<T | null> {
+    const cached = await this.get<T>(key);
     if (cached !== null) return cached;
     const value = await loader();
-    if (value !== null) await this.cacheManager.set(key, value);
+    if (value !== null) await this.set(key, value);
     return value;
   }
 
-  async write<T>(_key: string, writer: () => Promise<T>): Promise<T> {
-    return writer();
+  async write<T>(key: string, writer: () => Promise<T>): Promise<T> {
+    const value = await writer();
+    await this.set(key, value);
+    return value;
   }
 
-  async delete(_key: string, deleter: () => Promise<void>): Promise<void> {
+  async delete(key: string, deleter: () => Promise<void>): Promise<void> {
     await deleter();
+    await this.del(key);
   }
 
   async invalidate(key: string): Promise<void> {
-    await this.cacheManager.del(key);
+    await this.del(key);
   }
 }
 
@@ -271,10 +266,6 @@ class MemoryRoleRepository implements RoleRepositoryPort {
   async deleteAllByIds(ids: string[]): Promise<boolean> {
     ids.forEach((id) => this.roles.delete(id));
     return true;
-  }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
   }
 
   private save(entity: RoleEntity): void {
@@ -407,10 +398,6 @@ class MemoryOtpRepository implements OtpRepositoryPort {
     ids.forEach((id) => this.otps.delete(id));
     return true;
   }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
-  }
 }
 
 class MemoryRefreshTokenRepository implements RefreshTokenRepositoryPort {
@@ -507,10 +494,6 @@ class MemoryRefreshTokenRepository implements RefreshTokenRepositoryPort {
 
   async deleteAllByIds(): Promise<boolean> {
     return false;
-  }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
   }
 }
 
@@ -614,10 +597,6 @@ class MemoryUserRepository implements UserRepositoryPort {
   async deleteAllByIds(ids: string[]): Promise<boolean> {
     ids.forEach((id) => this.users.delete(id));
     return true;
-  }
-
-  async transaction<T>(handler: () => Promise<T> | T): Promise<T> {
-    return handler();
   }
 
   private async patchUser(id: string, patch: StoredUserPatch): Promise<UserEntity | null> {
@@ -740,7 +719,6 @@ export type AuthUserE2eApp = {
 
 export function createAuthUserE2eApp(): AuthUserE2eApp {
   const cacheManager = new MemoryCacheManager();
-  const cacheStrategy = new PassthroughCacheStrategy(cacheManager);
   const roleRepository = new MemoryRoleRepository();
   const roleQueryRepository = new MemoryRoleQueryRepository(roleRepository);
   const userRepository = new MemoryUserRepository();
@@ -756,12 +734,19 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     refreshTokenExpiresIn: '7d'
   });
   const roleService = new RoleService(roleRepository);
-  const userService = new UserService(userRepository, userQueryRepository, cacheStrategy);
+  const userService = new UserService(userRepository, userQueryRepository, cacheManager);
   const otpService = new OtpService(otpRepository, twoFactorService);
   const authService = new AuthService(refreshTokenRepository, tokenService);
   const otpEmailQueue = new CapturingOtpEmailQueue();
 
-  const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
+  const registerUC = new RegisterUseCase(
+    userRepository,
+    hashingService,
+    otpRepository,
+    otpService,
+    roleService,
+    mockUnitOfWork()
+  );
   const loginUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
   const logoutUC = new LogoutUseCase(refreshTokenRepository);
   const refreshUC = new RefreshTokenUseCase(refreshTokenRepository, userQueryRepository, authService, tokenService);
@@ -771,15 +756,15 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     hashingService,
     userService,
     otpService,
-    cacheStrategy
+    cacheManager
   );
   const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, otpEmailQueue);
-  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheStrategy);
-  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheStrategy);
+  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheManager);
+  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheManager);
   const getMeUC = new GetMeUseCase(userService);
-  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheStrategy);
+  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheManager);
   const getProfileUC = new GetUserProfileUseCase(userService, blockService);
-  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheStrategy);
+  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheManager);
   const adminListUC = new AdminListUsersUseCase(userRepository);
   const adminGetUC = new AdminGetUserUseCase(userRepository);
   const adminCreateUC = new AdminCreateUserUseCase(
@@ -795,9 +780,9 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     roleRepository,
     roleService,
     hashingService,
-    cacheStrategy
+    cacheManager
   );
-  const adminDeleteUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheStrategy);
+  const adminDeleteUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheManager);
 
   const authController = new AuthController(
     registerUC,
@@ -818,11 +803,11 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     adminDeleteUC
   );
 
-  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
+  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(apiKey);
-  const throttlerGuard = new ThrottlerProxyGuard(testAppConfig());
+  const throttlerGuard = new ThrottlerProxyGuard({} as RedisClientPort); // rate limit is disabled in e2e, so redis is never touched;
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
   const timeoutInterceptor = new TimeoutInterceptor();
@@ -831,7 +816,6 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
   const routers = [
     new AuthRoute(
       authController,
-      new AuthPipe(),
       authGuard,
       throttlerGuard,
       loggingInterceptor,
@@ -840,7 +824,6 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     ),
     new UserRoute(
       userController,
-      new UsersPipe(),
       authGuard,
       authOptionGuard,
       activeUserGuard,
@@ -852,8 +835,6 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     ),
     new AdminUserRoute(
       adminUserController,
-      new AdminUsersPipe(),
-      new PaginationPipe(),
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -963,56 +944,6 @@ function permission(method: EnumHttpMethod, path: string): PermissionFullProps {
     updatedById: null,
     deletedAt: null,
     deletedById: null
-  };
-}
-
-function testAppConfig(): IAppConfig {
-  return {
-    port: 0,
-    client: { url: 'http://localhost:3000' },
-    jwt: {
-      algorithm: 'HS256',
-      accessTokenSecret: 'test-access-token-secret',
-      refreshTokenSecret: 'test-refresh-token-secret',
-      accessTokenExpiresIn: '15m',
-      refreshTokenExpiresIn: '7d'
-    },
-    auth: { apiKey },
-    logs: { level: 'silent' },
-    api: { prefix: '/api' },
-    cors: { origin: ['http://localhost:3000'], credentials: true },
-    rateLimit: { enabled: false },
-    email: { fromAddress: 'no-reply@example.com' },
-    systemHealth: {
-      enabled: false,
-      cron: '*/1 * * * *',
-      timezone: 'Asia/Ho_Chi_Minh',
-      diskPath: '/',
-      adminEmails: [],
-      alertCooldownSeconds: 1800,
-      thresholds: {
-        cpu: { warning: 80, critical: 90 },
-        memory: { warning: 80, critical: 90 },
-        disk: { warning: 80, critical: 90 },
-        processMemoryMb: { warning: 512, critical: 1024 }
-      }
-    },
-    google: {
-      clientId: 'test-google-client-id',
-      clientSecret: 'test-google-client-secret',
-      redirectUri: 'http://localhost:3000/oauth/google'
-    },
-    s3: {
-      region: 'us-east-1',
-      accessKeyId: 'test-aws-access-key-id',
-      secretAccessKey: 'test-aws-secret-access-key',
-      bucketName: 'test-bucket'
-    },
-    cloudinary: {
-      cloudName: 'test-cloud-name',
-      apiKey: 'test-cloudinary-api-key',
-      apiSecret: 'test-cloudinary-api-secret'
-    }
   };
 }
 

@@ -1,8 +1,8 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
-import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { BaseRoute } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import type { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
 import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
 import type { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
 import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
@@ -14,20 +14,6 @@ import type { IHashtagController } from '@/presentation/http/express/v1/controll
 import type { IOperationsController } from '@/presentation/http/express/v1/controllers/operations.controller';
 import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
 import type { IRoleController } from '@/presentation/http/express/v1/controllers/role.controller';
-import type { IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import type { IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import type { IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
-import type { IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
-import type { IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import type { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import type { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import type { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import type { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import type { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
-import type { IPostPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
-import type { IRolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
-import type { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
-import type { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
@@ -38,42 +24,22 @@ import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
 import { OperationsRoute } from '@/presentation/http/express/v1/routes/operations.route';
+import { PaymentCallbackRoute } from '@/presentation/http/express/v1/routes/payment-callback.route';
+import { PaymentRoute } from '@/presentation/http/express/v1/routes/payment.route';
 import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
 import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
 import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
 import { SearchRoute } from '@/presentation/http/express/v1/routes/search.route';
 import { StaticRoute } from '@/presentation/http/express/v1/routes/static.route';
 import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
+import type { IPaymentController } from '@/presentation/http/express/v1/controllers/payment.controller';
+import type { IPaymentCallbackController } from '@/presentation/http/express/v1/controllers/payment-callback.controller';
 import type { RequestHandler } from 'express';
 
 /** Empty middleware: only calls `next()`. Used for fake pipe/controller objects when Express registers routes without running logic. */
 const nextOnlyMiddleware: RequestHandler = (_request, _response, next) => {
   next();
 };
-
-/**
- * Create a fake proxy: each field is `nextOnlyMiddleware`, or a factory returning it (userId / postId).
- * Only used for route declaration in constructors, not for real request handling.
- */
-function createNoopPipeProxyForRouteRegistration<T extends object>(): T {
-  return new Proxy({} as T, {
-    get(_target, propertyKey: string | symbol) {
-      if (
-        propertyKey === 'userIdPipe' ||
-        propertyKey === 'userIdParam' ||
-        propertyKey === 'postIdPipe' ||
-        propertyKey === 'roleIdParam' ||
-        propertyKey === 'createBodyPipe' ||
-        propertyKey === 'updateBodyPipe' ||
-        propertyKey === 'permissionIdParam' ||
-        propertyKey === 'hashtagIdParam'
-      ) {
-        return () => nextOnlyMiddleware;
-      }
-      return nextOnlyMiddleware;
-    }
-  });
-}
 
 /**
  * Create a fake controller proxy: each method returns an empty async function, enough for route + `interceptor`.
@@ -106,21 +72,6 @@ const noopInterceptor = new Proxy(
  * Keep the same order as `buildHttpRouters` so the route list matches runtime.
  */
 export function buildStubHttpRouters(): BaseRoute[] {
-  const authPipe: IAuthPipe = createNoopPipeProxyForRouteRegistration();
-  const userPipe: IUserPipe = createNoopPipeProxyForRouteRegistration();
-  const adminUsersPipe: IAdminUsersPipe = createNoopPipeProxyForRouteRegistration();
-  const postPipe: IPostPipe = createNoopPipeProxyForRouteRegistration();
-  const paginationPipe: IPaginationPipe = createNoopPipeProxyForRouteRegistration();
-  const searchPipe: ISearchPipe = createNoopPipeProxyForRouteRegistration();
-  const friendPipe: IFriendPipe = createNoopPipeProxyForRouteRegistration();
-  const blocksPipe: IBlockPipe = createNoopPipeProxyForRouteRegistration();
-  const conversationPipe: IConversationPipe = createNoopPipeProxyForRouteRegistration();
-  const chatMessagePipe: IChatMessagePipe = createNoopPipeProxyForRouteRegistration();
-  const notificationPipe: INotificationPipe = createNoopPipeProxyForRouteRegistration();
-  const rolesPipe: IRolesPipe = createNoopPipeProxyForRouteRegistration();
-  const permissionsPipe: IPermissionsPipe = createNoopPipeProxyForRouteRegistration();
-  const hashtagsPipe: IHashtagsPipe = createNoopPipeProxyForRouteRegistration();
-
   return [
     new OperationsRoute(
       createNoopControllerProxyForRouteRegistration<IOperationsController>(),
@@ -132,7 +83,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new AuthRoute(
       createNoopControllerProxyForRouteRegistration(),
-      authPipe,
       noopAuthGuard,
       noopThrottlerGuard,
       noopInterceptor,
@@ -141,8 +91,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new AdminUserRoute(
       createNoopControllerProxyForRouteRegistration<IAdminUserController>(),
-      adminUsersPipe,
-      paginationPipe,
       noopAuthGuard,
       noopApiKeyGuard,
       noopThrottlerGuard,
@@ -153,7 +101,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new UserRoute(
       createNoopControllerProxyForRouteRegistration(),
-      userPipe,
       noopAuthGuard,
       noopAuthOptionGuard,
       noopActiveUserGuard,
@@ -181,8 +128,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new PostRoute(
       createNoopControllerProxyForRouteRegistration(),
-      postPipe,
-      paginationPipe,
       noopAuthGuard,
       noopAuthOptionGuard,
       noopActiveUserGuard,
@@ -194,8 +139,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new SearchRoute(
       createNoopControllerProxyForRouteRegistration(),
-      searchPipe,
-      paginationPipe,
       noopAuthOptionGuard,
       noopActiveUserGuard,
       noopThrottlerGuard,
@@ -205,8 +148,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new FriendRoute(
       createNoopControllerProxyForRouteRegistration(),
-      friendPipe,
-      paginationPipe,
       noopAuthGuard,
       noopActiveUserGuard,
       noopThrottlerGuard,
@@ -217,8 +158,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new BlockRoute(
       createNoopControllerProxyForRouteRegistration(),
-      blocksPipe,
-      paginationPipe,
       noopAuthGuard,
       noopActiveUserGuard,
       noopThrottlerGuard,
@@ -229,10 +168,7 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new ConversationRoute(
       createNoopControllerProxyForRouteRegistration(),
-      conversationPipe,
       createNoopControllerProxyForRouteRegistration(),
-      chatMessagePipe,
-      paginationPipe,
       noopAuthGuard,
       noopActiveUserGuard,
       noopThrottlerGuard,
@@ -250,8 +186,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new NotificationRoute(
       createNoopControllerProxyForRouteRegistration(),
-      notificationPipe,
-      paginationPipe,
       noopAuthGuard,
       noopActiveUserGuard,
       noopThrottlerGuard,
@@ -262,8 +196,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new RoleRoute(
       createNoopControllerProxyForRouteRegistration<IRoleController>(),
-      rolesPipe,
-      paginationPipe,
       noopAuthGuard,
       noopApiKeyGuard,
       noopThrottlerGuard,
@@ -275,8 +207,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new PermissionRoute(
       createNoopControllerProxyForRouteRegistration<IPermissionController>(),
-      permissionsPipe,
-      paginationPipe,
       noopAuthGuard,
       noopApiKeyGuard,
       noopThrottlerGuard,
@@ -288,8 +218,6 @@ export function buildStubHttpRouters(): BaseRoute[] {
     ),
     new HashtagRoute(
       createNoopControllerProxyForRouteRegistration<IHashtagController>(),
-      hashtagsPipe,
-      paginationPipe,
       noopAuthGuard,
       noopThrottlerGuard,
       noopInterceptor,
@@ -297,7 +225,17 @@ export function buildStubHttpRouters(): BaseRoute[] {
       noopInterceptor,
       noopInterceptor,
       noopInterceptor
-    )
+    ),
+    new PaymentRoute(
+      createNoopControllerProxyForRouteRegistration<IPaymentController>(),
+      noopAuthGuard,
+      noopActiveUserGuard,
+      noopThrottlerGuard,
+      noopInterceptor,
+      noopInterceptor,
+      noopInterceptor
+    ),
+    new PaymentCallbackRoute(createNoopControllerProxyForRouteRegistration<IPaymentCallbackController>())
   ];
 }
 

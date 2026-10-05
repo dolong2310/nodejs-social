@@ -1,10 +1,10 @@
 import { NoActiveBlockException } from '@/modules/relationship/application/exceptions/block.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  UnblockUserCommand,
+  type UnblockUserInputPort,
   UnblockUserPort
 } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 export class UnblockUserUseCase extends UnblockUserPort {
   constructor(
@@ -14,7 +14,8 @@ export class UnblockUserUseCase extends UnblockUserPort {
     super();
   }
 
-  async execute({ blockerUserId, blockedUserId }: UnblockUserCommand): Promise<void> {
+  async execute(input: UnblockUserInputPort): Promise<void> {
+    const { blockerUserId, blockedUserId } = input;
     const deleted = await this.blockRepository.deleteBlock(blockerUserId, blockedUserId);
     if (deleted === 0) {
       throw new NoActiveBlockException();

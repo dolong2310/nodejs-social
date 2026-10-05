@@ -1,10 +1,10 @@
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
   GetConversationDetailPort,
-  GetConversationDetailQuery,
-  GetConversationDetailResult
+  type GetConversationDetailInputPort,
+  type GetConversationDetailOutputPort
 } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.port';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class GetConversationDetailUseCase extends GetConversationDetailPort {
   constructor(
@@ -14,7 +14,8 @@ export class GetConversationDetailUseCase extends GetConversationDetailPort {
     super();
   }
 
-  async execute({ userId, conversationId }: GetConversationDetailQuery): Promise<GetConversationDetailResult> {
+  async execute(input: GetConversationDetailInputPort): Promise<GetConversationDetailOutputPort> {
+    const { userId, conversationId } = input;
     await this.conversationService.isMember({ conversationId, userId });
     const [conv, members] = await Promise.all([
       this.conversationService.loadConversation(conversationId),

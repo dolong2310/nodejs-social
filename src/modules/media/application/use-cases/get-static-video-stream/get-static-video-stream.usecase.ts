@@ -1,10 +1,10 @@
 import { RANGE_HEADER_REGEX } from '@/modules/common/constants/regex.constants';
 import { RequestedRangeNotSatisfiableException } from '@/modules/media/application/exceptions/media.exception';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
 import {
   GetStaticVideoStreamPort,
-  GetStaticVideoStreamQuery,
-  GetStaticVideoStreamResult
+  type GetStaticVideoStreamInputPort,
+  GetStaticVideoStreamOutputPort
 } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
 import path from 'path';
 
@@ -13,7 +13,8 @@ export class GetStaticVideoStreamUseCase extends GetStaticVideoStreamPort {
     super();
   }
 
-  async execute({ filename, rangeHeader }: GetStaticVideoStreamQuery): Promise<GetStaticVideoStreamResult> {
+  async execute(input: GetStaticVideoStreamInputPort): Promise<GetStaticVideoStreamOutputPort> {
+    const { filename, rangeHeader } = input;
     if (!rangeHeader) {
       throw new RequestedRangeNotSatisfiableException();
     }
@@ -37,7 +38,7 @@ export class GetStaticVideoStreamUseCase extends GetStaticVideoStreamPort {
         ? Math.min(endFromHeader, videoSize - 1)
         : Math.min(start + chunkSize - 1, videoSize - 1);
 
-    return new GetStaticVideoStreamResult({
+    return new GetStaticVideoStreamOutputPort({
       videoPath,
       videoSize,
       start,

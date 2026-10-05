@@ -1130,6 +1130,121 @@ components:
       properties:
         conversationId: { $ref: '#/components/schemas/MongoId' }
         chatName: { type: string }
+    CreatePaymentRequest:
+      type: object
+      required: [provider, sourceReference, description, amountVnd]
+      properties:
+        provider:
+          type: string
+          enum: [vnpay, momo, zalopay]
+        sourceReference:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          minLength: 1
+          maxLength: 200
+        amountVnd:
+          type: integer
+          minimum: 10000
+          maximum: 50000000
+      example:
+        provider: vnpay
+        sourceReference: order_123456
+        description: Thanh toan don hang 123456
+        amountVnd: 150000
+    PaymentData:
+      type: object
+      required:
+        [
+          paymentId,
+          sourceReference,
+          description,
+          amountVnd,
+          currency,
+          provider,
+          status,
+          checkoutUrl,
+          expiresAt,
+          createdAt,
+          updatedAt
+        ]
+      properties:
+        paymentId: { $ref: '#/components/schemas/MongoId' }
+        sourceReference: { type: string, example: order_123456 }
+        description: { type: string, example: Thanh toan don hang 123456 }
+        amountVnd: { type: integer, example: 150000 }
+        currency: { type: string, enum: [VND] }
+        provider: { type: string, enum: [vnpay, momo, zalopay] }
+        status:
+          type: string
+          enum: [creating, pending, unknown, create_failed, succeeded, failed, cancelled]
+        checkoutUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Null after the VNPay or ZaloPay checkout URL expires.
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaymentSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PaymentData'
+    MomoIpnRequest:
+      type: object
+      required:
+        [
+          partnerCode,
+          orderId,
+          requestId,
+          amount,
+          orderInfo,
+          orderType,
+          transId,
+          resultCode,
+          message,
+          payType,
+          responseTime,
+          extraData,
+          signature
+        ]
+      properties:
+        partnerCode: { type: string }
+        orderId: { type: string }
+        requestId: { type: string }
+        amount: { type: integer }
+        orderInfo: { type: string }
+        orderType: { type: string }
+        transId: { type: integer, minimum: 0 }
+        resultCode: { type: integer }
+        message: { type: string }
+        payType: { type: string }
+        responseTime: { type: integer }
+        extraData: { type: string }
+        signature: { type: string }
+      additionalProperties: true
+    ZalopayCallbackRequest:
+      type: object
+      required: [data, mac, type]
+      properties:
+        data:
+          type: string
+          description: JSON string with app_id, app_trans_id, amount, zp_trans_id, server_time, channel and other order fields
+        mac:
+          type: string
+          description: HMAC-SHA256 of data using key2
+        type:
+          type: integer
+          description: 1 = order callback
+      additionalProperties: true
     NotificationListItem:
       type: object
       required: [id, recipientId, read, createdAt, updatedAt, type, summary, actor, payload]

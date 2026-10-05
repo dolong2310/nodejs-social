@@ -1,9 +1,9 @@
-import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
-import { CreateRoleProps } from '@/modules/authorization/domain/entities/role.type';
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { MarkOptional } from 'ts-essentials';
+import type { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
+import type { CreateRoleProps } from '@/modules/authorization/domain/entities/role.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { MarkOptional } from 'ts-essentials';
 
-export class UpdateRoleCommand implements MarkOptional<CreateRoleProps, 'name' | 'isActive'> {
+export class UpdateRoleInputPort implements MarkOptional<CreateRoleProps, 'name' | 'isActive'> {
   id: string;
   name?: string;
   description?: string;
@@ -24,6 +24,6 @@ export class UpdateRoleCommand implements MarkOptional<CreateRoleProps, 'name' |
   }
 }
 
-export abstract class UpdateRolePort implements UseCase<UpdateRoleCommand, RoleListItem> {
-  abstract execute(command: UpdateRoleCommand): Promise<RoleListItem>;
+export abstract class UpdateRolePort implements UseCase<UpdateRoleInputPort, RoleListItem> {
+  abstract execute(input: UpdateRoleInputPort): Promise<RoleListItem>;
 }

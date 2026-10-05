@@ -36,7 +36,7 @@ This repository is built as a TypeScript backend API, with a clean/hexagonal arc
 | Auth            | JWT, bcrypt, Google OAuth, OTPAuth      |
 | Storage / email | AWS S3, AWS SES                         |
 | Media           | Sharp, ffmpeg-compatible video pipeline |
-| Validation      | Valibot, express-validator-style pipes  |
+| Validation      | Valibot schemas + NestJS-style pipes    |
 | Logging         | Pino                                    |
 | API docs        | Swagger UI, OpenAPI YAML                |
 | Testing         | Vitest, Supertest, tsarch               |
@@ -80,7 +80,7 @@ src/
   infrastructure/     Shared database, Redis, queue, logger, and technical adapters
   modules/            Feature modules using domain/application/infrastructure layers
   presentation/       Express HTTP API and Socket.IO presentation adapters
-  index.ts            Process entry point
+  main.ts             Process entry point
 
 swagger/              OpenAPI YAML fragments used by Swagger UI
 postman/              Postman collections and environment
@@ -148,7 +148,7 @@ Important variables:
 | `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`                                    | JWT secrets                         |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                | Google OAuth config                 |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME` | S3 storage config                   |
-| `SES_FROM_ADDRESS`                                                               | Sender email for OTP/email flows    |
+| `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`                                          | Resend API key and sender address   |
 | `RATE_LIMIT_ENABLED`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`                   | API rate limit config               |
 
 Do not commit real `.env.*` secrets.
@@ -160,25 +160,25 @@ Run the migration for the persistence driver you selected.
 MongoDB:
 
 ```bash
-pnpm run db:migrate:mongo --env=development
+pnpm run db:migrate:mongo
 ```
 
 PostgreSQL:
 
 ```bash
-pnpm run db:migrate:postgres --env=development
+pnpm run db:migrate:postgres
 ```
 
 Useful migration commands:
 
 ```bash
-pnpm run db:migrations:pending:mongo --env=development
-pnpm run db:migrations:executed:mongo --env=development
-pnpm run db:rollback:mongo --env=development
+pnpm run db:migrations:pending:mongo
+pnpm run db:migrations:executed:mongo
+pnpm run db:rollback:mongo
 
-pnpm run db:migrations:pending:postgres --env=development
-pnpm run db:migrations:executed:postgres --env=development
-pnpm run db:rollback:postgres --env=development
+pnpm run db:migrations:pending:postgres
+pnpm run db:migrations:executed:postgres
+pnpm run db:rollback:postgres
 ```
 
 ### Seed Data
@@ -212,6 +212,8 @@ pnpm run dev:staging
 pnpm run dev:prod
 ```
 
+TSX watches imported source files. Restart the development process after changing an `.env.*` file or a file under `swagger/`.
+
 The API prefix is:
 
 ```txt
@@ -226,7 +228,7 @@ Swagger UI is available at:
 
 ### Build and Run with Docker
 
-The repository includes a production `Dockerfile` based on `node:22-alpine`. The image installs dependencies with pnpm, builds the TypeScript app, and starts it with:
+The repository includes a production `Dockerfile` based on `node:24-alpine`. The image installs dependencies with pnpm, builds the TypeScript app, and starts it with:
 
 ```bash
 pnpm start:prod

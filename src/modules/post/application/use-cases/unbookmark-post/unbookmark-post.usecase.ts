@@ -1,12 +1,12 @@
 import { PostNotFoundException } from '@/modules/post/application/exceptions/post.exception';
-import { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
+import type { PostAudienceAccessServicePort } from '@/modules/post/application/services/post-audience-access.service';
 import {
-  UnbookmarkPostCommand,
+  type UnbookmarkPostInputPort,
   UnbookmarkPostPort,
-  UnbookmarkPostResult
+  UnbookmarkPostOutputPort
 } from '@/modules/post/application/use-cases/unbookmark-post/unbookmark-post.port';
-import { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
 
 export class UnbookmarkPostUseCase extends UnbookmarkPostPort {
   constructor(
@@ -17,7 +17,8 @@ export class UnbookmarkPostUseCase extends UnbookmarkPostPort {
     super();
   }
 
-  async execute({ userId, postId }: UnbookmarkPostCommand): Promise<UnbookmarkPostResult> {
+  async execute(input: UnbookmarkPostInputPort): Promise<UnbookmarkPostOutputPort> {
+    const { userId, postId } = input;
     const post = await this.postQueryRepository.findPostDetailById(postId);
     if (!post) {
       throw new PostNotFoundException();
@@ -28,6 +29,6 @@ export class UnbookmarkPostUseCase extends UnbookmarkPostPort {
     if (!bookmarkEntity) {
       throw new PostNotFoundException();
     }
-    return new UnbookmarkPostResult(bookmarkEntity.toObject());
+    return new UnbookmarkPostOutputPort(bookmarkEntity.toObject());
   }
 }

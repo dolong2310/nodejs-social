@@ -1,7 +1,7 @@
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import {
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type {
   CreateMemberInput,
   DeleteMemberInput,
   FindMemberInput,
@@ -10,13 +10,13 @@ import {
   TransferAdminRoleInput,
   UpdateReadStateInput,
   UpdateRoleInput
-} from '@/modules/conversation/domain/repositories/conversation-member.repository.type';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
-import { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+} from '@/modules/conversation/domain/repositories/conversation-member.repository.types';
+import type { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
+import type { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
+import type { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient } from 'mongodb';
+import type { Db, MongoClient } from 'mongodb';
 
 export class ConversationMemberRepository
   extends MongoRepositoryBase<ConversationMemberEntity, ConversationMemberModel>
@@ -94,17 +94,16 @@ export class ConversationMemberRepository
     await this.transaction(async () => {
       await this.dbCollection.updateOne(
         { conversation_id: conversationId, user_id: oldAdminUserId },
-        { $set: { role: EnumConversationMemberRole.MANAGER } },
-        { session: this.session }
+        { $set: { role: EnumConversationMemberRole.MANAGER } }
       );
       await this.dbCollection.updateOne(
         { conversation_id: conversationId, user_id: newAdminUserId },
-        { $set: { role: EnumConversationMemberRole.ADMIN } },
-        { session: this.session }
+        { $set: { role: EnumConversationMemberRole.ADMIN } }
       );
-      await this.db
-        .collection<ConversationModel>('conversations')
-        .updateOne({ _id: conversationId }, { $set: { updated_at: joinedAt } }, { session: this.session });
+      await this.collection<ConversationModel>('conversations').updateOne(
+        { _id: conversationId },
+        { $set: { updated_at: joinedAt } }
+      );
     });
   }
 

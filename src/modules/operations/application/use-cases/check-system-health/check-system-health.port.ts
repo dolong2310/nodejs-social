@@ -1,4 +1,4 @@
-import {
+import type {
   SystemHealthJobData,
   SystemHealthJobResult
 } from '@/modules/operations/application/ports/system-health-job.port';

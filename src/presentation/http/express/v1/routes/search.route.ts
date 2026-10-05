@@ -1,13 +1,15 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { ISearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
+import { SEARCH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/search.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { ISearchController } from '@/presentation/http/express/v1/controllers/search.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import { SearchQuerySchema } from '@/presentation/http/express/v1/schemas/search/search.request.schema';
+import { SearchResponseSchema } from '@/presentation/http/express/v1/schemas/search/search.response.schema';
 
 export class SearchRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -15,8 +17,6 @@ export class SearchRoute extends BaseRoute {
 
   constructor(
     private readonly searchController: ISearchController,
-    private readonly searchPipe: ISearchPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authOptionGuard: AuthOptionGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -29,17 +29,21 @@ export class SearchRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(SEARCH_THROTTLE_CONFIG.SEARCH)],
         guards: [this.authOptionGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.searchPipe.searchPipe],
+        pipes: [validate({ query: SearchQuerySchema })],
+        response: SearchResponseSchema,
         controller: this.searchController.search
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

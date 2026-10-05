@@ -1,4 +1,4 @@
-import { ContainerRepositories } from '@/bootstrap/di/repositories';
+import type { ContainerRepositories } from '@/bootstrap/di/repositories';
 import type { PostgresDatabasePort } from '@/infrastructure/persistence/postgres/database';
 import { OtpRepository } from '@/modules/authentication/infrastructure/persistence/postgres/otp.impl.repository';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/postgres/otp.mapper';
@@ -16,18 +16,20 @@ import { ConversationMemberRepository } from '@/modules/conversation/infrastruct
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation-member.mapper';
 import { ConversationRepository } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.impl.repository';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/postgres/conversation.mapper';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { PostgresUnitOfWork } from '@/modules/core/infrastructure/unit-of-work/postgres.unit-of-work';
 import { VideoStatusRepository } from '@/modules/media/infrastructure/persistence/postgres/video-status.impl.repository';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/postgres/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/postgres/notification.impl.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/postgres/notification.mapper';
+import { PaymentRepository } from '@/modules/payment/infrastructure/persistence/postgres/payment.impl.repository';
+import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
 import { BookmarkRepository } from '@/modules/post/infrastructure/persistence/postgres/bookmark.impl.repository';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/postgres/bookmark.mapper';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
 import { LikeRepository } from '@/modules/post/infrastructure/persistence/postgres/like.impl.repository';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/postgres/like.mapper';
-import { PostCommandRepository } from '@/modules/post/infrastructure/persistence/postgres/post-command.impl.repository';
 import { PostQueryRepository } from '@/modules/post/infrastructure/persistence/postgres/post-query.impl.repository';
 import { PostRepository } from '@/modules/post/infrastructure/persistence/postgres/post.impl.repository';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
@@ -65,6 +67,7 @@ export function createPostgresContainerRepositories(
   const conversationMemberMapper = new ConversationMemberMapper();
   const chatMessageMapper = new ChatMessageMapper();
   const videoStatusMapper = new VideoStatusMapper();
+  const paymentMapper = new PaymentMapper();
 
   const repositories = {
     userRepository: new UserRepository(pool, userMapper, logger),
@@ -83,7 +86,8 @@ export function createPostgresContainerRepositories(
     conversationRepository: new ConversationRepository(pool, conversationMapper, conversationMemberMapper, logger),
     conversationMemberRepository: new ConversationMemberRepository(pool, conversationMemberMapper, logger),
     chatMessageRepository: new ChatMessageRepository(pool, chatMessageMapper, logger),
-    videoStatusRepository: new VideoStatusRepository(pool, videoStatusMapper, logger)
+    videoStatusRepository: new VideoStatusRepository(pool, videoStatusMapper, logger),
+    paymentRepository: new PaymentRepository(pool, paymentMapper, logger)
   };
 
   const queryRepositories = {
@@ -93,13 +97,9 @@ export function createPostgresContainerRepositories(
     roleQueryRepository: new RoleQueryRepository(readPool)
   };
 
-  const commandRepositories = {
-    postCommandRepository: new PostCommandRepository(pool)
-  };
-
   return {
     ...repositories,
     ...queryRepositories,
-    ...commandRepositories
+    unitOfWork: new PostgresUnitOfWork(pool)
   };
 }

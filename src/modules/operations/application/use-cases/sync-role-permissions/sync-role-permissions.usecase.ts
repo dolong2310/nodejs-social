@@ -1,13 +1,14 @@
-import { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import {
+import type { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
+import type {
   AvailableRoute,
   RoutePermissionCatalogPort
 } from '@/modules/operations/application/ports/route-permission-catalog.port';
 import {
-  RolePermissionSyncResult,
+  type RolePermissionSyncOutputPort,
   SyncRolePermissionsPort
 } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.port';
 
@@ -31,45 +32,48 @@ export class SyncRolePermissionsUseCase extends SyncRolePermissionsPort {
   constructor(
     private readonly permissionRepository: PermissionRepositoryPort,
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly routeCatalog: RoutePermissionCatalogPort
+    private readonly routeCatalog: RoutePermissionCatalogPort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {
     super();
   }
 
-  async execute(): Promise<RolePermissionSyncResult> {
+  async execute(): Promise<RolePermissionSyncOutputPort> {
     const availableRoutes = this.routeCatalog.getAvailableRoutes();
-    await this.ensureBaseRoles();
-    const syncStats = await this.syncPermissions(availableRoutes);
 
-    const permissions = await this.permissionRepository.findPermissions({
-      limit: 9999,
-      skip: 0
+    // One transaction for the whole sync, so a failure never leaves roles pointing at a half-synced permission set.
+    return this.unitOfWork.run(async () => {
+      await this.ensureBaseRoles();
+      const syncStats = await this.syncPermissions(availableRoutes);
+
+      const permissions = await this.permissionRepository.findPermissions({
+        limit: 9999,
+        skip: 0
+      });
+
+      const allPermissionIds = permissions.map((permission) => permission.id.toString());
+      const userPermissionIds = USER_GETS_ALL_PERMISSIONS
+        ? allPermissionIds
+        : permissions
+            .filter((permission) => USER_MODULE_ALLOWLIST.has(permission.getProps().module))
+            .map((permission) => permission.id.toString());
+
+      if (allPermissionIds.length > 0) {
+        await this.syncPermissionsToRole(EnumRoleName.ADMIN, allPermissionIds);
+      }
+      if (userPermissionIds.length > 0) {
+        await this.syncPermissionsToRole(EnumRoleName.USER, userPermissionIds);
+      }
+
+      return {
+        discoveredRoutes: availableRoutes.length,
+        moduleTags: [...new Set(availableRoutes.map((route) => route.module).sort())],
+        deletedPermissions: syncStats.deletedPermissions,
+        createdPermissions: syncStats.createdPermissions,
+        adminPermissionCount: allPermissionIds.length,
+        userPermissionCount: userPermissionIds.length
+      };
     });
-
-    const allPermissionIds = permissions.map((permission) => permission.id.toString());
-    const userPermissionIds = USER_GETS_ALL_PERMISSIONS
-      ? allPermissionIds
-      : permissions
-          .filter((permission) => USER_MODULE_ALLOWLIST.has(permission.getProps().module))
-          .map((permission) => permission.id.toString());
-
-    await Promise.all([
-      allPermissionIds.length > 0
-        ? this.syncPermissionsToRole(EnumRoleName.ADMIN, allPermissionIds)
-        : Promise.resolve(),
-      userPermissionIds.length > 0
-        ? this.syncPermissionsToRole(EnumRoleName.USER, userPermissionIds)
-        : Promise.resolve()
-    ]);
-
-    return {
-      discoveredRoutes: availableRoutes.length,
-      moduleTags: [...new Set(availableRoutes.map((route) => route.module).sort())],
-      deletedPermissions: syncStats.deletedPermissions,
-      createdPermissions: syncStats.createdPermissions,
-      adminPermissionCount: allPermissionIds.length,
-      userPermissionCount: userPermissionIds.length
-    };
   }
 
   private async ensureBaseRoles(): Promise<void> {

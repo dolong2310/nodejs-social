@@ -6,7 +6,7 @@ import { expect } from 'vitest';
  * Represents an import found in a source file.
  * Example:
   {
-    file: 'src/modules/user/domain/repositories/user.query.type.ts',
+    file: 'src/modules/user/domain/repositories/user.query.types.ts',
     importPath: '@/modules/common/domain/enums/search.enum',
     line: 1
   }
@@ -44,9 +44,9 @@ const sideEffectImportRegex = /import\s+['"]([^'"]+)['"]/g;
 /**
  * Convert a file path from Windows separators to the project Unix-style convention.
  * Example:
- * 'src\modules\user\domain\repositories\user.query.type.ts'
+ * 'src\modules\user\domain\repositories\user.query.types.ts'
  * becomes
- * 'src/modules/user/domain/repositories/user.query.type.ts'
+ * 'src/modules/user/domain/repositories/user.query.types.ts'
  */
 function toProjectPath(filePath: string): string {
   return filePath.split(path.sep).join('/');
@@ -57,7 +57,7 @@ function toProjectPath(filePath: string): string {
  * Example:
  * 'src'
  * returns
- * ['src/modules/user/domain/repositories/user.query.type.ts', 'src/modules/user/domain/entities/user.entity.ts']
+ * ['src/modules/user/domain/repositories/user.query.types.ts', 'src/modules/user/domain/entities/user.entity.ts']
  */
 function walkFiles(directory: string): string[] {
   if (!fs.existsSync(directory)) return [];
@@ -89,11 +89,11 @@ export function sourceFiles(root = 'src'): string[] {
  * Read a file and return its import/export list.
  * This lets tests check whether one layer imports another layer.
  * Example if the file contains:
- * import { UserFullProps } from '@/modules/user/domain/entities/user.type';
+ * import { UserFullProps } from '@/modules/user/domain/entities/user.types';
  * returns:
   {
     file: '...',
-    importPath: '@/modules/user/domain/entities/user.type',
+    importPath: '@/modules/user/domain/entities/user.types',
     line: 3
   }
  */
@@ -119,7 +119,7 @@ export function importsOf(file: string): ImportRecord[] {
  * Parse a module-local import.
  * Return null if the import does not match @/modules/<module>/<layer>.
  * Example:
- * @/modules/post/domain/entities/post.type
+ * @/modules/post/domain/entities/post.types
  * becomes
   {
     moduleName: 'post',
@@ -168,4 +168,28 @@ export function expectNoForbiddenImports(files: string[], rule: ForbiddenImportR
  */
 export function expectFilesMatch(files: string[], predicate: (file: string) => boolean): void {
   expect(files.filter((file) => !predicate(file))).toEqual([]);
+}
+
+/**
+ * Third-party packages domain and application may import: pure utilities with no I/O, framework or transport
+ * coupling. Anything else (HTTP, database, filesystem, token libraries...) belongs behind a port.
+ */
+export const INNER_LAYER_ALLOWED_PACKAGES: ReadonlySet<string> = new Set([
+  'ts-essentials',
+  'lodash-es',
+  'uuid',
+  'date-fns',
+  'ms',
+  'crypto',
+  'node:crypto'
+]);
+
+/**
+ * Package name of a third-party import, or null for project imports.
+ * Example: 'lodash-es/keyBy' -> 'lodash-es', '@scope/pkg/sub' -> '@scope/pkg', '@/modules/...' -> null.
+ */
+export function externalPackageOf(importPath: string): string | null {
+  if (importPath.startsWith('@/') || importPath.startsWith('@test/') || importPath.startsWith('.')) return null;
+  const segments = importPath.split('/');
+  return importPath.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0]!;
 }

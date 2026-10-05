@@ -1,16 +1,17 @@
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import {
   FriendActionBlockedException,
   NoPendingFriendRequestException
 } from '@/modules/relationship/application/exceptions/friend.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  AcceptIncomingRequestCommand,
+  type AcceptIncomingRequestInputPort,
   AcceptIncomingRequestPort
 } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
   constructor(
@@ -18,12 +19,14 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
     private readonly friendService: FriendServicePort,
     private readonly blockRepository: BlockRepositoryPort,
-    private readonly notificationsService: NotificationServicePort
+    private readonly notificationsService: NotificationServicePort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {
     super();
   }
 
-  async execute({ userId, fromUserId }: AcceptIncomingRequestCommand): Promise<void> {
+  async execute(input: AcceptIncomingRequestInputPort): Promise<void> {
+    const { userId, fromUserId } = input;
     // Check whether the receiver has a friend request from the sender.
     const pending = await this.friendRequestRepository.findPendingRequestByUserPair({ fromUserId, toUserId: userId });
     if (!pending) {
@@ -41,22 +44,23 @@ export class AcceptIncomingRequestUseCase extends AcceptIncomingRequestPort {
       throw new FriendActionBlockedException();
     }
 
-    const entity = await this.friendshipRepository.createFriendship(fromUserId, userId);
-    if (!entity) {
-      // If friendship already exists, delete the request and invalidate cache.
-      await Promise.all([
-        this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId }),
-        this.friendService.invalidateBoth(userId, fromUserId)
-      ]);
-      return;
-    }
+    // Create the friendship and consume the request atomically.
+    const created = await this.unitOfWork.run(async () => {
+      // null means the friendship already exists; the request is still deleted.
+      const friendship = await this.friendshipRepository.createFriendship(fromUserId, userId);
+      await this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId });
+      return friendship !== null;
+    });
 
     await Promise.all([
-      // Delete the request and invalidate cache.
-      this.friendRequestRepository.deletePendingRequest({ fromUserId, toUserId: userId }),
       this.friendService.invalidateBoth(userId, fromUserId),
-      // Send "friend accepted" notification to the sender.
-      this.notificationsService.recordFriendAccepted({ originalRequesterUserId: fromUserId, accepterUserId: userId })
+      // Send "friend accepted" notification to the sender only when this request created the friendship.
+      created
+        ? this.notificationsService.recordFriendAccepted({
+            originalRequesterUserId: fromUserId,
+            accepterUserId: userId
+          })
+        : Promise.resolve()
     ]);
   }
 }

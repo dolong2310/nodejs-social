@@ -2,20 +2,20 @@ import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
 
 export class InvalidOtpCodeException extends ExceptionBase {
   readonly code = 'AUTH.OTP_INVALID';
-  readonly statusCode = 400;
+  readonly type = 'invalid_argument';
 }
 
 export class ExpiredOtpCodeException extends ExceptionBase {
   readonly code = 'AUTH.OTP_EXPIRED';
-  readonly statusCode = 400;
+  readonly type = 'invalid_argument';
 }
 
 export class UserAlreadyHas2FAException extends ExceptionBase {
   readonly code = 'AUTH.TWO_FACTOR_ALREADY_ENABLED';
-  readonly statusCode = 409;
+  readonly type = 'conflict';
 }
 
 export class UserNotEnabled2FAException extends ExceptionBase {
   readonly code = 'AUTH.TWO_FACTOR_NOT_ENABLED';
-  readonly statusCode = 400;
+  readonly type = 'invalid_argument';
 }

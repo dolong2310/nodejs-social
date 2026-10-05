@@ -1,16 +1,16 @@
 import { EmailNotFoundException } from '@/modules/authentication/application/exceptions/auth.exception';
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import {
-  ForgotPasswordCommand,
+  type ForgotPasswordInputPort,
   ForgotPasswordPort
 } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.port';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class ForgotPasswordUseCase extends ForgotPasswordPort {
   constructor(
@@ -19,7 +19,7 @@ export class ForgotPasswordUseCase extends ForgotPasswordPort {
     private readonly hashingService: HashingPort,
     private readonly userService: UserServicePort,
     private readonly otpService: OtpServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
@@ -32,7 +32,8 @@ export class ForgotPasswordUseCase extends ForgotPasswordPort {
     [confirm new password]
     [button submit]
   */
-  async execute({ email, code, password }: ForgotPasswordCommand): Promise<boolean> {
+  async execute(input: ForgotPasswordInputPort): Promise<boolean> {
+    const { email, code, password } = input;
     // 1. Check OTP code
     const otpEntity = await this.otpService.findAndValidateOtpCode({
       email,

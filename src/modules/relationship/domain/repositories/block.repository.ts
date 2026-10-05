@@ -1,5 +1,5 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { BlockEntity } from '@/modules/relationship/domain/entities/block.entity';
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { BlockEntity } from '@/modules/relationship/domain/entities/block.entity';
 
 export interface BlockRepositoryPort extends RepositoryPort<BlockEntity> {
   isBlockedEitherWay(userIdA: string, userIdB: string): Promise<boolean>;

@@ -2,12 +2,12 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import {
   GetFriendsPort,
-  GetFriendsQuery,
-  GetFriendsResult
+  type GetFriendsInputPort,
+  GetFriendsOutputPort
 } from '@/modules/relationship/application/use-cases/get-friends/get-friends.port';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
-import { UserFullProps } from '@/modules/user/domain/entities/user.type';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { UserFullProps } from '@/modules/user/domain/entities/user.types';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class GetFriendsUseCase extends GetFriendsPort {
   constructor(
@@ -17,7 +17,8 @@ export class GetFriendsUseCase extends GetFriendsPort {
     super();
   }
 
-  async execute({ userId, limit, cursor }: GetFriendsQuery): Promise<GetFriendsResult> {
+  async execute(input: GetFriendsInputPort): Promise<GetFriendsOutputPort> {
+    const { userId, limit, cursor } = input;
     const decodedCursor = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw, true), InvalidCursorException);
 
     const pageSize = Math.min(100, Math.max(1, limit));
@@ -38,7 +39,7 @@ export class GetFriendsUseCase extends GetFriendsPort {
     // Reorder users by idStrings.
     const ordered = ids.map((id) => idToUserMap.get(id)).filter((u): u is UserFullProps => Boolean(u));
     // Create cursor for the next page.
-    const nextCursor = hasMore && ids.length > 0 ? encodeCursor(ids[ids.length - 1]) : null;
+    const nextCursor = hasMore && ids.length > 0 ? encodeCursor(ids[ids.length - 1]!) : null;
     // Return the ordered friend list and next-page cursor.
     const items = ordered.map((user) => ({
       id: user.id,
@@ -47,6 +48,6 @@ export class GetFriendsUseCase extends GetFriendsPort {
       avatar: user.avatar
     }));
 
-    return new GetFriendsResult(items, nextCursor);
+    return new GetFriendsOutputPort(items, nextCursor);
   }
 }

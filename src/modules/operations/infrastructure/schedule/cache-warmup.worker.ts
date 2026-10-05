@@ -1,9 +1,12 @@
 import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { CacheWarmupJobData, CacheWarmupJobResult } from '@/modules/operations/application/ports/cache-warmup-job.port';
-import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type {
+  CacheWarmupJobData,
+  CacheWarmupJobResult
+} from '@/modules/operations/application/ports/cache-warmup-job.port';
+import type { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
 import { CACHE_WARMUP_SCHEDULE_QUEUE_NAME } from '@/modules/operations/infrastructure/schedule/cache-warmup.schedule';
-import { type ConnectionOptions, type Job } from 'bullmq';
+import type { ConnectionOptions, Job } from 'bullmq';
 
 export class CacheWarmupWorker extends BaseWorker<CacheWarmupJobData, CacheWarmupJobResult> {
   private readonly log: LoggerPort;

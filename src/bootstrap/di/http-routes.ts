@@ -1,11 +1,12 @@
-import { appConfig } from '@/bootstrap/config/app.config';
-import { ContainerRepositories } from '@/bootstrap/di/repositories';
-import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
-import { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
+import { envConfig } from '@/bootstrap/config/env.config';
+import type { ContainerRepositories } from '@/bootstrap/di/repositories';
+import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import type { GoogleOAuthServicePort } from '@/modules/authentication/application/ports/google-oauth.port';
+import type { OtpEmailQueuePort } from '@/modules/authentication/application/ports/otp-email-job.port';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
 import { Disable2FAUseCase } from '@/modules/authentication/application/use-cases/disable-2fa/disable-2fa.usecase';
 import { ForgotPasswordUseCase } from '@/modules/authentication/application/use-cases/forgot-password/forgot-password.usecase';
 import { GetGoogleAuthUrlUseCase } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.usecase';
@@ -16,7 +17,7 @@ import { RefreshTokenUseCase } from '@/modules/authentication/application/use-ca
 import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
 import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import { CreatePermissionUseCase } from '@/modules/authorization/application/use-cases/create-permission/create-permission.usecase';
 import { CreateRoleUseCase } from '@/modules/authorization/application/use-cases/create-role/create-role.usecase';
 import { DeletePermissionUseCase } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.usecase';
@@ -27,7 +28,7 @@ import { ListPermissionsUseCase } from '@/modules/authorization/application/use-
 import { ListRolesUseCase } from '@/modules/authorization/application/use-cases/list-roles/list-roles.usecase';
 import { UpdatePermissionUseCase } from '@/modules/authorization/application/use-cases/update-permission/update-permission.usecase';
 import { UpdateRoleUseCase } from '@/modules/authorization/application/use-cases/update-role/update-role.usecase';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import { CreateGroupUseCase } from '@/modules/conversation/application/use-cases/create-group/create-group.usecase';
 import { GetConversationDetailUseCase } from '@/modules/conversation/application/use-cases/get-conversation-detail/get-conversation-detail.usecase';
 import { GetConversationsUseCase } from '@/modules/conversation/application/use-cases/get-conversations/get-conversations.usecase';
@@ -41,29 +42,37 @@ import { SendMessageUseCase } from '@/modules/conversation/application/use-cases
 import { TransferAdminUseCase } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.usecase';
 import { UpdateConversationUseCase } from '@/modules/conversation/application/use-cases/update-conversation/update-conversation.usecase';
 import { UpdateMemberRoleUseCase } from '@/modules/conversation/application/use-cases/update-member-role/update-member-role.usecase';
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
-import { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
+import type { RedisClientPort } from '@/infrastructure/persistence/redis/redis-client';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
 import { GetStaticVideoStreamUseCase } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.usecase';
 import { GetVideoStatusUseCase } from '@/modules/media/application/use-cases/get-video-status/get-video-status.usecase';
 import { UploadImageUseCase } from '@/modules/media/application/use-cases/upload-image/upload-image.usecase';
 import { UploadVideoStreamUseCase } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.usecase';
 import { UploadVideoUseCase } from '@/modules/media/application/use-cases/upload-video/upload-video.usecase';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import { ListNotificationsUseCase } from '@/modules/notification/application/use-cases/list-notifications/list-notifications.usecase';
 import { MarkNotificationReadUseCase } from '@/modules/notification/application/use-cases/mark-notification-read/mark-notification-read.usecase';
 import { MarkNotificationsReadUseCase } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.usecase';
 import { ClearCacheUseCase } from '@/modules/operations/application/use-cases/clear-cache/clear-cache.usecase';
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
 import { HttpRoutePermissionCatalog } from '@/modules/operations/presentation/http-route-permission-catalog';
+import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import { CreatePaymentUseCase } from '@/modules/payment/application/use-cases/create-payment/create-payment.usecase';
+import { GetPaymentUseCase } from '@/modules/payment/application/use-cases/get-payment/get-payment.usecase';
+import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
+import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
+import { MomoPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/momo-payment-gateway.adapter';
+import { VnpayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/vnpay-payment-gateway.adapter';
+import { ZalopayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/zalopay-payment-gateway.adapter';
 import { PostAudienceAccessService } from '@/modules/post/application/services/post-audience-access.service';
-import { PostServicePort } from '@/modules/post/application/services/post.service';
+import type { PostServicePort } from '@/modules/post/application/services/post.service';
 import { BookmarkPostUseCase } from '@/modules/post/application/use-cases/bookmark-post/bookmark-post.usecase';
 import { CreateHashtagUseCase } from '@/modules/post/application/use-cases/create-hashtag/create-hashtag.usecase';
 import { CreatePostUseCase } from '@/modules/post/application/use-cases/create-post/create-post.usecase';
@@ -84,8 +93,8 @@ import { UnbookmarkPostUseCase } from '@/modules/post/application/use-cases/unbo
 import { UnlikePostUseCase } from '@/modules/post/application/use-cases/unlike-post/unlike-post.usecase';
 import { UpdateHashtagUseCase } from '@/modules/post/application/use-cases/update-hashtag/update-hashtag.usecase';
 import { UpdatePostUseCase } from '@/modules/post/application/use-cases/update-post/update-post.usecase';
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { AcceptIncomingRequestUseCase } from '@/modules/relationship/application/use-cases/accept-incoming-request/accept-incoming-request.usecase';
 import { BlockUserUseCase } from '@/modules/relationship/application/use-cases/block-user/block-user.usecase';
 import { DeclineIncomingRequestUseCase } from '@/modules/relationship/application/use-cases/decline-incoming-request/decline-incoming-request.usecase';
@@ -97,7 +106,7 @@ import { RevokeOutgoingRequestUseCase } from '@/modules/relationship/application
 import { SendFriendRequestUseCase } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.usecase';
 import { UnblockUserUseCase } from '@/modules/relationship/application/use-cases/unblock-user/unblock-user.usecase';
 import { UnfriendUseCase } from '@/modules/relationship/application/use-cases/unfriend/unfriend.usecase';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import { AdminCreateUserUseCase } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.usecase';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
 import { AdminGetUserUseCase } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.usecase';
@@ -108,7 +117,7 @@ import { GetMeUseCase } from '@/modules/user/application/use-cases/get-me/get-me
 import { GetUserProfileUseCase } from '@/modules/user/application/use-cases/get-user-profile/get-user-profile.usecase';
 import { SearchUsersUseCase } from '@/modules/user/application/use-cases/search-users/search-users.usecase';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
+import type { BaseRoute } from '@/presentation/http/express/core/base.route';
 import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
 import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
 import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
@@ -121,52 +130,49 @@ import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/tim
 import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
 import {
   AdminUserController,
-  IAdminUserController
+  type IAdminUserController
 } from '@/presentation/http/express/v1/controllers/admin-user.controller';
-import { AuthController, IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
-import { BlockController, IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
+import { AuthController, type IAuthController } from '@/presentation/http/express/v1/controllers/auth.controller';
+import { BlockController, type IBlockController } from '@/presentation/http/express/v1/controllers/block.controller';
 import {
   ChatMessageController,
-  IChatMessageController
+  type IChatMessageController
 } from '@/presentation/http/express/v1/controllers/chat-message.controller';
 import {
   ConversationController,
-  IConversationController
+  type IConversationController
 } from '@/presentation/http/express/v1/controllers/conversation.controller';
-import { FriendController, IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
-import { HashtagController, IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
-import { IMediaController, MediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { FriendController, type IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
 import {
-  INotificationController,
+  HashtagController,
+  type IHashtagController
+} from '@/presentation/http/express/v1/controllers/hashtag.controller';
+import { type IMediaController, MediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import {
+  type INotificationController,
   NotificationsController
 } from '@/presentation/http/express/v1/controllers/notifications.controller';
-import { IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
+import { type IOAuthController, OAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
 import {
-  IOperationsController,
+  type IOperationsController,
   OperationsController
 } from '@/presentation/http/express/v1/controllers/operations.controller';
 import {
-  IPermissionController,
+  type IPaymentCallbackController,
+  PaymentCallbackController
+} from '@/presentation/http/express/v1/controllers/payment-callback.controller';
+import {
+  type IPaymentController,
+  PaymentController
+} from '@/presentation/http/express/v1/controllers/payment.controller';
+import {
+  type IPermissionController,
   PermissionController
 } from '@/presentation/http/express/v1/controllers/permission.controller';
-import { IPostController, PostController } from '@/presentation/http/express/v1/controllers/post.controller';
-import { IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
-import { ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
-import { IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import { AdminUsersPipe, IAdminUsersPipe } from '@/presentation/http/express/v1/pipes/admin-user.pipe';
-import { AuthPipe, IAuthPipe } from '@/presentation/http/express/v1/pipes/auth.pipe';
-import { BlocksPipe, IBlockPipe } from '@/presentation/http/express/v1/pipes/block.pipe';
-import { ChatMessagesPipe, IChatMessagePipe } from '@/presentation/http/express/v1/pipes/chat-message.pipe';
-import { ConversationsPipe, IConversationPipe } from '@/presentation/http/express/v1/pipes/conversation.pipe';
-import { FriendsPipe, IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import { HashtagsPipe, IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import { INotificationPipe, NotificationsPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import { IPaginationPipe, PaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IPermissionsPipe, PermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
-import { IPostPipe, PostsPipe } from '@/presentation/http/express/v1/pipes/post.pipe';
-import { IRolesPipe, RolesPipe } from '@/presentation/http/express/v1/pipes/role.pipe';
-import { ISearchPipe, SearchPipe } from '@/presentation/http/express/v1/pipes/search.pipe';
-import { IUserPipe, UsersPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import { type IPostController, PostController } from '@/presentation/http/express/v1/controllers/post.controller';
+import { type IRoleController, RoleController } from '@/presentation/http/express/v1/controllers/role.controller';
+import { type ISearchController, SearchController } from '@/presentation/http/express/v1/controllers/search.controller';
+import { type IUserController, UserController } from '@/presentation/http/express/v1/controllers/user.controller';
 import { AdminUserRoute } from '@/presentation/http/express/v1/routes/admin-user.route';
 import { AuthRoute } from '@/presentation/http/express/v1/routes/auth.route';
 import { BlockRoute } from '@/presentation/http/express/v1/routes/block.route';
@@ -177,6 +183,8 @@ import { MediaRoute } from '@/presentation/http/express/v1/routes/media.route';
 import { NotificationRoute } from '@/presentation/http/express/v1/routes/notification.route';
 import { OAuthRoute } from '@/presentation/http/express/v1/routes/oauth.route';
 import { OperationsRoute } from '@/presentation/http/express/v1/routes/operations.route';
+import { PaymentCallbackRoute } from '@/presentation/http/express/v1/routes/payment-callback.route';
+import { PaymentRoute } from '@/presentation/http/express/v1/routes/payment.route';
 import { PermissionRoute } from '@/presentation/http/express/v1/routes/permission.route';
 import { PostRoute } from '@/presentation/http/express/v1/routes/post.route';
 import { RoleRoute } from '@/presentation/http/express/v1/routes/role.route';
@@ -186,8 +194,8 @@ import { UserRoute } from '@/presentation/http/express/v1/routes/user.route';
 
 export type HttpContext = ContainerRepositories & {
   logger: LoggerPort;
+  redis: RedisClientPort;
   cacheManager: CacheManagerPort;
-  cacheStrategy: CacheStrategyPort;
   realtimeEmitter: RealtimeEmitterPort;
   fileStorage: FileStoragePort;
   imageProcessor: ImageProcessorPort;
@@ -229,13 +237,14 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     roleRepository,
     roleQueryRepository,
     permissionRepository,
+    paymentRepository,
     postQueryRepository,
-    postCommandRepository,
     userQueryRepository,
     conversationMemberQueryRepository,
+    unitOfWork,
     logger,
+    redis,
     cacheManager,
-    cacheStrategy,
     realtimeEmitter,
     fileStorage,
     imageProcessor,
@@ -257,16 +266,17 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     twoFactorService
   } = ctx;
 
-  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheStrategy);
+  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
-  const apiKeyGuard = new ApiKeyGuard(appConfig.auth.apiKey);
+  const apiKeyGuard = new ApiKeyGuard(envConfig.API_KEY);
 
-  const throttlerGuard = new ThrottlerProxyGuard(appConfig);
+  const throttlerGuard = new ThrottlerProxyGuard(redis);
 
   const loggingInterceptor = new LoggingInterceptor(logger);
   const transformResponseInterceptor = new TransformResponseInterceptor();
   const timeoutInterceptor = new TimeoutInterceptor();
+  const paymentTimeoutInterceptor = new TimeoutInterceptor({ timeoutMs: 45_000 });
   const lookupCacheInterceptor = new CacheInterceptor(cacheManager, {
     ttlSeconds: 60,
     prefix: 'http-cache:lookup'
@@ -277,10 +287,18 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog({ apiPrefix: appConfig.api.prefix })
+    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX }),
+    unitOfWork
   );
 
-  const registerUC = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
+  const registerUC = new RegisterUseCase(
+    userRepository,
+    hashingService,
+    otpRepository,
+    otpService,
+    roleService,
+    unitOfWork
+  );
   const loginEmailUC = new LoginEmailUseCase(userQueryRepository, otpService, hashingService, authService);
   const logoutUC = new LogoutUseCase(refreshTokenRepository);
   const refreshTokenUC = new RefreshTokenUseCase(
@@ -295,11 +313,11 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     hashingService,
     userService,
     otpService,
-    cacheStrategy
+    cacheManager
   );
   const sendOtpUC = new SendOtpUseCase(otpRepository, userRepository, otpEmailQueue);
-  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheStrategy);
-  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheStrategy);
+  const setup2faUC = new Setup2FAUseCase(userRepository, userService, twoFactorService, cacheManager);
+  const disable2faUC = new Disable2FAUseCase(userRepository, userService, otpService, cacheManager);
 
   const getGoogleAuthUrlUC = new GetGoogleAuthUrlUseCase(googleOAuthService);
   const loginGoogleUC = new LoginGoogleUseCase(
@@ -312,9 +330,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   );
 
   const getMeUC = new GetMeUseCase(userService);
-  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheStrategy);
+  const updateMeUC = new UpdateMeUseCase(userRepository, userService, cacheManager);
   const getUserProfileUC = new GetUserProfileUseCase(userService, blockService);
-  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheStrategy);
+  const changePasswordUC = new ChangePasswordUseCase(userRepository, hashingService, cacheManager);
   const adminListUsersUC = new AdminListUsersUseCase(userRepository);
   const adminGetUserUC = new AdminGetUserUseCase(userRepository);
   const adminCreateUserUC = new AdminCreateUserUseCase(
@@ -330,9 +348,9 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     roleRepository,
     roleService,
     hashingService,
-    cacheStrategy
+    cacheManager
   );
-  const adminDeleteUserUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheStrategy);
+  const adminDeleteUserUC = new AdminDeleteUserUseCase(userRepository, roleService, cacheManager);
 
   const blockUserUC = new BlockUserUseCase(
     blockRepository,
@@ -340,7 +358,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     userRepository,
     friendshipRepository,
     friendRequestRepository,
-    friendService
+    friendService,
+    unitOfWork
   );
   const unblockUserUC = new UnblockUserUseCase(blockRepository, friendService);
   const listBlockedUC = new GetBlockedUserUseCase(blockRepository, userRepository);
@@ -367,12 +386,12 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const uploadImageUC = new UploadImageUseCase(s3Service, imageProcessor, fileStorage);
   const uploadVideoUC = new UploadVideoUseCase(s3Service, fileStorage);
   const uploadVideoStreamUC = new UploadVideoStreamUseCase(videoStatusRepository, videoStreamQueue, {
-    clientUrl: appConfig.client.url
+    clientUrl: envConfig.APP_URL
   });
 
   const getNewFeedsUC = new GetNewFeedsUseCase(postQueryRepository, postService, blockService, friendService, logger);
   const getGuestNewFeedsUC = new GetGuestNewFeedsUseCase(postQueryRepository, postService, logger);
-  const increaseViewsUC = new IncreaseViewsUseCase(postCommandRepository);
+  const increaseViewsUC = new IncreaseViewsUseCase(postRepository);
   const getPostDetailUC = new GetPostDetailUseCase(postQueryRepository, postAudienceAccessService);
   const getPostsTypeUC = new GetPostsTypeUseCase(
     postQueryRepository,
@@ -399,7 +418,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
   const deletePostUC = new DeletePostUseCase(postRepository, roleService);
 
   const searchPostsUC = new SearchPostsUseCase(postQueryRepository, friendService, postService, blockService);
-  const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, cacheStrategy);
+  const searchUsersUC = new SearchUsersUseCase(userQueryRepository, friendService, cacheManager);
 
   const listFriendsUC = new GetFriendsUseCase(friendshipRepository, userRepository);
   const listIncomingRequestsUC = new GetIncomingRequestsUseCase(friendRequestRepository, userQueryRepository);
@@ -417,7 +436,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     friendRequestRepository,
     friendService,
     blockRepository,
-    notificationsService
+    notificationsService,
+    unitOfWork
   );
   const declineIncomingRequestUC = new DeclineIncomingRequestUseCase(friendRequestRepository, friendService);
   const revokeOutgoingRequestUC = new RevokeOutgoingRequestUseCase(friendRequestRepository, friendService);
@@ -428,7 +448,8 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     conversationMemberRepository,
     conversationService,
     friendService,
-    blockRepository
+    blockRepository,
+    unitOfWork
   );
   const createGroupUC = new CreateGroupUseCase(conversationRepository, friendshipRepository);
   const listConversationsUC = new GetConversationsUseCase(
@@ -467,6 +488,32 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     conversationService,
     realtimeEmitter
   );
+
+  const paymentGateways: Record<PaymentProvider, PaymentGatewayPort> = {
+    vnpay: new VnpayPaymentGatewayAdapter({
+      tmnCode: envConfig.VNPAY_TMN_CODE,
+      secureSecret: envConfig.VNPAY_SECURE_SECRET,
+      vnpayHost: envConfig.VNPAY_HOST,
+      paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
+    }),
+    momo: new MomoPaymentGatewayAdapter({
+      partnerCode: envConfig.MOMO_PARTNER_CODE,
+      accessKey: envConfig.MOMO_ACCESS_KEY,
+      secretKey: envConfig.MOMO_SECRET_KEY,
+      storeId: envConfig.MOMO_STORE_ID,
+      storeName: envConfig.MOMO_STORE_NAME,
+      paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
+    }),
+    zalopay: new ZalopayPaymentGatewayAdapter({
+      appId: envConfig.ZALOPAY_APP_ID,
+      key1: envConfig.ZALOPAY_KEY1,
+      key2: envConfig.ZALOPAY_KEY2,
+      paymentPublicBaseUrl: envConfig.PAYMENT_PUBLIC_BASE_URL
+    })
+  };
+  const createPaymentUC = new CreatePaymentUseCase(paymentRepository, paymentGateways);
+  const getPaymentUC = new GetPaymentUseCase(paymentRepository);
+  const handlePaymentNotificationUC = new HandlePaymentNotificationUseCase(paymentRepository, paymentGateways);
 
   const authController: IAuthController = new AuthController(
     registerUC,
@@ -550,17 +597,21 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     markNotificationsReadUC,
     markNotificationReadUC
   );
+  const paymentController: IPaymentController = new PaymentController(createPaymentUC, getPaymentUC);
+  const paymentCallbackController: IPaymentCallbackController = new PaymentCallbackController(
+    handlePaymentNotificationUC
+  );
 
   const listRolesUC = new ListRolesUseCase(roleRepository);
   const getRoleUC = new GetRoleUseCase(roleRepository);
   const createRoleUC = new CreateRoleUseCase(roleRepository);
-  const updateRoleUC = new UpdateRoleUseCase(roleRepository, cacheStrategy);
-  const deleteRoleUC = new DeleteRoleUseCase(roleRepository, cacheStrategy);
+  const updateRoleUC = new UpdateRoleUseCase(roleRepository, cacheManager);
+  const deleteRoleUC = new DeleteRoleUseCase(roleRepository, cacheManager);
   const listPermissionsUC = new ListPermissionsUseCase(permissionRepository);
 
   const getPermissionUC = new GetPermissionUseCase(permissionRepository);
   const createPermissionUC = new CreatePermissionUseCase(permissionRepository);
-  const updatePermissionUC = new UpdatePermissionUseCase(permissionRepository, cacheStrategy);
+  const updatePermissionUC = new UpdatePermissionUseCase(permissionRepository, cacheManager);
   const deletePermissionUC = new DeletePermissionUseCase(permissionRepository, roleRepository);
   const roleController: IRoleController = new RoleController(
     listRolesUC,
@@ -590,22 +641,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     deleteHashtagUC
   );
 
-  const authPipe: IAuthPipe = new AuthPipe();
-  const userPipe: IUserPipe = new UsersPipe();
-  const adminUsersPipe: IAdminUsersPipe = new AdminUsersPipe();
-  const postPipe: IPostPipe = new PostsPipe();
-  const searchPipe: ISearchPipe = new SearchPipe();
-  const friendPipe: IFriendPipe = new FriendsPipe(userPipe);
-  const blocksPipe: IBlockPipe = new BlocksPipe(userPipe);
-  const conversationPipe: IConversationPipe = new ConversationsPipe(userPipe);
-  const chatMessagePipe: IChatMessagePipe = new ChatMessagesPipe();
-  const notificationPipe: INotificationPipe = new NotificationsPipe();
-  const rolesPipe: IRolesPipe = new RolesPipe();
-  const permissionsPipe: IPermissionsPipe = new PermissionsPipe();
-  const hashtagsPipe: IHashtagsPipe = new HashtagsPipe();
-  const paginationPipe: IPaginationPipe = new PaginationPipe();
-
-  const routers: BaseRoute[] = [
+  return [
     new OperationsRoute(
       operationsController,
       apiKeyGuard,
@@ -616,7 +652,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new AuthRoute(
       authController,
-      authPipe,
       authGuard,
       throttlerGuard,
       loggingInterceptor,
@@ -625,8 +660,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new AdminUserRoute(
       adminUserController,
-      adminUsersPipe,
-      paginationPipe,
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -637,7 +670,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new UserRoute(
       userController,
-      userPipe,
       authGuard,
       authOptionGuard,
       activeUserGuard,
@@ -665,8 +697,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new PostRoute(
       postController,
-      postPipe,
-      paginationPipe,
       authGuard,
       authOptionGuard,
       activeUserGuard,
@@ -678,8 +708,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new SearchRoute(
       searchController,
-      searchPipe,
-      paginationPipe,
       authOptionGuard,
       activeUserGuard,
       throttlerGuard,
@@ -689,8 +717,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new FriendRoute(
       friendController,
-      friendPipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -701,8 +727,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new BlockRoute(
       blocksController,
-      blocksPipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -713,10 +737,7 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new ConversationRoute(
       conversationController,
-      conversationPipe,
       chatMessageController,
-      chatMessagePipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -734,8 +755,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new NotificationRoute(
       notificationController,
-      notificationPipe,
-      paginationPipe,
       authGuard,
       activeUserGuard,
       throttlerGuard,
@@ -746,8 +765,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new RoleRoute(
       roleController,
-      rolesPipe,
-      paginationPipe,
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -759,8 +776,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new PermissionRoute(
       permissionController,
-      permissionsPipe,
-      paginationPipe,
       authGuard,
       apiKeyGuard,
       throttlerGuard,
@@ -772,8 +787,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     ),
     new HashtagRoute(
       hashtagController,
-      hashtagsPipe,
-      paginationPipe,
       authGuard,
       throttlerGuard,
       loggingInterceptor,
@@ -781,8 +794,16 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
       timeoutInterceptor,
       lookupCacheInterceptor,
       idempotencyInterceptor
-    )
+    ),
+    new PaymentRoute(
+      paymentController,
+      authGuard,
+      activeUserGuard,
+      throttlerGuard,
+      loggingInterceptor,
+      transformResponseInterceptor,
+      paymentTimeoutInterceptor
+    ),
+    new PaymentCallbackRoute(paymentCallbackController)
   ];
-
-  return routers;
 }

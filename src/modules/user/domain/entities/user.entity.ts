@@ -14,7 +14,7 @@ import {
   EnumUserStatus,
   type UserFullProps,
   type UserProps
-} from '@/modules/user/domain/entities/user.type';
+} from '@/modules/user/domain/entities/user.types';
 
 export class UserEntity extends Entity<UserProps, UserFullProps> {
   static create(createProps: CreateUserProps) {

@@ -1,15 +1,15 @@
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
-import {
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
-} from '@/modules/relationship/domain/repositories/friendship.repository.type';
-import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper';
-import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.model';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+} from '@/modules/relationship/domain/repositories/friendship.repository.types';
+import type { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper';
+import type { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.model';
+import { type Db, type MongoClient, MongoServerError } from 'mongodb';
 
 export class FriendshipRepository
   extends MongoRepositoryBase<FriendshipEntity, FriendshipModel>
@@ -65,18 +65,21 @@ export class FriendshipRepository
   }
 
   async createFriendship(userIdA: string, userIdB: string): Promise<FriendshipEntity | null> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+    const entity = FriendshipEntity.create({ userIdLow, userIdHigh });
+    const { user_id_low, user_id_high, ...rest } = this.mapper.toPersistence(entity);
     try {
-      const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
-      const entity = FriendshipEntity.create({
-        userIdLow,
-        userIdHigh
-      });
-      const record = this.mapper.toPersistence(entity);
-      await this.dbCollection.insertOne(record);
-      return this.mapper.toDomain(record);
+      // Upsert instead of catching the duplicate key: inside a transaction a failed write aborts it.
+      const result = await this.dbCollection.updateOne(
+        { user_id_low, user_id_high },
+        { $setOnInsert: rest },
+        { upsert: true }
+      );
+      return result.upsertedCount === 1 ? entity : null;
     } catch (error) {
-      // May hit the unique index (Mongo error 11000) if the friendship already exists due to a race condition.
-      if (error instanceof MongoServerError && error.code === 11000) {
+      // Outside a transaction a concurrent upsert can still hit the unique index; it means the friendship exists.
+      // Inside a transaction the error must propagate so the driver can abort or retry it.
+      if (!this.inTransaction && error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
       throw error;

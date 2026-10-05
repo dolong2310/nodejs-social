@@ -1,4 +1,4 @@
-import fs from 'fs';
+import type fs from 'fs';
 
 export interface FileStoragePort {
   readFile(filepath: string): Promise<Buffer>;

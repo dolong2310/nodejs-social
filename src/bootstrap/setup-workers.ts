@@ -1,5 +1,5 @@
-import { appConfig } from '@/bootstrap/config/app.config';
-import { IContainer } from '@/bootstrap/container';
+import { envConfig } from '@/bootstrap/config/env.config';
+import type { IContainer } from '@/bootstrap/container';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import { OtpEmailWorker } from '@/modules/authentication/infrastructure/queue/otp-email.worker';
@@ -17,7 +17,7 @@ export function setupWorkers(container: IContainer): void {
   const {
     emailSender,
     otpRepository,
-    postCommandRepository,
+    postRepository,
     notificationService,
     mediaRepository,
     s3Service,
@@ -29,14 +29,14 @@ export function setupWorkers(container: IContainer): void {
   } = container.getWorkerDeps();
 
   new OtpEmailWorker(connection, emailSender, otpRepository, logger);
-  new PostViewsWorker(connection, postCommandRepository, logger);
+  new PostViewsWorker(connection, postRepository, logger);
   new NotificationTrimWorker(connection, notificationService, logger);
   new VideoStreamWorker(connection, mediaRepository, s3Service, fileStorage, logger);
   new OtpCleanupWorker(connection, deleteExpiredOtpsUC, logger);
   new RefreshTokenCleanupWorker(connection, deleteExpiredRefreshTokensUC, logger);
   new CacheWarmupWorker(connection, warmRedisCacheUC, logger);
 
-  if (appConfig.systemHealth.enabled) {
+  if (envConfig.SYSTEM_HEALTH_MONITOR_ENABLED) {
     new SystemHealthWorker(connection, checkSystemHealthUC, logger);
   }
 }

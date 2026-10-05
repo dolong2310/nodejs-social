@@ -1,10 +1,10 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type {
   ChangePasswordInput,
   ResetPasswordInput,
   UpdateMeInput
-} from '@/modules/user/domain/repositories/user.repository.type';
+} from '@/modules/user/domain/repositories/user.repository.types';
 
 export interface UserRepositoryPort extends RepositoryPort<UserEntity> {
   findUserById(id: string): Promise<UserEntity | null>;

@@ -1,37 +1,28 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   UsernameAlreadyExistsException,
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
 import {
-  UpdateMeCommand,
-  UpdateMePort,
-  UpdateMeResult
+  type UpdateMeInputPort,
+  UpdateMeOutputPort,
+  UpdateMePort
 } from '@/modules/user/application/use-cases/update-me/update-me.port';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class UpdateMeUseCase extends UpdateMePort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly userService: UserServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
 
-  async execute({
-    userId,
-    name,
-    birthday,
-    bio,
-    location,
-    website,
-    username,
-    avatar,
-    coverPhoto
-  }: UpdateMeCommand): Promise<UpdateMeResult> {
+  async execute(input: UpdateMeInputPort): Promise<UpdateMeOutputPort> {
+    const { userId, name, birthday, bio, location, website, username, avatar, coverPhoto } = input;
     const current = await this.userService.findUserById(userId);
 
     if (username) {
@@ -60,7 +51,7 @@ export class UpdateMeUseCase extends UpdateMePort {
     const usernames = [current?.username, user?.username].filter((username): username is string => Boolean(username));
     await this.invalidateUserCache({ userId, usernames });
 
-    return new UpdateMeResult({
+    return new UpdateMeOutputPort({
       id: user.id,
       name: user.name,
       email: user.email,
@@ -78,7 +69,8 @@ export class UpdateMeUseCase extends UpdateMePort {
     });
   }
 
-  async invalidateUserCache({ userId, usernames }: { userId: string; usernames: string[] }): Promise<void> {
+  async invalidateUserCache(input: { userId: string; usernames: string[] }): Promise<void> {
+    const { userId, usernames } = input;
     const keys = [CACHE_KEYS.user(userId), ...usernames.map((username) => CACHE_KEYS.userByUsername(username))];
     await Promise.all([...new Set(keys)].map((key) => this.cache.invalidate(key)));
   }

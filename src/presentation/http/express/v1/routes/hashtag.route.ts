@@ -1,14 +1,24 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
-import { IHashtagsPipe } from '@/presentation/http/express/v1/pipes/hashtag.pipe';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { HASHTAG_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/hashtag.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IHashtagController } from '@/presentation/http/express/v1/controllers/hashtag.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  CreateHashtagBodySchema,
+  HashtagIdParamsSchema,
+  UpdateHashtagBodySchema
+} from '@/presentation/http/express/v1/schemas/hashtag/hashtag.request.schema';
+import { HashtagResponseSchema } from '@/presentation/http/express/v1/schemas/hashtag/hashtag.response.schema';
 
 export class HashtagRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -16,8 +26,6 @@ export class HashtagRoute extends BaseRoute {
 
   constructor(
     private readonly hashtagController: IHashtagController,
-    private readonly hashtagsPipe: IHashtagsPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
     private readonly loggingInterceptor: LoggingInterceptor,
@@ -31,12 +39,11 @@ export class HashtagRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -44,14 +51,14 @@ export class HashtagRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(HashtagResponseSchema),
         controller: this.hashtagController.list
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.CREATE)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -59,14 +66,14 @@ export class HashtagRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.createBodyPipe],
+        pipes: [validate({ body: CreateHashtagBodySchema })],
+        response: HashtagResponseSchema,
         controller: this.hashtagController.create
-      })
-    );
-    this.router.get(
-      '/:hashtagId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:hashtagId',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.GET_BY_ID)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -74,14 +81,14 @@ export class HashtagRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.hashtagIdParam],
+        pipes: [validate({ params: HashtagIdParamsSchema })],
+        response: HashtagResponseSchema,
         controller: this.hashtagController.getById
-      })
-    );
-    this.router.put(
-      '/:hashtagId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:hashtagId',
+        method: 'put',
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.UPDATE)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -89,14 +96,14 @@ export class HashtagRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.hashtagIdParam, this.hashtagsPipe.updateBodyPipe],
+        pipes: [validate({ params: HashtagIdParamsSchema, body: UpdateHashtagBodySchema })],
+        response: HashtagResponseSchema,
         controller: this.hashtagController.update
-      })
-    );
-    this.router.delete(
-      '/:hashtagId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:hashtagId',
+        method: 'delete',
+        middlewares: [this.throttlerGuard.handler(HASHTAG_THROTTLE_CONFIG.REMOVE)],
         guards: [this.authGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -104,9 +111,13 @@ export class HashtagRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.hashtagsPipe.hashtagIdParam],
+        pipes: [validate({ params: HashtagIdParamsSchema })],
         controller: this.hashtagController.remove
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

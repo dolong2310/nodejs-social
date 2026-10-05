@@ -1,4 +1,4 @@
-import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constant';
+import { VALIDATION_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import {
   BadRequestException,
   ForbiddenException,

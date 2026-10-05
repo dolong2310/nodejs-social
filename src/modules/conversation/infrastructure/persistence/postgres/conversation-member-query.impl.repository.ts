@@ -1,8 +1,8 @@
-import { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
-import {
+import type { ConversationMemberQueryRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.query.repository';
+import type {
   ListConversationsForUserInput,
   ListConversationsForUserOutput
-} from '@/modules/conversation/domain/repositories/conversation-member.query.type';
+} from '@/modules/conversation/domain/repositories/conversation-member.query.types';
 import type { Pool } from 'pg';
 
 export class ConversationMemberQueryRepository implements ConversationMemberQueryRepositoryPort {

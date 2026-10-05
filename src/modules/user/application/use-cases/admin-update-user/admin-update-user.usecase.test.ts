@@ -1,14 +1,13 @@
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { AdminUpdateUserCommand } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import { AdminUpdateUserInputPort } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { AdminUpdateUserUseCase } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.usecase';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
@@ -40,7 +39,7 @@ describe('AdminUpdateUserUseCase', () => {
     const hashingService = mockPort<HashingPort>({
       hash: vi.fn().mockResolvedValue('new-hash')
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new AdminUpdateUserUseCase(
       userRepository,
       userService,
@@ -51,7 +50,7 @@ describe('AdminUpdateUserUseCase', () => {
     );
 
     const result = await useCase.execute(
-      new AdminUpdateUserCommand({
+      new AdminUpdateUserInputPort({
         actorId: 'admin_1',
         userId: currentUser.id,
         name: updatedUser.name,

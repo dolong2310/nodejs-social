@@ -1,6 +1,6 @@
 import { RoleNotFoundException } from '@/modules/authorization/application/exceptions/role.exception';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 
 export interface RoleServicePort {
   getAdminRoleId(): Promise<string>;

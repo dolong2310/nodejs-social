@@ -1,10 +1,9 @@
-import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
-import { Setup2FACommand } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
+import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import { Setup2FAInputPort } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.port';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
@@ -22,10 +21,10 @@ describe('Setup2FAUseCase', () => {
     const twoFactorAuthenticationService = mockPort<TwoFactorAuthPort>({
       generateSecret: vi.fn().mockReturnValue({ secret: 'secret', uri: 'otpauth://totp/social' })
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new Setup2FAUseCase(userRepository, userService, twoFactorAuthenticationService, cache);
 
-    const result = await useCase.execute(new Setup2FACommand({ userId: user.id }));
+    const result = await useCase.execute(new Setup2FAInputPort({ userId: user.id }));
 
     expect(twoFactorAuthenticationService.generateSecret).toHaveBeenCalledWith(user.email);
     expect(userRepository.updateOne).toHaveBeenCalledWith(user.id, { totpSecret: 'secret' });

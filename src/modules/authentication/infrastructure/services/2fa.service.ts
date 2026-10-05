@@ -1,4 +1,4 @@
-import { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
+import type { TwoFactorAuthPort } from '@/modules/authentication/application/ports/2fa.port';
 import { Secret, TOTP } from 'otpauth';
 
 export class TwoFactorAuthService implements TwoFactorAuthPort {

@@ -5,14 +5,14 @@ import {
   OnlyOwnerCanViewPostsException
 } from '@/modules/post/application/exceptions/post.exception';
 import { transformUnknownAuthorForPostDetail } from '@/modules/post/application/utils/transform-unknown-user.util';
-import { EnumPostAudience } from '@/modules/post/domain/entities/post.type';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailOutput } from '@/modules/post/domain/repositories/post.query.type';
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { EnumPostAudience } from '@/modules/post/domain/entities/post.types';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { PostDetailOutput } from '@/modules/post/domain/repositories/post.query.types';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import { UserIsBannedException, UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 
 export interface PostAudienceAccessServicePort {
   assertUserCanAccessPostDetail(post: PostDetailOutput, currentUserId: string | undefined): Promise<void>;

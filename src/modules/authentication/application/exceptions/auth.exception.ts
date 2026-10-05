@@ -2,30 +2,35 @@ import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
 
 export class InvalidTokenException extends ExceptionBase {
   readonly code = 'AUTH.INVALID_TOKEN';
-  readonly statusCode = 401;
+  readonly type = 'unauthenticated';
+}
+
+export class ExpiredTokenException extends ExceptionBase {
+  readonly code = 'AUTH.TOKEN_EXPIRED';
+  readonly type = 'unauthenticated';
 }
 
 export class InvalidEmailOrPasswordException extends ExceptionBase {
   readonly code = 'AUTH.INVALID_EMAIL_OR_PASSWORD';
-  readonly statusCode = 401;
+  readonly type = 'unauthenticated';
 }
 
 export class GoogleAccountNotVerifiedException extends ExceptionBase {
   readonly code = 'AUTH.GOOGLE_ACCOUNT_NOT_VERIFIED';
-  readonly statusCode = 403;
+  readonly type = 'forbidden';
 }
 
 export class EmailAlreadyExistsException extends ExceptionBase {
   readonly code = 'AUTH.EMAIL_ALREADY_EXISTS';
-  readonly statusCode = 409;
+  readonly type = 'conflict';
 }
 
 export class EmailNotFoundException extends ExceptionBase {
   readonly code = 'AUTH.EMAIL_NOT_FOUND';
-  readonly statusCode = 404;
+  readonly type = 'not_found';
 }
 
 export class FailedToSendOtpCodeException extends ExceptionBase {
   readonly code = 'AUTH.FAILED_TO_SEND_OTP';
-  readonly statusCode = 503;
+  readonly type = 'unavailable';
 }

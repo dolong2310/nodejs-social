@@ -1,11 +1,14 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { MEDIA_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/media.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import { VideoStreamIdParamsSchema } from '@/presentation/http/express/v1/schemas/media/media.request.schema';
 
 export class MediaRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -25,47 +28,44 @@ export class MediaRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.post(
-      '/upload-image',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/upload-image',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_IMAGE)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
         controller: this.mediaController.uploadImage
-      })
-    );
-    this.router.post(
-      '/upload-video',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/upload-video',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_VIDEO)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
         controller: this.mediaController.uploadVideo
-      })
-    );
-    this.router.post(
-      '/upload-video-stream',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/upload-video-stream',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.UPLOAD_VIDEO_STREAM)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
         controller: this.mediaController.uploadVideoStream
-      })
-    );
-    this.router.get(
-      '/video-status/:id',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/video-status/:id',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(MEDIA_THROTTLE_CONFIG.GET_VIDEO_STATUS)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: VideoStreamIdParamsSchema })],
         controller: this.mediaController.getVideoStatus
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

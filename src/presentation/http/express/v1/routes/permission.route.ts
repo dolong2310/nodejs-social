@@ -1,15 +1,25 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
-import { IPermissionsPipe } from '@/presentation/http/express/v1/pipes/permission.pipe';
+import { PERMISSION_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/permission.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ApiKeyGuard } from '@/presentation/http/express/guards/api-key.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { CacheInterceptor } from '@/presentation/http/express/interceptors/cache.interceptor';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IPermissionController } from '@/presentation/http/express/v1/controllers/permission.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  paginatedSchema,
+  PaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  CreatePermissionBodySchema,
+  PermissionIdParamsSchema,
+  UpdatePermissionBodySchema
+} from '@/presentation/http/express/v1/schemas/permission/permission.request.schema';
+import { PermissionResponseSchema } from '@/presentation/http/express/v1/schemas/permission/permission.response.schema';
 
 export class PermissionRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,8 +27,6 @@ export class PermissionRoute extends BaseRoute {
 
   constructor(
     private readonly permissionController: IPermissionController,
-    private readonly permissionsPipe: IPermissionsPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -33,12 +41,11 @@ export class PermissionRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(PERMISSION_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -46,14 +53,14 @@ export class PermissionRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.paginationPipe.paginationQuery],
+        pipes: [validate({ query: PaginationQuerySchema })],
+        response: paginatedSchema(PermissionResponseSchema),
         controller: this.permissionController.list
-      })
-    );
-    this.router.post(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(PERMISSION_THROTTLE_CONFIG.CREATE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -61,14 +68,14 @@ export class PermissionRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.createBodyPipe],
+        pipes: [validate({ body: CreatePermissionBodySchema })],
+        response: PermissionResponseSchema,
         controller: this.permissionController.create
-      })
-    );
-    this.router.get(
-      '/:permissionId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:permissionId',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(PERMISSION_THROTTLE_CONFIG.GET_BY_ID)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -76,14 +83,14 @@ export class PermissionRoute extends BaseRoute {
           this.cacheInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.permissionIdParam],
+        pipes: [validate({ params: PermissionIdParamsSchema })],
+        response: PermissionResponseSchema,
         controller: this.permissionController.getById
-      })
-    );
-    this.router.put(
-      '/:permissionId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:permissionId',
+        method: 'put',
+        middlewares: [this.throttlerGuard.handler(PERMISSION_THROTTLE_CONFIG.UPDATE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -91,14 +98,14 @@ export class PermissionRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.permissionIdParam, this.permissionsPipe.updateBodyPipe],
+        pipes: [validate({ params: PermissionIdParamsSchema, body: UpdatePermissionBodySchema })],
+        response: PermissionResponseSchema,
         controller: this.permissionController.update
-      })
-    );
-    this.router.delete(
-      '/:permissionId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:permissionId',
+        method: 'delete',
+        middlewares: [this.throttlerGuard.handler(PERMISSION_THROTTLE_CONFIG.REMOVE)],
         guards: [this.authGuard, this.apiKeyGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -106,9 +113,13 @@ export class PermissionRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.permissionsPipe.permissionIdParam],
+        pipes: [validate({ params: PermissionIdParamsSchema })],
         controller: this.permissionController.remove
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

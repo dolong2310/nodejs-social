@@ -1,6 +1,6 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/relationship/application/constants/cache.constant';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/relationship/application/constants/cache.constants';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 
 export interface FriendServicePort {
   invalidateBoth(userIdA: string, userIdB: string): Promise<void>;
@@ -12,7 +12,7 @@ export interface FriendServicePort {
 export class FriendService implements FriendServicePort {
   constructor(
     private readonly friendshipRepository: FriendshipRepositoryPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     this.findFriendUserIds = this.findFriendUserIds.bind(this);
   }
@@ -36,7 +36,7 @@ export class FriendService implements FriendServicePort {
   }
 
   async findFriendUserIds(userId: string): Promise<string[]> {
-    const ids = await this.cache.get(
+    const ids = await this.cache.read(
       CACHE_KEYS.friends(userId),
       () => this.friendshipRepository.findFriendIdsByUserId(userId),
       {

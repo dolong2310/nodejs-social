@@ -1,12 +1,12 @@
 import { ConversationRoleForbiddenException } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  LeaveConversationCommand,
+  type LeaveConversationInputPort,
   LeaveConversationPort
 } from '@/modules/conversation/application/use-cases/leave-conversation/leave-conversation.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 
 export class LeaveConversationUseCase extends LeaveConversationPort {
   constructor(
@@ -16,7 +16,8 @@ export class LeaveConversationUseCase extends LeaveConversationPort {
     super();
   }
 
-  async execute({ userId, conversationId }: LeaveConversationCommand): Promise<void> {
+  async execute(input: LeaveConversationInputPort): Promise<void> {
+    const { userId, conversationId } = input;
     const self = (await this.conversationService.isMember({ conversationId, userId })).toObject();
     const conv = (await this.conversationService.loadConversation(conversationId)).toObject();
 

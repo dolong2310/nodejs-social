@@ -1,14 +1,17 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import {
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import type {
   CreatePostInput,
   DeletePostTreeInput,
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput,
   UpdatePostInput
-} from '@/modules/post/domain/repositories/post.repository.type';
-import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
-import { PostModel } from '@/modules/post/infrastructure/persistence/postgres/post.model';
+} from '@/modules/post/domain/repositories/post.repository.types';
+import type { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/post.mapper';
+import type { PostModel } from '@/modules/post/infrastructure/persistence/postgres/post.model';
 import type { Pool } from 'pg';
 
 export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel> implements PostRepositoryPort {
@@ -166,5 +169,44 @@ export class PostRepository extends PostgresRepositoryBase<PostEntity, PostModel
       );
       return result.rows[0]?.deleted_count ?? 0;
     });
+  }
+
+  async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
+    const column = userId ? 'user_views' : 'guest_views';
+    const result = await this.query<{
+      user_views: number;
+      guest_views: number;
+      updated_at: Date;
+    }>(
+      `
+        UPDATE posts
+        SET ${column} = ${column} + 1, updated_at = NOW()
+        WHERE id = $1 AND deleted_at IS NULL
+        RETURNING user_views, guest_views, updated_at
+      `,
+      [postId]
+    );
+    const [record] = result.rows;
+    return record
+      ? {
+          userViews: record.user_views,
+          guestViews: record.guest_views,
+          updatedAt: record.updated_at
+        }
+      : null;
+  }
+
+  async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
+    if (ids.length === 0) return 0;
+    const column = isAuthenticatedUser ? 'user_views' : 'guest_views';
+    const result = await this.query(
+      `
+        UPDATE posts
+        SET ${column} = ${column} + 1, updated_at = NOW()
+        WHERE id = ANY($1::text[]) AND deleted_at IS NULL
+      `,
+      [[...new Set(ids)]]
+    );
+    return result.rowCount ?? 0;
   }
 }

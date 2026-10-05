@@ -1,14 +1,14 @@
 import { InvalidCursorException } from '@/modules/common/application/exceptions/cursor.exception';
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { PostServicePort } from '@/modules/post/application/services/post.service';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { PostServicePort } from '@/modules/post/application/services/post.service';
 import {
   GetGuestNewFeedsPort,
-  GetGuestNewFeedsQuery,
-  GetGuestNewFeedsResult
+  type GetGuestNewFeedsInputPort,
+  GetGuestNewFeedsOutputPort
 } from '@/modules/post/application/use-cases/get-guest-new-feeds/get-guest-new-feeds.port';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
   private readonly log: LoggerPort;
@@ -22,10 +22,10 @@ export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute<T extends PostDetailWithAuthorOutput>({
-    cursor,
-    limit
-  }: GetGuestNewFeedsQuery): Promise<GetGuestNewFeedsResult<T>> {
+  async execute<T extends PostDetailWithAuthorOutput>(
+    input: GetGuestNewFeedsInputPort
+  ): Promise<GetGuestNewFeedsOutputPort<T>> {
+    const { cursor, limit } = input;
     const before = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
     const results = await this.postQueryRepository.findGuestPosts({ cursor: before, limit });
     const hasMore = results.length > limit;
@@ -36,6 +36,6 @@ export class GetGuestNewFeedsUseCase extends GetGuestNewFeedsPort {
     const last = posts[posts.length - 1];
     const nextCursor = hasMore && last?.createdAt ? encodeCursor(last.createdAt, last.id) : null;
 
-    return new GetGuestNewFeedsResult<T>({ items: updatedPosts as T[], nextCursor });
+    return new GetGuestNewFeedsOutputPort<T>({ items: updatedPosts as T[], nextCursor });
   }
 }

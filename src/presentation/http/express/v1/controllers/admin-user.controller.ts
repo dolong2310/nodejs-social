@@ -1,59 +1,51 @@
 import {
-  AdminCreateUserCommand,
-  AdminCreateUserPort
+  AdminCreateUserInputPort,
+  type AdminCreateUserPort
 } from '@/modules/user/application/use-cases/admin-create-user/admin-create-user.port';
 import {
-  AdminDeleteUserCommand,
-  AdminDeleteUserPort
+  AdminDeleteUserInputPort,
+  type AdminDeleteUserPort
 } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import {
-  AdminGetUserPort,
-  AdminGetUserQuery
+  type AdminGetUserPort,
+  AdminGetUserInputPort
 } from '@/modules/user/application/use-cases/admin-get-user/admin-get-user.port';
 import {
-  AdminListUsersPort,
-  AdminListUsersQuery
+  type AdminListUsersPort,
+  AdminListUsersInputPort
 } from '@/modules/user/application/use-cases/admin-list-users/admin-list-users.port';
 import {
-  AdminUpdateUserCommand,
-  AdminUpdateUserPort
+  AdminUpdateUserInputPort,
+  type AdminUpdateUserPort
 } from '@/modules/user/application/use-cases/admin-update-user/admin-update-user.port';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import { Created } from '@/presentation/http/express/responses/success.response';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { PaginationQueryDTO } from '@/presentation/http/express/v1/dtos/common/common.request.dto';
-import {
-  AdminCreateUserRequestBody,
-  AdminCreateUserRequestDTO,
-  AdminUpdateUserRequestBody,
-  AdminUpdateUserRequestDTO,
-  AdminUserIdParamsDTO
-} from '@/presentation/http/express/v1/dtos/user/admin-user.request.dto';
-import { UserResponseDTO } from '@/presentation/http/express/v1/dtos/user/user.response.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { ValidatedRequest } from '@/presentation/http/express/types';
+import type {
+  AdminCreateUserBodySchema,
+  AdminUpdateUserBodySchema,
+  AdminUserIdParamsSchema
+} from '@/presentation/http/express/v1/schemas/admin-user/admin-user.request.schema';
+import type { PaginationQuerySchema } from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+
+type ListUsersRequest = ValidatedRequest<{ query: typeof PaginationQuerySchema }>;
+type CreateUserRequest = ValidatedRequest<{ body: typeof AdminCreateUserBodySchema }>;
+type UserIdRequest = ValidatedRequest<{ params: typeof AdminUserIdParamsSchema }>;
+type UpdateUserRequest = ValidatedRequest<{
+  params: typeof AdminUserIdParamsSchema;
+  body: typeof AdminUpdateUserBodySchema;
+}>;
 
 export interface IAdminUserController {
-  list(
-    req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  create(
-    req: ExpressRequest<ParamsDictionary, object, AdminCreateUserRequestBody>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getById(req: ExpressRequest<AdminUserIdParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
-  update(
-    req: ExpressRequest<AdminUserIdParamsDTO, object, AdminUpdateUserRequestBody>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  remove(req: ExpressRequest<AdminUserIdParamsDTO>, res: ExpressResponse, next: NextFunction): Promise<unknown>;
+  list(req: ListUsersRequest): Promise<unknown>;
+  create(req: CreateUserRequest): Promise<unknown>;
+  getById(req: UserIdRequest): Promise<unknown>;
+  update(req: UpdateUserRequest): Promise<unknown>;
+  remove(req: UserIdRequest): Promise<unknown>;
 }
 
+@AutoBind()
 export class AdminUserController extends BaseController implements IAdminUserController {
   constructor(
     private readonly listUsersUC: AdminListUsersPort,
@@ -65,83 +57,75 @@ export class AdminUserController extends BaseController implements IAdminUserCon
     super();
   }
 
-  @AutoBind()
-  async list(req: ExpressRequest<ParamsDictionary, object, object, PaginationQueryDTO>): Promise<unknown> {
-    const page = Number(req.query.page);
-    const limit = Number(req.query.limit);
-    const { items, total } = await this.listUsersUC.execute(new AdminListUsersQuery({ page, limit }));
+  async list(req: ListUsersRequest): Promise<unknown> {
+    const { page, limit } = req.query;
+    const { items, total } = await this.listUsersUC.execute(new AdminListUsersInputPort({ page, limit }));
     return this.paginatedResponse({
-      data: items.map((item) => new UserResponseDTO(item)),
+      data: items,
       pagination: { page, limit, totalItems: total },
       message: 'List users successfully'
     });
   }
 
-  @AutoBind()
-  async create(req: ExpressRequest<ParamsDictionary, object, AdminCreateUserRequestBody>): Promise<unknown> {
-    const dto = new AdminCreateUserRequestDTO(req.body);
+  async create(req: CreateUserRequest): Promise<unknown> {
+    const body = req.body;
+
     const item = await this.createUserUC.execute(
-      new AdminCreateUserCommand({
+      new AdminCreateUserInputPort({
         actorId: this.getUserId(req),
-        name: dto.name,
-        email: dto.email,
-        password: dto.password,
-        birthday: dto.birthday,
-        roleId: dto.roleId,
-        status: dto.status,
-        bio: dto.bio,
-        location: dto.location,
-        website: dto.website,
-        username: dto.username,
-        avatar: dto.avatar,
-        coverPhoto: dto.coverPhoto
+        name: body.name,
+        email: body.email,
+        password: body.password,
+        birthday: body.birthday,
+        roleId: body.roleId,
+        status: body.status,
+        bio: body.bio,
+        location: body.location,
+        website: body.website,
+        username: body.username,
+        avatar: body.avatar,
+        coverPhoto: body.coverPhoto
       })
     );
 
-    return this.response({
-      instance: Created,
-      data: new UserResponseDTO(item),
-      message: 'User created successfully'
-    });
+    return this.response({ instance: Created, data: item, message: 'User created successfully' });
   }
 
-  @AutoBind()
-  async getById(req: ExpressRequest<AdminUserIdParamsDTO>): Promise<unknown> {
+  async getById(req: UserIdRequest): Promise<unknown> {
     const { userId } = req.params;
-    const item = await this.getUserUC.execute(new AdminGetUserQuery(userId));
-    return this.response({ data: new UserResponseDTO(item), message: 'Get user successfully' });
+    const item = await this.getUserUC.execute(new AdminGetUserInputPort(userId));
+    return this.response({ data: item, message: 'Get user successfully' });
   }
 
-  @AutoBind()
-  async update(req: ExpressRequest<AdminUserIdParamsDTO, object, AdminUpdateUserRequestBody>): Promise<unknown> {
+  async update(req: UpdateUserRequest): Promise<unknown> {
     const { userId } = req.params;
-    const dto = new AdminUpdateUserRequestDTO(req.body);
+    const body = req.body;
+
     const item = await this.updateUserUC.execute(
-      new AdminUpdateUserCommand({
+      new AdminUpdateUserInputPort({
         actorId: this.getUserId(req),
         userId,
-        name: dto.name,
-        email: dto.email,
-        password: dto.password,
-        birthday: dto.birthday,
-        roleId: dto.roleId,
-        status: dto.status,
-        bio: dto.bio,
-        location: dto.location,
-        website: dto.website,
-        username: dto.username,
-        avatar: dto.avatar,
-        coverPhoto: dto.coverPhoto
+        name: body.name,
+        email: body.email,
+        password: body.password,
+        birthday: body.birthday,
+        roleId: body.roleId,
+        status: body.status,
+        bio: body.bio,
+        location: body.location,
+        website: body.website,
+        username: body.username,
+        avatar: body.avatar,
+        coverPhoto: body.coverPhoto
       })
     );
 
-    return this.response({ data: new UserResponseDTO(item), message: 'User updated successfully' });
+    return this.response({ data: item, message: 'User updated successfully' });
   }
 
-  @AutoBind()
-  async remove(req: ExpressRequest<AdminUserIdParamsDTO>): Promise<unknown> {
+  async remove(req: UserIdRequest): Promise<unknown> {
     const { userId } = req.params;
-    await this.deleteUserUC.execute(new AdminDeleteUserCommand({ actorId: this.getUserId(req), userId }));
+    await this.deleteUserUC.execute(new AdminDeleteUserInputPort({ actorId: this.getUserId(req), userId }));
     return this.response({ message: 'User deleted successfully' });
   }
 }

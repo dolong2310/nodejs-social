@@ -4,10 +4,10 @@ import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/module
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
-  CreateNotificationProps,
+  type CreateNotificationProps,
   EnumNotificationType,
-  NotificationProps
-} from '@/modules/notification/domain/entities/notification.type';
+  type NotificationProps
+} from '@/modules/notification/domain/entities/notification.types';
 
 export class NotificationEntity extends Entity<NotificationProps> {
   static create(createProps: CreateNotificationProps) {

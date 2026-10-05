@@ -16,7 +16,7 @@ import {
  */
 export class ArgumentNotProvidedException extends ExceptionBase {
   readonly code = ARGUMENT_NOT_PROVIDED;
-  readonly statusCode = 400;
+  readonly type = 'invalid_argument';
 }
 
 /**
@@ -27,7 +27,7 @@ export class ArgumentNotProvidedException extends ExceptionBase {
  */
 export class ArgumentInvalidException extends ExceptionBase {
   readonly code = ARGUMENT_INVALID;
-  readonly statusCode = 400;
+  readonly type = 'invalid_argument';
 }
 
 /**
@@ -39,7 +39,7 @@ export class ArgumentInvalidException extends ExceptionBase {
  */
 export class ArgumentOutOfRangeException extends ExceptionBase {
   readonly code = ARGUMENT_OUT_OF_RANGE;
-  readonly statusCode = 400;
+  readonly type = 'invalid_argument';
 }
 
 /**
@@ -50,7 +50,7 @@ export class ArgumentOutOfRangeException extends ExceptionBase {
  */
 export class ConflictException extends ExceptionBase {
   readonly code = CONFLICT;
-  readonly statusCode = 409;
+  readonly type = 'conflict';
 }
 
 /**
@@ -61,7 +61,7 @@ export class ConflictException extends ExceptionBase {
  */
 export class NotFoundException extends ExceptionBase {
   readonly code = NOT_FOUND;
-  readonly statusCode = 404;
+  readonly type = 'not_found';
 }
 
 /**
@@ -72,5 +72,5 @@ export class NotFoundException extends ExceptionBase {
  */
 export class InternalServerErrorException extends ExceptionBase {
   readonly code = INTERNAL_SERVER_ERROR;
-  readonly statusCode = 500;
+  readonly type = 'internal';
 }

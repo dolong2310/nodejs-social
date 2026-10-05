@@ -1,11 +1,14 @@
-import {
+import type {
   ConversationMemberFullProps,
   EnumConversationMemberRole
-} from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { UseCase } from '@/modules/core/application/base.usecase';
+} from '@/modules/conversation/domain/entities/conversation-member.types';
+import type {
+  ConversationFullProps,
+  EnumConversationType
+} from '@/modules/conversation/domain/entities/conversation.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
-export class UpdateMemberRoleCommand {
+export class UpdateMemberRoleInputPort {
   userId: string;
   conversationId: string;
   targetUserId: string;
@@ -23,7 +26,7 @@ export class UpdateMemberRoleCommand {
   }
 }
 
-export class UpdateMemberRoleResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
+export class UpdateMemberRoleOutputPort implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -56,6 +59,6 @@ export class UpdateMemberRoleResult implements Omit<ConversationFullProps, 'user
   }
 }
 
-export abstract class UpdateMemberRolePort implements UseCase<UpdateMemberRoleCommand, UpdateMemberRoleResult> {
-  abstract execute(command: UpdateMemberRoleCommand): Promise<UpdateMemberRoleResult>;
+export abstract class UpdateMemberRolePort implements UseCase<UpdateMemberRoleInputPort, UpdateMemberRoleOutputPort> {
+  abstract execute(input: UpdateMemberRoleInputPort): Promise<UpdateMemberRoleOutputPort>;
 }

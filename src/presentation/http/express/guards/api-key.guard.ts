@@ -1,7 +1,7 @@
-import { BaseGuard } from '@/presentation/http/express/core/base.guard';
+import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import { UnauthorizedException } from '@/presentation/http/express/responses/error.response';
 import { extractApiKeyFromHeader } from '@/presentation/http/express/utils/token.util';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 export class ApiKeyGuard implements BaseGuard {

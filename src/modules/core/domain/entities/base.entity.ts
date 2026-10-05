@@ -1,4 +1,4 @@
-import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
+import type { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import {
   ArgumentInvalidException,
   ArgumentNotProvidedException,
@@ -152,6 +152,24 @@ export abstract class Entity<
    * This method is called every time before save this entity to the database
    */
   abstract validate(): void;
+
+  /**
+   * Applies a state change from a domain method of the subclass: merges the changes, moves updatedAt and
+   * re-checks invariants. On an invalid change nothing is applied and the validation error is thrown.
+   */
+  protected updateProps(changes: Partial<Props>, updatedAt = new Date()): void {
+    const previousProps = { ...this._props };
+    const previousUpdatedAt = this._updatedAt;
+    Object.assign(this._props as object, changes);
+    try {
+      this.updatedAt = updatedAt;
+      this.validate();
+    } catch (error) {
+      Object.assign(this._props as object, previousProps);
+      this._updatedAt = previousUpdatedAt;
+      throw error;
+    }
+  }
 
   private _validateProps(props: Props) {
     const MAX_PROPS = 32;

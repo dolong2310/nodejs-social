@@ -1,17 +1,15 @@
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { FriendshipEntity } from '@/modules/relationship/domain/entities/friendship.entity';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
-import {
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type {
   CountFriendshipsWithUserAmongOthersInput,
   ListFriendIdsByCursorInput
-} from '@/modules/relationship/domain/repositories/friendship.repository.type';
-import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
-import { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.model';
+} from '@/modules/relationship/domain/repositories/friendship.repository.types';
+import type { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
+import type { FriendshipModel } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.model';
 import type { Pool } from 'pg';
-
-const UNIQUE_VIOLATION = '23505';
 
 export class FriendshipRepository
   extends PostgresRepositoryBase<FriendshipEntity, FriendshipModel>
@@ -71,25 +69,21 @@ export class FriendshipRepository
   }
 
   async createFriendship(userIdA: string, userIdB: string): Promise<FriendshipEntity | null> {
-    try {
-      const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
-      const entity = FriendshipEntity.create({ userIdLow, userIdHigh });
-      const record = this.mapper.toPersistence(entity);
-      const result = await this.query<FriendshipModel>(
-        `
-          INSERT INTO friendships (id, user_id_low, user_id_high, created_at, updated_at)
-          VALUES ($1, $2, $3, $4, $5)
-          RETURNING *
-        `,
-        [record.id, record.user_id_low, record.user_id_high, record.created_at, record.updated_at]
-      );
-      return this.mapper.toDomain(result.rows[0] ?? record);
-    } catch (error) {
-      if ((error as { code?: string })?.code === UNIQUE_VIOLATION) {
-        return null;
-      }
-      throw error;
-    }
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(userIdA, userIdB);
+    const entity = FriendshipEntity.create({ userIdLow, userIdHigh });
+    const record = this.mapper.toPersistence(entity);
+    // ON CONFLICT instead of catching the unique violation: a failed statement would abort an open transaction.
+    const result = await this.query<FriendshipModel>(
+      `
+        INSERT INTO friendships (id, user_id_low, user_id_high, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT DO NOTHING
+        RETURNING *
+      `,
+      [record.id, record.user_id_low, record.user_id_high, record.created_at, record.updated_at]
+    );
+    const [inserted] = result.rows;
+    return inserted ? this.mapper.toDomain(inserted) : null;
   }
 
   async deleteFriendship(userIdA: string, userIdB: string): Promise<number> {

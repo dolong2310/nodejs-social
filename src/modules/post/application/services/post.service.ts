@@ -1,14 +1,14 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constant';
-import { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
-import {
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/post/application/constants/cache.constants';
+import type { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
+import type {
   GetBlockedPostIdsPayload,
   IsUserInteractedWithPostPayload,
   UpdatePostsViewsPayload
-} from '@/modules/post/application/services/post.service.type';
-import { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
-import { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.type';
+} from '@/modules/post/application/services/post.service.types';
+import type { PostQueryRepositoryPort } from '@/modules/post/domain/repositories/post.query.repository';
+import type { PostDetailOutput, PostDetailWithAuthorOutput } from '@/modules/post/domain/repositories/post.query.types';
 
 export interface PostServicePort {
   updatePostsViews<T extends PostDetailOutput | PostDetailWithAuthorOutput>(payload: UpdatePostsViewsPayload<T>): T[];
@@ -22,7 +22,7 @@ export class PostService implements PostServicePort {
   constructor(
     private readonly postQueryRepository: PostQueryRepositoryPort,
     private readonly postViewsQueue: PostViewsQueuePort,
-    private readonly cache: CacheStrategyPort,
+    private readonly cache: CacheManagerPort,
     private readonly logger: LoggerPort
   ) {
     this.log = this.logger.child({ module: 'posts-service' });
@@ -74,7 +74,7 @@ export class PostService implements PostServicePort {
     const authorIds = blockedAuthorIds.filter((id) => id !== userId).sort();
     if (authorIds.length === 0) return [];
     const key = CACHE_KEYS.blockedPostIds({ userId, blockedAuthorIds: authorIds });
-    const extraVisiblePostIds = await this.cache.get(
+    const extraVisiblePostIds = await this.cache.read(
       key,
       () => this.postQueryRepository.findPostIdsWhereUserInteractedWithAuthors({ userId, authorIds }),
       { ttlSeconds: CACHE_TTL.BLOCKED_INTERACTION_POST_IDS }

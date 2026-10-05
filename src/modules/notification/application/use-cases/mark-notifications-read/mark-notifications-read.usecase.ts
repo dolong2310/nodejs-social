@@ -1,8 +1,8 @@
 import {
-  MarkNotificationsReadCommand,
+  MarkNotificationsReadInputPort,
   MarkNotificationsReadPort
 } from '@/modules/notification/application/use-cases/mark-notifications-read/mark-notifications-read.port';
-import { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
+import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 
 /**
  * Called when the user has read one or more notifications.
@@ -14,8 +14,8 @@ export class MarkNotificationsReadUseCase extends MarkNotificationsReadPort {
     super();
   }
 
-  async execute(command: MarkNotificationsReadCommand): Promise<void> {
-    const { viewerId, ids } = new MarkNotificationsReadCommand(command);
+  async execute(input: MarkNotificationsReadInputPort): Promise<void> {
+    const { viewerId, ids } = new MarkNotificationsReadInputPort(input);
 
     if (ids && ids.length > 0) {
       await this.notificationRepository.updateReadByIds({ recipientId: viewerId, ids });

@@ -1,11 +1,15 @@
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constant';
-import { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.type';
-import { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.type';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { BaseGuard } from '@/presentation/http/express/core/base.guard';
+import {
+  ExpiredTokenException,
+  InvalidTokenException
+} from '@/modules/authentication/application/exceptions/auth.exception';
+import type { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/ports/token.port';
+import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constants';
+import type { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
+import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
+import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   NoTokenProvidedException,
   TokenHasExpiredException
@@ -14,10 +18,9 @@ import { TokenInvalidException } from '@/presentation/http/express/exceptions/to
 import { ForbiddenException, UnauthorizedException } from '@/presentation/http/express/responses/error.response';
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { resolveUrlPath } from '@/presentation/http/express/utils/url.util';
-import { Request } from 'express';
-import jwt from 'jsonwebtoken';
+import type { Request } from 'express';
 import { keyBy, omit } from 'lodash-es';
-import { Dictionary, Prettify } from 'ts-essentials';
+import type { Dictionary, Prettify } from 'ts-essentials';
 
 type CachedRole = Prettify<RoleWithPermissions & { permissionsMap: Dictionary<PermissionFullProps> }>;
 
@@ -25,7 +28,7 @@ export class AuthGuard implements BaseGuard {
   constructor(
     private readonly roleQueryRepository: RoleQueryRepositoryPort,
     private readonly tokenService: TokenServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {}
 
   async canActivate(request: Request): Promise<boolean> {
@@ -52,11 +55,11 @@ export class AuthGuard implements BaseGuard {
 
       return decoded;
     } catch (error) {
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw TokenInvalidException;
-      }
-      if (error instanceof jwt.TokenExpiredError) {
+      if (error instanceof ExpiredTokenException) {
         throw TokenHasExpiredException;
+      }
+      if (error instanceof InvalidTokenException) {
+        throw TokenInvalidException;
       }
       throw error;
     }
@@ -72,7 +75,7 @@ export class AuthGuard implements BaseGuard {
     });
     const roleId = decoded.roleId;
 
-    const cachedRole = await this.cache.get<CachedRole>(
+    const cachedRole = await this.cache.read<CachedRole>(
       CACHE_KEYS.role(roleId),
       async () => {
         const rolePermissions = await this.roleQueryRepository.findRoleWithPermissionsById(roleId);

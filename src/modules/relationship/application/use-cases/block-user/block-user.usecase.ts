@@ -1,18 +1,19 @@
+import type { UnitOfWorkPort } from '@/modules/core/application/ports/unit-of-work.port';
 import {
   BlockAlreadyExistsException,
   CannotBlockYourselfException
 } from '@/modules/relationship/application/exceptions/block.exception';
-import { BlockServicePort } from '@/modules/relationship/application/services/block.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { BlockServicePort } from '@/modules/relationship/application/services/block.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  BlockUserCommand,
+  type BlockUserInputPort,
   BlockUserPort
 } from '@/modules/relationship/application/use-cases/block-user/block-user.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class BlockUserUseCase extends BlockUserPort {
   constructor(
@@ -21,12 +22,14 @@ export class BlockUserUseCase extends BlockUserPort {
     private readonly userRepository: UserRepositoryPort,
     private readonly friendshipRepository: FriendshipRepositoryPort,
     private readonly friendRequestRepository: FriendRequestRepositoryPort,
-    private readonly friendService: FriendServicePort
+    private readonly friendService: FriendServicePort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {
     super();
   }
 
-  async execute({ blockerUserId, blockedUserId }: BlockUserCommand): Promise<void> {
+  async execute(input: BlockUserInputPort): Promise<void> {
+    const { blockerUserId, blockedUserId } = input;
     if (blockerUserId === blockedUserId) {
       throw new CannotBlockYourselfException();
     }
@@ -40,13 +43,16 @@ export class BlockUserUseCase extends BlockUserPort {
       throw new BlockAlreadyExistsException();
     }
 
-    await this.friendshipRepository.deleteFriendship(blockerUserId, blockedUserId);
-    await this.friendRequestRepository.deleteAllRequestsBetweenUsers({
-      fromUserId: blockerUserId,
-      toUserId: blockedUserId
+    // Remove the relationship and create the block atomically: if the block fails (e.g. a concurrent duplicate),
+    // the friendship and requests are kept.
+    await this.unitOfWork.run(async () => {
+      await this.friendshipRepository.deleteFriendship(blockerUserId, blockedUserId);
+      await this.friendRequestRepository.deleteAllRequestsBetweenUsers({
+        fromUserId: blockerUserId,
+        toUserId: blockedUserId
+      });
+      await this.blockRepository.createBlock(blockerUserId, blockedUserId);
     });
-
-    await this.blockRepository.createBlock(blockerUserId, blockedUserId);
 
     await Promise.all([
       this.friendService.invalidateFriendCache(blockerUserId),

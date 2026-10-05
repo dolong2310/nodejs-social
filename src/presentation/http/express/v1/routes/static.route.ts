@@ -1,9 +1,16 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { STATIC_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/static.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IMediaController } from '@/presentation/http/express/v1/controllers/media.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  FilenameParamsSchema,
+  VideoStreamIdParamsSchema,
+  VideoStreamSegmentParamsSchema
+} from '@/presentation/http/express/v1/schemas/media/media.request.schema';
 
 export class StaticRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -21,48 +28,48 @@ export class StaticRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/images/:filename',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/images/:filename',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_IMAGE)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: FilenameParamsSchema })],
         controller: this.mediaController.getStaticImage
-      })
-    );
-    // this.router.get('/videos/:filename', getStaticVideo);
-    this.router.get(
-      '/videos-stream/:filename',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      // this.router.get('/videos/:filename', getStaticVideo);
+      {
+        path: '/videos-stream/:filename',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_VIDEO_STREAM)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: FilenameParamsSchema })],
         controller: this.mediaController.getStaticVideoStream
-      })
-    );
-    this.router.get(
-      '/videos-stream/:id/master.m3u8',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/videos-stream/:id/master.m3u8',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_VIDEO_STREAM_MASTER)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: VideoStreamIdParamsSchema })],
         controller: this.mediaController.getStaticVideoStreamMaster
-      })
-    );
-    this.router.get(
-      '/videos-stream/:id/:version/:segment',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/videos-stream/:id/:version/:segment',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(STATIC_THROTTLE_CONFIG.GET_VIDEO_STREAM_SEGMENT)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: VideoStreamSegmentParamsSchema })],
         controller: this.mediaController.getStaticVideoStreamSegment
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

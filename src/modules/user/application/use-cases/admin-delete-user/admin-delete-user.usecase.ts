@@ -1,27 +1,27 @@
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
 import {
   CannotMutateAdminUserException,
   UserNotFoundException
 } from '@/modules/user/application/exceptions/user.exception';
 import {
-  AdminDeleteUserCommand,
+  type AdminDeleteUserInputPort,
   AdminDeleteUserPort
 } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 export class AdminDeleteUserUseCase extends AdminDeleteUserPort {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly roleService: RoleServicePort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
 
-  async execute(command: AdminDeleteUserCommand): Promise<void> {
-    const current = await this.userRepository.findUserById(command.userId);
+  async execute(input: AdminDeleteUserInputPort): Promise<void> {
+    const current = await this.userRepository.findUserById(input.userId);
     if (!current) {
       throw new UserNotFoundException();
     }
@@ -32,12 +32,12 @@ export class AdminDeleteUserUseCase extends AdminDeleteUserPort {
       throw new CannotMutateAdminUserException();
     }
 
-    const deleted = await this.userRepository.deleteById(command.userId, { actorId: command.actorId });
+    const deleted = await this.userRepository.deleteById(input.userId, { actorId: input.actorId });
     if (!deleted) {
       throw new UserNotFoundException();
     }
 
-    await this.invalidateUserCache(command.userId, currentUser.username);
+    await this.invalidateUserCache(input.userId, currentUser.username);
   }
 
   private async invalidateUserCache(userId: string, username?: string): Promise<void> {

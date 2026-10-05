@@ -1,16 +1,16 @@
-import { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
-import { RegisterCommand } from '@/modules/authentication/application/use-cases/register/register.port';
+import type { OtpServicePort } from '@/modules/authentication/application/services/otp.service';
+import { RegisterInputPort } from '@/modules/authentication/application/use-cases/register/register.port';
 import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
-import { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
-import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.type';
-import { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import type { OtpEntity } from '@/modules/authentication/domain/entities/otp.entity';
+import { EnumOtpType } from '@/modules/authentication/domain/entities/otp.types';
+import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { entityDouble, idDouble } from '@test/support/doubles/entity.double';
-import { mockPort } from '@test/support/mocks/port.mock';
+import { mockPort, mockUnitOfWork } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
 
 const createdUser = makeUserFullProps({ password: 'hashed-password', username: 'user_generated' });
@@ -34,10 +34,17 @@ describe('RegisterUseCase', () => {
     const roleService = mockPort<RoleServicePort>({
       getUserRoleId: vi.fn().mockResolvedValue('role_user')
     });
-    const useCase = new RegisterUseCase(userRepository, hashingService, otpRepository, otpService, roleService);
+    const useCase = new RegisterUseCase(
+      userRepository,
+      hashingService,
+      otpRepository,
+      otpService,
+      roleService,
+      mockUnitOfWork()
+    );
 
     const result = await useCase.execute(
-      new RegisterCommand({
+      new RegisterInputPort({
         name: 'Long Do',
         email: ' Long@Example.com ',
         password: 'password',

@@ -124,6 +124,52 @@ describe('authentication and user HTTP e2e', () => {
     await login(fixture, 'change@example.com', changedPassword);
   });
 
+  it('validates user routes with valibot schemas before reaching the controller', async () => {
+    const fixture = createAuthUserE2eApp();
+    await register(fixture, { email: 'validate@example.com', name: 'Validate User' });
+    const loginRes = await login(fixture, 'validate@example.com', password);
+    const accessToken = loginRes.body.data.accessToken as string;
+
+    const unknownFieldRes = await request(fixture.app)
+      .patch('/api/v1/users/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .set('Idempotency-Key', 'update-me-unknown-field')
+      .send({ name: 'Valid', roleId: 'admin' })
+      .expect(422);
+    expect(unknownFieldRes.body).toEqual({
+      message: 'Unprocessable Entity',
+      errors: {
+        roleId: { type: 'field', value: 'admin', msg: 'Field is not allowed', path: 'roleId', location: 'body' }
+      }
+    });
+
+    await request(fixture.app)
+      .patch('/api/v1/users/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .set('Idempotency-Key', 'update-me-invalid-birthday')
+      .send({ birthday: '01/01/2000' })
+      .expect(422);
+
+    const trimmedRes = await request(fixture.app)
+      .patch('/api/v1/users/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .set('Idempotency-Key', 'update-me-trim')
+      .send({ name: '  Trimmed Name  ', username: '  Trimmed_User ' })
+      .expect(200);
+    expect(trimmedRes.body.data).toMatchObject({ name: 'Trimmed Name', username: 'trimmed_user' });
+    expect(trimmedRes.body.data).not.toHaveProperty('password');
+    expect(trimmedRes.body.data).not.toHaveProperty('totpSecret');
+
+    await request(fixture.app).get('/api/v1/users/1').expect(422);
+
+    await request(fixture.app)
+      .put('/api/v1/users/change-password')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .set('Idempotency-Key', 'change-password-mismatch')
+      .send({ password: changedPassword, confirmPassword: 'Mismatch1!' })
+      .expect(422);
+  });
+
   it('enables and disables 2FA through authenticated routes', async () => {
     const fixture = createAuthUserE2eApp();
     await register(fixture, { email: '2fa@example.com', name: 'Two Factor User' });
@@ -229,6 +275,20 @@ describe('authentication and user HTTP e2e', () => {
 
     await request(fixture.app).get('/api/v1/users/me').expect(403);
     await request(fixture.app).get('/api/v1/admin/users?page=1&limit=10').expect(403);
+  });
+
+  it('returns the API error envelope for an unknown route', async () => {
+    const fixture = createAuthUserE2eApp();
+
+    await request(fixture.app)
+      .get('/api/v1/unknown')
+      .expect(404, {
+        message: 'Not Found',
+        errors: {
+          method: 'GET',
+          path: '/api/v1/unknown'
+        }
+      });
   });
 });
 

@@ -1,12 +1,12 @@
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { mapWithConcurrency } from '@/modules/common/utils/concurrency.util';
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import {
-  UploadImageCommand,
+  type UploadImageInputPort,
   UploadImagePort,
-  UploadImageResult
+  UploadImageOutputPort
 } from '@/modules/media/application/use-cases/upload-image/upload-image.port';
 import path from 'path';
 
@@ -19,7 +19,8 @@ export class UploadImageUseCase extends UploadImagePort {
     super();
   }
 
-  async execute({ files }: UploadImageCommand): Promise<UploadImageResult[]> {
+  async execute(input: UploadImageInputPort): Promise<UploadImageOutputPort[]> {
+    const { files } = input;
     return mapWithConcurrency(files, 2, async (file) => {
       const newName = file.filename;
       const outputPath = path.resolve('uploads/images', `${newName}.jpg`);
@@ -35,7 +36,7 @@ export class UploadImageUseCase extends UploadImagePort {
       await this.fileStorage.delete(file.filepath);
       await this.fileStorage.delete(outputPath);
 
-      return new UploadImageResult({
+      return new UploadImageOutputPort({
         url: result.url,
         type: EnumMediaType.IMAGE
       });

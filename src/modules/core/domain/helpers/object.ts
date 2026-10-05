@@ -1,4 +1,4 @@
-import { Entity } from '@/modules/core/domain/entities/base.entity';
+import type { Entity } from '@/modules/core/domain/entities/base.entity';
 import { ValueObject } from '@/modules/core/domain/value-objects/value-object.base';
 
 function isEntity(obj: unknown): obj is Entity<unknown> {

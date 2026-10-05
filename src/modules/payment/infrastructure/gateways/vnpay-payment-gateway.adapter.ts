@@ -1,0 +1,132 @@
+import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
+import { PaymentNotificationVerificationError } from '@/modules/payment/application/exceptions/payment-notification.exception';
+import type {
+  PaymentGatewayPort,
+  ProviderOrderReference
+} from '@/modules/payment/application/ports/payment-gateway.port';
+import type { PaymentCheckoutProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import {
+  HashAlgorithm,
+  ProductCode,
+  VNPay,
+  VnpLocale,
+  dateFormat,
+  type ReturnQueryFromVNPay
+} from '@longdoo/node-payment-gateway';
+
+export interface VnpayPaymentGatewayAdapterConfig {
+  tmnCode: string;
+  secureSecret: string;
+  vnpayHost: string;
+  paymentPublicBaseUrl: string;
+}
+
+const VNPAY_CALLBACK_RETURN_PATH = '/api/v1/payments/callbacks/vnpay/return';
+const VNPAY_FINAL_FAILURE_CODES = new Set(['09', '10', '11', '12', '13', '51', '65', '75', '79']);
+// VNPay requires vnp_ExpireDate on every checkout.
+const VNPAY_CHECKOUT_TTL_MS = 15 * 60 * 1000;
+
+export class VnpayPaymentGatewayAdapter implements PaymentGatewayPort {
+  private readonly client: VNPay;
+  private readonly returnUrl: string;
+
+  constructor(private readonly config: VnpayPaymentGatewayAdapterConfig) {
+    this.client = new VNPay({
+      tmnCode: config.tmnCode,
+      secureSecret: config.secureSecret,
+      vnpayHost: config.vnpayHost,
+      testMode: true,
+      enableLog: false,
+      hashAlgorithm: HashAlgorithm.SHA512
+    });
+    this.returnUrl = new URL(VNPAY_CALLBACK_RETURN_PATH, config.paymentPublicBaseUrl).toString();
+  }
+
+  createOrderReference(now: Date): ProviderOrderReference {
+    return {
+      providerOrderId: generatePrefixId('po'),
+      expiresAt: new Date(now.getTime() + VNPAY_CHECKOUT_TTL_MS)
+    };
+  }
+
+  async createCheckout(payment: PaymentCheckoutProps, clientIp: string): Promise<string> {
+    if (payment.provider !== 'vnpay') throw new Error('VNPay adapter cannot create a checkout for another provider');
+    if (!payment.expiresAt) throw new Error('VNPay payment expiry is required');
+
+    return this.client.buildPaymentUrl({
+      vnp_Amount: payment.amountVnd,
+      vnp_IpAddr: clientIp,
+      vnp_TxnRef: payment.providerOrderId,
+      vnp_OrderInfo: `${payment.description} ${payment.providerOrderId}`,
+      vnp_OrderType: ProductCode.Other,
+      vnp_ReturnUrl: this.returnUrl,
+      vnp_Locale: VnpLocale.VN,
+      vnp_CreateDate: dateFormat(payment.createdAt),
+      vnp_ExpireDate: dateFormat(payment.expiresAt)
+    });
+  }
+
+  verifyNotification(payload: unknown): VerifiedNotification {
+    const query = this.toProviderQuery(payload);
+    let verified: ReturnType<typeof this.client.verifyIpnCall>;
+    try {
+      verified = this.client.verifyIpnCall(query);
+    } catch {
+      throw new PaymentNotificationVerificationError('invalid_payload');
+    }
+
+    if (!verified.isVerified) throw new PaymentNotificationVerificationError('invalid_signature');
+    if (!verified.vnp_TmnCode) throw new PaymentNotificationVerificationError('invalid_payload');
+    if (verified.vnp_TmnCode !== this.config.tmnCode) {
+      throw new PaymentNotificationVerificationError('merchant_mismatch');
+    }
+
+    const providerOrderId = this.requiredString(verified.vnp_TxnRef);
+    const transactionNumber = this.requiredString(verified.vnp_TransactionNo);
+    const responseCode = this.requiredString(verified.vnp_ResponseCode);
+    const transactionStatus = this.requiredString(verified.vnp_TransactionStatus);
+    const amountVnd = Number(verified.vnp_Amount);
+    if (!Number.isSafeInteger(amountVnd) || amountVnd <= 0) {
+      throw new PaymentNotificationVerificationError('invalid_payload');
+    }
+
+    return {
+      provider: 'vnpay',
+      providerOrderId,
+      amountVnd,
+      providerTransactionId: transactionNumber,
+      resultCode: `${responseCode}:${transactionStatus}`,
+      outcome: this.getOutcome(responseCode, transactionStatus)
+    };
+  }
+
+  private toProviderQuery(payload: unknown): ReturnQueryFromVNPay {
+    if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
+      throw new PaymentNotificationVerificationError('invalid_payload');
+    }
+
+    const query: Record<string, string> = {};
+    for (const [key, value] of Object.entries(payload)) {
+      if (!key.startsWith('vnp_')) continue;
+      if (typeof value !== 'string' && typeof value !== 'number') {
+        throw new PaymentNotificationVerificationError('invalid_payload');
+      }
+      query[key] = String(value);
+    }
+    return query as unknown as ReturnQueryFromVNPay;
+  }
+
+  private requiredString(value: string | number | undefined): string {
+    const normalized = value === undefined ? '' : String(value).trim();
+    if (!normalized) throw new PaymentNotificationVerificationError('invalid_payload');
+    return normalized;
+  }
+
+  private getOutcome(responseCode: string, transactionStatus: string): VerifiedNotification['outcome'] {
+    if (responseCode === '00' && transactionStatus === '00') return 'succeeded';
+    if (transactionStatus === '01') return 'pending';
+    if (responseCode === '24') return 'cancelled';
+    if (transactionStatus === '02' || VNPAY_FINAL_FAILURE_CODES.has(responseCode)) return 'failed';
+    return 'pending';
+  }
+}

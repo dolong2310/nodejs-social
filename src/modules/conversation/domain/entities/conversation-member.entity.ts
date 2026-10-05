@@ -1,8 +1,8 @@
 import {
-  ConversationMemberProps,
-  CreateConversationMemberProps,
+  type ConversationMemberProps,
+  type CreateConversationMemberProps,
   EnumConversationMemberRole
-} from '@/modules/conversation/domain/entities/conversation-member.type';
+} from '@/modules/conversation/domain/entities/conversation-member.types';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/modules/core/domain/exceptions/exceptions';

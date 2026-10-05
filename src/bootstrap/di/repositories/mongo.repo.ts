@@ -1,4 +1,4 @@
-import { ContainerRepositories } from '@/bootstrap/di/repositories';
+import type { ContainerRepositories } from '@/bootstrap/di/repositories';
 import type { MongoDatabasePort } from '@/infrastructure/persistence/mongodb/database';
 import { OtpRepository } from '@/modules/authentication/infrastructure/persistence/mongo/otp.impl.repository';
 import { OtpMapper } from '@/modules/authentication/infrastructure/persistence/mongo/otp.mapper';
@@ -16,18 +16,20 @@ import { ConversationMemberRepository } from '@/modules/conversation/infrastruct
 import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
 import { ConversationRepository } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.impl.repository';
 import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { MongoUnitOfWork } from '@/modules/core/infrastructure/unit-of-work/mongo.unit-of-work';
 import { VideoStatusRepository } from '@/modules/media/infrastructure/persistence/mongo/video-status.impl.repository';
 import { VideoStatusMapper } from '@/modules/media/infrastructure/persistence/mongo/video-status.mapper';
 import { NotificationRepository } from '@/modules/notification/infrastructure/persistence/mongo/notification.impl.repository';
 import { NotificationMapper } from '@/modules/notification/infrastructure/persistence/mongo/notification.mapper';
+import { PaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
+import { PaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
 import { BookmarkRepository } from '@/modules/post/infrastructure/persistence/mongo/bookmark.impl.repository';
 import { BookmarkMapper } from '@/modules/post/infrastructure/persistence/mongo/bookmark.mapper';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper';
 import { LikeRepository } from '@/modules/post/infrastructure/persistence/mongo/like.impl.repository';
 import { LikeMapper } from '@/modules/post/infrastructure/persistence/mongo/like.mapper';
-import { PostCommandRepository } from '@/modules/post/infrastructure/persistence/mongo/post-command.impl.repository';
 import { PostQueryRepository } from '@/modules/post/infrastructure/persistence/mongo/post-query.impl.repository';
 import { PostRepository } from '@/modules/post/infrastructure/persistence/mongo/post.impl.repository';
 import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
@@ -67,6 +69,7 @@ export function createMongoContainerRepositories(
   const otpMapper = new OtpMapper();
   const roleMapper = new RoleMapper();
   const permissionMapper = new PermissionMapper();
+  const paymentMapper = new PaymentMapper();
 
   const repositories = {
     userRepository: new UserRepository(db, dbClient, userMapper, logger),
@@ -91,7 +94,8 @@ export function createMongoContainerRepositories(
     notificationRepository: new NotificationRepository(db, dbClient, notificationMapper, logger),
     otpRepository: new OtpRepository(db, dbClient, otpMapper, logger),
     roleRepository: new RoleRepository(db, dbClient, roleMapper, logger),
-    permissionRepository: new PermissionRepository(db, dbClient, permissionMapper, logger)
+    permissionRepository: new PermissionRepository(db, dbClient, permissionMapper, logger),
+    paymentRepository: new PaymentRepository(db, dbClient, paymentMapper, logger)
   };
 
   const queryRepositories = {
@@ -101,13 +105,9 @@ export function createMongoContainerRepositories(
     roleQueryRepository: new RoleQueryRepository(readDb, readDbClient, roleMapper)
   };
 
-  const commandRepositories = {
-    postCommandRepository: new PostCommandRepository(db, dbClient, postMapper)
-  };
-
   return {
     ...repositories,
     ...queryRepositories,
-    ...commandRepositories
+    unitOfWork: new MongoUnitOfWork(dbClient)
   };
 }

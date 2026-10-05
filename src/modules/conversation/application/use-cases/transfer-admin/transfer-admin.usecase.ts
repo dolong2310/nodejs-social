@@ -3,15 +3,15 @@ import {
   ConversationNotMemberException,
   ConversationRoleForbiddenException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  TransferAdminCommand,
+  type TransferAdminInputPort,
   TransferAdminPort,
-  TransferAdminResult
+  type TransferAdminOutputPort
 } from '@/modules/conversation/application/use-cases/transfer-admin/transfer-admin.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
 
 /**
@@ -29,7 +29,8 @@ export class TransferAdminUseCase extends TransferAdminPort {
     super();
   }
 
-  async execute({ userId, newAdminUserId, conversationId }: TransferAdminCommand): Promise<TransferAdminResult> {
+  async execute(input: TransferAdminInputPort): Promise<TransferAdminOutputPort> {
+    const { userId, newAdminUserId, conversationId } = input;
     // Check whether the conversation is a group.
     const convEntity = await this.conversationService.loadConversation(conversationId);
     const conv = convEntity.toObject();

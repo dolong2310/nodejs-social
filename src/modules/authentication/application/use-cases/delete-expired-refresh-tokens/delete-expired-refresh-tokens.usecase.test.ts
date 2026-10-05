@@ -1,6 +1,6 @@
-import { DeleteExpiredRefreshTokensCommand } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
+import { DeleteExpiredRefreshTokensInputPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { DeleteExpiredRefreshTokensUseCase } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.usecase';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -12,7 +12,7 @@ describe('DeleteExpiredRefreshTokensUseCase', () => {
     });
     const useCase = new DeleteExpiredRefreshTokensUseCase(refreshTokenRepository);
 
-    const result = await useCase.execute(new DeleteExpiredRefreshTokensCommand({ now }));
+    const result = await useCase.execute(new DeleteExpiredRefreshTokensInputPort({ now }));
 
     expect(refreshTokenRepository.deleteExpiredRefreshTokens).toHaveBeenCalledWith(now);
     expect(result.deletedCount).toBe(2);

@@ -1,4 +1,4 @@
-import { Job, Worker, WorkerOptions } from 'bullmq';
+import { type Job, Worker, type WorkerOptions } from 'bullmq';
 
 export abstract class BaseWorker<TData, TResult, TName extends string = string> {
   protected worker: Worker<TData, TResult, TName>;

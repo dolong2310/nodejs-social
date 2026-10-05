@@ -1,8 +1,8 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import {
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type {
   CountOutgoingRequestsCreatedOnUtcDayInput,
   CreatePendingRequestInput,
   DeleteAllRequestsBetweenUsersInput,
@@ -10,9 +10,9 @@ import {
   FindPendingRequestByUserPairInput,
   ListIncomingForUserInput,
   ListOutgoingForUserInput
-} from '@/modules/relationship/domain/repositories/friend-request.repository.type';
-import { FriendRequestMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.mapper';
-import { FriendRequestModel } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.model';
+} from '@/modules/relationship/domain/repositories/friend-request.repository.types';
+import type { FriendRequestMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.mapper';
+import type { FriendRequestModel } from '@/modules/relationship/infrastructure/persistence/postgres/friend-request.model';
 import type { Pool } from 'pg';
 
 const UNIQUE_VIOLATION = '23505';

@@ -57,11 +57,11 @@ describe.concurrent('Presentation boundaries', () => {
     );
   });
 
-  // 4. request/response DTOs must clearly express data direction.
-  it('http dtos use request or response suffixes', () => {
+  // 4. valibot request/response schemas must clearly express data direction.
+  it('http schemas use request, response, or schema suffixes', () => {
     expectFilesMatch(
-      presentationFiles.filter((file) => file.includes('/dtos/')),
-      (file) => /(\.request\.dto|\.response\.dto)\.ts$/.test(file)
+      presentationFiles.filter((file) => file.includes('/schemas/')),
+      (file) => /(\.request\.schema|\.response\.schema|\.schema)\.ts$/.test(file)
     );
   });
 });

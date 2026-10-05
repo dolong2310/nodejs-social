@@ -1,8 +1,8 @@
-import { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
-import { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.type';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { PermissionListItem } from '@/modules/authorization/application/use-cases/list-permissions/list-permissions.port';
+import type { CreatePermissionProps, EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
-export class CreatePermissionCommand implements CreatePermissionProps {
+export class CreatePermissionInputPort implements CreatePermissionProps {
   name: string;
   description: string;
   path: string;
@@ -17,6 +17,6 @@ export class CreatePermissionCommand implements CreatePermissionProps {
   }
 }
 
-export abstract class CreatePermissionPort implements UseCase<CreatePermissionCommand, PermissionListItem> {
-  abstract execute(command: CreatePermissionCommand): Promise<PermissionListItem>;
+export abstract class CreatePermissionPort implements UseCase<CreatePermissionInputPort, PermissionListItem> {
+  abstract execute(input: CreatePermissionInputPort): Promise<PermissionListItem>;
 }

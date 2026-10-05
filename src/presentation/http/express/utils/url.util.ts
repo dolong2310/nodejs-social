@@ -1,4 +1,4 @@
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { ParamsDictionary } from 'express-serve-static-core';
 
 /**
  * Normalize the logical path (pattern + mount) so it matches `METHOD-path` permissions, e.g. auth guard checks.

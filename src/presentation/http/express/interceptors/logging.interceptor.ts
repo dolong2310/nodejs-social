@@ -1,9 +1,10 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
-import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
+import type { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { HttpException } from '@/presentation/http/express/responses/error.response';
-import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
+import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
 import type { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import { httpStatusOf } from '@/presentation/http/express/utils/exception-http-status.util';
 import { performance } from 'node:perf_hooks';
 
 export class LoggingInterceptor implements BaseInterceptor {
@@ -59,7 +60,7 @@ export class LoggingInterceptor implements BaseInterceptor {
 
   private getErrorStatusCode(error: unknown): number {
     if (error instanceof ExceptionBase) {
-      return error.statusCode;
+      return httpStatusOf(error);
     }
 
     if (error instanceof HttpException) {

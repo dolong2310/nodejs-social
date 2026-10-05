@@ -1,9 +1,15 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IOAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
+import { OAUTH_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/oauth.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IOAuthController } from '@/presentation/http/express/v1/controllers/oauth.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  GoogleAuthUrlQuerySchema,
+  GoogleLoginQuerySchema
+} from '@/presentation/http/express/v1/schemas/oauth/oauth.request.schema';
 
 export class OAuthRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -21,27 +27,29 @@ export class OAuthRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/google/url',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/google/url',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(OAUTH_THROTTLE_CONFIG.GET_GOOGLE_AUTH_URL)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ query: GoogleAuthUrlQuerySchema })],
         controller: this.oauthController.getGoogleAuthUrl
-      })
-    );
-    this.router.get(
-      '/google',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/google',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(OAUTH_THROTTLE_CONFIG.GOOGLE_LOGIN)],
         guards: [],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ query: GoogleLoginQuerySchema })],
         controller: this.oauthController.googleLogin
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

@@ -1,6 +1,6 @@
 import logger from '@/infrastructure/logger/create-logger';
 import type { DatabasePort } from '@/infrastructure/persistence/database.port';
-import { Db, MongoClient } from 'mongodb';
+import { type Db, MongoClient } from 'mongodb';
 
 const log = logger.child({ module: 'database-service' });
 

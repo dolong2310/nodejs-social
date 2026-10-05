@@ -1,9 +1,9 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
 import { BlockEntity } from '@/modules/relationship/domain/entities/block.entity';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { BlockMapper } from '@/modules/relationship/infrastructure/persistence/postgres/block.mapper';
-import { BlockModel } from '@/modules/relationship/infrastructure/persistence/postgres/block.model';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { BlockMapper } from '@/modules/relationship/infrastructure/persistence/postgres/block.mapper';
+import type { BlockModel } from '@/modules/relationship/infrastructure/persistence/postgres/block.model';
 import type { Pool } from 'pg';
 
 const UNIQUE_VIOLATION = '23505';

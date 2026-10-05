@@ -1,21 +1,21 @@
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
 import {
   AlreadyFriendsException,
   CannotSendFriendRequestToYourselfException,
   FriendActionBlockedException,
   FriendRequestDailyLimitExceededException
 } from '@/modules/relationship/application/exceptions/friend.exception';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 import {
-  SendFriendRequestCommand,
+  type SendFriendRequestInputPort,
   SendFriendRequestPort,
-  SendFriendRequestResult
+  SendFriendRequestOutputPort
 } from '@/modules/relationship/application/use-cases/send-friend-request/send-friend-request.port';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/repositories/friendship.repository';
 import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 
 /**
  * Send a friend request.
@@ -39,7 +39,8 @@ export class SendFriendRequestUseCase extends SendFriendRequestPort {
     super();
   }
 
-  async execute({ userId, username }: SendFriendRequestCommand): Promise<SendFriendRequestResult> {
+  async execute(input: SendFriendRequestInputPort): Promise<SendFriendRequestOutputPort> {
+    const { userId, username } = input;
     const userEntity = await this.userRepository.findUserByUsername(username);
     if (!userEntity) {
       throw new UserNotFoundException();
@@ -91,7 +92,7 @@ export class SendFriendRequestUseCase extends SendFriendRequestPort {
     // Send "friend request" notification to the receiver.
     await this.notificationsService.recordFriendRequest({ recipientUserId: toUserId, fromUserId: userId });
 
-    return new SendFriendRequestResult(friendRequestEntity.toObject());
+    return new SendFriendRequestOutputPort(friendRequestEntity.toObject());
   }
 
   private _utcDayRange(now: Date): { start: Date; endExclusive: Date } {

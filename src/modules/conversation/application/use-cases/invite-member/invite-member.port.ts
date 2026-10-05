@@ -1,8 +1,11 @@
-import { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { ConversationFullProps, EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { UseCase } from '@/modules/core/application/base.usecase';
+import type { ConversationMemberFullProps } from '@/modules/conversation/domain/entities/conversation-member.types';
+import type {
+  ConversationFullProps,
+  EnumConversationType
+} from '@/modules/conversation/domain/entities/conversation.types';
+import type { UseCase } from '@/modules/core/application/base.usecase';
 
-export class InviteMemberCommand {
+export class InviteMemberInputPort {
   userId: string;
   inviteeUserId: string;
   conversationId: string;
@@ -13,7 +16,7 @@ export class InviteMemberCommand {
   }
 }
 
-export class InviteMemberResult implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
+export class InviteMemberOutputPort implements Omit<ConversationFullProps, 'userIdLow' | 'userIdHigh'> {
   id: string;
   type: EnumConversationType;
   createdBy: string;
@@ -46,6 +49,6 @@ export class InviteMemberResult implements Omit<ConversationFullProps, 'userIdLo
   }
 }
 
-export abstract class InviteMemberPort implements UseCase<InviteMemberCommand, InviteMemberResult> {
-  abstract execute(command: InviteMemberCommand): Promise<InviteMemberResult>;
+export abstract class InviteMemberPort implements UseCase<InviteMemberInputPort, InviteMemberOutputPort> {
+  abstract execute(input: InviteMemberInputPort): Promise<InviteMemberOutputPort>;
 }

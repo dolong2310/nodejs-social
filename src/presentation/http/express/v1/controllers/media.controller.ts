@@ -1,23 +1,23 @@
-import { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
-import { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
-import { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
-import {
+import type { FileStoragePort } from '@/modules/media/application/ports/file-storage.port';
+import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
+import type { GetStaticVideoStreamPort } from '@/modules/media/application/use-cases/get-static-video-stream/get-static-video-stream.port';
+import type {
   GetVideoStatusPort,
-  GetVideoStatusResult
+  GetVideoStatusOutputPort
 } from '@/modules/media/application/use-cases/get-video-status/get-video-status.port';
-import {
+import type {
   UploadImagePort,
-  UploadImageResult
+  UploadImageOutputPort
 } from '@/modules/media/application/use-cases/upload-image/upload-image.port';
-import {
+import type {
   UploadVideoStreamPort,
-  UploadVideoStreamResult
+  UploadVideoStreamOutputPort
 } from '@/modules/media/application/use-cases/upload-video-stream/upload-video-stream.port';
-import {
+import type {
   UploadVideoPort,
-  UploadVideoResult
+  UploadVideoOutputPort
 } from '@/modules/media/application/use-cases/upload-video/upload-video.port';
-import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constant';
+import { UPLOAD_DIR_IMAGE, UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
 import {
@@ -25,37 +25,34 @@ import {
   StaticVideoStreamInternalServerErrorException,
   VideoNotFoundException
 } from '@/presentation/http/express/exceptions/media.exception';
-import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constant';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
+import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
+import type { ExpressRequest, ExpressResponse, ValidatedRequest } from '@/presentation/http/express/types';
 import { parseUploadedFiles } from '@/presentation/http/express/utils/parse-uploaded-files.util';
-import { FilenameParamsDTO, VideoStreamParamsDTO } from '@/presentation/http/express/v1/dtos/media/media.request.dto';
-import { NextFunction } from 'express';
+import type {
+  FilenameParamsSchema,
+  VideoStreamIdParamsSchema,
+  VideoStreamSegmentParamsSchema
+} from '@/presentation/http/express/v1/schemas/media/media.request.schema';
+import type { NextFunction } from 'express';
 import path from 'path';
 
+type FilenameRequest = ValidatedRequest<{ params: typeof FilenameParamsSchema }>;
+type VideoStreamIdRequest = ValidatedRequest<{ params: typeof VideoStreamIdParamsSchema }>;
+type VideoStreamSegmentRequest = ValidatedRequest<{ params: typeof VideoStreamSegmentParamsSchema }>;
+
 export interface IMediaController {
-  getStaticImage(req: ExpressRequest<FilenameParamsDTO>, res: ExpressResponse, next: NextFunction): void;
-  getStaticVideo(req: ExpressRequest<FilenameParamsDTO>, res: ExpressResponse, next: NextFunction): void;
-  getStaticVideoStream(
-    req: ExpressRequest<FilenameParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
-  getStaticVideoStreamMaster(
-    req: ExpressRequest<Pick<VideoStreamParamsDTO, 'id'>>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): void;
-  getStaticVideoStreamSegment(
-    req: ExpressRequest<VideoStreamParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): void;
+  getStaticImage(req: FilenameRequest, res: ExpressResponse, next: NextFunction): void;
+  getStaticVideo(req: FilenameRequest, res: ExpressResponse, next: NextFunction): void;
+  getStaticVideoStream(req: FilenameRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
+  getStaticVideoStreamMaster(req: VideoStreamIdRequest, res: ExpressResponse, next: NextFunction): void;
+  getStaticVideoStreamSegment(req: VideoStreamSegmentRequest, res: ExpressResponse, next: NextFunction): void;
   uploadImage(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
   uploadVideo(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
   uploadVideoStream(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
-  getVideoStatus(req: ExpressRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
+  getVideoStatus(req: VideoStreamIdRequest, res: ExpressResponse, next: NextFunction): Promise<unknown>;
 }
 
+@AutoBind()
 export class MediaController extends BaseController implements IMediaController {
   constructor(
     private readonly getVideoStatusUC: GetVideoStatusPort,
@@ -69,8 +66,7 @@ export class MediaController extends BaseController implements IMediaController 
     super();
   }
 
-  @AutoBind()
-  getStaticImage(req: ExpressRequest<FilenameParamsDTO>, res: ExpressResponse) {
+  getStaticImage(req: FilenameRequest, res: ExpressResponse) {
     const { filename } = req.params;
     const imagePath = path.resolve(UPLOAD_DIR_IMAGE, filename);
     if (!this.fileStorage.existsSync(imagePath)) {
@@ -79,8 +75,7 @@ export class MediaController extends BaseController implements IMediaController 
     this.fileResponse<typeof imagePath>(res, imagePath);
   }
 
-  @AutoBind()
-  getStaticVideo(req: ExpressRequest<FilenameParamsDTO>, res: ExpressResponse) {
+  getStaticVideo(req: FilenameRequest, res: ExpressResponse) {
     const { filename } = req.params;
     const videoPath = path.resolve(UPLOAD_DIR_VIDEO, filename);
     if (!this.fileStorage.existsSync(videoPath)) {
@@ -89,12 +84,7 @@ export class MediaController extends BaseController implements IMediaController 
     this.fileResponse<typeof videoPath>(res, videoPath);
   }
 
-  @AutoBind()
-  async getStaticVideoStream(
-    req: ExpressRequest<FilenameParamsDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<void> {
+  async getStaticVideoStream(req: FilenameRequest, res: ExpressResponse, next: NextFunction): Promise<void> {
     const { filename } = req.params;
     const { videoPath, videoSize, start, end, contentLength, contentType } = await this.getStaticVideoStreamUC.execute({
       filename,
@@ -121,64 +111,58 @@ export class MediaController extends BaseController implements IMediaController 
     });
   }
 
-  @AutoBind()
-  async getStaticVideoStreamMaster(req: ExpressRequest<Pick<VideoStreamParamsDTO, 'id'>>, res: ExpressResponse) {
+  async getStaticVideoStreamMaster(req: VideoStreamIdRequest, res: ExpressResponse) {
     const { id } = req.params;
     await this.s3Service.streamFile(res, `videos-stream/${id}/master.m3u8`);
   }
 
-  @AutoBind()
-  async getStaticVideoStreamSegment(req: ExpressRequest<VideoStreamParamsDTO>, res: ExpressResponse) {
+  async getStaticVideoStreamSegment(req: VideoStreamSegmentRequest, res: ExpressResponse) {
     const { id, version, segment } = req.params;
     await this.s3Service.streamFile(res, `videos-stream/${id}/${version}/${segment}`);
   }
 
-  @AutoBind()
   async uploadImage(req: ExpressRequest) {
     const files = await parseUploadedFiles(req, 'image');
 
     const results = await this.uploadImageUC.execute({ files });
 
-    return this.response<UploadImageResult[]>({
+    return this.response<UploadImageOutputPort[]>({
       data: results,
       message: 'Upload successfully'
     });
   }
 
-  @AutoBind()
   async uploadVideo(req: ExpressRequest) {
     const files = await parseUploadedFiles(req, 'video');
 
     const results = await this.uploadVideoUC.execute({ files });
 
-    return this.response<UploadVideoResult[]>({
+    return this.response<UploadVideoOutputPort[]>({
       data: results,
       message: 'Upload successfully'
     });
   }
 
-  @AutoBind()
   async uploadVideoStream(req: ExpressRequest) {
     const files = await parseUploadedFiles(req, 'video-stream');
 
     const results = await this.uploadVideoStreamUC.execute({ files });
 
-    return this.response<UploadVideoStreamResult[]>({
+    return this.response<UploadVideoStreamOutputPort[]>({
       data: results,
       message: 'Upload successfully'
     });
   }
 
-  @AutoBind()
-  async getVideoStatus(req: ExpressRequest) {
-    const { id } = req.params as { id: string };
+  async getVideoStatus(req: VideoStreamIdRequest) {
+    const { id } = req.params;
     const videoStatus = await this.getVideoStatusUC.execute({ name: id });
 
     if (!videoStatus) {
       throw VideoNotFoundException;
     }
 
-    return this.response<GetVideoStatusResult>({
+    return this.response<GetVideoStatusOutputPort>({
       data: videoStatus,
       message: 'Get video status successfully'
     });

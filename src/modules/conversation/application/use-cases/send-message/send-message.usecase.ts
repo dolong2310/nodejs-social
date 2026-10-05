@@ -4,21 +4,21 @@ import {
   MessageEmptyException,
   MessageForbiddenException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  SendMessageCommand,
+  type SendMessageInputPort,
   SendMessagePort,
-  SendMessageResult
+  SendMessageOutputPort
 } from '@/modules/conversation/application/use-cases/send-message/send-message.port';
-import { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.type';
-import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { IChatAttachment } from '@/modules/conversation/domain/entities/chat-message.types';
+import type { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
+import type { ChatMessageRepositoryPort } from '@/modules/conversation/domain/repositories/chat-message.repository';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
 
 /**
  * Overall workflow:
@@ -43,7 +43,8 @@ export class SendMessageUseCase extends SendMessagePort {
     super();
   }
 
-  async execute({ userId, conversationId, text, attachments }: SendMessageCommand): Promise<SendMessageResult> {
+  async execute(input: SendMessageInputPort): Promise<SendMessageOutputPort> {
+    const { userId, conversationId, text, attachments } = input;
     // The sender must be a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
@@ -78,7 +79,7 @@ export class SendMessageUseCase extends SendMessagePort {
     const membersInConversation = await this.conversationMemberRepository.listMembers(conversationId);
     const memberIds = membersInConversation.map((m) => m.getProps().userId);
 
-    const dto = new SendMessageResult({
+    const dto = new SendMessageOutputPort({
       id: message.id,
       conversationId: message.conversationId,
       senderId: message.senderId,

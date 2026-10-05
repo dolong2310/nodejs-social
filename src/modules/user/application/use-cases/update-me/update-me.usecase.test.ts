@@ -1,10 +1,9 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { UserServicePort } from '@/modules/user/application/services/user.service';
-import { UpdateMeCommand } from '@/modules/user/application/use-cases/update-me/update-me.port';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
+import type { UserServicePort } from '@/modules/user/application/services/user.service';
+import { UpdateMeInputPort } from '@/modules/user/application/use-cases/update-me/update-me.port';
 import { UpdateMeUseCase } from '@/modules/user/application/use-cases/update-me/update-me.usecase';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps, makeUserSafeProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
@@ -23,11 +22,11 @@ describe('UpdateMeUseCase', () => {
       findUserById: vi.fn().mockResolvedValue(currentUser),
       findUserByUsername: vi.fn().mockResolvedValue(existingUsernameOwner)
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new UpdateMeUseCase(userRepository, userService, cache);
 
     const result = await useCase.execute(
-      new UpdateMeCommand({
+      new UpdateMeInputPort({
         userId: currentUser.id,
         name: ' New Name ',
         username: ' NewName ',

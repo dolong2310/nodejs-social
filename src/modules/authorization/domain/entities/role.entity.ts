@@ -1,9 +1,9 @@
 import {
-  CreateRoleProps,
+  type CreateRoleProps,
   EnumRoleName,
-  RoleFullProps,
-  RoleProps
-} from '@/modules/authorization/domain/entities/role.type';
+  type RoleFullProps,
+  type RoleProps
+} from '@/modules/authorization/domain/entities/role.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
 import { Entity } from '@/modules/core/domain/entities/base.entity';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';

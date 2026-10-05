@@ -1,5 +1,8 @@
-import { GoogleOAuthServicePort, IGoogleUserInfo } from '@/modules/authentication/application/ports/google-oauth.port';
-import { OAuth2Client } from 'google-auth-library';
+import type {
+  GoogleOAuthServicePort,
+  IGoogleUserInfo
+} from '@/modules/authentication/application/ports/google-oauth.port';
+import type { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
 type GoogleOAuthConfig = {

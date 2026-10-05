@@ -3,11 +3,11 @@ import {
   PermissionNotFoundException
 } from '@/modules/authorization/application/exceptions/permission.exception';
 import {
-  DeletePermissionCommand,
+  type DeletePermissionInputPort,
   DeletePermissionPort
 } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.port';
-import { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { PermissionRepositoryPort } from '@/modules/authorization/domain/repositories/permission.repository';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 
 export class DeletePermissionUseCase extends DeletePermissionPort {
   constructor(
@@ -17,16 +17,16 @@ export class DeletePermissionUseCase extends DeletePermissionPort {
     super();
   }
 
-  async execute(command: DeletePermissionCommand): Promise<void> {
-    const current = await this.permissionRepository.findPermissionById(command.id);
+  async execute(input: DeletePermissionInputPort): Promise<void> {
+    const current = await this.permissionRepository.findPermissionById(input.id);
     if (!current) {
       throw new PermissionNotFoundException();
     }
-    const inUse = await this.roleRepository.countRolesWithPermissionId(command.id);
+    const inUse = await this.roleRepository.countRolesWithPermissionId(input.id);
     if (inUse > 0) {
       throw new PermissionInUseByRolesException();
     }
-    const removed = await this.permissionRepository.deletePermission(command.id, { actorId: command.actorId });
+    const removed = await this.permissionRepository.deletePermission(input.id, { actorId: input.actorId });
     if (!removed) {
       throw new PermissionNotFoundException();
     }

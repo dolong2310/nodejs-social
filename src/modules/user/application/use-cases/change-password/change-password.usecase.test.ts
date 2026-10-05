@@ -1,9 +1,8 @@
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { HashingPort } from '@/modules/core/application/ports/hashing.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { ChangePasswordCommand } from '@/modules/user/application/use-cases/change-password/change-password.port';
+import type { HashingPort } from '@/modules/core/application/ports/hashing.port';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
+import { ChangePasswordInputPort } from '@/modules/user/application/use-cases/change-password/change-password.port';
 import { ChangePasswordUseCase } from '@/modules/user/application/use-cases/change-password/change-password.usecase';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -15,10 +14,10 @@ describe('ChangePasswordUseCase', () => {
     const hashingService = mockPort<HashingPort>({
       hash: vi.fn().mockResolvedValue('new-hash')
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new ChangePasswordUseCase(userRepository, hashingService, cache);
 
-    const result = await useCase.execute(new ChangePasswordCommand({ userId: 'user_1', password: 'new-password' }));
+    const result = await useCase.execute(new ChangePasswordInputPort({ userId: 'user_1', password: 'new-password' }));
 
     expect(result).toBe(true);
     expect(hashingService.hash).toHaveBeenCalledWith('new-password');

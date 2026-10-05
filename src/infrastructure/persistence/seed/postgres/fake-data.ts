@@ -2,24 +2,24 @@
  * Seed fake data for Postgres.
  *
  * Run:
- * `pnpm run seed:fake-data:postgres -- --env=development`
+ * `pnpm run seed:fake-data:postgres`
  *
  * Prerequisites:
- *  1. Run `pnpm run db:migrate:postgres --env=development` first.
- *  2. Run `pnpm run seed:permissions:postgres -- --env=development` first to ensure roles exist.
+ *  1. Run `pnpm run db:migrate:postgres` first.
+ *  2. Run `pnpm run seed:permissions:postgres` first to ensure roles exist.
  *  3. Set MYID to the entity ID of the existing viewer/admin user in Postgres.
  */
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum';
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
-import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/postgres/hashtag.impl.repository';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/postgres/hashtag.mapper';
@@ -28,7 +28,7 @@ import { PostMapper } from '@/modules/post/infrastructure/persistence/postgres/p
 import { FriendshipRepository } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.impl.repository';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/postgres/friendship.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/postgres/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 import { faker } from '@faker-js/faker';
@@ -222,9 +222,7 @@ const main = async (): Promise<void> => {
 
   const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {
-    throw new Error(
-      `Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
-    );
+    throw new Error(`Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:postgres' first.`);
   }
 
   const userRoleId = userRole.id.toString();

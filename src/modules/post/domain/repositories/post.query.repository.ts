@@ -1,4 +1,4 @@
-import {
+import type {
   FindPostsByUserIdInput,
   FindPostsByUserInteractionInput,
   FindGuestPostsInput,
@@ -8,7 +8,7 @@ import {
   FindPostsTypeInput,
   IsUserInteractedWithPostInput,
   PostDetailWithAuthorOutput
-} from '@/modules/post/domain/repositories/post.query.type';
+} from '@/modules/post/domain/repositories/post.query.types';
 
 export interface PostQueryRepositoryPort {
   isUserInteractedWithPost(data: IsUserInteractedWithPostInput): Promise<boolean>;

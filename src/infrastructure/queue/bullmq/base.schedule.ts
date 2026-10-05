@@ -1,5 +1,5 @@
 import logger from '@/infrastructure/logger/create-logger';
-import { Queue, QueueOptions } from 'bullmq';
+import { Queue, type QueueOptions } from 'bullmq';
 
 export abstract class BaseSchedule<TData, TResult, TName extends string = string> {
   private readonly _queue: Queue<TData, TResult, TName>;

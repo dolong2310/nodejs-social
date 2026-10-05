@@ -1,33 +1,33 @@
-import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constants';
 import {
   RoleNotFoundException,
   SystemRoleCannotBeDeletedException
 } from '@/modules/authorization/application/exceptions/role.exception';
 import {
-  DeleteRoleCommand,
+  type DeleteRoleInputPort,
   DeleteRolePort
 } from '@/modules/authorization/application/use-cases/delete-role/delete-role.port';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class DeleteRoleUseCase extends DeleteRolePort {
   constructor(
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
 
-  async execute(command: DeleteRoleCommand): Promise<void> {
-    const current = await this.roleRepository.findRoleById(command.id);
+  async execute(input: DeleteRoleInputPort): Promise<void> {
+    const current = await this.roleRepository.findRoleById(input.id);
     if (!current) {
       throw new RoleNotFoundException();
     }
     if (current.isSystemRole()) {
       throw new SystemRoleCannotBeDeletedException();
     }
-    await this.cache.delete(CACHE_KEYS.role(command.id), async () => {
-      const removed = await this.roleRepository.deleteRole(command.id, { actorId: command.actorId });
+    await this.cache.delete(CACHE_KEYS.role(input.id), async () => {
+      const removed = await this.roleRepository.deleteRole(input.id, { actorId: input.actorId });
       if (!removed) {
         throw new RoleNotFoundException();
       }

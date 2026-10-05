@@ -2,13 +2,13 @@
  * Create or repair the initial admin user in Postgres.
  *
  * Run:
- * `pnpm run seed:create-admin-user:postgres -- --env=development`
+ * `pnpm run seed:create-admin-user:postgres`
  *
  * Prerequisites:
- * 1. Run `pnpm run db:migrate:postgres --env=development` first.
- * 2. Run `pnpm run seed:permissions:postgres -- --env=development` so the ADMIN role exists.
+ * 1. Run `pnpm run db:migrate:postgres` first.
+ * 2. Run `pnpm run seed:permissions:postgres` so the ADMIN role exists.
  *
- * Optional environment overrides:
+ * Required environment variables:
  * - SEED_ADMIN_EMAIL
  * - SEED_ADMIN_PASSWORD
  * - SEED_ADMIN_NAME
@@ -19,19 +19,27 @@ import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { PostgresDatabase } from '@/infrastructure/persistence/postgres/database';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/postgres/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/postgres/role.mapper';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/postgres/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/postgres/user.mapper';
 
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL!;
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD!;
-const ADMIN_NAME = process.env.SEED_ADMIN_NAME!;
-const ADMIN_USERNAME = process.env.SEED_ADMIN_USERNAME!;
-const ADMIN_BIRTHDAY = new Date(process.env.SEED_ADMIN_BIRTHDAY!);
+function requireSeedEnv(key: string): string {
+  const value = process.env[key]?.trim();
+  if (!value) {
+    throw new Error(`${key} is required to seed the admin user.`);
+  }
+  return value;
+}
+
+const ADMIN_EMAIL = requireSeedEnv('SEED_ADMIN_EMAIL');
+const ADMIN_PASSWORD = requireSeedEnv('SEED_ADMIN_PASSWORD');
+const ADMIN_NAME = requireSeedEnv('SEED_ADMIN_NAME');
+const ADMIN_USERNAME = requireSeedEnv('SEED_ADMIN_USERNAME');
+const ADMIN_BIRTHDAY = new Date(requireSeedEnv('SEED_ADMIN_BIRTHDAY'));
 
 if (Number.isNaN(ADMIN_BIRTHDAY.getTime())) {
   throw new Error('SEED_ADMIN_BIRTHDAY must be a valid ISO date string.');
@@ -91,9 +99,7 @@ async function main(): Promise<void> {
 
   const adminRole = await roleRepository.findRoleByName(EnumRoleName.ADMIN);
   if (!adminRole) {
-    throw new Error(
-      `Role "${EnumRoleName.ADMIN}" not found. Run 'pnpm run seed:permissions:postgres -- --env=development' first.`
-    );
+    throw new Error(`Role "${EnumRoleName.ADMIN}" not found. Run 'pnpm run seed:permissions:postgres' first.`);
   }
 
   await createOrUpdateAdminUser(adminRole.id.toString());

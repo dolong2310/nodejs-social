@@ -1,4 +1,4 @@
-import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constant';
+import { CACHE_KEYS } from '@/modules/authorization/application/constants/cache.constants';
 import {
   CannotDeactivateAdminRoleException,
   CannotRenameSystemRoleException,
@@ -7,61 +7,61 @@ import {
 } from '@/modules/authorization/application/exceptions/role.exception';
 import { RoleListItem } from '@/modules/authorization/application/use-cases/list-roles/list-roles.port';
 import {
-  UpdateRoleCommand,
+  type UpdateRoleInputPort,
   UpdateRolePort
 } from '@/modules/authorization/application/use-cases/update-role/update-role.port';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type';
-import { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
-import { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.type';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types';
+import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
+import type { UpdateRoleInput } from '@/modules/authorization/domain/repositories/role.repository.types';
 import { RoleName } from '@/modules/authorization/domain/value-objects/role-name.value-object';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
 
 export class UpdateRoleUseCase extends UpdateRolePort {
   constructor(
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly cache: CacheStrategyPort
+    private readonly cache: CacheManagerPort
   ) {
     super();
   }
 
-  async execute(command: UpdateRoleCommand) {
-    const currentRole = await this.roleRepository.findRoleById(command.id);
+  async execute(input: UpdateRoleInputPort) {
+    const currentRole = await this.roleRepository.findRoleById(input.id);
     if (!currentRole) {
       throw new RoleNotFoundException();
     }
     const currentName = currentRole.getProps().name.value;
 
-    if (command.name && RoleName.create(command.name).value !== currentName) {
+    if (input.name && RoleName.create(input.name).value !== currentName) {
       if (currentRole.isSystemRole()) {
         throw new CannotRenameSystemRoleException();
       }
-      const existingRole = await this.roleRepository.findRoleByName(command.name);
+      const existingRole = await this.roleRepository.findRoleByName(input.name);
       if (existingRole) {
         throw new RoleNameAlreadyExistsException();
       }
     }
 
     // The admin role cannot be deactivated.
-    if (currentName === EnumRoleName.ADMIN && !command.isActive) {
+    if (currentName === EnumRoleName.ADMIN && !input.isActive) {
       throw new CannotDeactivateAdminRoleException();
     }
 
     const patch: UpdateRoleInput = {};
-    if (command.name !== undefined) patch.name = command.name;
-    if (command.description !== undefined) patch.description = command.description;
-    if (command.isActive !== undefined) patch.isActive = command.isActive;
-    if (command.permissionIds !== undefined) patch.permissionIds = command.permissionIds;
+    if (input.name !== undefined) patch.name = input.name;
+    if (input.description !== undefined) patch.description = input.description;
+    if (input.isActive !== undefined) patch.isActive = input.isActive;
+    if (input.permissionIds !== undefined) patch.permissionIds = input.permissionIds;
 
     if (Object.keys(patch).length === 0) {
       return new RoleListItem(currentRole.toObject());
     }
 
-    const updated = await this.roleRepository.updateRole(command.id, patch);
+    const updated = await this.roleRepository.updateRole(input.id, patch);
     if (!updated) {
       throw new RoleNotFoundException();
     }
 
-    await this.cache.invalidate(CACHE_KEYS.role(command.id));
+    await this.cache.invalidate(CACHE_KEYS.role(input.id));
     return new RoleListItem(updated.toObject());
   }
 }

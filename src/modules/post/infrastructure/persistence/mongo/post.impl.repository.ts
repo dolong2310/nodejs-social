@@ -1,15 +1,18 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { PostEntity } from '@/modules/post/domain/entities/post.entity';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
-import {
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import type {
   CreatePostInput,
   DeletePostTreeInput,
+  IncreasePostsViewsInput,
+  IncreasePostViewsInput,
+  IncreasePostViewsOutput,
   UpdatePostInput
-} from '@/modules/post/domain/repositories/post.repository.type';
-import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
-import { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
-import { Db, MongoClient } from 'mongodb';
+} from '@/modules/post/domain/repositories/post.repository.types';
+import type { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post.mapper';
+import type { PostModel } from '@/modules/post/infrastructure/persistence/mongo/post.model';
+import type { Db, MongoClient } from 'mongodb';
 
 export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> implements PostRepositoryPort {
   protected collectionName = 'posts';
@@ -79,29 +82,17 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
         updated_by_id: actorId
       };
 
-      const postsResult = await this.dbCollection.updateMany(
-        { _id: { $in: ids }, deleted_at: null },
-        { $set: audit },
-        { session: this.session }
-      );
-      await Promise.all([
-        this.db
-          .collection('likes')
-          .updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit }, { session: this.session }),
-        this.db
-          .collection('bookmarks')
-          .updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit }, { session: this.session })
-      ]);
+      const postsResult = await this.dbCollection.updateMany({ _id: { $in: ids }, deleted_at: null }, { $set: audit });
+      // Sequential on purpose: MongoDB does not support parallel operations inside one transaction.
+      await this.collection('likes').updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit });
+      await this.collection('bookmarks').updateMany({ post_id: { $in: ids }, deleted_at: null }, { $set: audit });
 
       return postsResult.modifiedCount;
     });
   }
 
   private async collectActivePostTreeIds(postId: string): Promise<string[]> {
-    const root = await this.dbCollection.findOne(
-      { _id: postId, deleted_at: null },
-      { projection: { _id: 1 }, session: this.session }
-    );
+    const root = await this.dbCollection.findOne({ _id: postId, deleted_at: null }, { projection: { _id: 1 } });
     if (!root) {
       return [];
     }
@@ -116,7 +107,7 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
           {
             parent_id: { $in: frontier }
           },
-          { projection: { _id: 1 }, session: this.session }
+          { projection: { _id: 1 } }
         )
         .toArray();
 
@@ -131,5 +122,32 @@ export class PostRepository extends MongoRepositoryBase<PostEntity, PostModel> i
     }
 
     return ids;
+  }
+
+  async increasePostViews({ postId, userId }: IncreasePostViewsInput): Promise<IncreasePostViewsOutput | null> {
+    const result = await this.dbCollection.findOneAndUpdate(
+      { _id: postId, deleted_at: null },
+      { $inc: userId ? { user_views: 1 } : { guest_views: 1 }, $currentDate: { updated_at: true } },
+      { returnDocument: 'after', projection: { user_views: 1, guest_views: 1, updated_at: 1 } }
+    );
+    return result
+      ? {
+          userViews: result.user_views,
+          guestViews: result.guest_views,
+          updatedAt: result.updated_at
+        }
+      : null;
+  }
+
+  async increasePostsViews({ ids, isAuthenticatedUser }: IncreasePostsViewsInput): Promise<number> {
+    if (ids.length === 0) return 0;
+    const res = await this.dbCollection.updateMany(
+      { _id: { $in: ids }, deleted_at: null },
+      {
+        $inc: isAuthenticatedUser ? { user_views: 1 } : { guest_views: 1 },
+        $currentDate: { updated_at: true }
+      }
+    );
+    return res.modifiedCount;
   }
 }

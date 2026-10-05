@@ -19,7 +19,6 @@ jest-*
 test-results/
 *.lcov
 __tests__/
-*.test.ts
 *.spec.ts
 
 # Environment, local configuration
@@ -69,3 +68,9 @@ out/
 *.swo
 # End of Selection
 ```
+# AI agent files
+.agents/
+.claude/
+docs/
+AGENTS.md
+CLAUDE.md

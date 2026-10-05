@@ -1,7 +1,7 @@
-import { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
+import type { BaseInterceptor } from '@/presentation/http/express/core/base.interceptor';
 import { OK, SuccessResponse } from '@/presentation/http/express/responses/success.response';
 import type { ControllerResult, ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 export class TransformResponseInterceptor implements BaseInterceptor {
   async intercept(_req: ExpressRequest, res: ExpressResponse, next: () => Promise<unknown>) {

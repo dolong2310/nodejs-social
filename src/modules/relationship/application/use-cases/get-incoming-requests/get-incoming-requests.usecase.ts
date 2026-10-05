@@ -2,12 +2,12 @@ import { InvalidCursorException } from '@/modules/common/application/exceptions/
 import { decodeCursor, decodeCursorOrThrow, encodeCursor } from '@/modules/common/utils/cursor.util';
 import {
   GetIncomingRequestsPort,
-  GetIncomingRequestsQuery,
-  GetIncomingRequestsResult
+  type GetIncomingRequestsInputPort,
+  GetIncomingRequestsOutputPort
 } from '@/modules/relationship/application/use-cases/get-incoming-requests/get-incoming-requests.port';
-import { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { FriendRequestRepositoryPort } from '@/modules/relationship/domain/repositories/friend-request.repository';
+import type { UserRecordProps } from '@/modules/user/domain/entities/user.types';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 
 export class GetIncomingRequestsUseCase extends GetIncomingRequestsPort {
   constructor(
@@ -17,7 +17,8 @@ export class GetIncomingRequestsUseCase extends GetIncomingRequestsPort {
     super();
   }
 
-  async execute({ userId, limit, cursor }: GetIncomingRequestsQuery): Promise<GetIncomingRequestsResult> {
+  async execute(input: GetIncomingRequestsInputPort): Promise<GetIncomingRequestsOutputPort> {
+    const { userId, limit, cursor } = input;
     const pageSize = Math.min(100, Math.max(1, limit));
 
     const decoded = decodeCursorOrThrow(cursor, (raw) => decodeCursor(raw), InvalidCursorException);
@@ -39,6 +40,6 @@ export class GetIncomingRequestsUseCase extends GetIncomingRequestsPort {
     const last = requests[requests.length - 1];
     const nextCursor = hasMore && last ? encodeCursor(last.createdAt ?? new Date(0), last.id) : null;
 
-    return new GetIncomingRequestsResult(items, nextCursor);
+    return new GetIncomingRequestsOutputPort(items, nextCursor);
   }
 }

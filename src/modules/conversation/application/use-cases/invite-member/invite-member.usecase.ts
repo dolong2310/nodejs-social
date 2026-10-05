@@ -3,18 +3,18 @@ import {
   ConversationNotFoundException,
   ConversationUserAlreadyMemberException
 } from '@/modules/conversation/application/exceptions/conversation.exception';
-import { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
+import type { ConversationServicePort } from '@/modules/conversation/application/services/conversation.service';
 import {
-  InviteMemberCommand,
+  type InviteMemberInputPort,
   InviteMemberPort,
-  InviteMemberResult
+  InviteMemberOutputPort
 } from '@/modules/conversation/application/use-cases/invite-member/invite-member.port';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
-import { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
+import type { ConversationMemberRepositoryPort } from '@/modules/conversation/domain/repositories/conversation-member.repository';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type { NotificationServicePort } from '@/modules/notification/application/services/notification.service';
+import type { FriendServicePort } from '@/modules/relationship/application/services/friend.service';
 
 /**
  * Invite a member to a group.
@@ -31,7 +31,8 @@ export class InviteMemberUseCase extends InviteMemberPort {
     super();
   }
 
-  async execute({ userId, inviteeUserId, conversationId }: InviteMemberCommand): Promise<InviteMemberResult> {
+  async execute(input: InviteMemberInputPort): Promise<InviteMemberOutputPort> {
+    const { userId, inviteeUserId, conversationId } = input;
     // Check whether the user is a conversation member.
     await this.conversationService.isMember({ conversationId, userId });
 
@@ -82,7 +83,7 @@ export class InviteMemberUseCase extends InviteMemberPort {
       this.notificationsService.recordAddedToGroup({ inviteeUserId, inviterUserId: userId, conv: convEntity })
     ]);
 
-    return new InviteMemberResult({
+    return new InviteMemberOutputPort({
       id: conv.id,
       type: conv.type,
       createdBy: conv.createdBy,

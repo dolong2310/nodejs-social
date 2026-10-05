@@ -1,7 +1,7 @@
-import { appConfig } from '@/bootstrap/config/app.config';
-import { isDevelopment } from '@/bootstrap/config/env.config';
+import { envConfig } from '@/bootstrap/config/env.config';
+import { IS_DEV } from '@/bootstrap/config/env.config';
 import requestContextLogger from '@/infrastructure/logger/request-context-logger';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { randomUUID } from 'node:crypto';
 import pino, { type Logger as PinoLogger, type LoggerOptions as PinoLoggerOptions } from 'pino';
 import pinoHttp, { type HttpLogger as PinoHttpLogger } from 'pino-http';
@@ -30,7 +30,7 @@ class Logger implements LoggerPort, ILoggerGetter {
     }
 
     const baseOptions: PinoLoggerOptions = {
-      level: appConfig.logs.level,
+      level: envConfig.LOG_LEVEL,
       mixin: logContextMixin,
       redact: {
         paths: [
@@ -48,7 +48,7 @@ class Logger implements LoggerPort, ILoggerGetter {
       }
     };
 
-    if (isDevelopment) {
+    if (IS_DEV) {
       return pino({
         ...baseOptions,
         transport: {

@@ -1,5 +1,5 @@
 import { ENTITY_ID_LENGTH } from '@/modules/core/domain/helpers/ids';
-import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.type';
+import { EnumEncodingVideoStatus } from '@/modules/media/domain/entities/video-status.types';
 import { type InferOutput, date, nullable, enum_, minLength, object, optional, pipe, string } from 'valibot';
 
 export const videoStatusSchema = object({

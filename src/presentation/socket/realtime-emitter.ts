@@ -3,15 +3,15 @@ import {
   SOCKET_SERVER_CHAT_MESSAGE_NEW,
   SOCKET_SERVER_CHAT_READ_UPDATED,
   userRoom
-} from '@/modules/common/constants/socket.constant';
+} from '@/modules/common/constants/socket.constants';
 import type {
   RealtimeEmitterPort,
   RealtimeMessagePayload
 } from '@/modules/core/application/ports/realtime-emitter.port';
-import { type Server as SocketIOServer } from 'socket.io';
+import type { Server as SocketServer } from 'socket.io';
 
 export class RealtimeEmitter implements RealtimeEmitterPort {
-  constructor(private readonly io: SocketIOServer) {}
+  constructor(private readonly io: SocketServer) {}
 
   public emitToUser(userId: string, event: string, data: unknown): void {
     this.io.to(userRoom(userId)).emit(event, data);

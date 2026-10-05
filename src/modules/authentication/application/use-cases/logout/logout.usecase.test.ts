@@ -1,7 +1,7 @@
-import { LogoutCommand } from '@/modules/authentication/application/use-cases/logout/logout.port';
+import { LogoutInputPort } from '@/modules/authentication/application/use-cases/logout/logout.port';
 import { LogoutUseCase } from '@/modules/authentication/application/use-cases/logout/logout.usecase';
-import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import type { RefreshTokenEntity } from '@/modules/authentication/domain/entities/refresh-token.entity';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -13,7 +13,7 @@ describe('LogoutUseCase', () => {
     });
     const useCase = new LogoutUseCase(refreshTokenRepository);
 
-    const result = await useCase.execute(new LogoutCommand({ refreshToken: 'refresh' }));
+    const result = await useCase.execute(new LogoutInputPort({ refreshToken: 'refresh' }));
 
     expect(result).toBe(true);
     expect(refreshTokenRepository.findRefreshToken).toHaveBeenCalledWith('refresh');

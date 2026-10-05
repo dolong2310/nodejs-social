@@ -1,5 +1,5 @@
-import { Request } from 'express';
-import formidable, { File } from 'formidable';
+import type { Request } from 'express';
+import formidable, { type File } from 'formidable';
 
 function normalizeFiles(value: File | File[] | undefined): File[] {
   if (!value) {

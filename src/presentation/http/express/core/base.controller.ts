@@ -1,14 +1,22 @@
-import { isProduction } from '@/bootstrap/config/env.config';
+import { IS_PROD } from '@/bootstrap/config/env.config';
 import { UserNotFoundException } from '@/presentation/http/express/exceptions/user.exception';
 import {
-  Created,
+  type Created,
   OK,
-  SuccessResponse,
-  SuccessResponseParams
+  type SuccessResponse,
+  type SuccessResponseParams
 } from '@/presentation/http/express/responses/success.response';
-import { PaginationResponseDTO } from '@/presentation/http/express/v1/dtos/common/common.response.dto';
 import type { CookieOptions } from 'express';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
+
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
 
 export abstract class BaseController {
   protected response<T>({
@@ -26,7 +34,7 @@ export abstract class BaseController {
     });
   }
 
-  protected paginatedResponse<T, P = PaginationResponseDTO & { data: T }>({
+  protected paginatedResponse<T, P = PaginationMeta & { data: T }>({
     data,
     pagination,
     message
@@ -81,7 +89,7 @@ export abstract class BaseController {
     res.sendFile(path);
   }
 
-  protected getUserId(req: Request, options?: { optional?: boolean }): string {
+  protected getUserId(req: Pick<Request, 'tokenPayload'>, options?: { optional?: boolean }): string {
     const userId = req.tokenPayload?.userId;
     if (!userId && !options?.optional) {
       throw UserNotFoundException;
@@ -92,7 +100,7 @@ export abstract class BaseController {
   protected setCookie(res: Response, name: string, value: string, options?: CookieOptions): void {
     const defaults: CookieOptions = {
       httpOnly: true,
-      secure: isProduction,
+      secure: IS_PROD,
       sameSite: 'strict'
     };
     res.cookie(name, value, { ...defaults, ...options });

@@ -1,19 +1,20 @@
 import {
-  IncreaseViewsCommand,
+  type IncreaseViewsInputPort,
   IncreaseViewsPort,
-  IncreaseViewsResult
+  IncreaseViewsOutputPort
 } from '@/modules/post/application/use-cases/increase-views/increase-views.port';
-import { PostCommandRepositoryPort } from '@/modules/post/domain/repositories/post.command.repository';
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 
 export class IncreaseViewsUseCase extends IncreaseViewsPort {
-  constructor(private readonly postCommandRepository: PostCommandRepositoryPort) {
+  constructor(private readonly postRepository: PostRepositoryPort) {
     super();
   }
 
-  async execute({ postId, userId }: IncreaseViewsCommand): Promise<IncreaseViewsResult | null> {
-    const postViews = await this.postCommandRepository.increasePostViews({ postId, userId });
+  async execute(input: IncreaseViewsInputPort): Promise<IncreaseViewsOutputPort | null> {
+    const { postId, userId } = input;
+    const postViews = await this.postRepository.increasePostViews({ postId, userId });
     if (!postViews) return null;
-    return new IncreaseViewsResult({
+    return new IncreaseViewsOutputPort({
       userViews: postViews.userViews ?? 0,
       guestViews: postViews.guestViews ?? 0,
       updatedAt: postViews.updatedAt

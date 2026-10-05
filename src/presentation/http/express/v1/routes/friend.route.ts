@@ -1,14 +1,28 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
-import { IFriendPipe } from '@/presentation/http/express/v1/pipes/friend.pipe';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { FRIEND_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/friend.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IFriendController } from '@/presentation/http/express/v1/controllers/friend.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  cursorPaginatedSchema,
+  CursorPaginationQuerySchema
+} from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  IncomingRequestParamsSchema,
+  OutgoingRequestParamsSchema,
+  SendFriendRequestBodySchema,
+  UnfriendParamsSchema
+} from '@/presentation/http/express/v1/schemas/friend/friend.request.schema';
+import {
+  FriendRequestResponseSchema,
+  UserRecordResponseSchema
+} from '@/presentation/http/express/v1/schemas/friend/friend.response.schema';
 
 export class FriendRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -16,8 +30,6 @@ export class FriendRoute extends BaseRoute {
 
   constructor(
     private readonly friendController: IFriendController,
-    private readonly friendPipe: IFriendPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -31,42 +43,41 @@ export class FriendRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_FRIENDS)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(UserRecordResponseSchema),
         controller: this.friendController.listFriends
-      })
-    );
-    this.router.get(
-      '/requests/incoming',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/requests/incoming',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_INCOMING)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(UserRecordResponseSchema),
         controller: this.friendController.listIncoming
-      })
-    );
-    this.router.get(
-      '/requests/outgoing',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/requests/outgoing',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.LIST_OUTGOING)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery],
+        pipes: [validate({ query: CursorPaginationQuerySchema })],
+        response: cursorPaginatedSchema(UserRecordResponseSchema),
         controller: this.friendController.listOutgoing
-      })
-    );
-    this.router.post(
-      '/requests',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/requests',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.SEND_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -74,14 +85,14 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.sendRequestToUsernamePipe],
+        pipes: [validate({ body: SendFriendRequestBodySchema })],
+        response: FriendRequestResponseSchema,
         controller: this.friendController.sendFriendRequest
-      })
-    );
-    this.router.post(
-      '/requests/:fromUserId/accept',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/requests/:fromUserId/accept',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.ACCEPT_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -89,14 +100,13 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.incomingFromUserIdPipe],
+        pipes: [validate({ params: IncomingRequestParamsSchema })],
         controller: this.friendController.acceptIncomingRequest
-      })
-    );
-    this.router.post(
-      '/requests/:fromUserId/decline',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/requests/:fromUserId/decline',
+        method: 'post',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.DECLINE_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -104,14 +114,13 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.incomingFromUserIdPipe],
+        pipes: [validate({ params: IncomingRequestParamsSchema })],
         controller: this.friendController.declineIncomingRequest
-      })
-    );
-    this.router.delete(
-      '/requests/outgoing/:toUserId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/requests/outgoing/:toUserId',
+        method: 'delete',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.REVOKE_REQUEST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -119,14 +128,13 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.revokeOutgoingToUserIdPipe],
+        pipes: [validate({ params: OutgoingRequestParamsSchema })],
         controller: this.friendController.revokeOutgoingRequest
-      })
-    );
-    this.router.delete(
-      '/:userId',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:userId',
+        method: 'delete',
+        middlewares: [this.throttlerGuard.handler(FRIEND_THROTTLE_CONFIG.UNFRIEND)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -134,9 +142,13 @@ export class FriendRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.friendPipe.unfriendUserIdPipe],
+        pipes: [validate({ params: UnfriendParamsSchema })],
         controller: this.friendController.unfriend
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

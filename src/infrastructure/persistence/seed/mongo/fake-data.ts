@@ -1,10 +1,10 @@
 /**
  * Seed fake data — clean architecture version.
- * Run: pnpm run seed:fake-data -- --env=development
+ * Run: pnpm run seed:fake-data:mongo
  *
  * Prerequisites:
- *  1. Run `pnpm run db:migrate:mongo --env=development` first.
- *  2. Run `pnpm run seed:permissions:mongo -- --env=development` first to ensure roles exist.
+ *  1. Run `pnpm run db:migrate:mongo` first.
+ *  2. Run `pnpm run seed:permissions:mongo` first to ensure roles exist.
  *  3. Set MYID to the entity ID of the existing admin/viewer user (format: "entity_<uuidv7>").
  *     You can find it in MongoDB under the `users` collection's `id` field.
  */
@@ -13,13 +13,13 @@ import logger from '@/infrastructure/logger/create-logger.js';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config.js';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database.js';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service.js';
-import { EnumRoleName } from '@/modules/authorization/domain/entities/role.type.js';
+import { EnumRoleName } from '@/modules/authorization/domain/entities/role.types.js';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository.js';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper.js';
 import { EnumMediaType } from '@/modules/common/domain/enums/media.enum.js';
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { generateUniqueString } from '@/modules/common/utils/random-string.util';
-import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.type.js';
+import { EnumPostAudience, EnumPostType } from '@/modules/post/domain/entities/post.types.js';
 import { Media } from '@/modules/post/domain/value-objects/media.value-object.js';
 import { HashtagRepository } from '@/modules/post/infrastructure/persistence/mongo/hashtag.impl.repository.js';
 import { HashtagMapper } from '@/modules/post/infrastructure/persistence/mongo/hashtag.mapper.js';
@@ -28,7 +28,7 @@ import { PostMapper } from '@/modules/post/infrastructure/persistence/mongo/post
 import { FriendshipRepository } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.impl.repository.js';
 import { FriendshipMapper } from '@/modules/relationship/infrastructure/persistence/mongo/friendship.mapper.js';
 import { UserEntity } from '@/modules/user/domain/entities/user.entity.js';
-import { EnumUserStatus } from '@/modules/user/domain/entities/user.type.js';
+import { EnumUserStatus } from '@/modules/user/domain/entities/user.types.js';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository.js';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper.js';
 import { faker } from '@faker-js/faker';
@@ -252,9 +252,7 @@ const main = async () => {
 
   const userRole = await roleRepository.findRoleByName(EnumRoleName.USER);
   if (!userRole) {
-    throw new Error(
-      `Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions -- --env=development' first.`
-    );
+    throw new Error(`Role "${EnumRoleName.USER}" not found. Run 'pnpm run seed:permissions:mongo' first.`);
   }
   const userRoleId = userRole.id.toString();
   console.log(`Using USER role ID: ${userRoleId}`);

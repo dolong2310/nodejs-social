@@ -1,6 +1,6 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { FriendRequestEntity } from '@/modules/relationship/domain/entities/friend-request.entity';
+import type {
   CountOutgoingRequestsCreatedOnUtcDayInput,
   CreatePendingRequestInput,
   DeleteAllRequestsBetweenUsersInput,
@@ -8,7 +8,7 @@ import {
   FindPendingRequestByUserPairInput,
   ListIncomingForUserInput,
   ListOutgoingForUserInput
-} from '@/modules/relationship/domain/repositories/friend-request.repository.type';
+} from '@/modules/relationship/domain/repositories/friend-request.repository.types';
 
 export interface FriendRequestRepositoryPort extends RepositoryPort<FriendRequestEntity> {
   findPendingRequestByUserPair(data: FindPendingRequestByUserPairInput): Promise<FriendRequestEntity | null>;

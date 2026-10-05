@@ -1,34 +1,28 @@
 import { envConfig } from '@/bootstrap/config/env.config';
-import { GetGoogleAuthUrlPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
-import { LoginGooglePort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
+import type { GetGoogleAuthUrlPort } from '@/modules/authentication/application/use-cases/get-google-auth-url/get-google-auth-url.port';
+import type { LoginGooglePort } from '@/modules/authentication/application/use-cases/login-google/login-google.port';
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   refreshTokenCookieSharedOptions,
   refreshTokenMaxAgeMs
-} from '@/presentation/http/express/constants/auth.constant';
+} from '@/presentation/http/express/constants/auth.constants';
 import { BaseController } from '@/presentation/http/express/core/base.controller';
 import { AutoBind } from '@/presentation/http/express/decorators/autoBind.decorator';
-import { ExpressRequest, ExpressResponse } from '@/presentation/http/express/types';
-import {
-  GetGoogleAuthUrlQueryDTO,
-  OAuthGoogleLoginQueryDTO
-} from '@/presentation/http/express/v1/dtos/oauth/oauth.request.dto';
-import { NextFunction } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import type { ExpressResponse, ValidatedRequest } from '@/presentation/http/express/types';
+import type {
+  GoogleAuthUrlQuerySchema,
+  GoogleLoginQuerySchema
+} from '@/presentation/http/express/v1/schemas/oauth/oauth.request.schema';
+
+type GoogleAuthUrlRequest = ValidatedRequest<{ query: typeof GoogleAuthUrlQuerySchema }>;
+type GoogleLoginRequest = ValidatedRequest<{ query: typeof GoogleLoginQuerySchema }>;
 
 export interface IOAuthController {
-  getGoogleAuthUrl(
-    req: ExpressRequest<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): void;
-  googleLogin(
-    req: ExpressRequest<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
-    res: ExpressResponse,
-    next: NextFunction
-  ): Promise<unknown>;
+  getGoogleAuthUrl(req: GoogleAuthUrlRequest): unknown;
+  googleLogin(req: GoogleLoginRequest, res: ExpressResponse): Promise<unknown>;
 }
 
+@AutoBind()
 export class OAuthController extends BaseController implements IOAuthController {
   constructor(
     private readonly getGoogleAuthUrlUC: GetGoogleAuthUrlPort,
@@ -37,8 +31,7 @@ export class OAuthController extends BaseController implements IOAuthController 
     super();
   }
 
-  @AutoBind()
-  getGoogleAuthUrl(req: ExpressRequest<ParamsDictionary, object, object, GetGoogleAuthUrlQueryDTO>) {
+  getGoogleAuthUrl(req: GoogleAuthUrlRequest) {
     const { ip, userAgent } = req.query;
     const url = this.getGoogleAuthUrlUC.execute({ ip, userAgent });
     return this.response<string>({
@@ -47,11 +40,7 @@ export class OAuthController extends BaseController implements IOAuthController 
     });
   }
 
-  @AutoBind()
-  async googleLogin(
-    req: ExpressRequest<ParamsDictionary, object, object, OAuthGoogleLoginQueryDTO>,
-    res: ExpressResponse
-  ) {
+  async googleLogin(req: GoogleLoginRequest, res: ExpressResponse) {
     const { state, code } = req.query;
     const { refreshToken } = await this.googleLoginUC.execute({ state, code });
 

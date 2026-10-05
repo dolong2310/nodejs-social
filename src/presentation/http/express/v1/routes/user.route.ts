@@ -1,15 +1,21 @@
-import { THROTTLE } from '@/presentation/http/express/constants/throttler.constant';
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { IUserController } from '@/presentation/http/express/v1/controllers/user.controller';
-import { IUserPipe } from '@/presentation/http/express/v1/pipes/user.pipe';
+import { USER_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/user.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthOptionGuard } from '@/presentation/http/express/guards/auth-option.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { IUserController } from '@/presentation/http/express/v1/controllers/user.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import {
+  ChangePasswordBodySchema,
+  GetUserProfileParamsSchema,
+  UpdateMeBodySchema
+} from '@/presentation/http/express/v1/schemas/user/user.request.schema';
+import { UserResponseSchema } from '@/presentation/http/express/v1/schemas/user/user.response.schema';
 
 export class UserRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -17,7 +23,6 @@ export class UserRoute extends BaseRoute {
 
   constructor(
     private readonly userController: IUserController,
-    private readonly userPipe: IUserPipe,
     private readonly authGuard: AuthGuard,
     private readonly authOptionGuard: AuthOptionGuard,
     private readonly activeUserGuard: ActiveUserGuard,
@@ -32,23 +37,20 @@ export class UserRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-    const throttlerAuth = this.throttlerGuard.handler(THROTTLE.AUTH.WINDOW_MS, THROTTLE.AUTH.MAX);
-
-    this.router.get(
-      '/me',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/me',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.GET_ME)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        response: UserResponseSchema,
         controller: this.userController.getMe
-      })
-    );
-    this.router.patch(
-      '/me',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/me',
+        method: 'patch',
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.UPDATE_ME)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -56,24 +58,24 @@ export class UserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.updateMePipe],
+        pipes: [validate({ body: UpdateMeBodySchema })],
+        response: UserResponseSchema,
         controller: this.userController.updateMe
-      })
-    );
-    this.router.get(
-      '/:username',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:username',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.GET_PROFILE)],
         guards: [this.authOptionGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [],
+        pipes: [validate({ params: GetUserProfileParamsSchema })],
+        response: UserResponseSchema,
         controller: this.userController.getUserProfile
-      })
-    );
-    this.router.put(
-      '/change-password',
-      this.createRouteHandler({
-        middlewares: [throttlerAuth],
+      },
+      {
+        path: '/change-password',
+        method: 'put',
+        middlewares: [this.throttlerGuard.handler(USER_THROTTLE_CONFIG.CHANGE_PASSWORD)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -81,9 +83,13 @@ export class UserRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.userPipe.changePasswordPipe],
+        pipes: [validate({ body: ChangePasswordBodySchema })],
         controller: this.userController.changePassword
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

@@ -1,16 +1,16 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import {
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type {
   PostDetailWithAuthorOutput,
   PostUserInteractionType
-} from '@/modules/post/domain/repositories/post.query.type';
+} from '@/modules/post/domain/repositories/post.query.types';
 
-export class GetPostsByUserInteractionQuery {
+export class GetPostsByUserInteractionInputPort {
   userId: string;
   interaction: PostUserInteractionType;
   limit: number;
   cursor?: string;
 
-  constructor(payload: { userId: string; interaction: PostUserInteractionType; limit: string; cursor?: string }) {
+  constructor(payload: { userId: string; interaction: PostUserInteractionType; limit: number; cursor?: string }) {
     this.userId = payload.userId;
     this.interaction = payload.interaction;
     this.limit = Number(payload.limit);
@@ -18,7 +18,7 @@ export class GetPostsByUserInteractionQuery {
   }
 }
 
-export class GetPostsByUserInteractionResult<T extends PostDetailWithAuthorOutput> {
+export class GetPostsByUserInteractionOutputPort<T extends PostDetailWithAuthorOutput> {
   items: T[];
   nextCursor: string | null;
 
@@ -29,10 +29,10 @@ export class GetPostsByUserInteractionResult<T extends PostDetailWithAuthorOutpu
 }
 
 export abstract class GetPostsByUserInteractionPort implements UseCase<
-  GetPostsByUserInteractionQuery,
-  GetPostsByUserInteractionResult<PostDetailWithAuthorOutput>
+  GetPostsByUserInteractionInputPort,
+  GetPostsByUserInteractionOutputPort<PostDetailWithAuthorOutput>
 > {
   abstract execute<T extends PostDetailWithAuthorOutput>(
-    query: GetPostsByUserInteractionQuery
-  ): Promise<GetPostsByUserInteractionResult<T>>;
+    input: GetPostsByUserInteractionInputPort
+  ): Promise<GetPostsByUserInteractionOutputPort<T>>;
 }

@@ -1,18 +1,18 @@
-import { UseCase } from '@/modules/core/application/base.usecase';
-import { UserRecordProps } from '@/modules/user/domain/entities/user.type';
+import type { UseCase } from '@/modules/core/application/base.usecase';
+import type { UserRecordProps } from '@/modules/user/domain/entities/user.types';
 
-export class GetBlockedUserQuery {
+export class GetBlockedUserInputPort {
   blockerUserId: string;
-  page: string;
-  limit: string;
-  constructor(payload: { blockerUserId: string; page: string; limit: string }) {
+  page: number;
+  limit: number;
+  constructor(payload: { blockerUserId: string; page: number; limit: number }) {
     this.blockerUserId = payload.blockerUserId;
     this.page = payload.page;
     this.limit = payload.limit;
   }
 }
 
-export class GetBlockedUserResult {
+export class GetBlockedUserOutputPort {
   users: UserRecordProps[];
   total: number;
   constructor(payload: { users: UserRecordProps[]; total: number }) {
@@ -21,6 +21,6 @@ export class GetBlockedUserResult {
   }
 }
 
-export abstract class GetBlockedUserPort implements UseCase<GetBlockedUserQuery, GetBlockedUserResult> {
-  abstract execute(query: GetBlockedUserQuery): Promise<GetBlockedUserResult>;
+export abstract class GetBlockedUserPort implements UseCase<GetBlockedUserInputPort, GetBlockedUserOutputPort> {
+  abstract execute(input: GetBlockedUserInputPort): Promise<GetBlockedUserOutputPort>;
 }

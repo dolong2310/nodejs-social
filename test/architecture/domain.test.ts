@@ -1,6 +1,13 @@
 import { filesOfProject } from 'tsarch';
 import { describe, expect, it } from 'vitest';
-import { expectFilesMatch, expectNoForbiddenImports, parseModuleImport, sourceFiles } from './arch.helper';
+import {
+  expectFilesMatch,
+  expectNoForbiddenImports,
+  externalPackageOf,
+  INNER_LAYER_ALLOWED_PACKAGES,
+  parseModuleImport,
+  sourceFiles
+} from './arch.helper';
 
 // Get all files under src/modules/*/domain.
 const domainFiles = sourceFiles('src/modules').filter((file) => file.includes('/domain/'));
@@ -50,7 +57,7 @@ describe.concurrent('Domain boundaries', () => {
   it('domain entities, value objects, and repository ports use project suffixes', () => {
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/entities/')),
-      (file) => /(\.entity|\.type)\.ts$/.test(file)
+      (file) => /(\.entity|\.types)\.ts$/.test(file)
     );
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/value-objects/')),
@@ -59,9 +66,19 @@ describe.concurrent('Domain boundaries', () => {
     expectFilesMatch(
       domainFiles.filter((file) => file.includes('/domain/repositories/')),
       (file) =>
-        /(\.repository|\.repository\.type|\.query\.repository|\.query\.type|\.command\.repository|\.command\.type)\.ts$/.test(
+        /(\.repository|\.repository\.types|\.query\.repository|\.query\.types|\.command\.repository|\.command\.types)\.ts$/.test(
           file
         )
     );
+  });
+
+  // 5. domain only uses allowed utility packages; frameworks, I/O and transports stay outside.
+  it('domain imports only allowed third-party packages', () => {
+    expectNoForbiddenImports(domainFiles, ({ importPath }) => {
+      const pkg = externalPackageOf(importPath);
+      return pkg && !INNER_LAYER_ALLOWED_PACKAGES.has(pkg)
+        ? `domain must not import third-party package ${pkg}`
+        : false;
+    });
   });
 });

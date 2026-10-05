@@ -1,9 +1,15 @@
-import { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
-import { TokenServicePort } from '@/modules/authentication/application/services/token.service.type';
-import { RefreshTokenCommand } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
+import {
+  ExpiredTokenException,
+  InvalidTokenException
+} from '@/modules/authentication/application/exceptions/auth.exception';
+import { RefreshTokenExpiredException } from '@/modules/authentication/application/exceptions/refresh-token.exception';
+import type { AuthServicePort } from '@/modules/authentication/application/services/auth.service';
+import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
+import { RefreshTokenInputPort } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.port';
 import { RefreshTokenUseCase } from '@/modules/authentication/application/use-cases/refresh-token/refresh-token.usecase';
-import { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
-import { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
+import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
+import { UserNotFoundException } from '@/modules/user/application/exceptions/user.exception';
+import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import { makeUserWithRole } from '@test/support/builders/user.builder';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { describe, expect, it, vi } from 'vitest';
@@ -29,7 +35,7 @@ describe('RefreshTokenUseCase', () => {
     });
     const useCase = new RefreshTokenUseCase(refreshTokenRepository, userQueryRepository, authService, tokenService);
 
-    const result = await useCase.execute(new RefreshTokenCommand({ refreshToken: 'old-refresh' }));
+    const result = await useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old-refresh' }));
 
     expect(result).toEqual({ accessToken: 'new-access', refreshToken: 'new-refresh' });
     expect(authService.createAuthSession).toHaveBeenCalledWith({
@@ -43,5 +49,53 @@ describe('RefreshTokenUseCase', () => {
       newToken: 'new-refresh',
       expiresAt: new Date(1_900_000_000 * 1000)
     });
+  });
+
+  function makeUseCase(
+    overrides: Partial<
+      Pick<TokenServicePort, 'verifyRefreshToken'> & Pick<UserQueryRepositoryPort, 'findUserByIdIncludeRole'>
+    > = {}
+  ) {
+    const refreshTokenRepository = mockPort<RefreshTokenRepositoryPort>({
+      rotateRefreshToken: vi.fn().mockResolvedValue(true)
+    });
+    const userQueryRepository = mockPort<UserQueryRepositoryPort>({
+      findUserByIdIncludeRole: overrides.findUserByIdIncludeRole ?? vi.fn().mockResolvedValue(user)
+    });
+    const authService = mockPort<AuthServicePort>({ createAuthSession: vi.fn() });
+    const tokenService = mockPort<TokenServicePort>({
+      verifyRefreshToken:
+        overrides.verifyRefreshToken ??
+        vi.fn().mockResolvedValue({ userId: user.id, exp: 1_800_000_000, iat: 1_700_000_000 })
+    });
+    return new RefreshTokenUseCase(refreshTokenRepository, userQueryRepository, authService, tokenService);
+  }
+
+  it('maps an expired refresh token to RefreshTokenExpiredException', async () => {
+    const useCase = makeUseCase({
+      verifyRefreshToken: vi.fn().mockRejectedValue(new ExpiredTokenException())
+    });
+
+    await expect(useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old' }))).rejects.toBeInstanceOf(
+      RefreshTokenExpiredException
+    );
+  });
+
+  it('propagates an invalid refresh token as InvalidTokenException', async () => {
+    const useCase = makeUseCase({
+      verifyRefreshToken: vi.fn().mockRejectedValue(new InvalidTokenException())
+    });
+
+    await expect(useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old' }))).rejects.toBeInstanceOf(
+      InvalidTokenException
+    );
+  });
+
+  it('rethrows non-JWT errors unchanged', async () => {
+    const useCase = makeUseCase({ findUserByIdIncludeRole: vi.fn().mockResolvedValue(null) });
+
+    await expect(useCase.execute(new RefreshTokenInputPort({ refreshToken: 'old' }))).rejects.toBeInstanceOf(
+      UserNotFoundException
+    );
   });
 });

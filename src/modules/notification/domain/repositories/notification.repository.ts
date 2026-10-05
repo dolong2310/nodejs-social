@@ -1,10 +1,10 @@
-import { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
-import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
-import {
+import type { RepositoryPort } from '@/modules/core/domain/repositories/port.repository';
+import type { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
+import type {
   FindNotificationsInput,
   FindOldestNotificationIdsForTrimInput,
   UpdateReadByIdsInput
-} from '@/modules/notification/domain/repositories/notification.repository.type';
+} from '@/modules/notification/domain/repositories/notification.repository.types';
 
 export interface NotificationRepositoryPort extends RepositoryPort<NotificationEntity> {
   findNotifications(data: FindNotificationsInput): Promise<NotificationEntity[]>;

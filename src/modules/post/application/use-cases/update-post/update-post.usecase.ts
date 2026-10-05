@@ -1,4 +1,4 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import {
   EmptyPostUpdateException,
   OnlyOwnerCanUpdatePostSettingsException,
@@ -6,14 +6,14 @@ import {
   RepostCannotBeUpdatedException
 } from '@/modules/post/application/exceptions/post.exception';
 import {
-  UpdatePostCommand,
+  type UpdatePostInputPort,
   UpdatePostPort,
-  UpdatePostResult
+  UpdatePostOutputPort
 } from '@/modules/post/application/use-cases/update-post/update-post.port';
-import { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
-import { EnumPostType } from '@/modules/post/domain/entities/post.type';
-import { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
-import { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
+import type { HashtagEntity } from '@/modules/post/domain/entities/hashtag.entity';
+import { EnumPostType } from '@/modules/post/domain/entities/post.types';
+import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
+import type { PostRepositoryPort } from '@/modules/post/domain/repositories/post.repository';
 
 export class UpdatePostUseCase extends UpdatePostPort {
   private readonly log: LoggerPort;
@@ -27,8 +27,8 @@ export class UpdatePostUseCase extends UpdatePostPort {
     this.log = this.logger.child({ module: 'posts-service' });
   }
 
-  async execute(command: UpdatePostCommand): Promise<UpdatePostResult> {
-    const { userId, postId, audience, allowStrangerComments, content, media, mentions } = command;
+  async execute(input: UpdatePostInputPort): Promise<UpdatePostOutputPort> {
+    const { userId, postId, audience, allowStrangerComments, content, media, mentions } = input;
     const postExistingEntity = await this.postRepository.findPostById(postId);
 
     if (!postExistingEntity) {
@@ -44,11 +44,11 @@ export class UpdatePostUseCase extends UpdatePostPort {
       throw new RepostCannotBeUpdatedException();
     }
 
-    if (!this.hasUpdatePayload(command)) {
+    if (!this.hasUpdatePayload(input)) {
       throw new EmptyPostUpdateException();
     }
 
-    const hashtags = command.hashtags ? await this.createHashtagIds(command.hashtags) : undefined;
+    const hashtags = input.hashtags ? await this.createHashtagIds(input.hashtags) : undefined;
 
     const postEntity = await this.postRepository.updatePost({
       postId,
@@ -65,17 +65,17 @@ export class UpdatePostUseCase extends UpdatePostPort {
       throw new PostNotFoundException();
     }
 
-    return new UpdatePostResult(postEntity.toObject());
+    return new UpdatePostOutputPort(postEntity.toObject());
   }
 
-  private hasUpdatePayload(command: UpdatePostCommand): boolean {
+  private hasUpdatePayload(input: UpdatePostInputPort): boolean {
     return (
-      command.audience !== undefined ||
-      command.allowStrangerComments !== undefined ||
-      command.content !== undefined ||
-      command.media !== undefined ||
-      command.hashtags !== undefined ||
-      command.mentions !== undefined
+      input.audience !== undefined ||
+      input.allowStrangerComments !== undefined ||
+      input.content !== undefined ||
+      input.media !== undefined ||
+      input.hashtags !== undefined ||
+      input.mentions !== undefined
     );
   }
 

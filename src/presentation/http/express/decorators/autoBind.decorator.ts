@@ -1,11 +1,15 @@
 /**
- * AutoBind decorator for class methods.
+ * AutoBind decorator for classes and class methods.
+ *
+ * - On a method: binds that method only.
+ * - On a class: binds every own prototype method (accessors and constructor are skipped).
  *
  * Purpose: ensure `this` is correctly bound to the instance even when the
  * method is passed as a callback (unlike plain prototype methods).
  *
  * No external libraries required.
  */
+type AnyClass = abstract new (...args: never[]) => object;
 type AutoBindMethod = (...args: unknown[]) => unknown;
 
 function createAutoBindDecorator(
@@ -36,20 +40,49 @@ function createAutoBindDecorator(
   };
 }
 
-function AutoBind(): MethodDecorator;
+function autoBindClass(target: AnyClass): void {
+  const prototype = target.prototype as object;
+
+  for (const key of Reflect.ownKeys(prototype)) {
+    if (key === 'constructor') continue;
+
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    // Skips accessors and methods already decorated at method level (they have no `value`).
+    if (!descriptor || typeof descriptor.value !== 'function') continue;
+
+    Object.defineProperty(prototype, key, createAutoBindDecorator(prototype, key, descriptor));
+  }
+}
+
+type AutoBindDecorator = ClassDecorator & MethodDecorator;
+
+function AutoBind(): AutoBindDecorator;
+function AutoBind(target: AnyClass): void;
 function AutoBind(_target: unknown, propertyKey: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor;
 function AutoBind(
   target?: unknown,
   propertyKey?: string | symbol,
   descriptor?: PropertyDescriptor
-): MethodDecorator | PropertyDescriptor {
-  // Support both syntaxes: @AutoBind and @AutoBind()
+): AutoBindDecorator | PropertyDescriptor | void {
+  // Support both syntaxes: @AutoBind and @AutoBind(), on a method or on a class
   if (propertyKey !== undefined && descriptor !== undefined) {
     return createAutoBindDecorator(target, propertyKey, descriptor);
   }
 
-  return (decoratorTarget: unknown, decoratorPropertyKey: string | symbol, decoratorDescriptor: PropertyDescriptor) =>
-    createAutoBindDecorator(decoratorTarget, decoratorPropertyKey, decoratorDescriptor);
+  if (typeof target === 'function') {
+    return autoBindClass(target as AnyClass);
+  }
+
+  return ((
+    decoratorTarget: unknown,
+    decoratorPropertyKey?: string | symbol,
+    decoratorDescriptor?: PropertyDescriptor
+  ): PropertyDescriptor | void => {
+    if (decoratorPropertyKey !== undefined && decoratorDescriptor !== undefined) {
+      return createAutoBindDecorator(decoratorTarget, decoratorPropertyKey, decoratorDescriptor);
+    }
+    return autoBindClass(decoratorTarget as AnyClass);
+  }) as AutoBindDecorator;
 }
 
 export { AutoBind };

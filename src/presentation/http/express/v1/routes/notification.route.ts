@@ -1,14 +1,21 @@
-import { BaseRoute } from '@/presentation/http/express/core/base.route';
-import { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
-import { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
-import { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
-import { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
-import { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
-import { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
-import { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
-import { INotificationPipe } from '@/presentation/http/express/v1/pipes/notification.pipe';
-import { IPaginationPipe } from '@/presentation/http/express/v1/pipes/pagination.pipe';
+import { NOTIFICATION_THROTTLE_CONFIG } from '@/presentation/http/express/constants/throttler/notification.throttler.constants';
+import { BaseRoute, type RouterConfig } from '@/presentation/http/express/core/base.route';
+import type { ActiveUserGuard } from '@/presentation/http/express/guards/active-user.guard';
+import type { AuthGuard } from '@/presentation/http/express/guards/auth.guard';
+import type { ThrottlerProxyGuard } from '@/presentation/http/express/guards/throttler-proxy.guard';
+import type { IdempotencyInterceptor } from '@/presentation/http/express/interceptors/idempotency.interceptor';
+import type { LoggingInterceptor } from '@/presentation/http/express/interceptors/logging.interceptor';
+import type { TimeoutInterceptor } from '@/presentation/http/express/interceptors/timeout.interceptor';
+import type { TransformResponseInterceptor } from '@/presentation/http/express/interceptors/transform-response.interceptor';
+import type { INotificationController } from '@/presentation/http/express/v1/controllers/notifications.controller';
+import { validate } from '@/presentation/http/express/pipes/validation.pipe';
+import { cursorPaginatedSchema } from '@/presentation/http/express/v1/schemas/common/pagination.schema';
+import {
+  MarkNotificationsReadBodySchema,
+  NotificationIdParamsSchema,
+  NotificationListQuerySchema
+} from '@/presentation/http/express/v1/schemas/notification/notification.request.schema';
+import { NotificationResponseSchema } from '@/presentation/http/express/v1/schemas/notification/notification.response.schema';
 
 export class NotificationRoute extends BaseRoute {
   protected override readonly version = 'v1';
@@ -16,8 +23,6 @@ export class NotificationRoute extends BaseRoute {
 
   constructor(
     private readonly notificationController: INotificationController,
-    private readonly notificationPipe: INotificationPipe,
-    private readonly paginationPipe: IPaginationPipe,
     private readonly authGuard: AuthGuard,
     private readonly activeUserGuard: ActiveUserGuard,
     private readonly throttlerGuard: ThrottlerProxyGuard,
@@ -31,23 +36,21 @@ export class NotificationRoute extends BaseRoute {
   }
 
   protected override createRoutes(): void {
-    const throttler = this.throttlerGuard.handler();
-
-    this.router.get(
-      '/',
-      this.createRouteHandler({
-        middlewares: [throttler],
+    const configs: RouterConfig[] = [
+      {
+        path: '/',
+        method: 'get',
+        middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.LIST)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [this.loggingInterceptor, this.transformResponseInterceptor, this.timeoutInterceptor],
-        pipes: [this.paginationPipe.cursorPaginationQuery, this.notificationPipe.listQuery],
+        pipes: [validate({ query: NotificationListQuerySchema })],
+        response: cursorPaginatedSchema(NotificationResponseSchema),
         controller: this.notificationController.list
-      })
-    );
-
-    this.router.patch(
-      '/read',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/read',
+        method: 'patch',
+        middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.MARK_READ)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -55,15 +58,13 @@ export class NotificationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.notificationPipe.markReadBody],
+        pipes: [validate({ body: MarkNotificationsReadBodySchema })],
         controller: this.notificationController.markRead
-      })
-    );
-
-    this.router.patch(
-      '/:notificationId/read',
-      this.createRouteHandler({
-        middlewares: [throttler],
+      },
+      {
+        path: '/:notificationId/read',
+        method: 'patch',
+        middlewares: [this.throttlerGuard.handler(NOTIFICATION_THROTTLE_CONFIG.MARK_ONE_READ)],
         guards: [this.authGuard, this.activeUserGuard],
         interceptors: [
           this.loggingInterceptor,
@@ -71,9 +72,13 @@ export class NotificationRoute extends BaseRoute {
           this.idempotencyInterceptor,
           this.timeoutInterceptor
         ],
-        pipes: [this.notificationPipe.notificationIdParam],
+        pipes: [validate({ params: NotificationIdParamsSchema })],
         controller: this.notificationController.markOneRead
-      })
-    );
+      }
+    ];
+
+    configs.forEach(({ path, method, ...config }) => {
+      this.router[method](path, this.createRouteHandler(config));
+    });
   }
 }

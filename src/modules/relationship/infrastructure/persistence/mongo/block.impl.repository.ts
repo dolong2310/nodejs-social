@@ -1,10 +1,10 @@
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
 import { BlockEntity } from '@/modules/relationship/domain/entities/block.entity';
-import { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
-import { BlockMapper } from '@/modules/relationship/infrastructure/persistence/mongo/block.mapper';
-import { BlockModel } from '@/modules/relationship/infrastructure/persistence/mongo/block.model';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+import type { BlockRepositoryPort } from '@/modules/relationship/domain/repositories/block.repository';
+import type { BlockMapper } from '@/modules/relationship/infrastructure/persistence/mongo/block.mapper';
+import type { BlockModel } from '@/modules/relationship/infrastructure/persistence/mongo/block.model';
+import { type Db, type MongoClient, MongoServerError } from 'mongodb';
 
 export class BlockRepository extends MongoRepositoryBase<BlockEntity, BlockModel> implements BlockRepositoryPort {
   protected collectionName = 'blocks';

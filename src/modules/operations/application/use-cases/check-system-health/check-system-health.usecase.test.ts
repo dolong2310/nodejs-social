@@ -1,7 +1,7 @@
-import { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
-import { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import { SystemHealthProbePort } from '@/modules/operations/application/ports/system-health-probe.port';
+import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import type { SystemHealthProbePort } from '@/modules/operations/application/ports/system-health-probe.port';
 import { CheckSystemHealthUseCase } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.usecase';
 import { mockPort } from '@test/support/mocks/port.mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

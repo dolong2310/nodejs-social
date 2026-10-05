@@ -1,11 +1,11 @@
 /**
  * Sync permissions from HTTP routes (Express) and assign them to ADMIN/USER roles.
- * Run: `pnpm run seed:permissions:mongo -- --env=development`.
+ * Run: `pnpm run seed:permissions:mongo`.
  *
  * Prerequisite:
- * Run `pnpm run db:migrate:mongo --env=development` first.
+ * Run `pnpm run db:migrate:mongo` first.
  */
-import { appConfig } from '@/bootstrap/config/app.config';
+import { APP_CONFIG } from '@/bootstrap/config/app.config';
 import logger from '@/infrastructure/logger/create-logger';
 import { dbConfig } from '@/infrastructure/persistence/config/database.config';
 import { MongoDatabase } from '@/infrastructure/persistence/mongodb/database';
@@ -13,6 +13,7 @@ import { PermissionRepository } from '@/modules/authorization/infrastructure/per
 import { PermissionMapper } from '@/modules/authorization/infrastructure/persistence/mongo/permission.mapper';
 import { RoleRepository } from '@/modules/authorization/infrastructure/persistence/mongo/role.impl.repository';
 import { RoleMapper } from '@/modules/authorization/infrastructure/persistence/mongo/role.mapper';
+import { MongoUnitOfWork } from '@/modules/core/infrastructure/unit-of-work/mongo.unit-of-work';
 import { SyncRolePermissionsUseCase } from '@/modules/operations/application/use-cases/sync-role-permissions/sync-role-permissions.usecase';
 import { HttpRoutePermissionCatalog } from '@/modules/operations/presentation/http-route-permission-catalog';
 
@@ -35,7 +36,8 @@ async function main(): Promise<void> {
   const syncRolePermissionsUC = new SyncRolePermissionsUseCase(
     permissionRepository,
     roleRepository,
-    new HttpRoutePermissionCatalog({ apiPrefix: appConfig.api.prefix })
+    new HttpRoutePermissionCatalog({ apiPrefix: APP_CONFIG.API.PREFIX }),
+    new MongoUnitOfWork(databaseService.dbClient)
   );
   const result = await syncRolePermissionsUC.execute();
 

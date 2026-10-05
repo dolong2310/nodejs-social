@@ -1,10 +1,9 @@
-import { RoleServicePort } from '@/modules/authorization/application/services/role.service';
-import { CacheStrategyPort } from '@/modules/core/application/ports/cache-strategy.port';
-import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constant';
-import { AdminDeleteUserCommand } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
+import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import { CACHE_KEYS } from '@/modules/user/application/constants/cache.constants';
+import { AdminDeleteUserInputPort } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.port';
 import { AdminDeleteUserUseCase } from '@/modules/user/application/use-cases/admin-delete-user/admin-delete-user.usecase';
-import { UserEntity } from '@/modules/user/domain/entities/user.entity';
-import { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import type { UserEntity } from '@/modules/user/domain/entities/user.entity';
+import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
 import { makeUserFullProps } from '@test/support/builders/user.builder';
 import { entityDouble } from '@test/support/doubles/entity.double';
 import { mockCache, mockPort } from '@test/support/mocks/port.mock';
@@ -26,10 +25,10 @@ describe('AdminDeleteUserUseCase', () => {
     const roleService = mockPort<RoleServicePort>({
       getAdminRoleId: vi.fn().mockResolvedValue('role_admin')
     });
-    const cache = mockCache() as CacheStrategyPort;
+    const cache = mockCache();
     const useCase = new AdminDeleteUserUseCase(userRepository, roleService, cache);
 
-    await useCase.execute(new AdminDeleteUserCommand({ actorId: 'admin_1', userId: user.id }));
+    await useCase.execute(new AdminDeleteUserInputPort({ actorId: 'admin_1', userId: user.id }));
 
     expect(userRepository.deleteById).toHaveBeenCalledWith(user.id, { actorId: 'admin_1' });
     expect(cache.invalidate).toHaveBeenCalledWith(CACHE_KEYS.user(user.id));

@@ -1,21 +1,21 @@
 import { normalizeFriendshipPair } from '@/modules/common/utils/canonical-pair.util';
 import { ConversationMemberEntity } from '@/modules/conversation/domain/entities/conversation-member.entity';
-import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.type';
+import { EnumConversationMemberRole } from '@/modules/conversation/domain/entities/conversation-member.types';
 import { ConversationEntity } from '@/modules/conversation/domain/entities/conversation.entity';
-import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.type';
-import { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
-import {
+import { EnumConversationType } from '@/modules/conversation/domain/entities/conversation.types';
+import type { ConversationRepositoryPort } from '@/modules/conversation/domain/repositories/conversation.repository';
+import type {
   CreateGroupConversationInput,
   TouchUpdatedAtInput,
   UpdateConversationInput
-} from '@/modules/conversation/domain/repositories/conversation.repository.type';
-import { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
-import { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
-import { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
-import { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
-import { LoggerPort } from '@/modules/core/application/ports/logger.port';
+} from '@/modules/conversation/domain/repositories/conversation.repository.types';
+import type { ConversationMemberMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.mapper';
+import type { ConversationMemberModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation-member.model';
+import type { ConversationMapper } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.mapper';
+import type { ConversationModel } from '@/modules/conversation/infrastructure/persistence/mongo/conversation.model';
+import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import { Db, MongoClient, MongoServerError } from 'mongodb';
+import { type Db, type MongoClient, MongoServerError } from 'mongodb';
 
 export class ConversationRepository
   extends MongoRepositoryBase<ConversationEntity, ConversationModel>
@@ -55,20 +55,27 @@ export class ConversationRepository
   }
 
   async createDirectConversation(createdBy: string, peerId: string): Promise<ConversationEntity | null> {
+    const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
+    const entity = ConversationEntity.create({
+      type: EnumConversationType.DIRECT,
+      createdBy,
+      userIdLow,
+      userIdHigh
+    });
+    const { type, user_id_low, user_id_high, deleted_at, ...rest } = this.mapper.toPersistence(entity);
     try {
-      const { userIdLow, userIdHigh } = normalizeFriendshipPair(createdBy, peerId);
-      const entity = ConversationEntity.create({
-        type: EnumConversationType.DIRECT,
-        createdBy,
-        userIdLow,
-        userIdHigh
-      });
-      const record = this.mapper.toPersistence(entity);
-      await this.dbCollection.insertOne(record);
-      return this.mapper.toDomain(record);
+      // Upsert instead of catching the duplicate key: inside a transaction a failed write aborts it.
+      // The filter matches the partial unique index (active direct conversation per user pair).
+      const result = await this.dbCollection.updateOne(
+        { type, user_id_low, user_id_high, deleted_at },
+        { $setOnInsert: rest },
+        { upsert: true }
+      );
+      return result.upsertedCount === 1 ? entity : null;
     } catch (error) {
-      // Handle race conditions when two requests create the conversation concurrently.
-      if (error instanceof MongoServerError && error.code === 11000) {
+      // Outside a transaction a concurrent upsert can still hit the unique index: another request created the room.
+      // Inside a transaction the error must propagate so the driver can abort or retry it.
+      if (!this.inTransaction && error instanceof MongoServerError && error.code === 11000) {
         return null;
       }
       throw error;
@@ -109,12 +116,10 @@ export class ConversationRepository
     // Create a transaction that performs two operations: insert group and insert members.
     await this.transaction(async () => {
       const groupRecord = this.mapper.toPersistence(group);
-      await this.dbCollection.insertOne(groupRecord, { session: this.session });
+      await this.dbCollection.insertOne(groupRecord);
       if (allMembers.length > 0) {
         const memberRecords = allMembers.map((member) => this.conversationMemberMapper.toPersistence(member));
-        await this.db
-          .collection<ConversationMemberModel>('conversation_members')
-          .insertMany(memberRecords, { session: this.session });
+        await this.collection<ConversationMemberModel>('conversation_members').insertMany(memberRecords);
       }
     });
 
