@@ -2,6 +2,7 @@ import { ExceptionBase } from '@/modules/core/domain/exceptions/exception.base';
 import { HttpException } from '@/presentation/http/express/responses/error.response';
 import { HTTP_ERROR_MESSAGE } from '@/presentation/http/express/responses/http-message.constants';
 import { HTTP_STATUS } from '@/presentation/http/express/responses/http-status.constants';
+import { httpStatusOf } from '@/presentation/http/express/utils/exception-http-status.util';
 import type { NextFunction, Request, Response } from 'express';
 
 export class HttpExceptionFilter {
@@ -9,8 +10,8 @@ export class HttpExceptionFilter {
     void next; // only prevent eslint warning
 
     if (error instanceof ExceptionBase) {
-      const { message, code, statusCode } = error.toJSON();
-      response.status(statusCode).json({ message: message || code, errors: {} });
+      const { message, code } = error.toJSON();
+      response.status(httpStatusOf(error)).json({ message: message || code, errors: {} });
       return;
     }
 

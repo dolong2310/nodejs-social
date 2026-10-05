@@ -1,7 +1,23 @@
+/**
+ * What kind of failure an exception represents, independent of any transport.
+ * Adapters translate it (e.g. the HTTP layer maps `not_found` to 404).
+ */
+export type ExceptionType =
+  | 'invalid_argument'
+  | 'unauthenticated'
+  | 'forbidden'
+  | 'not_found'
+  | 'conflict'
+  | 'too_large'
+  | 'range_not_satisfiable'
+  | 'rate_limited'
+  | 'unavailable'
+  | 'internal';
+
 export interface NormalizedException {
   message: string;
   code: string;
-  statusCode: number;
+  type: ExceptionType;
   stack?: string;
   cause?: string;
   /**
@@ -16,7 +32,7 @@ export interface NormalizedException {
 
 export abstract class ExceptionBase extends Error {
   abstract code: string;
-  abstract statusCode: number;
+  abstract type: ExceptionType;
 
   /**
    * @param {string} message
@@ -39,7 +55,7 @@ export abstract class ExceptionBase extends Error {
     return {
       message: this.message,
       code: this.code,
-      statusCode: this.statusCode,
+      type: this.type,
       stack: this.stack,
       cause: JSON.stringify(this.cause),
       metadata: this.metadata
