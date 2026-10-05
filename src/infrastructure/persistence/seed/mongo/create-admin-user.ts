@@ -8,7 +8,7 @@
  * 1. Run `pnpm run db:migrate:mongo` first.
  * 2. Run `pnpm run seed:permissions:mongo` so the ADMIN role exists.
  *
- * Optional environment overrides:
+ * Required environment variables:
  * - SEED_ADMIN_EMAIL
  * - SEED_ADMIN_PASSWORD
  * - SEED_ADMIN_NAME
@@ -27,11 +27,19 @@ import { EnumUserStatus } from '@/modules/user/domain/entities/user.types';
 import { UserRepository } from '@/modules/user/infrastructure/persistence/mongo/user.impl.repository';
 import { UserMapper } from '@/modules/user/infrastructure/persistence/mongo/user.mapper';
 
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL!;
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD!;
-const ADMIN_NAME = process.env.SEED_ADMIN_NAME!;
-const ADMIN_USERNAME = process.env.SEED_ADMIN_USERNAME!;
-const ADMIN_BIRTHDAY = new Date(process.env.SEED_ADMIN_BIRTHDAY!);
+function requireSeedEnv(key: string): string {
+  const value = process.env[key]?.trim();
+  if (!value) {
+    throw new Error(`${key} is required to seed the admin user.`);
+  }
+  return value;
+}
+
+const ADMIN_EMAIL = requireSeedEnv('SEED_ADMIN_EMAIL');
+const ADMIN_PASSWORD = requireSeedEnv('SEED_ADMIN_PASSWORD');
+const ADMIN_NAME = requireSeedEnv('SEED_ADMIN_NAME');
+const ADMIN_USERNAME = requireSeedEnv('SEED_ADMIN_USERNAME');
+const ADMIN_BIRTHDAY = new Date(requireSeedEnv('SEED_ADMIN_BIRTHDAY'));
 
 if (Number.isNaN(ADMIN_BIRTHDAY.getTime())) {
   throw new Error('SEED_ADMIN_BIRTHDAY must be a valid ISO date string.');
