@@ -20,11 +20,13 @@ export class MongoDatabase implements MongoDatabasePort {
   public readDb: Db;
 
   constructor(readonly config: { uri: string; readUri?: string; databaseName: string }) {
-    this.dbClient = new MongoClient(config.uri, { readPreference: 'primary' });
+    // Omit undefined fields instead of storing them as null: optional fields must stay absent, not null.
+    this.dbClient = new MongoClient(config.uri, { readPreference: 'primary', ignoreUndefined: true });
     this.db = this.dbClient.db(config.databaseName);
 
     this.readDbClient = new MongoClient(config.readUri || config.uri, {
-      readPreference: 'secondaryPreferred'
+      readPreference: 'secondaryPreferred',
+      ignoreUndefined: true
     });
     this.readDb = this.readDbClient.db(config.databaseName);
   }
