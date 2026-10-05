@@ -1,16 +1,10 @@
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { MongoRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.mongo.repository';
-import {
-  classifyExistingPaymentNotification,
-  MUTABLE_PAYMENT_STATUSES,
-  normalizeProviderTransactionId,
-  URL_ATTACHABLE_PAYMENT_STATUSES
-} from '@/modules/payment/domain/helpers/payment.policy';
 import type { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import type {
-  ApplyVerifiedOutcomeResult,
-  PaymentRepositoryPort
+import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
+import {
+  PaymentProviderTransactionConflictError,
+  type PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
 import type { PaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
 import type { PaymentModel } from '@/modules/payment/infrastructure/persistence/mongo/payment.model';
@@ -54,97 +48,33 @@ export class PaymentRepository
     return this.findOne({ provider, providerOrderId: orderId } as Partial<PaymentEntity>);
   }
 
-  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity> {
-    await this.dbCollection.updateOne(
-      { _id: id, checkout_url: null, status: 'creating', deleted_at: null },
-      {
-        $set: { checkout_url: url, status: 'pending', updated_at: new Date(), updated_by_id: null },
-        $inc: { version: 1 }
-      }
-    );
-    await this.dbCollection.updateOne(
-      {
-        _id: id,
-        checkout_url: null,
-        status: { $in: URL_ATTACHABLE_PAYMENT_STATUSES.filter((status) => status !== 'creating') },
-        deleted_at: null
-      },
-      { $set: { checkout_url: url, updated_at: new Date(), updated_by_id: null }, $inc: { version: 1 } }
-    );
-    return this.requirePayment(id);
-  }
-
-  async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
-    await this.dbCollection.updateOne(
-      { _id: id, status: 'creating', deleted_at: null },
-      { $set: { status: 'unknown', updated_at: new Date(), updated_by_id: null }, $inc: { version: 1 } }
-    );
-    return this.requirePayment(id);
-  }
-
-  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity> {
-    await this.dbCollection.updateOne(
-      { _id: id, status: 'creating', deleted_at: null },
-      {
-        $set: {
-          status: 'create_failed',
-          provider_result_code: resultCode,
-          updated_at: new Date(),
-          updated_by_id: null
-        },
-        $inc: { version: 1 }
-      }
-    );
-    return this.requirePayment(id);
-  }
-
-  async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
-    const currentPayment = await this.findPaymentByProviderOrderId(input.provider, input.providerOrderId);
-    if (!currentPayment) return 'not_found';
-    const current = currentPayment.getProps();
-    if (current.amountVnd !== input.amountVnd) return 'amount_mismatch';
-    if (input.providerRequestId !== undefined && current.providerRequestId !== input.providerRequestId) {
-      return 'reference_mismatch';
-    }
-
-    const existingResult = classifyExistingPaymentNotification(current, input);
-    if (existingResult) return existingResult;
-
+  async save(payment: PaymentEntity): Promise<PaymentEntity | null> {
+    const model = this.mapper.toPersistence(payment);
     try {
-      const updatedPayment = await this.dbCollection.findOneAndUpdate(
-        {
-          _id: current.id.toString(),
-          version: current.version,
-          status: { $in: MUTABLE_PAYMENT_STATUSES },
-          deleted_at: null
-        },
+      // Only the state changed by the entity's domain methods; the version check rejects stale writes.
+      const saved = await this.dbCollection.findOneAndUpdate(
+        { _id: model._id, version: model.version, deleted_at: null },
         {
           $set: {
-            status: input.outcome,
-            provider_transaction_id: normalizeProviderTransactionId(input.providerTransactionId),
-            provider_result_code: input.resultCode,
-            updated_at: new Date(),
-            updated_by_id: null
+            status: model.status,
+            checkout_url: model.checkout_url,
+            provider_transaction_id: model.provider_transaction_id,
+            provider_result_code: model.provider_result_code,
+            updated_at: model.updated_at,
+            updated_by_id: model.updated_by_id
           },
           $inc: { version: 1 }
         },
         { returnDocument: 'after' }
       );
-      if (updatedPayment) return 'applied';
+      return saved ? this.mapper.toDomain(saved) : null;
     } catch (error) {
-      if (this.isDuplicateKeyError(error)) return 'state_conflict';
+      // The provider transaction ID is the only unique field this update can change.
+      if (this.isDuplicateKeyError(error)) {
+        throw new PaymentProviderTransactionConflictError({ cause: error });
+      }
       throw error;
     }
-
-    const latestPayment = await this.findById(current.id.toString());
-    if (!latestPayment) return 'not_found';
-    return classifyExistingPaymentNotification(latestPayment.getProps(), input) ?? 'state_conflict';
-  }
-
-  private async requirePayment(id: string): Promise<PaymentEntity> {
-    const payment = await this.findPaymentById(id);
-    if (!payment) throw new Error(`Payment ${id} was not found`);
-    return payment;
   }
 
   private isDuplicateKeyError(error: unknown): error is MongoServerError {

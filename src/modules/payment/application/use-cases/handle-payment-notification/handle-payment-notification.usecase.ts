@@ -2,13 +2,17 @@ import { PaymentNotificationVerificationError } from '@/modules/payment/applicat
 import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
 import {
   type HandlePaymentNotificationInputPort,
-  HandlePaymentNotificationPort
+  HandlePaymentNotificationPort,
+  type HandlePaymentNotificationResult
 } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.port';
 import type { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import type {
-  ApplyVerifiedOutcomeResult,
-  PaymentRepositoryPort
+import {
+  PaymentProviderTransactionConflictError,
+  type PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
+
+// A version conflict means another write landed between load and save; the rules are re-run on the latest state.
+const MAX_SAVE_ATTEMPTS = 3;
 
 export class HandlePaymentNotificationUseCase extends HandlePaymentNotificationPort {
   constructor(
@@ -18,7 +22,7 @@ export class HandlePaymentNotificationUseCase extends HandlePaymentNotificationP
     super();
   }
 
-  async execute(input: HandlePaymentNotificationInputPort): Promise<ApplyVerifiedOutcomeResult> {
+  async execute(input: HandlePaymentNotificationInputPort): Promise<HandlePaymentNotificationResult> {
     const { provider, payload } = input;
     const gateway = this.gateways[provider];
     if (!gateway) throw new PaymentNotificationVerificationError('invalid_payload');
@@ -28,7 +32,25 @@ export class HandlePaymentNotificationUseCase extends HandlePaymentNotificationP
       throw new PaymentNotificationVerificationError('invalid_payload');
     }
 
-    return this.paymentRepository.applyVerifiedOutcome(notification);
+    for (let attempt = 0; attempt < MAX_SAVE_ATTEMPTS; attempt++) {
+      const payment = await this.paymentRepository.findPaymentByProviderOrderId(
+        notification.provider,
+        notification.providerOrderId
+      );
+      if (!payment) return 'not_found';
+
+      const result = payment.applyVerifiedOutcome(notification);
+      if (result !== 'applied') return result;
+
+      try {
+        if (await this.paymentRepository.save(payment)) return 'applied';
+      } catch (error) {
+        // Another order already stored this provider transaction ID.
+        if (error instanceof PaymentProviderTransactionConflictError) return 'state_conflict';
+        throw error;
+      }
+    }
+    return 'state_conflict';
   }
 }
 

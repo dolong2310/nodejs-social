@@ -4,6 +4,11 @@ import { ArgumentInvalidException, ArgumentNotProvidedException } from '@/module
 import { generatePrefixId } from '@/modules/core/domain/helpers/ids';
 import { invariant } from '@/modules/core/domain/helpers/invariant';
 import {
+  classifyExistingPaymentNotification,
+  normalizeProviderTransactionId,
+  URL_ATTACHABLE_PAYMENT_STATUSES
+} from '@/modules/payment/domain/helpers/payment.policy';
+import {
   type CreatePaymentProps,
   MAX_PAYMENT_AMOUNT_VND,
   MAX_PAYMENT_DESCRIPTION_LENGTH,
@@ -11,7 +16,9 @@ import {
   MIN_PAYMENT_AMOUNT_VND,
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
-  type PaymentProps
+  type PaymentOutcomeResult,
+  type PaymentProps,
+  type VerifiedNotification
 } from '@/modules/payment/domain/entities/payment.types';
 import { createHash } from 'node:crypto';
 
@@ -59,6 +66,53 @@ export class PaymentEntity extends Entity<PaymentProps> {
       }
     });
     return entity;
+  }
+
+  /**
+   * Stores the checkout URL returned by the provider. A creating payment becomes pending; a payment the provider
+   * already resolved (an early callback) keeps its status. Returns false when nothing changed.
+   */
+  attachCheckoutUrl(url: string): boolean {
+    const { status, checkoutUrl } = this.getProps();
+    if (checkoutUrl !== null || !URL_ATTACHABLE_PAYMENT_STATUSES.includes(status)) return false;
+    this.updateProps({ checkoutUrl: url, status: status === 'creating' ? 'pending' : status });
+    return true;
+  }
+
+  /** Checkout creation ended without a definitive answer. Only applies while creating. */
+  markUnknown(): boolean {
+    if (this.getProps().status !== 'creating') return false;
+    this.updateProps({ status: 'unknown' });
+    return true;
+  }
+
+  /** The provider definitively rejected checkout creation. Only applies while creating. */
+  markCreateFailed(resultCode: string): boolean {
+    if (this.getProps().status !== 'creating') return false;
+    this.updateProps({ status: 'create_failed', providerResultCode: resultCode });
+    return true;
+  }
+
+  /**
+   * Applies a verified provider notification. Only 'applied' changes the payment; every other result explains why
+   * it was rejected or ignored (a replay of the stored result is a 'duplicate').
+   */
+  applyVerifiedOutcome(notification: VerifiedNotification): PaymentOutcomeResult {
+    const current = this.getProps();
+    if (current.amountVnd !== notification.amountVnd) return 'amount_mismatch';
+    if (notification.providerRequestId !== undefined && current.providerRequestId !== notification.providerRequestId) {
+      return 'reference_mismatch';
+    }
+
+    const existingResult = classifyExistingPaymentNotification(current, notification);
+    if (existingResult) return existingResult;
+
+    this.updateProps({
+      status: notification.outcome,
+      providerTransactionId: normalizeProviderTransactionId(notification.providerTransactionId),
+      providerResultCode: notification.resultCode
+    });
+    return 'applied';
   }
 
   validate(): void {

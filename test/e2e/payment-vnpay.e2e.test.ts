@@ -2,18 +2,8 @@ import express, { type NextFunction, type Request } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
-import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
-import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type {
-  PaymentProvider,
-  PaymentFullProps,
-  PaymentProps,
-  VerifiedNotification
-} from '@/modules/payment/domain/entities/payment.types';
-import type {
-  ApplyVerifiedOutcomeResult,
-  PaymentRepositoryPort
-} from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
+import { InMemoryPaymentRepository } from '@test/support/doubles/payment-repository.double';
 import { installE2eEnv } from './support/e2e-env';
 
 installE2eEnv();
@@ -202,13 +192,13 @@ describe('VNPay payment HTTP e2e', () => {
       .expect(200, { RspCode: '97', Message: 'Invalid signature' });
 
     const conflictPayment = await fixture.createPayment('state-conflict-1');
-    fixture.repository.returnStateConflict = true;
+    fixture.repository.conflictOnSave = true;
     await request(fixture.app)
       .get('/api/v1/payments/callbacks/vnpay/ipn')
       .query(signIpn(conflictPayment))
       .expect(200, { RspCode: '99', Message: 'Unknown error' });
-    fixture.repository.returnStateConflict = false;
-    fixture.repository.failApply = true;
+    fixture.repository.conflictOnSave = false;
+    fixture.repository.failStorage = true;
     await request(fixture.app)
       .get('/api/v1/payments/callbacks/vnpay/ipn')
       .query(signIpn(conflictPayment, { vnp_TxnRef: 'po_storage_failure' }))
@@ -360,108 +350,4 @@ function signIpn(payment: PaymentFullProps, overrides: Record<string, string> = 
     bufferEncode: 'utf-8'
   });
   return payload;
-}
-
-class InMemoryPaymentRepository implements PaymentRepositoryPort {
-  private readonly records = new Map<string, PaymentFullProps>();
-  failApply = false;
-  returnStateConflict = false;
-
-  async insertOrFindByIdempotency(payment: PaymentEntity): Promise<{ payment: PaymentEntity; inserted: boolean }> {
-    const record = payment.toObject<PaymentFullProps>();
-    const existing = [...this.records.values()].find(
-      (candidate) => candidate.userId === record.userId && candidate.idempotencyKey === record.idempotencyKey
-    );
-    if (existing) return { payment: this.toEntity(existing), inserted: false };
-    const stored = { ...record };
-    this.records.set(stored.id, stored);
-    return { payment: this.toEntity(stored), inserted: true };
-  }
-
-  async findPaymentById(id: string): Promise<PaymentEntity | null> {
-    const payment = this.records.get(id);
-    return payment ? this.toEntity(payment) : null;
-  }
-
-  expireCheckout(id: string): void {
-    const record = this.requireRecord(id);
-    this.records.set(id, { ...record, expiresAt: new Date(Date.now() - 1000) });
-  }
-
-  async findPaymentByProviderOrderId(provider: PaymentProvider, orderId: string): Promise<PaymentEntity | null> {
-    const payment = [...this.records.values()].find(
-      (record) => record.provider === provider && record.providerOrderId === orderId
-    );
-    return payment ? this.toEntity(payment) : null;
-  }
-
-  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity> {
-    const record = this.requireRecord(id);
-    if (!record.checkoutUrl) {
-      const updated: PaymentFullProps = {
-        ...record,
-        checkoutUrl: url,
-        status: record.status === 'creating' ? 'pending' : record.status
-      };
-      this.records.set(id, updated);
-      return this.toEntity(updated);
-    }
-    return this.toEntity(record);
-  }
-
-  async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
-    const record = this.requireRecord(id);
-    if (record.status !== 'creating') return this.toEntity(record);
-    const updated: PaymentFullProps = { ...record, status: 'unknown' };
-    this.records.set(id, updated);
-    return this.toEntity(updated);
-  }
-
-  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity> {
-    const record = this.requireRecord(id);
-    if (record.status !== 'creating') return this.toEntity(record);
-    const updated: PaymentFullProps = { ...record, status: 'create_failed', providerResultCode: resultCode };
-    this.records.set(id, updated);
-    return this.toEntity(updated);
-  }
-
-  async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
-    if (this.failApply) throw new Error('database unavailable');
-    if (this.returnStateConflict) return 'state_conflict';
-    const record = await this.findPaymentByProviderOrderId(input.provider, input.providerOrderId);
-    if (!record) return 'not_found';
-    const props = record.getProps();
-    if (props.amountVnd !== input.amountVnd) return 'amount_mismatch';
-    if (props.status === input.outcome && props.providerTransactionId === input.providerTransactionId)
-      return 'duplicate';
-    if (['succeeded', 'failed', 'cancelled'].includes(props.status)) return 'state_conflict';
-    const updated: PaymentFullProps = {
-      ...record.toObject<PaymentFullProps>(),
-      status: input.outcome,
-      providerTransactionId: input.providerTransactionId,
-      providerResultCode: input.resultCode
-    };
-    this.records.set(record.id.toString(), updated);
-    return 'applied';
-  }
-
-  private requireRecord(id: string): PaymentFullProps {
-    const record = this.records.get(id);
-    if (!record) throw new Error(`Missing test payment ${id}`);
-    return record;
-  }
-
-  private toEntity(payment: PaymentFullProps): PaymentEntity {
-    const { id, createdAt, createdById, updatedAt, updatedById, deletedAt, deletedById, ...props } = payment;
-    return new PaymentEntity({
-      id: new UniqueEntityID(id),
-      createdAt,
-      createdById,
-      updatedAt,
-      updatedById,
-      deletedAt,
-      deletedById,
-      props: props as PaymentProps
-    });
-  }
 }

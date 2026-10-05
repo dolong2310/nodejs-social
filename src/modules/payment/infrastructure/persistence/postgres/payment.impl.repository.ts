@@ -1,16 +1,10 @@
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import { PostgresRepositoryBase } from '@/modules/core/infrastructure/persistence/repositories/base.postgres.repository';
-import {
-  classifyExistingPaymentNotification,
-  MUTABLE_PAYMENT_STATUSES,
-  normalizeProviderTransactionId,
-  URL_ATTACHABLE_PAYMENT_STATUSES
-} from '@/modules/payment/domain/helpers/payment.policy';
 import type { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type { PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import type {
-  ApplyVerifiedOutcomeResult,
-  PaymentRepositoryPort
+import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
+import {
+  PaymentProviderTransactionConflictError,
+  type PaymentRepositoryPort
 } from '@/modules/payment/domain/repositories/payment.repository';
 import type { PaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
 import type { PaymentModel } from '@/modules/payment/infrastructure/persistence/postgres/payment.model';
@@ -91,87 +85,42 @@ export class PaymentRepository
     return this.findOne({ provider, providerOrderId: orderId } as Partial<PaymentEntity>);
   }
 
-  async attachCheckoutUrlIfAbsent(id: string, url: string): Promise<PaymentEntity> {
-    await this.query(
-      `
-        UPDATE payments
-        SET checkout_url = $2,
-            status = CASE WHEN status = 'creating' THEN 'pending' ELSE status END,
-            updated_at = NOW(),
-            updated_by_id = NULL,
-            version = version + 1
-        WHERE id = $1 AND checkout_url IS NULL AND status = ANY($3::text[]) AND deleted_at IS NULL
-      `,
-      [id, url, URL_ATTACHABLE_PAYMENT_STATUSES]
-    );
-    return this.requirePayment(id);
-  }
-
-  async setUnknownIfCreating(id: string): Promise<PaymentEntity> {
-    await this.query(
-      "UPDATE payments SET status = 'unknown', updated_at = NOW(), updated_by_id = NULL, version = version + 1 WHERE id = $1 AND status = 'creating' AND deleted_at IS NULL",
-      [id]
-    );
-    return this.requirePayment(id);
-  }
-
-  async setCreateFailedIfCreating(id: string, resultCode: string): Promise<PaymentEntity> {
-    await this.query(
-      "UPDATE payments SET status = 'create_failed', provider_result_code = $2, updated_at = NOW(), updated_by_id = NULL, version = version + 1 WHERE id = $1 AND status = 'creating' AND deleted_at IS NULL",
-      [id, resultCode]
-    );
-    return this.requirePayment(id);
-  }
-
-  async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
-    const currentPayment = await this.findPaymentByProviderOrderId(input.provider, input.providerOrderId);
-    if (!currentPayment) return 'not_found';
-    const current = currentPayment.getProps();
-    if (current.amountVnd !== input.amountVnd) return 'amount_mismatch';
-    if (input.providerRequestId !== undefined && current.providerRequestId !== input.providerRequestId) {
-      return 'reference_mismatch';
-    }
-
-    const existingResult = classifyExistingPaymentNotification(current, input);
-    if (existingResult) return existingResult;
-
+  async save(payment: PaymentEntity): Promise<PaymentEntity | null> {
+    const model = this.mapper.toPersistence(payment);
     try {
+      // Only the state changed by the entity's domain methods; the version check rejects stale writes.
       const result = await this.query<PaymentModel>(
         `
           UPDATE payments
           SET status = $1,
-              provider_transaction_id = $2,
-              provider_result_code = $3,
-              updated_at = NOW(),
-              updated_by_id = NULL,
+              checkout_url = $2,
+              provider_transaction_id = $3,
+              provider_result_code = $4,
+              updated_at = $5,
+              updated_by_id = $6,
               version = version + 1
-          WHERE id = $4 AND version = $5 AND status = ANY($6::text[]) AND deleted_at IS NULL
+          WHERE id = $7 AND version = $8 AND deleted_at IS NULL
           RETURNING *
         `,
         [
-          input.outcome,
-          normalizeProviderTransactionId(input.providerTransactionId),
-          input.resultCode,
-          current.id.toString(),
-          current.version,
-          MUTABLE_PAYMENT_STATUSES
+          model.status,
+          model.checkout_url,
+          model.provider_transaction_id,
+          model.provider_result_code,
+          model.updated_at,
+          model.updated_by_id,
+          model.id,
+          model.version
         ]
       );
-      if (result.rows[0]) return 'applied';
+      const [saved] = result.rows;
+      return saved ? this.mapper.toDomain(saved) : null;
     } catch (error) {
-      if (isProviderTransactionUniqueViolation(error)) return 'state_conflict';
+      if (isProviderTransactionUniqueViolation(error)) {
+        throw new PaymentProviderTransactionConflictError({ cause: error });
+      }
       throw error;
     }
-
-    const latestPayment = await this.findById(current.id.toString());
-    if (!latestPayment) return 'not_found';
-    return classifyExistingPaymentNotification(latestPayment.getProps(), input) ?? 'state_conflict';
-  }
-
-  private async requirePayment(id: string): Promise<PaymentEntity> {
-    const payment = await this.findPaymentById(id);
-    if (!payment) throw new Error(`Payment ${id} was not found`);
-    return payment;
   }
 }
 

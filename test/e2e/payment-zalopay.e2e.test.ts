@@ -2,11 +2,8 @@ import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type { PaymentFullProps, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import type {
-  ApplyVerifiedOutcomeResult,
-  PaymentRepositoryPort
-} from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentFullProps } from '@/modules/payment/domain/entities/payment.types';
+import { InMemoryPaymentRepository } from '@test/support/doubles/payment-repository.double';
 import { generateMac } from '@longdoo/node-payment-gateway/zalopay';
 import { ZalopayPaymentGatewayAdapter } from '@/modules/payment/infrastructure/gateways/zalopay-payment-gateway.adapter';
 import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
@@ -24,7 +21,7 @@ describe('ZaloPay payment HTTP e2e', () => {
 
     const first = await request(fixture.app).post(callbackPath).send(payload).expect(200);
     expect(first.body).toEqual({ return_code: 1, return_message: 'Success' });
-    expect(fixture.repository.status).toBe('succeeded');
+    expect(fixture.repository.statusOf(fixture.payment.id)).toBe('succeeded');
 
     const duplicate = await request(fixture.app).post(callbackPath).send(payload).expect(200);
     expect(duplicate.body).toEqual({ return_code: 2, return_message: 'Order already confirmed' });
@@ -46,17 +43,17 @@ describe('ZaloPay payment HTTP e2e', () => {
       const response = await request(fixture.app).post(callbackPath).send(payload).expect(200);
       expect(response.body).toEqual({ return_code: -1, return_message: message });
     }
-    expect(fixture.repository.status).toBe('pending');
+    expect(fixture.repository.statusOf(fixture.payment.id)).toBe('pending');
   });
 
   it('asks ZaloPay to retry on storage errors or state conflicts', async () => {
     const fixture = createFixture();
-    fixture.repository.failApply = true;
+    fixture.repository.failStorage = true;
     const failed = await request(fixture.app).post(callbackPath).send(signCallback(fixture.payment)).expect(200);
     expect(failed.body).toEqual({ return_code: 0, return_message: 'Unknown error' });
 
-    fixture.repository.failApply = false;
-    fixture.repository.returnStateConflict = true;
+    fixture.repository.failStorage = false;
+    fixture.repository.conflictOnSave = true;
     const conflict = await request(fixture.app).post(callbackPath).send(signCallback(fixture.payment)).expect(200);
     expect(conflict.body).toEqual({ return_code: 0, return_message: 'Unknown error' });
   });
@@ -64,7 +61,7 @@ describe('ZaloPay payment HTTP e2e', () => {
   it('keeps the ZaloPay return endpoint read-only', async () => {
     const fixture = createFixture();
     await request(fixture.app).get('/api/v1/payments/callbacks/zalopay/return').expect(200);
-    expect(fixture.repository.status).toBe('pending');
+    expect(fixture.repository.statusOf(fixture.payment.id)).toBe('pending');
   });
 });
 
@@ -80,7 +77,8 @@ function createFixture() {
     idempotencyKey: 'zalopay-http-e2e',
     now: new Date('2026-09-25T00:00:00.000Z')
   }).toObject<PaymentFullProps>();
-  const repository = new SinglePaymentRepository(payment);
+  const repository = new InMemoryPaymentRepository();
+  repository.addRecord({ ...payment, status: 'pending' });
 
   const zalopay = new ZalopayPaymentGatewayAdapter({
     appId,
@@ -95,7 +93,7 @@ function createFixture() {
       throw new Error('Provider is not used in ZaloPay tests');
     }
   };
-  const notificationUseCase = new HandlePaymentNotificationUseCase(repository as unknown as PaymentRepositoryPort, {
+  const notificationUseCase = new HandlePaymentNotificationUseCase(repository, {
     vnpay: unused,
     momo: unused,
     zalopay
@@ -129,26 +127,4 @@ function signCallback(
     ...overrides
   });
   return { data, mac: generateMac(key2, data), type: 1 };
-}
-
-class SinglePaymentRepository {
-  status: PaymentFullProps['status'] = 'pending';
-  providerTransactionId: string | null = null;
-  failApply = false;
-  returnStateConflict = false;
-
-  constructor(private readonly payment: PaymentFullProps) {}
-
-  async applyVerifiedOutcome(input: VerifiedNotification): Promise<ApplyVerifiedOutcomeResult> {
-    if (this.failApply) throw new Error('database unavailable');
-    if (this.returnStateConflict) return 'state_conflict';
-    if (input.provider !== 'zalopay' || input.providerOrderId !== this.payment.providerOrderId) return 'not_found';
-    if (input.amountVnd !== this.payment.amountVnd) return 'amount_mismatch';
-    if (this.status === input.outcome && this.providerTransactionId === input.providerTransactionId) {
-      return 'duplicate';
-    }
-    this.status = input.outcome;
-    this.providerTransactionId = input.providerTransactionId;
-    return 'applied';
-  }
 }

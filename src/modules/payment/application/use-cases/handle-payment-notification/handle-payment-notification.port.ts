@@ -1,6 +1,7 @@
 import type { UseCase } from '@/modules/core/application/base.usecase';
-import type { PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
-import type { ApplyVerifiedOutcomeResult } from '@/modules/payment/domain/repositories/payment.repository';
+import type { PaymentOutcomeResult, PaymentProvider } from '@/modules/payment/domain/entities/payment.types';
+
+export type HandlePaymentNotificationResult = PaymentOutcomeResult | 'not_found';
 
 export interface HandlePaymentNotificationProps {
   provider: PaymentProvider;
@@ -19,7 +20,7 @@ export class HandlePaymentNotificationInputPort implements HandlePaymentNotifica
 
 export abstract class HandlePaymentNotificationPort implements UseCase<
   HandlePaymentNotificationInputPort,
-  ApplyVerifiedOutcomeResult
+  HandlePaymentNotificationResult
 > {
-  abstract execute(input: HandlePaymentNotificationInputPort): Promise<ApplyVerifiedOutcomeResult>;
+  abstract execute(input: HandlePaymentNotificationInputPort): Promise<HandlePaymentNotificationResult>;
 }

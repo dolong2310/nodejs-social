@@ -1,121 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
 import { ConflictException } from '@/modules/core/domain/exceptions/exceptions';
-import { PaymentCheckoutError, type PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import {
+  PaymentCheckoutError,
+  type PaymentGatewayPort
+} from '@/modules/payment/application/ports/payment-gateway.port';
 import { CreatePaymentUseCase } from '@/modules/payment/application/use-cases/create-payment/create-payment.usecase';
-import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type { PaymentCheckoutProps, PaymentFullProps, PaymentProps, PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
-import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
-
-function toPaymentEntity(payment: PaymentFullProps): PaymentEntity {
-  const { id, createdAt, createdById, updatedAt, updatedById, deletedAt, deletedById, ...props } = payment;
-  return new PaymentEntity({
-    id: new UniqueEntityID(id),
-    createdAt,
-    createdById,
-    updatedAt,
-    updatedById,
-    deletedAt,
-    deletedById,
-    props: props as PaymentProps
-  });
-}
-
-class InMemoryPaymentRepository implements PaymentRepositoryPort {
-  readonly payments = new Map<string, PaymentFullProps>();
-  readonly events: string[] = [];
-
-  async insertOrFindByIdempotency(payment: PaymentEntity) {
-    const candidate = payment.toObject<PaymentFullProps>();
-    const existing = [...this.payments.values()].find(
-      (stored) => stored.userId === candidate.userId && stored.idempotencyKey === candidate.idempotencyKey
-    );
-    if (existing) return { payment: toPaymentEntity(existing), inserted: false };
-    this.payments.set(candidate.id, { ...candidate });
-    this.events.push('persist');
-    return { payment: toPaymentEntity(candidate), inserted: true };
-  }
-
-  async findPaymentById(id: string) {
-    const payment = this.payments.get(id);
-    return payment ? toPaymentEntity(payment) : null;
-  }
-
-  async findPaymentByProviderOrderId(provider: PaymentProvider, orderId: string) {
-    const payment = [...this.payments.values()].find(
-      (candidate) => candidate.provider === provider && candidate.providerOrderId === orderId
-    );
-    return payment ? toPaymentEntity(payment) : null;
-  }
-
-  async attachCheckoutUrlIfAbsent(id: string, url: string) {
-    const payment = this.requirePayment(id);
-    const updated: PaymentFullProps = {
-      ...payment,
-      checkoutUrl: payment.checkoutUrl ?? url,
-      status: !payment.checkoutUrl && payment.status === 'creating' ? 'pending' : payment.status,
-      updatedAt: new Date(),
-      version: payment.version + (payment.checkoutUrl ? 0 : 1)
-    };
-    this.payments.set(id, updated);
-    return toPaymentEntity(updated);
-  }
-
-  async setUnknownIfCreating(id: string) {
-    const payment = this.requirePayment(id);
-    const updated: PaymentFullProps = {
-      ...payment,
-      status: payment.status === 'creating' ? 'unknown' : payment.status,
-      updatedAt: new Date(),
-      version: payment.version + (payment.status === 'creating' ? 1 : 0)
-    };
-    this.payments.set(id, updated);
-    return toPaymentEntity(updated);
-  }
-
-  async setCreateFailedIfCreating(id: string, resultCode: string) {
-    const payment = this.requirePayment(id);
-    const isCreating = payment.status === 'creating';
-    const updated: PaymentFullProps = {
-      ...payment,
-      status: isCreating ? 'create_failed' : payment.status,
-      providerResultCode: isCreating ? resultCode : payment.providerResultCode,
-      updatedAt: new Date(),
-      version: payment.version + (isCreating ? 1 : 0)
-    };
-    this.payments.set(id, updated);
-    return toPaymentEntity(updated);
-  }
-
-  async applyVerifiedOutcome(input: VerifiedNotification) {
-    const payment = [...this.payments.values()].find(
-      (candidate) => candidate.provider === input.provider && candidate.providerOrderId === input.providerOrderId
-    );
-    if (!payment) return 'not_found' as const;
-    if (payment.amountVnd !== input.amountVnd) return 'amount_mismatch' as const;
-    if (input.providerRequestId !== undefined && payment.providerRequestId !== input.providerRequestId) {
-      return 'reference_mismatch' as const;
-    }
-    if (payment.status === input.outcome) return 'duplicate' as const;
-    if (['succeeded', 'failed', 'cancelled', 'create_failed'].includes(payment.status))
-      return 'state_conflict' as const;
-    this.payments.set(payment.id, {
-      ...payment,
-      status: input.outcome,
-      providerTransactionId: input.providerTransactionId,
-      providerResultCode: input.resultCode,
-      updatedAt: new Date(),
-      version: payment.version + 1
-    });
-    return 'applied' as const;
-  }
-
-  private requirePayment(id: string): PaymentFullProps {
-    const payment = this.payments.get(id);
-    if (!payment) throw new Error('payment missing');
-    return payment;
-  }
-}
+import type {
+  PaymentCheckoutProps,
+  PaymentProvider,
+  VerifiedNotification
+} from '@/modules/payment/domain/entities/payment.types';
+import { InMemoryPaymentRepository } from '@test/support/doubles/payment-repository.double';
 
 let orderReferenceSequence = 0;
 
@@ -176,7 +71,7 @@ describe('CreatePaymentUseCase', () => {
 
     const payment = await useCase.execute(request());
 
-    expect(repository.events).toEqual(['persist', 'gateway']);
+    expect(repository.events).toEqual(['persist', 'gateway', 'save']);
     expect(payment).toMatchObject({
       sourceReference: 'order_client_1',
       description: 'Thanh toan don hang client 1',
@@ -275,8 +170,10 @@ describe('CreatePaymentUseCase', () => {
     'preserves an early $outcome IPN while attaching the returned checkout URL',
     async ({ outcome, expected }) => {
       const { repository, vnpay, useCase } = setup();
+      // The provider callback is stored while createCheckout is still running, so the use case saves a stale version.
       vnpay.createCheckout.mockImplementation(async (payment) => {
-        await repository.applyVerifiedOutcome({
+        const stored = await repository.findPaymentByProviderOrderId(payment.provider, payment.providerOrderId);
+        stored!.applyVerifiedOutcome({
           provider: payment.provider,
           providerOrderId: payment.providerOrderId,
           providerRequestId: payment.providerRequestId,
@@ -285,6 +182,7 @@ describe('CreatePaymentUseCase', () => {
           resultCode: outcome === 'succeeded' ? '00' : '01',
           outcome
         });
+        await repository.save(stored!);
         return 'https://sandbox.example/checkout';
       });
 
@@ -293,4 +191,26 @@ describe('CreatePaymentUseCase', () => {
       expect(payment).toMatchObject({ status: expected, checkoutUrl: 'https://sandbox.example/checkout' });
     }
   );
+  it('keeps an early success callback when checkout creation then fails without a definitive answer', async () => {
+    const { repository, vnpay, useCase } = setup();
+    vnpay.createCheckout.mockImplementation(async (payment) => {
+      const stored = await repository.findPaymentByProviderOrderId(payment.provider, payment.providerOrderId);
+      stored!.applyVerifiedOutcome({
+        provider: payment.provider,
+        providerOrderId: payment.providerOrderId,
+        providerRequestId: payment.providerRequestId,
+        amountVnd: payment.amountVnd,
+        providerTransactionId: 'txn-early',
+        resultCode: '00',
+        outcome: 'succeeded'
+      });
+      await repository.save(stored!);
+      throw new Error('network unavailable');
+    });
+
+    const payment = await useCase.execute(request());
+
+    expect(payment.status).toBe('succeeded');
+    expect(repository.statusOf(payment.id)).toBe('succeeded');
+  });
 });

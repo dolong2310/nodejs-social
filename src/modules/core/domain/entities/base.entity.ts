@@ -153,6 +153,24 @@ export abstract class Entity<
    */
   abstract validate(): void;
 
+  /**
+   * Applies a state change from a domain method of the subclass: merges the changes, moves updatedAt and
+   * re-checks invariants. On an invalid change nothing is applied and the validation error is thrown.
+   */
+  protected updateProps(changes: Partial<Props>, updatedAt = new Date()): void {
+    const previousProps = { ...this._props };
+    const previousUpdatedAt = this._updatedAt;
+    Object.assign(this._props as object, changes);
+    try {
+      this.updatedAt = updatedAt;
+      this.validate();
+    } catch (error) {
+      Object.assign(this._props as object, previousProps);
+      this._updatedAt = previousUpdatedAt;
+      throw error;
+    }
+  }
+
   private _validateProps(props: Props) {
     const MAX_PROPS = 32;
     invariant(!isEmpty(props), new ArgumentNotProvidedException('Entity props should not be empty'));

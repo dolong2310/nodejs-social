@@ -27,10 +27,18 @@ import {
   up as upPostgresPaymentProviderZalopayMigration
 } from '@/infrastructure/persistence/postgres/migrations/20261002000000-payments-provider-zalopay';
 import { UniqueEntityID } from '@/modules/core/domain/entities/unique-id.entity';
+import type { PaymentGatewayPort } from '@/modules/payment/application/ports/payment-gateway.port';
+import { HandlePaymentNotificationUseCase } from '@/modules/payment/application/use-cases/handle-payment-notification/handle-payment-notification.usecase';
 import { PaymentEntity } from '@/modules/payment/domain/entities/payment.entity';
-import type { PaymentFullProps, PaymentProps, PaymentProvider, VerifiedNotification } from '@/modules/payment/domain/entities/payment.types';
+import type {
+  PaymentFullProps,
+  PaymentProps,
+  PaymentProvider,
+  VerifiedNotification
+} from '@/modules/payment/domain/entities/payment.types';
 import { PaymentRepository as MongoPaymentRepository } from '@/modules/payment/infrastructure/persistence/mongo/payment.impl.repository';
 import { PaymentMapper as MongoPaymentMapper } from '@/modules/payment/infrastructure/persistence/mongo/payment.mapper';
+import { PaymentProviderTransactionConflictError } from '@/modules/payment/domain/repositories/payment.repository';
 import type { PaymentModel as MongoPaymentModel } from '@/modules/payment/infrastructure/persistence/mongo/payment.model';
 import { PaymentRepository as PostgresPaymentRepository } from '@/modules/payment/infrastructure/persistence/postgres/payment.impl.repository';
 import { PaymentMapper as PostgresPaymentMapper } from '@/modules/payment/infrastructure/persistence/postgres/payment.mapper';
@@ -180,147 +188,153 @@ async function runRepositoryContract(
       expect(props(result.payment).provider).toBe('vnpay');
     });
 
-    it('applies concurrent identical success notifications once and classifies the retry as duplicate', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
+    // Gateways are bypassed: the notification is already verified, so the real use case runs on the real repository.
+    function notify(verified: VerifiedNotification) {
+      const gateway: PaymentGatewayPort = {
+        createOrderReference: () => ({ providerOrderId: 'unused', expiresAt: null }),
+        createCheckout: async () => '',
+        verifyNotification: () => verified
+      };
+      const useCase = new HandlePaymentNotificationUseCase(repository, {
+        vnpay: gateway,
+        momo: gateway,
+        zalopay: gateway
+      });
+      return useCase.execute({ provider: verified.provider, payload: {} });
+    }
 
-      const results = await Promise.all([
-        repository.applyVerifiedOutcome(notification(record)),
-        repository.applyVerifiedOutcome(notification(record))
-      ]);
+    async function insertPayment(userId?: string): Promise<PaymentEntity> {
+      return repository.insertOrFindByIdempotency(newPayment(userId)).then((result) => result.payment);
+    }
 
-      expect(results.sort()).toEqual(['applied', 'duplicate']);
-      expect((await repository.findPaymentById(record.id.toString()))?.getProps().status).toBe('succeeded');
+    async function reload(payment: PaymentEntity): Promise<PaymentEntity> {
+      const latest = await repository.findPaymentById(payment.id.toString());
+      if (!latest) throw new Error('payment missing');
+      return latest;
+    }
+
+    it('saves the state changed by the entity and increments the version', async () => {
+      const record = await insertPayment();
+      record.attachCheckoutUrl('https://sandbox.example/checkout');
+
+      const saved = await repository.save(record);
+
+      expect(props(saved!)).toMatchObject({
+        status: 'pending',
+        checkoutUrl: 'https://sandbox.example/checkout',
+        version: props(record).version + 1
+      });
+      expect(props(await reload(record))).toMatchObject({ status: 'pending', version: props(record).version + 1 });
     });
 
-    it('rejects a failure callback after success without reversing the result', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      await repository.applyVerifiedOutcome(notification(record));
+    it('rejects a save based on a stale version without writing', async () => {
+      const record = await insertPayment();
+      const stale = await reload(record);
+      record.markUnknown();
+      await repository.save(record);
 
-      expect(await repository.applyVerifiedOutcome(notification(record, 'failed'))).toBe('state_conflict');
-      expect((await repository.findPaymentById(record.id.toString()))?.getProps().status).toBe('succeeded');
+      stale.markCreateFailed('MERCHANT_REJECTED');
+
+      expect(await repository.save(stale)).toBeNull();
+      expect(props(await reload(record)).status).toBe('unknown');
     });
 
-    it('rejects a second provider transaction ID for an already successful order', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      await repository.applyVerifiedOutcome(notification(record));
+    it('throws a provider transaction conflict when another payment already stores the ID', async () => {
+      const first = await insertPayment('u_tx_first');
+      const second = await insertPayment('u_tx_second');
+      first.applyVerifiedOutcome(notification(first, 'succeeded', { providerTransactionId: 'shared-transaction' }));
+      await repository.save(first);
 
-      expect(
-        await repository.applyVerifiedOutcome(
-          notification(record, 'succeeded', { providerTransactionId: '9007199254740994' })
-        )
-      ).toBe('state_conflict');
-    });
+      second.applyVerifiedOutcome(notification(second, 'succeeded', { providerTransactionId: 'shared-transaction' }));
 
-    it('classifies a provider transaction ID race across different orders as a state conflict', async () => {
-      const first = await repository
-        .insertOrFindByIdempotency(newPayment('u_tx_race_first'))
-        .then((result) => result.payment);
-      const second = await repository
-        .insertOrFindByIdempotency(newPayment('u_tx_race_second'))
-        .then((result) => result.payment);
-      const sharedTransactionId = 'shared-provider-transaction';
-
-      const results = await Promise.all([
-        repository.applyVerifiedOutcome(
-          notification(first, 'succeeded', { providerTransactionId: sharedTransactionId })
-        ),
-        repository.applyVerifiedOutcome(
-          notification(second, 'succeeded', { providerTransactionId: sharedTransactionId })
-        )
-      ]);
-
-      expect(results.sort()).toEqual(['applied', 'state_conflict']);
-      const statuses = await Promise.all([
-        repository.findPaymentById(first.id.toString()),
-        repository.findPaymentById(second.id.toString())
-      ]);
-      expect(statuses.map((payment) => payment?.getProps().status).sort()).toEqual(['creating', 'succeeded']);
-    });
-
-    it('treats a stale pending callback after success as a harmless duplicate', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      await repository.applyVerifiedOutcome(notification(record));
-
-      expect(await repository.applyVerifiedOutcome(notification(record, 'pending'))).toBe('duplicate');
-      expect((await repository.findPaymentById(record.id.toString()))?.getProps().status).toBe('succeeded');
-    });
-
-    it('attaches the checkout URL and transitions a creating payment to pending', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-
-      const updated = await repository.attachCheckoutUrlIfAbsent(
-        record.id.toString(),
-        'https://sandbox.example/checkout'
-      );
-
-      expect(updated.getProps().status).toBe('pending');
-      expect(updated.getProps().checkoutUrl).toBe('https://sandbox.example/checkout');
-    });
-
-    it('stores the checkout URL when pending IPN arrives before create returns', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      await repository.applyVerifiedOutcome(notification(record, 'pending'));
-
-      const updated = await repository.attachCheckoutUrlIfAbsent(
-        record.id.toString(),
-        'https://sandbox.example/checkout'
-      );
-
-      expect(updated.getProps().status).toBe('pending');
-      expect(updated.getProps().checkoutUrl).toBe('https://sandbox.example/checkout');
-    });
-
-    it('attaches the checkout URL without changing an early successful result', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      await repository.applyVerifiedOutcome(notification(record));
-
-      const updated = await repository.attachCheckoutUrlIfAbsent(
-        record.id.toString(),
-        'https://sandbox.example/checkout'
-      );
-
-      expect(updated.getProps().status).toBe('succeeded');
-      expect(updated.getProps().checkoutUrl).toBe('https://sandbox.example/checkout');
-    });
-
-    it('distinguishes missing orders, amount mismatch, and request reference mismatch', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-
-      expect(
-        await repository.applyVerifiedOutcome(notification(record, 'succeeded', { providerOrderId: 'missing' }))
-      ).toBe('not_found');
-      expect(await repository.applyVerifiedOutcome(notification(record, 'succeeded', { amountVnd: 1 }))).toBe(
-        'amount_mismatch'
-      );
-      expect(
-        await repository.applyVerifiedOutcome(notification(record, 'succeeded', { providerRequestId: 'wrong-request' }))
-      ).toBe('reference_mismatch');
-      expect((await repository.findPaymentById(record.id.toString()))?.getProps().status).toBe('creating');
+      await expect(repository.save(second)).rejects.toBeInstanceOf(PaymentProviderTransactionConflictError);
+      expect(props(await reload(second)).status).toBe('creating');
     });
 
     it('keeps provider transaction IDs as strings beyond SQL integer range', async () => {
-      const record = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
+      const record = await insertPayment();
 
-      expect(await repository.applyVerifiedOutcome(notification(record))).toBe('applied');
-      expect((await repository.findPaymentById(record.id.toString()))?.getProps().providerTransactionId).toBe(
+      expect(await notify(notification(record))).toBe('applied');
+      expect(props(await reload(record)).providerTransactionId).toBe(
         `9007199254740993-${props(record).providerOrderId}`
       );
     });
 
-    it('sets unknown and definitive creation failure only while the payment is creating', async () => {
-      const uncertain = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      expect((await repository.setUnknownIfCreating(uncertain.id.toString())).getProps().status).toBe('unknown');
-      expect(
-        (await repository.setCreateFailedIfCreating(uncertain.id.toString(), 'merchant_rejected')).getProps().status
-      ).toBe('unknown');
+    it('applies concurrent identical success notifications once and classifies the retry as duplicate', async () => {
+      const record = await insertPayment();
 
-      const rejected = await repository.insertOrFindByIdempotency(newPayment()).then((result) => result.payment);
-      expect(
-        (await repository.setCreateFailedIfCreating(rejected.id.toString(), 'merchant_rejected')).getProps().status
-      ).toBe('create_failed');
-      expect((await repository.findPaymentById(rejected.id.toString()))?.getProps().providerResultCode).toBe(
-        'merchant_rejected'
+      const results = await Promise.all([notify(notification(record)), notify(notification(record))]);
+
+      expect(results.sort()).toEqual(['applied', 'duplicate']);
+      expect(props(await reload(record)).status).toBe('succeeded');
+    });
+
+    it('rejects a failure callback after success without reversing the result', async () => {
+      const record = await insertPayment();
+      await notify(notification(record));
+
+      expect(await notify(notification(record, 'failed'))).toBe('state_conflict');
+      expect(props(await reload(record)).status).toBe('succeeded');
+    });
+
+    it('rejects a second provider transaction ID for an already successful order', async () => {
+      const record = await insertPayment();
+      await notify(notification(record));
+
+      expect(await notify(notification(record, 'succeeded', { providerTransactionId: '9007199254740994' }))).toBe(
+        'state_conflict'
       );
+    });
+
+    it('classifies a provider transaction ID race across different orders as a state conflict', async () => {
+      const first = await insertPayment('u_tx_race_first');
+      const second = await insertPayment('u_tx_race_second');
+      const sharedTransactionId = 'shared-provider-transaction';
+
+      const results = await Promise.all([
+        notify(notification(first, 'succeeded', { providerTransactionId: sharedTransactionId })),
+        notify(notification(second, 'succeeded', { providerTransactionId: sharedTransactionId }))
+      ]);
+
+      expect(results.sort()).toEqual(['applied', 'state_conflict']);
+      const statuses = await Promise.all([reload(first), reload(second)]);
+      expect(statuses.map((payment) => props(payment).status).sort()).toEqual(['creating', 'succeeded']);
+    });
+
+    it('treats a stale pending callback after success as a harmless duplicate', async () => {
+      const record = await insertPayment();
+      await notify(notification(record));
+
+      expect(await notify(notification(record, 'pending'))).toBe('duplicate');
+      expect(props(await reload(record)).status).toBe('succeeded');
+    });
+
+    it('stores the checkout URL when pending IPN arrives before create returns', async () => {
+      const record = await insertPayment();
+      await notify(notification(record, 'pending'));
+
+      // The create flow still holds the stale version, so it reloads and re-applies the change.
+      record.attachCheckoutUrl('https://sandbox.example/checkout');
+      expect(await repository.save(record)).toBeNull();
+      const latest = await reload(record);
+      expect(latest.attachCheckoutUrl('https://sandbox.example/checkout')).toBe(true);
+      await repository.save(latest);
+
+      expect(props(await reload(record))).toMatchObject({
+        status: 'pending',
+        checkoutUrl: 'https://sandbox.example/checkout'
+      });
+    });
+
+    it('distinguishes missing orders, amount mismatch, and request reference mismatch', async () => {
+      const record = await insertPayment();
+
+      expect(await notify(notification(record, 'succeeded', { providerOrderId: 'missing' }))).toBe('not_found');
+      expect(await notify(notification(record, 'succeeded', { amountVnd: 1 }))).toBe('amount_mismatch');
+      expect(await notify(notification(record, 'succeeded', { providerRequestId: 'wrong-request' }))).toBe(
+        'reference_mismatch'
+      );
+      expect(props(await reload(record)).status).toBe('creating');
     });
 
     it('allows the same provider order reference in separate provider namespaces', async () => {

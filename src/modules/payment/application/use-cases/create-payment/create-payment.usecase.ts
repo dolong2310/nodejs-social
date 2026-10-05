@@ -15,6 +15,9 @@ import type {
 } from '@/modules/payment/domain/entities/payment.types';
 import type { PaymentRepositoryPort } from '@/modules/payment/domain/repositories/payment.repository';
 
+// A version conflict means another write (e.g. an early provider callback) landed between load and save.
+const MAX_SAVE_ATTEMPTS = 3;
+
 export class CreatePaymentUseCase extends CreatePaymentPort {
   constructor(
     private readonly paymentRepository: PaymentRepositoryPort,
@@ -54,18 +57,37 @@ export class CreatePaymentUseCase extends CreatePaymentPort {
       checkoutUrl = await gateway.createCheckout(result.payment.toObject<PaymentFullProps>(), input.clientIp);
     } catch (error) {
       if (error instanceof PaymentCheckoutError && error.classification.kind === 'definitive_rejection') {
+        const { resultCode } = error.classification;
         return this.toSafeProps(
-          await this.paymentRepository.setCreateFailedIfCreating(
-            result.payment.id.toString(),
-            error.classification.resultCode
-          )
+          await this.changeAndSave(result.payment, (payment) => payment.markCreateFailed(resultCode))
         );
       }
-      return this.toSafeProps(await this.paymentRepository.setUnknownIfCreating(result.payment.id.toString()));
+      return this.toSafeProps(await this.changeAndSave(result.payment, (payment) => payment.markUnknown()));
     }
     return this.toSafeProps(
-      await this.paymentRepository.attachCheckoutUrlIfAbsent(result.payment.id.toString(), checkoutUrl)
+      await this.changeAndSave(result.payment, (payment) => payment.attachCheckoutUrl(checkoutUrl))
     );
+  }
+
+  /**
+   * Applies a domain change and saves it. On a version conflict the change is re-applied to the latest state,
+   * where the entity may decide it no longer applies (e.g. the provider already reported the result).
+   */
+  private async changeAndSave(
+    payment: PaymentEntity,
+    change: (payment: PaymentEntity) => boolean
+  ): Promise<PaymentEntity> {
+    let current = payment;
+    for (let attempt = 0; attempt < MAX_SAVE_ATTEMPTS; attempt++) {
+      if (!change(current)) return current;
+      const saved = await this.paymentRepository.save(current);
+      if (saved) return saved;
+
+      const latest = await this.paymentRepository.findPaymentById(payment.id.toString());
+      if (!latest) throw new Error(`Payment ${payment.id.toString()} was not found`);
+      current = latest;
+    }
+    throw new ConflictException('Payment was changed concurrently, please retry');
   }
 
   private toSafeProps(payment: PaymentEntity): PaymentSafeProps {

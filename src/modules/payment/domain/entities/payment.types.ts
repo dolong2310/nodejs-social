@@ -90,3 +90,11 @@ export interface VerifiedNotification {
   resultCode: string;
   outcome: PaymentOutcome;
 }
+
+/** Result of applying a verified provider notification to a payment. */
+export type PaymentOutcomeResult =
+  | 'applied'
+  | 'duplicate'
+  | 'amount_mismatch'
+  | 'reference_mismatch'
+  | 'state_conflict';
