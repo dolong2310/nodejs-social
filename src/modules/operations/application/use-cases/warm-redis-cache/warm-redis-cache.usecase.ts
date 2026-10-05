@@ -1,10 +1,4 @@
-import {
-  CACHE_KEYS as ROLE_CACHE_KEYS,
-  CACHE_TTL as ROLE_CACHE_TTL
-} from '@/modules/authorization/application/constants/cache.constants';
-import type { PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
-import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
+import type { RoleAccessServicePort } from '@/modules/authorization/application/services/role-access.service';
 import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
 import type {
   CacheWarmupJobData,
@@ -24,15 +18,10 @@ import {
 import { EnumUserStatus, type UserSafeProps } from '@/modules/user/domain/entities/user.types';
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
-import { keyBy } from 'lodash-es';
 
 type CacheHit<T> = {
   type: 'hit';
   value: T;
-};
-
-type CachedRole = RoleWithPermissions & {
-  permissionsMap: Record<string, PermissionFullProps>;
 };
 
 const DEFAULT_TARGETS: CacheWarmupTarget[] = ['roles', 'friend-graphs'];
@@ -43,7 +32,7 @@ export class WarmRedisCacheUseCase {
   constructor(
     private readonly cacheManager: CacheManagerPort,
     private readonly roleRepository: RoleRepositoryPort,
-    private readonly roleQueryRepository: RoleQueryRepositoryPort,
+    private readonly roleAccessService: RoleAccessServicePort,
     private readonly userRepository: UserRepositoryPort,
     private readonly userQueryRepository: UserQueryRepositoryPort,
     private readonly friendshipRepository: FriendshipRepositoryPort
@@ -89,26 +78,8 @@ export class WarmRedisCacheUseCase {
     for (const role of roles) {
       const roleObject = role.toObject();
       if (!roleObject.isActive) continue;
-
-      const roleWithPermissions = await this.roleQueryRepository.findRoleWithPermissionsById(roleObject.id);
-      if (!roleWithPermissions) continue;
-
-      const permissionsMap = keyBy(
-        roleWithPermissions.permissions,
-        (permission) => `${permission.method}-${permission.path}`
-      );
-      await this.cacheManager.set<CacheHit<CachedRole>>(
-        ROLE_CACHE_KEYS.role(roleObject.id),
-        {
-          type: 'hit',
-          value: {
-            ...roleWithPermissions,
-            permissionsMap
-          }
-        },
-        { ttlSeconds: ROLE_CACHE_TTL.ROLE }
-      );
-      warmed += 1;
+      // The role cache format is owned by the authorization module.
+      if (await this.roleAccessService.warmRoleAccess(roleObject.id)) warmed += 1;
     }
 
     return warmed;

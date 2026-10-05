@@ -28,6 +28,10 @@ import { GoogleOAuthService } from '@/modules/authentication/infrastructure/serv
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
 import { type JwtPort, JwtService } from '@/modules/authentication/infrastructure/services/jwt.service';
 import { TokenService } from '@/modules/authentication/infrastructure/services/token.service';
+import {
+  RoleAccessService,
+  type RoleAccessServicePort
+} from '@/modules/authorization/application/services/role-access.service';
 import { RoleService, type RoleServicePort } from '@/modules/authorization/application/services/role.service';
 import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
@@ -146,6 +150,7 @@ export class Container implements IContainer {
   private readonly conversationService: ConversationServicePort;
   private readonly otpService: OtpServicePort;
   private readonly roleService: RoleServicePort;
+  private readonly roleAccessService: RoleAccessServicePort;
   private readonly notificationsService: NotificationServicePort;
   private readonly deleteExpiredOtpsUC: DeleteExpiredOtpsPort;
   private readonly deleteExpiredRefreshTokensUC: DeleteExpiredRefreshTokensPort;
@@ -238,6 +243,7 @@ export class Container implements IContainer {
     this.conversationService = new ConversationService(this.conversationRepository, this.conversationMemberRepository);
     this.otpService = new OtpService(this.otpRepository, this.twoFactorService);
     this.roleService = new RoleService(this.roleRepository);
+    this.roleAccessService = new RoleAccessService(this.roleQueryRepository, this.cacheManager);
     this.deleteExpiredOtpsUC = new DeleteExpiredOtpsUseCase(this.otpRepository);
     this.deleteExpiredRefreshTokensUC = new DeleteExpiredRefreshTokensUseCase(this.refreshTokenRepository);
 
@@ -251,7 +257,7 @@ export class Container implements IContainer {
     this.warmRedisCacheUC = new WarmRedisCacheUseCase(
       this.cacheManager,
       this.roleRepository,
-      this.roleQueryRepository,
+      this.roleAccessService,
       this.userRepository,
       this.userQueryRepository,
       this.friendshipRepository
@@ -306,6 +312,7 @@ export class Container implements IContainer {
       conversationService: this.conversationService,
       otpService: this.otpService,
       roleService: this.roleService,
+      roleAccessService: this.roleAccessService,
       hashingService: this.hashingService,
       notificationsService: this.notificationsService,
       twoFactorService: this.twoFactorService

@@ -2,6 +2,7 @@ import {
   CACHE_KEYS as ROLE_CACHE_KEYS,
   CACHE_TTL as ROLE_CACHE_TTL
 } from '@/modules/authorization/application/constants/cache.constants';
+import { RoleAccessService } from '@/modules/authorization/application/services/role-access.service';
 import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
 import type { RoleRepositoryPort } from '@/modules/authorization/domain/repositories/role.repository';
@@ -56,7 +57,8 @@ describe('WarmRedisCacheUseCase', () => {
 
   beforeEach(() => {
     cacheManager = mockPort<CacheManagerPort>({
-      set: vi.fn().mockResolvedValue(undefined)
+      set: vi.fn().mockResolvedValue(undefined),
+      write: vi.fn((_key: string, writer: () => Promise<unknown>) => writer()) as unknown as CacheManagerPort['write']
     });
     roleRepository = mockPort<RoleRepositoryPort>({
       findAll: vi.fn().mockResolvedValue([entityDouble(role) as unknown as RoleEntity])
@@ -93,18 +95,16 @@ describe('WarmRedisCacheUseCase', () => {
     const result = await useCase.execute();
 
     expect(result.warmed).toEqual({ roles: 1, users: 0, friendGraphs: 1 });
-    expect(cacheManager.set).toHaveBeenCalledWith(
-      ROLE_CACHE_KEYS.role(role.id),
-      {
-        type: 'hit',
-        value: expect.objectContaining({
-          id: role.id,
-          permissionsMap: {
-            [`${permission.method}-${permission.path}`]: permission
-          }
-        })
-      },
-      { ttlSeconds: ROLE_CACHE_TTL.ROLE }
+    expect(cacheManager.write).toHaveBeenCalledWith(ROLE_CACHE_KEYS.role(role.id), expect.any(Function), {
+      ttlSeconds: ROLE_CACHE_TTL.ROLE
+    });
+    await expect(vi.mocked(cacheManager.write).mock.results[0]!.value).resolves.toEqual(
+      expect.objectContaining({
+        id: role.id,
+        permissionsMap: {
+          [`${permission.method}-${permission.path}`]: permission
+        }
+      })
     );
     expect(cacheManager.set).toHaveBeenCalledWith(
       RELATIONSHIP_CACHE_KEYS.friends(user.id),
@@ -140,7 +140,7 @@ describe('WarmRedisCacheUseCase', () => {
     return new WarmRedisCacheUseCase(
       cacheManager,
       roleRepository,
-      roleQueryRepository,
+      new RoleAccessService(roleQueryRepository, cacheManager),
       userRepository,
       userQueryRepository,
       friendshipRepository

@@ -21,6 +21,8 @@ import { RefreshTokenEntity } from '@/modules/authentication/domain/entities/ref
 import { JwtService } from '@/modules/authentication/infrastructure/services/jwt.service';
 import { TokenService } from '@/modules/authentication/infrastructure/services/token.service';
 import { HashingService } from '@/modules/authentication/infrastructure/services/hashing.service';
+import { RoleAccessService } from '@/modules/authorization/application/services/role-access.service';
+import { CheckRouteAccessUseCase } from '@/modules/authorization/application/use-cases/check-route-access/check-route-access.usecase';
 import { RoleService } from '@/modules/authorization/application/services/role.service';
 import { EnumHttpMethod, type PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
 import { RoleEntity } from '@/modules/authorization/domain/entities/role.entity';
@@ -803,7 +805,10 @@ export function createAuthUserE2eApp(): AuthUserE2eApp {
     adminDeleteUC
   );
 
-  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
+  const authGuard = new AuthGuard(
+    new CheckRouteAccessUseCase(new RoleAccessService(roleQueryRepository, cacheManager)),
+    tokenService
+  );
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(apiKey);

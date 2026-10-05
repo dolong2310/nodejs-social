@@ -17,7 +17,9 @@ import { RefreshTokenUseCase } from '@/modules/authentication/application/use-ca
 import { RegisterUseCase } from '@/modules/authentication/application/use-cases/register/register.usecase';
 import { SendOtpUseCase } from '@/modules/authentication/application/use-cases/send-otp/send-otp.usecase';
 import { Setup2FAUseCase } from '@/modules/authentication/application/use-cases/setup-2fa/setup-2fa.usecase';
+import type { RoleAccessServicePort } from '@/modules/authorization/application/services/role-access.service';
 import type { RoleServicePort } from '@/modules/authorization/application/services/role.service';
+import { CheckRouteAccessUseCase } from '@/modules/authorization/application/use-cases/check-route-access/check-route-access.usecase';
 import { CreatePermissionUseCase } from '@/modules/authorization/application/use-cases/create-permission/create-permission.usecase';
 import { CreateRoleUseCase } from '@/modules/authorization/application/use-cases/create-role/create-role.usecase';
 import { DeletePermissionUseCase } from '@/modules/authorization/application/use-cases/delete-permission/delete-permission.usecase';
@@ -212,6 +214,7 @@ export type HttpContext = ContainerRepositories & {
   conversationService: ConversationServicePort;
   otpService: OtpServicePort;
   roleService: RoleServicePort;
+  roleAccessService: RoleAccessServicePort;
   hashingService: HashingPort;
   notificationsService: NotificationServicePort;
   twoFactorService: TwoFactorAuthPort;
@@ -235,7 +238,6 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     notificationRepository,
     otpRepository,
     roleRepository,
-    roleQueryRepository,
     permissionRepository,
     paymentRepository,
     postQueryRepository,
@@ -261,12 +263,14 @@ export function buildHttpRouters(ctx: HttpContext): BaseRoute[] {
     conversationService,
     otpService,
     roleService,
+    roleAccessService,
     hashingService,
     notificationsService,
     twoFactorService
   } = ctx;
 
-  const authGuard = new AuthGuard(roleQueryRepository, tokenService, cacheManager);
+  const checkRouteAccessUC = new CheckRouteAccessUseCase(roleAccessService);
+  const authGuard = new AuthGuard(checkRouteAccessUC, tokenService);
   const authOptionGuard = new AuthOptionGuard(tokenService);
   const activeUserGuard = new ActiveUserGuard(userService);
   const apiKeyGuard = new ApiKeyGuard(envConfig.API_KEY);

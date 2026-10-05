@@ -4,11 +4,8 @@ import {
   InvalidTokenException
 } from '@/modules/authentication/application/exceptions/auth.exception';
 import type { AccessTokenPayload, TokenServicePort } from '@/modules/authentication/application/ports/token.port';
-import { CACHE_KEYS, CACHE_TTL } from '@/modules/authorization/application/constants/cache.constants';
-import type { EnumHttpMethod, PermissionFullProps } from '@/modules/authorization/domain/entities/permission.types';
-import type { RoleQueryRepositoryPort } from '@/modules/authorization/domain/repositories/role.query.repository';
-import type { RoleWithPermissions } from '@/modules/authorization/domain/repositories/role.query.types';
-import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import type { CheckRouteAccessPort } from '@/modules/authorization/application/use-cases/check-route-access/check-route-access.port';
+import type { EnumHttpMethod } from '@/modules/authorization/domain/entities/permission.types';
 import type { BaseGuard } from '@/presentation/http/express/core/base.guard';
 import {
   NoTokenProvidedException,
@@ -19,16 +16,11 @@ import { ForbiddenException, UnauthorizedException } from '@/presentation/http/e
 import { extractTokenFromHeader } from '@/presentation/http/express/utils/token.util';
 import { resolveUrlPath } from '@/presentation/http/express/utils/url.util';
 import type { Request } from 'express';
-import { keyBy, omit } from 'lodash-es';
-import type { Dictionary, Prettify } from 'ts-essentials';
-
-type CachedRole = Prettify<RoleWithPermissions & { permissionsMap: Dictionary<PermissionFullProps> }>;
 
 export class AuthGuard implements BaseGuard {
   constructor(
-    private readonly roleQueryRepository: RoleQueryRepositoryPort,
-    private readonly tokenService: TokenServicePort,
-    private readonly cache: CacheManagerPort
+    private readonly checkRouteAccessUC: CheckRouteAccessPort,
+    private readonly tokenService: TokenServicePort
   ) {}
 
   async canActivate(request: Request): Promise<boolean> {
@@ -66,49 +58,22 @@ export class AuthGuard implements BaseGuard {
   }
 
   private async verifyRole(request: Request, decoded: AccessTokenPayload): Promise<void> {
-    const method = request.method as EnumHttpMethod;
-    const path = resolveUrlPath({
-      path: request.route.path,
-      baseUrl: request.baseUrl,
-      params: request.params,
-      originalUrl: request.originalUrl
+    const role = await this.checkRouteAccessUC.execute({
+      roleId: decoded.roleId,
+      method: request.method as EnumHttpMethod,
+      // The permission path is the route pattern (e.g. /api/v1/users/:id), not the concrete URL.
+      path: resolveUrlPath({
+        path: request.route.path,
+        baseUrl: request.baseUrl,
+        params: request.params,
+        originalUrl: request.originalUrl
+      })
     });
-    const roleId = decoded.roleId;
 
-    const cachedRole = await this.cache.read<CachedRole>(
-      CACHE_KEYS.role(roleId),
-      async () => {
-        const rolePermissions = await this.roleQueryRepository.findRoleWithPermissionsById(roleId);
-
-        if (!rolePermissions) {
-          return null;
-        }
-
-        // Key by method and path so canAccess can be checked efficiently through an object lookup.
-        const permissionsMap = keyBy(rolePermissions.permissions, (p) => `${p.method}-${p.path}`);
-
-        return {
-          ...rolePermissions,
-          permissionsMap
-        };
-      },
-      { ttlSeconds: CACHE_TTL.ROLE }
-    );
-
-    if (!cachedRole) {
+    if (!role) {
       throw new ForbiddenException();
     }
 
-    // Check if user is active and has permission to access the route
-    const canAccess = cachedRole?.isActive && !!cachedRole?.permissionsMap[`${method}-${path}`];
-
-    if (!canAccess) {
-      throw new ForbiddenException();
-    }
-
-    // Set roleWithPermissions to request
-    const roleWithPermissions = omit(cachedRole, ['permissionsMap']);
-
-    request.role = roleWithPermissions;
+    request.role = role;
   }
 }
