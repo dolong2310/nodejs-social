@@ -169,3 +169,27 @@ export function expectNoForbiddenImports(files: string[], rule: ForbiddenImportR
 export function expectFilesMatch(files: string[], predicate: (file: string) => boolean): void {
   expect(files.filter((file) => !predicate(file))).toEqual([]);
 }
+
+/**
+ * Third-party packages domain and application may import: pure utilities with no I/O, framework or transport
+ * coupling. Anything else (HTTP, database, filesystem, token libraries...) belongs behind a port.
+ */
+export const INNER_LAYER_ALLOWED_PACKAGES: ReadonlySet<string> = new Set([
+  'ts-essentials',
+  'lodash-es',
+  'uuid',
+  'date-fns',
+  'ms',
+  'crypto',
+  'node:crypto'
+]);
+
+/**
+ * Package name of a third-party import, or null for project imports.
+ * Example: 'lodash-es/keyBy' -> 'lodash-es', '@scope/pkg/sub' -> '@scope/pkg', '@/modules/...' -> null.
+ */
+export function externalPackageOf(importPath: string): string | null {
+  if (importPath.startsWith('@/') || importPath.startsWith('@test/') || importPath.startsWith('.')) return null;
+  const segments = importPath.split('/');
+  return importPath.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0]!;
+}

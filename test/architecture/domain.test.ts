@@ -1,6 +1,13 @@
 import { filesOfProject } from 'tsarch';
 import { describe, expect, it } from 'vitest';
-import { expectFilesMatch, expectNoForbiddenImports, parseModuleImport, sourceFiles } from './arch.helper';
+import {
+  expectFilesMatch,
+  expectNoForbiddenImports,
+  externalPackageOf,
+  INNER_LAYER_ALLOWED_PACKAGES,
+  parseModuleImport,
+  sourceFiles
+} from './arch.helper';
 
 // Get all files under src/modules/*/domain.
 const domainFiles = sourceFiles('src/modules').filter((file) => file.includes('/domain/'));
@@ -63,5 +70,15 @@ describe.concurrent('Domain boundaries', () => {
           file
         )
     );
+  });
+
+  // 5. domain only uses allowed utility packages; frameworks, I/O and transports stay outside.
+  it('domain imports only allowed third-party packages', () => {
+    expectNoForbiddenImports(domainFiles, ({ importPath }) => {
+      const pkg = externalPackageOf(importPath);
+      return pkg && !INNER_LAYER_ALLOWED_PACKAGES.has(pkg)
+        ? `domain must not import third-party package ${pkg}`
+        : false;
+    });
   });
 });
