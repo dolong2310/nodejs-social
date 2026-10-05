@@ -19,7 +19,6 @@ jest-*
 test-results/
 *.lcov
 __tests__/
-*.test.ts
 *.spec.ts
 
 # Environment, local configuration
