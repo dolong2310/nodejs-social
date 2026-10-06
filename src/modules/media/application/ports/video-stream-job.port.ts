@@ -1,3 +1,5 @@
+export const VIDEO_STREAM_QUEUE_NAME = 'video-stream';
+
 export interface VideoStreamJobData {
   filepath: string; // Absolute path of the uploaded video file on disk
   idName: string; // Unique name/ID used for status tracking in DB

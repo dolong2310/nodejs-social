@@ -1,13 +1,12 @@
 import { BaseSchedule } from '@/infrastructure/queue/bullmq/base.schedule';
-import type {
-  OtpCleanupJobData,
-  OtpCleanupJobResult
+import {
+  OTP_CLEANUP_SCHEDULE_QUEUE_NAME,
+  type OtpCleanupJobData,
+  type OtpCleanupJobResult
 } from '@/modules/authentication/application/ports/otp-cleanup-job.port';
 import { EnumCronExpression } from '@/modules/common/enums/cron-expression.enum';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const OTP_CLEANUP_SCHEDULE_QUEUE_NAME = 'otp-cleanup-schedule';
 
 export class OtpCleanupSchedule extends BaseSchedule<OtpCleanupJobData, OtpCleanupJobResult> {
   constructor(

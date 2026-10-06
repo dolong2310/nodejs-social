@@ -1,13 +1,12 @@
 import { BaseSchedule } from '@/infrastructure/queue/bullmq/base.schedule';
-import type {
-  RefreshTokenCleanupJobData,
-  RefreshTokenCleanupJobResult
+import {
+  REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME,
+  type RefreshTokenCleanupJobData,
+  type RefreshTokenCleanupJobResult
 } from '@/modules/authentication/application/ports/refresh-token-cleanup-job.port';
 import { EnumCronExpression } from '@/modules/common/enums/cron-expression.enum';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const REFRESH_TOKEN_CLEANUP_SCHEDULE_QUEUE_NAME = 'refresh-token-cleanup-schedule';
 
 export class RefreshTokenCleanupSchedule extends BaseSchedule<
   RefreshTokenCleanupJobData,

@@ -17,10 +17,14 @@ import type { OtpEmailQueuePort } from '@/modules/authentication/application/por
 import { AuthService, type AuthServicePort } from '@/modules/authentication/application/services/auth.service';
 import { OtpService, type OtpServicePort } from '@/modules/authentication/application/services/otp.service';
 import type { TokenServicePort } from '@/modules/authentication/application/ports/token.port';
+import type { DeleteOtpPort } from '@/modules/authentication/application/use-cases/delete-otp/delete-otp.port';
+import { DeleteOtpUseCase } from '@/modules/authentication/application/use-cases/delete-otp/delete-otp.usecase';
 import type { DeleteExpiredOtpsPort } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.port';
 import { DeleteExpiredOtpsUseCase } from '@/modules/authentication/application/use-cases/delete-expired-otps/delete-expired-otps.usecase';
 import type { DeleteExpiredRefreshTokensPort } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.port';
 import { DeleteExpiredRefreshTokensUseCase } from '@/modules/authentication/application/use-cases/delete-expired-refresh-tokens/delete-expired-refresh-tokens.usecase';
+import type { SendOtpEmailPort } from '@/modules/authentication/application/use-cases/send-otp-email/send-otp-email.port';
+import { SendOtpEmailUseCase } from '@/modules/authentication/application/use-cases/send-otp-email/send-otp-email.usecase';
 import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
 import type { RefreshTokenRepositoryPort } from '@/modules/authentication/domain/repositories/refresh-token.repository';
 import { TwoFactorAuthService } from '@/modules/authentication/infrastructure/services/2fa.service';
@@ -48,8 +52,13 @@ import type { FileStoragePort } from '@/modules/media/application/ports/file-sto
 import type { ImageProcessorPort } from '@/modules/media/application/ports/image-processor.port';
 import type { ObjectStoragePort } from '@/modules/media/application/ports/object-storage.port';
 import type { VideoStreamQueuePort } from '@/modules/media/application/ports/video-stream-job.port';
+import type { EncodeVideoStreamPort } from '@/modules/media/application/use-cases/encode-video-stream/encode-video-stream.port';
+import { EncodeVideoStreamUseCase } from '@/modules/media/application/use-cases/encode-video-stream/encode-video-stream.usecase';
+import type { MarkVideoEncodingFailedPort } from '@/modules/media/application/use-cases/mark-video-encoding-failed/mark-video-encoding-failed.port';
+import { MarkVideoEncodingFailedUseCase } from '@/modules/media/application/use-cases/mark-video-encoding-failed/mark-video-encoding-failed.usecase';
 import type { VideoStatusRepositoryPort } from '@/modules/media/domain/repositories/video-status.repository';
 import { CloudinaryService } from '@/modules/media/infrastructure/services/cloudinary-storage.service';
+import { FfmpegVideoStreamEncoder } from '@/modules/media/infrastructure/services/ffmpeg-video-stream-encoder.service';
 import { LocalFileStorage } from '@/modules/media/infrastructure/services/file-storage.service';
 // import { S3Service } from '@/modules/media/infrastructure/services/s3-storage.service';
 import { SharpImageProcessor } from '@/modules/media/infrastructure/services/sharp-image-processor.service';
@@ -58,13 +67,18 @@ import {
   NotificationService,
   type NotificationServicePort
 } from '@/modules/notification/application/services/notification.service';
+import type { TrimNotificationsPort } from '@/modules/notification/application/use-cases/trim-notifications/trim-notifications.port';
+import { TrimNotificationsUseCase } from '@/modules/notification/application/use-cases/trim-notifications/trim-notifications.usecase';
 import type { NotificationRepositoryPort } from '@/modules/notification/domain/repositories/notification.repository';
 import type { CheckSystemHealthPort } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.port';
 import { CheckSystemHealthUseCase } from '@/modules/operations/application/use-cases/check-system-health/check-system-health.usecase';
+import type { WarmRedisCachePort } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.port';
 import { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
 import { NodeSystemHealthProbe } from '@/modules/operations/infrastructure/system/node-system-health-probe';
 import type { PostViewsQueuePort } from '@/modules/post/application/ports/post-views-job.port';
 import { PostService, type PostServicePort } from '@/modules/post/application/services/post.service';
+import type { IncreasePostsViewsPort } from '@/modules/post/application/use-cases/increase-posts-views/increase-posts-views.port';
+import { IncreasePostsViewsUseCase } from '@/modules/post/application/use-cases/increase-posts-views/increase-posts-views.usecase';
 import type { BookmarkRepositoryPort } from '@/modules/post/domain/repositories/bookmark.repository';
 import type { HashtagRepositoryPort } from '@/modules/post/domain/repositories/hashtag.repository';
 import type { LikeRepositoryPort } from '@/modules/post/domain/repositories/like.repository';
@@ -78,6 +92,7 @@ import type { FriendshipRepositoryPort } from '@/modules/relationship/domain/rep
 import { UserService, type UserServicePort } from '@/modules/user/application/services/user.service';
 import type { UserQueryRepositoryPort } from '@/modules/user/domain/repositories/user.query.repository';
 import type { UserRepositoryPort } from '@/modules/user/domain/repositories/user.repository';
+import { UPLOAD_DIR_VIDEO } from '@/presentation/http/express/constants/file.constants';
 import { APP_ERROR_MESSAGE } from '@/presentation/http/express/constants/message.constants';
 import type { BaseRoute } from '@/presentation/http/express/core/base.route';
 import type { ChatFeature } from '@/presentation/socket/features/chat.feature';
@@ -149,8 +164,14 @@ export class Container implements IContainer {
   private readonly notificationsService: NotificationServicePort;
   private readonly deleteExpiredOtpsUC: DeleteExpiredOtpsPort;
   private readonly deleteExpiredRefreshTokensUC: DeleteExpiredRefreshTokensPort;
-  private readonly warmRedisCacheUC: WarmRedisCacheUseCase;
+  private readonly warmRedisCacheUC: WarmRedisCachePort;
   private readonly checkSystemHealthUC: CheckSystemHealthPort;
+  private readonly sendOtpEmailUC: SendOtpEmailPort;
+  private readonly deleteOtpUC: DeleteOtpPort;
+  private readonly increasePostsViewsUC: IncreasePostsViewsPort;
+  private readonly trimNotificationsUC: TrimNotificationsPort;
+  private readonly encodeVideoStreamUC: EncodeVideoStreamPort;
+  private readonly markVideoEncodingFailedUC: MarkVideoEncodingFailedPort;
 
   private readonly presenceFeature: PresenceFeature;
   private readonly chatFeature: ChatFeature;
@@ -240,6 +261,16 @@ export class Container implements IContainer {
     this.roleService = new RoleService(this.roleRepository);
     this.deleteExpiredOtpsUC = new DeleteExpiredOtpsUseCase(this.otpRepository);
     this.deleteExpiredRefreshTokensUC = new DeleteExpiredRefreshTokensUseCase(this.refreshTokenRepository);
+    this.sendOtpEmailUC = new SendOtpEmailUseCase(this.emailSender);
+    this.deleteOtpUC = new DeleteOtpUseCase(this.otpRepository);
+    this.increasePostsViewsUC = new IncreasePostsViewsUseCase(this.postRepository);
+    this.encodeVideoStreamUC = new EncodeVideoStreamUseCase(
+      this.videoStatusRepository,
+      new FfmpegVideoStreamEncoder(this.fileStorage, { outputRootDir: UPLOAD_DIR_VIDEO }),
+      this.s3Service,
+      this.fileStorage
+    );
+    this.markVideoEncodingFailedUC = new MarkVideoEncodingFailedUseCase(this.videoStatusRepository);
 
     this.notificationsService = new NotificationService(
       this.notificationRepository,
@@ -247,6 +278,7 @@ export class Container implements IContainer {
       this.userService,
       this.realtimeEmitter
     );
+    this.trimNotificationsUC = new TrimNotificationsUseCase(this.notificationsService);
 
     this.warmRedisCacheUC = new WarmRedisCacheUseCase(
       this.cacheManager,
@@ -363,13 +395,12 @@ export class Container implements IContainer {
 
   public getWorkerDeps() {
     return {
-      emailSender: this.emailSender,
-      otpRepository: this.otpRepository,
-      postRepository: this.postRepository,
-      notificationService: this.notificationsService,
-      mediaRepository: this.videoStatusRepository,
-      s3Service: this.s3Service,
-      fileStorage: this.fileStorage,
+      sendOtpEmailUC: this.sendOtpEmailUC,
+      deleteOtpUC: this.deleteOtpUC,
+      increasePostsViewsUC: this.increasePostsViewsUC,
+      trimNotificationsUC: this.trimNotificationsUC,
+      encodeVideoStreamUC: this.encodeVideoStreamUC,
+      markVideoEncodingFailedUC: this.markVideoEncodingFailedUC,
       deleteExpiredOtpsUC: this.deleteExpiredOtpsUC,
       deleteExpiredRefreshTokensUC: this.deleteExpiredRefreshTokensUC,
       warmRedisCacheUC: this.warmRedisCacheUC,

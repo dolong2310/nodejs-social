@@ -3,10 +3,12 @@ import { setupContainer } from '@/bootstrap/setup-container';
 import { setupDatabase } from '@/bootstrap/setup-database';
 import { setupGracefulShutdown } from '@/bootstrap/setup-graceful-shutdown';
 import { setupRedis } from '@/bootstrap/setup-redis';
-import { setupWorkers } from '@/bootstrap/setup-workers';
+import { dbConfig } from '@/infrastructure/persistence/config/database.config';
+import { buildBullMQConnection } from '@/infrastructure/queue/bullmq/bullmq-connection';
 import { createExpressApp } from '@/presentation/http/express/app';
 import { initUploadsFolder } from '@/presentation/http/express/utils/file.util';
 import { createSocketApp } from '@/presentation/socket/socket.app';
+import { createWorkerApp } from '@/presentation/worker/worker.app';
 import { createServer } from 'http';
 import type { Server as SocketServer } from 'socket.io';
 
@@ -25,7 +27,7 @@ export async function createHttpServer(socketServer: SocketServer) {
 
   socketApp.attach(httpServer);
 
-  setupWorkers(container);
+  createWorkerApp(buildBullMQConnection(dbConfig.redis), container);
 
   setupGracefulShutdown(httpServer, database, redis);
 

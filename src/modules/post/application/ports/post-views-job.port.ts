@@ -1,3 +1,5 @@
+export const POST_VIEWS_QUEUE_NAME = 'post-views';
+
 export interface PostViewsJobData {
   postIds: string[];
   isAuthenticatedUser: boolean;

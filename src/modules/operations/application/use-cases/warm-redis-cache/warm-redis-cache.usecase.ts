@@ -12,6 +12,7 @@ import type {
   CacheWarmupTarget
 } from '@/modules/operations/application/ports/cache-warmup-job.port';
 import type { CacheManagerPort } from '@/modules/core/application/ports/cache-manager.port';
+import { WarmRedisCachePort } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.port';
 import {
   CACHE_KEYS as RELATIONSHIP_CACHE_KEYS,
   CACHE_TTL as RELATIONSHIP_CACHE_TTL
@@ -39,7 +40,7 @@ const DEFAULT_TARGETS: CacheWarmupTarget[] = ['roles', 'friend-graphs'];
 const DEFAULT_HOT_USER_LIMIT = 500;
 const MAX_HOT_USER_LIMIT = 2000;
 
-export class WarmRedisCacheUseCase {
+export class WarmRedisCacheUseCase extends WarmRedisCachePort {
   constructor(
     private readonly cacheManager: CacheManagerPort,
     private readonly roleRepository: RoleRepositoryPort,
@@ -47,7 +48,9 @@ export class WarmRedisCacheUseCase {
     private readonly userRepository: UserRepositoryPort,
     private readonly userQueryRepository: UserQueryRepositoryPort,
     private readonly friendshipRepository: FriendshipRepositoryPort
-  ) {}
+  ) {
+    super();
+  }
 
   async execute(data: CacheWarmupJobData = {}): Promise<CacheWarmupJobResult> {
     const targets = data.targets?.length ? data.targets : DEFAULT_TARGETS;

@@ -1,12 +1,11 @@
 import { BaseSchedule } from '@/infrastructure/queue/bullmq/base.schedule';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import type {
-  CacheWarmupJobData,
-  CacheWarmupJobResult
+import {
+  CACHE_WARMUP_SCHEDULE_QUEUE_NAME,
+  type CacheWarmupJobData,
+  type CacheWarmupJobResult
 } from '@/modules/operations/application/ports/cache-warmup-job.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const CACHE_WARMUP_SCHEDULE_QUEUE_NAME = 'cache-warmup-schedule';
 
 export class CacheWarmupSchedule extends BaseSchedule<CacheWarmupJobData, CacheWarmupJobResult> {
   constructor(

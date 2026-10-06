@@ -40,15 +40,16 @@ describe.concurrent('Infrastructure boundaries', () => {
     );
   });
 
-  // 4. queues, schedules, and infrastructure services must use suffixes matching each file role.
+  // 4. queue producers, schedules, and infrastructure services must use suffixes matching each file role.
+  // Queue consumers (workers) are driving adapters and live in src/presentation/worker.
   it('queue, schedule, and infrastructure services use project suffixes', () => {
     expectFilesMatch(
       moduleInfrastructureFiles.filter((file) => file.includes('/infrastructure/queue/')),
-      (file) => /(\.queue|\.worker)\.ts$/.test(file)
+      (file) => /\.queue\.ts$/.test(file)
     );
     expectFilesMatch(
       moduleInfrastructureFiles.filter((file) => file.includes('/infrastructure/schedule/')),
-      (file) => /(\.schedule|\.worker)\.ts$/.test(file)
+      (file) => /\.schedule\.ts$/.test(file)
     );
     expectFilesMatch(
       moduleInfrastructureFiles.filter((file) => file.includes('/infrastructure/services/')),

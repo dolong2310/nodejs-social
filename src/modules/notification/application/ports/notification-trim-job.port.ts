@@ -1,3 +1,5 @@
+export const NOTIFICATION_TRIM_QUEUE_NAME = 'notification-trim';
+
 export interface NotificationTrimJobData {
   recipientUserIds: string[];
 }
