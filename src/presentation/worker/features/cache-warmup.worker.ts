@@ -1,11 +1,11 @@
-import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
-import type {
-  CacheWarmupJobData,
-  CacheWarmupJobResult
+import {
+  CACHE_WARMUP_SCHEDULE_QUEUE_NAME,
+  type CacheWarmupJobData,
+  type CacheWarmupJobResult
 } from '@/modules/operations/application/ports/cache-warmup-job.port';
-import type { WarmRedisCacheUseCase } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.usecase';
-import { CACHE_WARMUP_SCHEDULE_QUEUE_NAME } from '@/modules/operations/infrastructure/schedule/cache-warmup.schedule';
+import type { WarmRedisCachePort } from '@/modules/operations/application/use-cases/warm-redis-cache/warm-redis-cache.port';
+import { BaseWorker } from '@/presentation/worker/core/base.worker';
 import type { ConnectionOptions, Job } from 'bullmq';
 
 export class CacheWarmupWorker extends BaseWorker<CacheWarmupJobData, CacheWarmupJobResult> {
@@ -13,7 +13,7 @@ export class CacheWarmupWorker extends BaseWorker<CacheWarmupJobData, CacheWarmu
 
   constructor(
     protected readonly connection: ConnectionOptions,
-    private readonly warmRedisCacheUC: WarmRedisCacheUseCase,
+    private readonly warmRedisCacheUC: WarmRedisCachePort,
     private readonly logger: LoggerPort
   ) {
     super({ name: CACHE_WARMUP_SCHEDULE_QUEUE_NAME, workerOptions: { connection, concurrency: 1 } });

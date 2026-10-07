@@ -1,12 +1,11 @@
 import { BaseQueue } from '@/infrastructure/queue/bullmq/base.queue';
-import type {
-  VideoStreamJobData,
-  VideoStreamJobResult,
-  VideoStreamQueuePort
+import {
+  VIDEO_STREAM_QUEUE_NAME,
+  type VideoStreamJobData,
+  type VideoStreamJobResult,
+  type VideoStreamQueuePort
 } from '@/modules/media/application/ports/video-stream-job.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const VIDEO_STREAM_QUEUE_NAME = 'video-stream';
 
 // Producer
 export class VideoStreamQueue

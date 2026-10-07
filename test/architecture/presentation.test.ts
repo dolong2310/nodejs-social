@@ -5,6 +5,8 @@ import { expectFilesMatch, expectNoForbiddenImports, parseModuleImport, sourceFi
 const presentationFiles = sourceFiles('src/presentation');
 // Get all files under src/presentation/controllers.
 const controllerFiles = presentationFiles.filter((file) => file.includes('/controllers/'));
+// Get all files under src/presentation/worker.
+const workerFiles = presentationFiles.filter((file) => file.startsWith('src/presentation/worker/'));
 
 describe.concurrent('Presentation boundaries', () => {
   // 1. presentation must not depend on concrete module infrastructure adapters.
@@ -29,7 +31,23 @@ describe.concurrent('Presentation boundaries', () => {
     });
   });
 
-  // 3. main HTTP adapters must use suffixes matching each file role.
+  // 3. queue workers call use-case ports only; business logic lives in the use case, not in the BullMQ consumer.
+  it('workers depend on use-case ports, not use-case implementations, repositories, or services', () => {
+    expectNoForbiddenImports(workerFiles, ({ importPath }) => {
+      if (/\.usecase$/.test(importPath)) {
+        return 'worker must not depend on use-case implementation';
+      }
+      if (importPath.includes('/domain/repositories/')) {
+        return 'worker must not depend on repository ports directly';
+      }
+      if (importPath.includes('/application/services/')) {
+        return 'worker must not depend on application services directly';
+      }
+      return false;
+    });
+  });
+
+  // 4. main HTTP adapters must use suffixes matching each file role.
   it('http presentation adapters use project suffixes', () => {
     expectFilesMatch(
       presentationFiles.filter((file) => file.includes('/controllers/')),
@@ -57,7 +75,15 @@ describe.concurrent('Presentation boundaries', () => {
     );
   });
 
-  // 4. valibot request/response schemas must clearly express data direction.
+  // 5. queue worker adapters must use the worker suffix.
+  it('worker presentation adapters use project suffixes', () => {
+    expectFilesMatch(
+      workerFiles.filter((file) => file.includes('/features/')),
+      (file) => /\.worker\.ts$/.test(file)
+    );
+  });
+
+  // 6. valibot request/response schemas must clearly express data direction.
   it('http schemas use request, response, or schema suffixes', () => {
     expectFilesMatch(
       presentationFiles.filter((file) => file.includes('/schemas/')),

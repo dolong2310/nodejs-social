@@ -1,9 +1,18 @@
-import { BaseWorker } from '@/infrastructure/queue/bullmq/base.worker';
-import type { OtpEmailJobData, OtpEmailJobResult } from '@/modules/authentication/application/ports/otp-email-job.port';
-import type { OtpRepositoryPort } from '@/modules/authentication/domain/repositories/otp.repository';
-import { OTP_EMAIL_QUEUE_NAME } from '@/modules/authentication/infrastructure/queue/otp-email.queue';
-import type { EmailSenderPort } from '@/modules/core/application/ports/email-sender.port';
+import {
+  OTP_EMAIL_QUEUE_NAME,
+  type OtpEmailJobData,
+  type OtpEmailJobResult
+} from '@/modules/authentication/application/ports/otp-email-job.port';
+import {
+  DeleteOtpInputPort,
+  type DeleteOtpPort
+} from '@/modules/authentication/application/use-cases/delete-otp/delete-otp.port';
+import {
+  SendOtpEmailInputPort,
+  type SendOtpEmailPort
+} from '@/modules/authentication/application/use-cases/send-otp-email/send-otp-email.port';
 import type { LoggerPort } from '@/modules/core/application/ports/logger.port';
+import { BaseWorker } from '@/presentation/worker/core/base.worker';
 import { UnrecoverableError, type ConnectionOptions, type Job } from 'bullmq';
 
 // Consumer
@@ -12,8 +21,8 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
 
   constructor(
     protected readonly connection: ConnectionOptions,
-    private readonly emailSender: EmailSenderPort,
-    private readonly otpRepository: OtpRepositoryPort,
+    private readonly sendOtpEmailUC: SendOtpEmailPort,
+    private readonly deleteOtpUC: DeleteOtpPort,
     private readonly logger: LoggerPort
   ) {
     super({ name: OTP_EMAIL_QUEUE_NAME, workerOptions: { connection, concurrency: 5 } });
@@ -27,19 +36,14 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
   }
 
   protected override async process(job: Job<OtpEmailJobData, OtpEmailJobResult>): Promise<OtpEmailJobResult> {
-    await this.emailSender.sendEmail({
-      toAddresses: job.data.toAddress,
-      subject: job.data.subject,
-      template: {
-        name: 'otp',
-        variables: {
-          sender: 'Social App',
-          subject: job.data.subject,
-          code: job.data.body.code
-        }
-      }
-    });
-    return { sentAt: new Date().toISOString() };
+    const result = await this.sendOtpEmailUC.execute(
+      new SendOtpEmailInputPort({
+        toAddress: job.data.toAddress,
+        subject: job.data.subject,
+        code: job.data.body.code
+      })
+    );
+    return { sentAt: result.sentAt };
   }
 
   /**
@@ -61,7 +65,7 @@ export class OtpEmailWorker extends BaseWorker<OtpEmailJobData, OtpEmailJobResul
       return;
     }
     try {
-      await this.otpRepository.deleteOtp(otpId);
+      await this.deleteOtpUC.execute(new DeleteOtpInputPort({ otpId }));
       this.log.info({ otpId, bullJobId: job.id }, 'worker:::deleted-otp-after-email-job-permanently-failed');
     } catch (cleanupErr) {
       this.log.error({ err: cleanupErr, otpId }, 'worker:::failed-to-delete-otp-after-email-job-failure');

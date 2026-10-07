@@ -1,3 +1,5 @@
+export const OTP_EMAIL_QUEUE_NAME = 'email';
+
 export interface OtpEmailJobData {
   toAddress: string;
   subject: string;

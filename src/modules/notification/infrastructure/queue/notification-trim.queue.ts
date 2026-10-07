@@ -1,12 +1,11 @@
 import { BaseQueue } from '@/infrastructure/queue/bullmq/base.queue';
-import type {
-  NotificationTrimJobData,
-  NotificationTrimJobResult,
-  NotificationTrimQueuePort
+import {
+  NOTIFICATION_TRIM_QUEUE_NAME,
+  type NotificationTrimJobData,
+  type NotificationTrimJobResult,
+  type NotificationTrimQueuePort
 } from '@/modules/notification/application/ports/notification-trim-job.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const NOTIFICATION_TRIM_QUEUE_NAME = 'notification-trim';
 
 // Producer
 export class NotificationTrimQueue

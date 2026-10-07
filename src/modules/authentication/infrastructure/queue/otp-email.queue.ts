@@ -1,12 +1,11 @@
 import { BaseQueue } from '@/infrastructure/queue/bullmq/base.queue';
-import type {
-  OtpEmailJobData,
-  OtpEmailJobResult,
-  OtpEmailQueuePort
+import {
+  OTP_EMAIL_QUEUE_NAME,
+  type OtpEmailJobData,
+  type OtpEmailJobResult,
+  type OtpEmailQueuePort
 } from '@/modules/authentication/application/ports/otp-email-job.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const OTP_EMAIL_QUEUE_NAME = 'email';
 
 export class OtpEmailQueue extends BaseQueue<OtpEmailJobData, OtpEmailJobResult> implements OtpEmailQueuePort {
   constructor(readonly connection: ConnectionOptions) {

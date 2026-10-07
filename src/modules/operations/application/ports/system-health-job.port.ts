@@ -1,3 +1,5 @@
+export const SYSTEM_HEALTH_SCHEDULE_QUEUE_NAME = 'system-health-schedule';
+
 export interface SystemHealthJobData {
   triggeredBy?: 'schedule' | 'manual';
 }

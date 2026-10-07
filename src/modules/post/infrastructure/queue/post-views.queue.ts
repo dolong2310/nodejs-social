@@ -1,12 +1,11 @@
 import { BaseQueue } from '@/infrastructure/queue/bullmq/base.queue';
-import type {
-  PostViewsJobData,
-  PostViewsJobResult,
-  PostViewsQueuePort
+import {
+  POST_VIEWS_QUEUE_NAME,
+  type PostViewsJobData,
+  type PostViewsJobResult,
+  type PostViewsQueuePort
 } from '@/modules/post/application/ports/post-views-job.port';
 import type { ConnectionOptions } from 'bullmq';
-
-export const POST_VIEWS_QUEUE_NAME = 'post-views';
 
 export class PostViewsQueue extends BaseQueue<PostViewsJobData, PostViewsJobResult> implements PostViewsQueuePort {
   constructor(readonly connection: ConnectionOptions) {
