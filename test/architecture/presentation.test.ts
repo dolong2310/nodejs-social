@@ -47,7 +47,20 @@ describe.concurrent('Presentation boundaries', () => {
     });
   });
 
-  // 4. main HTTP adapters must use suffixes matching each file role.
+  // 4. HTTP and Socket.IO run in the API process, workers run in the worker process; neither imports the other.
+  it('api presentation and worker presentation do not depend on each other', () => {
+    expectNoForbiddenImports(presentationFiles, ({ file, importPath }) => {
+      const fromWorker = file.startsWith('src/presentation/worker/');
+      const toWorker = importPath.startsWith('@/presentation/worker');
+      if (!fromWorker && toWorker) return 'http/socket presentation must not depend on worker presentation';
+      if (fromWorker && importPath.startsWith('@/presentation/') && !toWorker) {
+        return 'worker presentation must not depend on http/socket presentation';
+      }
+      return false;
+    });
+  });
+
+  // 5. main HTTP adapters must use suffixes matching each file role.
   it('http presentation adapters use project suffixes', () => {
     expectFilesMatch(
       presentationFiles.filter((file) => file.includes('/controllers/')),
@@ -75,7 +88,7 @@ describe.concurrent('Presentation boundaries', () => {
     );
   });
 
-  // 5. queue worker adapters must use the worker suffix.
+  // 6. queue worker adapters must use the worker suffix.
   it('worker presentation adapters use project suffixes', () => {
     expectFilesMatch(
       workerFiles.filter((file) => file.includes('/features/')),
@@ -83,7 +96,7 @@ describe.concurrent('Presentation boundaries', () => {
     );
   });
 
-  // 6. valibot request/response schemas must clearly express data direction.
+  // 7. valibot request/response schemas must clearly express data direction.
   it('http schemas use request, response, or schema suffixes', () => {
     expectFilesMatch(
       presentationFiles.filter((file) => file.includes('/schemas/')),

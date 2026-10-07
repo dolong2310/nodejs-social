@@ -79,8 +79,9 @@ src/
   bootstrap/          Application startup, config, manual DI, route/worker wiring
   infrastructure/     Shared database, Redis, queue, logger, and technical adapters
   modules/            Feature modules using domain/application/infrastructure layers
-  presentation/       Express HTTP API and Socket.IO presentation adapters
-  main.ts             Process entry point
+  presentation/       Express HTTP API, Socket.IO, and BullMQ worker presentation adapters
+  main.ts             API process entry point
+  worker.ts           Standalone queue worker process entry point
 
 swagger/              OpenAPI YAML fragments used by Swagger UI
 postman/              Postman collections and environment
@@ -226,13 +227,22 @@ Swagger UI is available at:
 /api/docs
 ```
 
-### Build and Run with Docker
+### Queue Workers
 
-The repository includes a production `Dockerfile` based on `node:24-alpine`. The image installs dependencies with pnpm, builds the TypeScript app, and starts it with:
+BullMQ workers run in their own process, separate from the API. The API only enqueues jobs and registers the cron schedules; the worker process consumes them. Start both in development:
 
 ```bash
-pnpm start:prod
+pnpm run dev
+pnpm run dev:worker
 ```
+
+The worker process has its own composition root (`src/bootstrap/worker-container.ts`) that builds only the worker use cases: no HTTP routes, Socket.IO server, queue producers, or schedules. It closes its workers on `SIGTERM`/`SIGINT` and waits for active jobs to finish. Video stream jobs pass a local file path, so the worker must share the API's disk until uploads move to object storage.
+
+### Build and Run with Docker
+
+The repository includes a production `Dockerfile` based on `node:24-alpine`. The image installs dependencies with pnpm, builds the TypeScript app, and starts `dist/start-all.mjs` (`pnpm start:all:prod`), which runs the API process and the worker process side by side in one container. The launcher forwards `SIGTERM`/`SIGINT` to both processes. If one of them exits, it stops the other and exits with an error so the host restarts the container.
+
+This fits hosts that allow a single service per app, such as a free Render web service: background workers are not available on the free plan, and the video stream worker needs the same local disk as the API.
 
 Build the image:
 
@@ -246,7 +256,7 @@ Run the container with a production environment file:
 docker run --rm --env-file .env.production -p 3000:3000 nodejs-social
 ```
 
-The container only runs the API process. MongoDB/PostgreSQL, Redis, S3/SES or Cloudinary, and other external services still need to be provided separately.
+To run the API and the workers as separate services instead, start two containers from the same image with the commands `pnpm start:prod` and `pnpm start:worker:prod`, and move video uploads to shared storage first. MongoDB/PostgreSQL, Redis, S3/SES or Cloudinary, and other external services still need to be provided separately.
 
 ## Scripts
 
@@ -256,6 +266,9 @@ The container only runs the API process. MongoDB/PostgreSQL, Redis, S3/SES or Cl
 | `pnpm run build`             | Compile TypeScript and rewrite path aliases      |
 | `pnpm run build:clean`       | Clean `dist` and rebuild                         |
 | `pnpm run start:dev`         | Run compiled app with development env            |
+| `pnpm run dev:worker`        | Start the standalone queue worker in watch mode  |
+| `pnpm run start:worker:dev`  | Run compiled queue worker with development env   |
+| `pnpm run start:all:dev`     | Run compiled API and queue worker together       |
 | `pnpm run lint`              | Run ESLint                                       |
 | `pnpm run prettier`          | Check formatting                                 |
 | `pnpm run typecheck`         | Type-check production build config               |

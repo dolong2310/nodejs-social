@@ -8,4 +8,8 @@ export abstract class BaseWorker<TData, TResult, TName extends string = string> 
   }
 
   protected abstract process(job: Job<TData, TResult>): Promise<TResult>;
+
+  async close(): Promise<void> {
+    await this.worker.close();
+  }
 }

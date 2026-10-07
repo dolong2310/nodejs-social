@@ -1,9 +1,6 @@
 import type { ChatMessageEntity } from '@/modules/conversation/domain/entities/chat-message.entity';
 import type { RealtimeEmitterPort } from '@/modules/core/application/ports/realtime-emitter.port';
-import {
-  NOTIFICATION_MAX_PER_USER,
-  NOTIFICATION_SOCKET_EVENT
-} from '@/modules/notification/application/constants/notification.constants';
+import { NOTIFICATION_SOCKET_EVENT } from '@/modules/notification/application/constants/notification.constants';
 import type { NotificationTrimQueuePort } from '@/modules/notification/application/ports/notification-trim-job.port';
 import type {
   RecordAddedToGroupPayload,
@@ -12,6 +9,7 @@ import type {
   RecordNewMessagePayload
 } from '@/modules/notification/application/services/notification.service.types';
 import { notificationSummary } from '@/modules/notification/application/utils/notification-summary.util';
+import { trimRecipientNotifications } from '@/modules/notification/application/utils/trim-recipient-notifications.util';
 import { NotificationEntity } from '@/modules/notification/domain/entities/notification.entity';
 import {
   EnumNewMessagePreviewKind,
@@ -27,7 +25,6 @@ import { UserNotFoundException } from '@/modules/user/application/exceptions/use
 import type { UserServicePort } from '@/modules/user/application/services/user.service';
 
 export interface NotificationServicePort {
-  trimRecipientIfNeeded(recipientUserId: string): Promise<void>;
   recordFriendRequest(payload: RecordFriendRequestPayload): Promise<void>;
   recordFriendAccepted(payload: RecordFriendAcceptedPayload): Promise<void>;
   recordNewMessage(payload: RecordNewMessagePayload): Promise<void>;
@@ -119,20 +116,9 @@ export class NotificationService implements NotificationServicePort {
     };
   }
 
-  /**
-   * After inserting a new notification, ensure the user's total notification count does not exceed NOTIFICATION_MAX_PER_USER:
-   * - Count existing notifications.
-   * - If over the limit, find the oldest notifications and delete the excess.
-   */
-  async trimRecipientIfNeeded(recipientUserId: string): Promise<void> {
-    const count = await this.notificationRepository.countForRecipient(recipientUserId);
-    const limit = count - NOTIFICATION_MAX_PER_USER;
-    if (limit <= 0) return;
-    const ids = await this.notificationRepository.findOldestNotificationIdsForTrim({
-      recipientId: recipientUserId,
-      limit
-    });
-    await this.notificationRepository.deleteNotificationsByIds(ids);
+  // After inserting a new notification, keep the recipient within NOTIFICATION_MAX_PER_USER.
+  private async trimRecipientIfNeeded(recipientUserId: string): Promise<void> {
+    await trimRecipientNotifications(this.notificationRepository, recipientUserId);
   }
 
   /**
